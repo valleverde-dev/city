@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>City Builder — Terminal</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap">
+<style>
+  :root{
+    --bg:#060a10; --panel:rgba(8,14,20,.93); --ink:#d9fbff; --sub:#5f8690;
+    --grass:#2d3b30; --road:#15171c; --house:#ffb020; --shop:#00c2ff; --park:#39ff6a;
+    --accent:#00e5ff; --danger:#ff2e4d; --border:rgba(0,229,255,.28);
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Share Tech Mono',monospace;
+    overflow:hidden; touch-action:none;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  body::after{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:50;
+    background:repeating-linear-gradient(0deg, rgba(255,255,255,.03) 0px, rgba(255,255,255,.03) 1px, transparent 1px, transparent 3px);
+    mix-blend-mode:overlay;
+  }
+  .material-icons{
+    font-family:'Material Icons',sans-serif; font-weight:normal; font-style:normal;
+    font-size:18px; line-height:1; letter-spacing:normal; text-transform:none;
+    display:inline-block; white-space:nowrap; word-wrap:normal; direction:ltr;
+    vertical-align:middle; -webkit-font-smoothing:antialiased;
+  }
+  #hud{
+    position:fixed; top:env(safe-area-inset-top,0px); left:0; right:0; z-index:10;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 14px; background:var(--panel); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--border); gap:10px; flex-wrap:wrap;
+    box-shadow:0 0 16px rgba(0,229,255,.1);
+  }
+  #hud h1{
+    font-family:'Orbitron',sans-serif; font-size:14px; margin:0; font-weight:900;
+    letter-spacing:.08em; text-transform:uppercase; display:flex; align-items:center; gap:8px; color:var(--accent);
+  }
+  .stats{display:flex; gap:16px; font-size:13px; color:var(--sub); text-transform:uppercase; letter-spacing:.04em;}
+  .stats span{display:flex; align-items:center; gap:5px;}
+  .stats b{color:var(--ink);}
+  .hud-actions{display:flex; gap:6px;}
+  .hud-btn{
+    background:rgba(0,229,255,.06); border:1px solid var(--border); border-radius:0;
+    padding:6px 9px; color:var(--ink); cursor:pointer; display:flex; align-items:center;
+  }
+  #tools{
+    position:fixed; bottom:env(safe-area-inset-bottom,0px); left:0; right:0; z-index:10;
+    display:flex; gap:8px; padding:10px 12px; background:var(--panel);
+    backdrop-filter:blur(8px); border-top:1px solid var(--border); overflow-x:auto;
+    box-shadow:0 0 16px rgba(0,229,255,.1);
+  }
+  .tool{
+    flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:4px;
+    padding:8px 12px; border-radius:0; border:1px solid var(--border); border-top:3px solid var(--tcolor,transparent);
+    background:rgba(0,229,255,.04); cursor:pointer; color:var(--ink); font-size:10px;
+    text-transform:uppercase; letter-spacing:.04em; font-family:'Share Tech Mono',monospace;
+  }
+  .tool.active{border-color:var(--accent); background:rgba(0,229,255,.16); box-shadow:0 0 10px rgba(0,229,255,.35);}
+  #world{ position:absolute; inset:0; overflow:hidden; touch-action:none; }
+  #viewport{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    transform-origin:center center; will-change:transform;
+  }
+  #grid{ position:relative; }
+  .tile{
+    position:absolute; width:64px; height:32px;
+    clip-path:polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    transition:filter .15s, left .25s ease, top .25s ease;
+    outline:1px solid rgba(0,229,255,.06);
+  }
+  .tile[data-t="grass"]{background:var(--grass);}
+  .tile[data-t="road"]{background:var(--road);}
+  .tile[data-t="house"]{background:var(--house);}
+  .tile[data-t="shop"]{background:var(--shop);}
+  .tile[data-t="park"]{background:var(--park);}
+  #hint{
+    position:absolute; top:50px; left:0; right:0; text-align:center; font-size:11px;
+    color:var(--sub); pointer-events:none; text-transform:uppercase; letter-spacing:.06em;
+  }
+  .float-txt{
+    position:fixed; transform:translate(-50%,-50%); font-weight:700; font-size:12px;
+    color:var(--accent); pointer-events:none; z-index:40; text-shadow:0 0 6px rgba(0,229,255,.6);
+    animation: floatUp .9s ease-out forwards; display:flex; align-items:center; gap:4px;
+    text-transform:uppercase; letter-spacing:.04em; font-family:'Share Tech Mono',monospace;
+  }
+  .float-txt .material-icons{font-size:14px;}
+  @keyframes floatUp{
+    0%{ opacity:1; transform:translate(-50%,-50%); }
+    100%{ opacity:0; transform:translate(-50%,-170%); }
+  }
+  #menu{
+    position:fixed; inset:0; z-index:30; display:flex; align-items:center; justify-content:center;
+    background:rgba(2,4,8,.72); backdrop-filter:blur(4px);
+  }
+  #menu.hidden{display:none;}
+  .menu-panel{
+    background:var(--panel); border:1px solid var(--border); border-radius:0;
+    padding:28px 24px; width:88%; max-width:320px; text-align:center;
+    box-shadow:0 0 30px rgba(0,229,255,.18);
+  }
+  .menu-panel h2{
+    font-family:'Orbitron',sans-serif; margin:0 0 4px; font-size:18px; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--accent); display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .menu-panel p{color:var(--sub); font-size:12px; margin:0 0 18px; line-height:1.5;}
+  .menu-btn{
+    display:flex; align-items:center; justify-content:center; gap:8px; width:100%; margin-top:10px;
+    padding:13px; border-radius:0; border:1px solid var(--border); background:rgba(0,229,255,.08);
+    color:var(--ink); font-size:13px; font-weight:700; cursor:pointer; text-transform:uppercase;
+    letter-spacing:.05em; font-family:'Share Tech Mono',monospace;
+  }
+  .menu-btn.primary{background:var(--accent); color:#031018; border-color:var(--accent);}
+  .menu-btn.danger{background:transparent; border-color:var(--danger); color:var(--danger);}
+</style>
+</head>
+<body>
+<div id="hud">
+  <h1><span class="material-icons">location_city</span>City Builder</h1>
+  <div class="stats">
+    <span><span class="material-icons" style="font-size:16px;">people</span><b id="pop">0</b></span>
+    <span><span class="material-icons" style="font-size:16px;">attach_money</span><b id="coin">0</b></span>
+  </div>
+  <div class="hud-actions">
+    <button class="hud-btn" id="rotateBtn"><span class="material-icons">sync</span></button>
+    <button class="hud-btn" id="menuBtn"><span class="material-icons">menu</span></button>
+  </div>
+</div>
+<div id="hint">Toca para construir · pellizca para zoom</div>
+<div id="world"><div id="viewport"><div id="grid"></div></div></div>
+<div id="tools"></div>
+<div id="menu"><div class="menu-panel" id="menuPanel"></div></div>
+
+<script>
+(function(){
+  const N = 10;
+  const TW = 64, TH = 32;
+  const types = [
+    {id:'grass', label:'Demoler', icon:'delete', color:'var(--danger)', cost:0},
+    {id:'road',  label:'Calle',   icon:'add_road', color:'var(--road)', cost:1},
+    {id:'house', label:'Casa',    icon:'home', color:'var(--house)', cost:5},
+    {id:'shop',  label:'Tienda',  icon:'store', color:'var(--shop)', cost:10},
+    {id:'park',  label:'Parque',  icon:'park', color:'var(--park)', cost:3},
+  ];
+  const costMap = Object.fromEntries(types.map(t=>[t.id, t.cost]));
+  let current = 'road';
+  let state = null;
+
+  let actx;
+  function ensureAudio(){
+    if(!actx){ actx = new (window.AudioContext||window.webkitAudioContext)(); }
+    if(actx.state==='suspended') actx.resume();
+  }
+  function playSound(type){
+    try{
+      ensureAudio();
+      const o = actx.createOscillator();
+      const g = actx.createGain();
+      o.connect(g); g.connect(actx.destination);
+      const freqs = {build:660, fail:140, demolish:220, click:500};
+      o.frequency.value = freqs[type]||440;
+      o.type = type==='fail' ? 'square' : (type==='demolish' ? 'sawtooth' : 'sine');
+      g.gain.setValueAtTime(0.0001, actx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.2, actx.currentTime+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime+0.18);
+      o.start(); o.stop(actx.currentTime+0.2);
+    }catch(e){}
+  }
+  function flash(el){
+    el.style.filter='brightness(0.45)';
+    setTimeout(()=>{ el.style.filter=''; }, 160);
+  }
+  function floatText(x,y,text,icon){
+    const f = document.createElement('div');
+    f.className='float-txt';
+    f.innerHTML = (icon?`<span class="material-icons">${icon}</span>`:'') + `<span>${text}</span>`;
+    f.style.left=x+'px'; f.style.top=y+'px';
+    document.body.appendChild(f);
+    setTimeout(()=>f.remove(), 900);
+  }
+  function toast(msg, icon){ floatText(window.innerWidth/2, 100, msg, icon); }
+  function hasAdjacentRoad(r,c){
+    const deltas=[[-1,0],[1,0],[0,-1],[0,1]];
+    return deltas.some(([dr,dc])=>{
+      const rr=r+dr, cc=c+dc;
+      if(rr<0||rr>=N||cc<0||cc>=N) return false;
+      return state.grid[rr*N+cc]==='road';
+    });
+  }
+
+  function loadState(){
+    try{ const raw = localStorage.getItem('citybuilder_v1'); if(raw) return JSON.parse(raw); }catch(e){}
+    return null;
+  }
+  function saveState(){
+    try{ localStorage.setItem('citybuilder_v1', JSON.stringify(state)); }catch(e){}
+  }
+
+  state = loadState() || { grid: Array.from({length:N*N}, ()=> 'grass'), coin: 20 };
+
+  const gridEl = document.getElementById('grid');
+  const originX = (N-1) * TW/2;
+  gridEl.style.width = (N*TW) + 'px';
+  gridEl.style.height = (N*TH) + 'px';
+
+  let viewRot = 0;
+  function rotateCoord(r,c,steps){
+    let rr=r, cc=c;
+    for(let i=0;i<((steps%4+4)%4);i++){ const nr=cc, nc=(N-1-rr); rr=nr; cc=nc; }
+    return [rr,cc];
+  }
+  function layoutTile(el){
+    const r=+el.dataset.r, c=+el.dataset.c;
+    const [r2,c2]=rotateCoord(r,c,viewRot);
+    el.style.left=((c2-r2)*TW/2+originX)+'px';
+    el.style.top=((c2+r2)*TH/2)+'px';
+  }
+  function updateLayout(){ tileEls.forEach(layoutTile); }
+
+  const tileEls = [];
+  for(let r=0; r<N; r++){
+    for(let c=0; c<N; c++){
+      const i = r*N + c;
+      const el = document.createElement('div');
+      el.className = 'tile';
+      el.dataset.t = state.grid[i];
+      el.dataset.r = r; el.dataset.c = c;
+      el.addEventListener('click', ()=>{
+        if(recentPinch) return;
+        const rect = el.getBoundingClientRect();
+        handleBuild(el, rect.left+rect.width/2, rect.top+rect.height/2);
+      });
+      gridEl.appendChild(el);
+      tileEls.push(el);
+    }
+  }
+  updateLayout();
+  function rebuildGrid(){
+    tileEls.forEach((el,i)=>{ el.dataset.t = state.grid[i]; });
+  }
+
+  function handleBuild(el, cx, cy){
+    const r = +el.dataset.r, c = +el.dataset.c, i = r*N+c;
+    const cost = costMap[current]||0;
+    if(current!=='grass' && current!=='road' && !hasAdjacentRoad(r,c)){
+      playSound('fail'); flash(el); floatText(cx,cy,'sin calle cerca','block'); return;
+    }
+    if(state.coin < cost){ playSound('fail'); flash(el); floatText(cx,cy,'sin fondos','money_off'); return; }
+    state.coin -= cost;
+    state.grid[i] = current;
+    el.dataset.t = current;
+    if(current==='grass'){
+      playSound('demolish'); floatText(cx,cy,'demolido','delete');
+    }else{
+      playSound('build'); floatText(cx,cy, cost ? ('-'+cost) : 'ok', 'add_circle');
+    }
+    saveState();
+    tick();
+  }
+
+  // --- Zoom (gesto de pellizco / rueda) — sin paneo ni giro por gesto ---
+  const worldEl = document.getElementById('world');
+  const viewportEl = document.getElementById('viewport');
+  let scale=1;
+  function applyTransform(){ viewportEl.style.transform = `scale(${scale})`; }
+  const pointers = new Map();
+  let pinchStartDist=0, pinchStartScale=1, recentPinch=false;
+
+  worldEl.addEventListener('pointerdown', e=>{
+    pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    if(pointers.size===2){
+      const pts=[...pointers.values()];
+      pinchStartDist=Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y) || 1;
+      pinchStartScale=scale; recentPinch=true;
+    }
+  });
+  worldEl.addEventListener('pointermove', e=>{
+    if(!pointers.has(e.pointerId)) return;
+    pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    if(pointers.size===2){
+      const pts=[...pointers.values()];
+      const dist=Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y) || 1;
+      scale=Math.min(2.5, Math.max(0.5, pinchStartScale*(dist/pinchStartDist)));
+      applyTransform();
+    }
+  });
+  function releasePointer(e){
+    pointers.delete(e.pointerId);
+    if(pointers.size===0 && recentPinch){ setTimeout(()=>{ recentPinch=false; }, 150); }
+  }
+  worldEl.addEventListener('pointerup', releasePointer);
+  worldEl.addEventListener('pointercancel', releasePointer);
+  worldEl.addEventListener('wheel', e=>{
+    e.preventDefault();
+    scale=Math.min(2.5, Math.max(0.5, scale - e.deltaY*0.001));
+    applyTransform();
+  }, {passive:false});
+
+  document.getElementById('rotateBtn').addEventListener('click', ()=>{
+    viewRot=(viewRot+1)%4; updateLayout(); playSound('click');
+  });
+
+  const toolsEl = document.getElementById('tools');
+  types.forEach(t=>{
+    const b = document.createElement('button');
+    b.className = 'tool' + (t.id===current ? ' active' : '');
+    b.style.setProperty('--tcolor', t.color);
+    b.innerHTML = `<span class="material-icons">${t.icon}</span><span>${t.label}${t.cost?(' · '+t.cost):''}</span>`;
+    b.addEventListener('click', ()=>{
+      current = t.id;
+      [...toolsEl.children].forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      playSound('click');
+    });
+    toolsEl.appendChild(b);
+  });
+
+  function counts(){
+    let houses=0, shops=0;
+    state.grid.forEach(t=>{ if(t==='house') houses++; if(t==='shop') shops++; });
+    return {houses, shops};
+  }
+  function tick(){
+    const {houses, shops} = counts();
+    const pop = houses * 4;
+    state.coin += shops * 2 + Math.floor(houses * 0.5);
+    document.getElementById('pop').textContent = pop;
+    document.getElementById('coin').textContent = state.coin;
+    saveState();
+  }
+
+  // --- Menu: inicio / pausa / guardar / cargar / salir ---
+  let tickTimer=null;
+  function startTick(){ if(!tickTimer) tickTimer=setInterval(tick,2000); }
+  function stopTick(){ if(tickTimer){ clearInterval(tickTimer); tickTimer=null; } }
+
+  const menuEl = document.getElementById('menu');
+  const menuPanel = document.getElementById('menuPanel');
+  function showMenu(screen){ menuEl.classList.remove('hidden'); renderMenu(screen); }
+  function hideMenu(){ menuEl.classList.add('hidden'); }
+
+  function doSave(){
+    try{ localStorage.setItem('citybuilder_save', JSON.stringify(state)); toast('guardado','check_circle'); }
+    catch(e){ toast('error al guardar','warning'); }
+  }
+  function doLoad(){
+    try{
+      const raw=localStorage.getItem('citybuilder_save');
+      if(!raw){ toast('sin partida guardada','warning'); return; }
+      state=JSON.parse(raw); rebuildGrid(); saveState();
+      hideMenu(); startTick(); tick(); toast('cargado','check_circle');
+    }catch(e){ toast('error al cargar','warning'); }
+  }
+
+  function renderMenu(screen){
+    if(screen==='start'){
+      menuPanel.innerHTML = `<h2><span class="material-icons">location_city</span>City Builder</h2><p>Prototipo isométrico</p>
+        <button class="menu-btn primary" id="btnPlay"><span class="material-icons">play_arrow</span>Jugar</button>
+        <button class="menu-btn" id="btnLoad"><span class="material-icons">folder_open</span>Cargar partida</button>
+        <button class="menu-btn danger" id="btnExit"><span class="material-icons">power_settings_new</span>Salir</button>`;
+      document.getElementById('btnPlay').onclick=()=>{ hideMenu(); startTick(); tick(); };
+      document.getElementById('btnLoad').onclick=doLoad;
+      document.getElementById('btnExit').onclick=()=>showMenu('exit');
+    }else if(screen==='pause'){
+      menuPanel.innerHTML = `<h2><span class="material-icons">pause</span>Pausa</h2>
+        <button class="menu-btn primary" id="btnResume"><span class="material-icons">play_arrow</span>Continuar</button>
+        <button class="menu-btn" id="btnSave"><span class="material-icons">save</span>Guardar partida</button>
+        <button class="menu-btn" id="btnLoad"><span class="material-icons">folder_open</span>Cargar partida</button>
+        <button class="menu-btn danger" id="btnExit"><span class="material-icons">power_settings_new</span>Salir</button>`;
+      document.getElementById('btnResume').onclick=()=>{ hideMenu(); startTick(); };
+      document.getElementById('btnSave').onclick=doSave;
+      document.getElementById('btnLoad').onclick=doLoad;
+      document.getElementById('btnExit').onclick=()=>showMenu('exit');
+    }else if(screen==='exit'){
+      stopTick();
+      menuPanel.innerHTML = `<h2><span class="material-icons">power_settings_new</span>Desconectado</h2><p>Tu partida se guarda automáticamente. Puedes cerrar esta pestaña.</p>
+        <button class="menu-btn primary" id="btnBack"><span class="material-icons">arrow_back</span>Volver al inicio</button>`;
+      document.getElementById('btnBack').onclick=()=>showMenu('start');
+    }
+  }
+
+  document.getElementById('menuBtn').addEventListener('click', ()=>{ stopTick(); showMenu('pause'); });
+
+  tick();
+  showMenu('start');
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "city-builder-web-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Prototipo web isométrico de City Builder (estética Syndicate 1993)",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "serve": "python3 -m http.server 8080 --directory dist",
+    "test": "python3 tests/smoke_test.py src/index.html",
+    "test:dist": "python3 tests/smoke_test.py dist/index.html"
+  },
+  "engines": { "node": ">=18" }
+}

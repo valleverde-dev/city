@@ -1,0 +1,22 @@
+# Build del prototipo web (lo genera CI)
+web-prototype/dist/
+web-prototype/tests/last-run.png
+*.zip
+
+# Node / Python
+node_modules/
+__pycache__/
+*.pyc
+
+# Godot (cuando arranque el port)
+godot/.godot/
+godot/.import/
+godot/export_presets.cfg
+godot/build/
+*.translation
+
+# Sistema / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
