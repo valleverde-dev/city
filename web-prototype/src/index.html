@@ -614,7 +614,7 @@ const music = {
     return a.canPlayType && a.canPlayType('audio/ogg; codecs="vorbis"') ? 'ogg' : 'm4a'; })(),
   level: 1,
 };
-const TRACKS = { menu:'citybuilder_menu_theme', main:'citybuilder_main_theme' };
+const TRACKS = { menu:'eurocrat_menu', main:'eurocrat_main', win:'eurocrat_win' };
 const MUSIC_VOL = 0.45;
 function loadTrack(name){
   if(music.buffers[name]) return Promise.resolve(music.buffers[name]);
@@ -663,7 +663,7 @@ function syncMusic(){
     music.src = src; music.gain = gain;
   }).catch(()=>{ if(music.playing===name) music.playing=null; });
 }
-// track: 'menu' | 'main'; level: 1 = full, <1 = ducked (pause screen)
+// track: 'menu' | 'main' | 'win'; level: 1 = full, <1 = ducked (pause screen)
 function setMusic(track, level=1){ music.want = track; music.level = level; syncMusic(); }
 function updateMusicBtn(){
   document.querySelector('#musicBtn .material-icons').textContent = music.on ? 'music_note' : 'music_off';
@@ -969,7 +969,7 @@ const OVER = {
 function score(){ return residents() + Math.max(0,Math.round(S.funds))*5 + (S.over&&S.over.win ? (CFG.months+1-S.month)*25 : 0) + S.directivesDone*50; }
 function gameOver(){
   const o = OVER[S.over.why];
-  playSound(S.over.win?'win':'fail'); setMusic('menu');
+  playSound(S.over.win?'win':'fail'); setMusic(S.over.win ? 'win' : 'menu', S.over.win ? 1 : 0.6);
   letter(o.icon, o.title, o.stamp, o.cls, `<p>${o.text()}</p><dl class="kv"><dt>Residents</dt><dd>${residents()}</dd><dt>Month</dt><dd>${Math.min(S.month,CFG.months)}</dd><dt>Funds left</dt><dd>€${fmt(S.funds)}M</dd><dt>Directives met</dt><dd>${S.directivesDone}</dd><dt>Score</dt><dd>${score()}</dd></dl>`,
     [btn('New programme','replay', ()=>{ startNew(); }, true), btn('Look at the map','map', ()=>{ hideModal(); refresh(); })]);
 }

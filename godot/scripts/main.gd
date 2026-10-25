@@ -4,8 +4,9 @@ extends Node
 const MUSIC_VOLUME := 0.45  # linear, 0..1
 const PAUSE_DUCK := 0.4  # music level on the pause screen
 const EXIT_LEVEL := 0.6  # music level on the exit screen
-const MENU_THEME: AudioStream = preload("res://audio/citybuilder_menu_theme.ogg")
-const MAIN_THEME: AudioStream = preload("res://audio/citybuilder_main_theme.ogg")
+const MENU_THEME: AudioStream = preload("res://audio/eurocrat_menu.ogg")  # Ode to Joy, Eurodance mix
+const MAIN_THEME: AudioStream = preload("res://audio/eurocrat_main.ogg")  # ambient hold music
+const WIN_THEME: AudioStream = preload("res://audio/eurocrat_win.ogg")  # Eurovision-style, for the v0.2 win screen
 
 ## Save files live in user:// (the app's private data folder).
 ## They are vars so tests can point them somewhere else.

@@ -17,7 +17,7 @@ Target: Godot 4.4+ (tested with 4.7.2), Mobile renderer, 2D only. Compatible wit
 - HUD on top (title, population, coins, Rotate, Menu), toolbar at the bottom, safe areas respected.
 - Start menu (Play / Load game / Exit), pause menu (Resume / Save game / Load game / Exit).
 - Autosave to `user://autosave.json` (every action and tick, and when the app goes to the background) plus manual save to `user://savegame.json`. Same JSON as the web: `{ "grid": [100 strings], "coin": int }`.
-- Music: menu theme on menus, main theme in game (ducked on pause), looped.
+- Music: menu theme (Ode to Joy, Eurodance mix) on menus, ambient main theme in game (ducked on pause), looped. `WIN_THEME` is loaded for the v0.2 inauguration screen.
 
 Not ported (yet): the music on/off toggle and the click/build sounds of the web version. Fonts are Godot's default (no font files are fetched at runtime).
 
@@ -36,7 +36,7 @@ godot/
 │   ├── palette.gd         # colors shared by everything
 │   └── main.gd            # glue: timer, feedback, menus, music
 ├── theme/terminal_theme.tres  # square corners, neon borders (edit it in the Inspector)
-├── audio/                 # the two OGG tracks (Loop enabled in Import)
+├── audio/                 # the three OGG tracks (Loop enabled in Import)
 └── tests/                 # headless tests
 ```
 
