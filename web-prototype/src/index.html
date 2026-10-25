@@ -83,7 +83,8 @@
   .tile[data-t="shop"]{background:var(--shop);}
   .tile[data-t="park"]{background:var(--park);}
   #hint{
-    position:absolute; top:50px; left:0; right:0; text-align:center; font-size:11px;
+    position:fixed; top:calc(env(safe-area-inset-top,0px) + var(--hud-h,48px) + 14px);
+    left:0; right:0; z-index:5; text-align:center; font-size:11px;
     color:var(--sub); pointer-events:none; text-transform:uppercase; letter-spacing:.06em;
   }
   .float-txt{
@@ -263,7 +264,7 @@
       playSound('build'); floatText(cx,cy, cost ? ('-'+cost) : 'ok', 'add_circle');
     }
     saveState();
-    tick();
+    updateHUD();
   }
 
   // --- Zoom (pinch gesture / mouse wheel) — no gesture panning or rotation ---
@@ -328,12 +329,17 @@
     state.grid.forEach(t=>{ if(t==='house') houses++; if(t==='shop') shops++; });
     return {houses, shops};
   }
+  // Refresh the HUD only. Income is granted exclusively by the timed tick,
+  // so player actions (build, demolish, menus) can never generate coins.
+  function updateHUD(){
+    const {houses} = counts();
+    document.getElementById('pop').textContent = houses * 4;
+    document.getElementById('coin').textContent = state.coin;
+  }
   function tick(){
     const {houses, shops} = counts();
-    const pop = houses * 4;
     state.coin += shops * 2 + Math.floor(houses * 0.5);
-    document.getElementById('pop').textContent = pop;
-    document.getElementById('coin').textContent = state.coin;
+    updateHUD();
     saveState();
   }
 
@@ -356,7 +362,7 @@
       const raw=localStorage.getItem('citybuilder_save');
       if(!raw){ toast('no saved game','warning'); return; }
       state=JSON.parse(raw); rebuildGrid(); saveState();
-      hideMenu(); startTick(); tick(); toast('loaded','check_circle');
+      hideMenu(); startTick(); updateHUD(); toast('loaded','check_circle');
     }catch(e){ toast('load failed','warning'); }
   }
 
@@ -366,7 +372,7 @@
         <button class="menu-btn primary" id="btnPlay"><span class="material-icons">play_arrow</span>Play</button>
         <button class="menu-btn" id="btnLoad"><span class="material-icons">folder_open</span>Load game</button>
         <button class="menu-btn danger" id="btnExit"><span class="material-icons">power_settings_new</span>Exit</button>`;
-      document.getElementById('btnPlay').onclick=()=>{ hideMenu(); startTick(); tick(); };
+      document.getElementById('btnPlay').onclick=()=>{ hideMenu(); startTick(); };
       document.getElementById('btnLoad').onclick=doLoad;
       document.getElementById('btnExit').onclick=()=>showMenu('exit');
     }else if(screen==='pause'){
@@ -389,7 +395,14 @@
 
   document.getElementById('menuBtn').addEventListener('click', ()=>{ stopTick(); showMenu('pause'); });
 
-  tick();
+  // Keep the hint below the HUD: expose the HUD height as a CSS variable
+  const hudEl = document.getElementById('hud');
+  function syncHudHeight(){ document.documentElement.style.setProperty('--hud-h', hudEl.offsetHeight+'px'); }
+  syncHudHeight();
+  if(window.ResizeObserver) new ResizeObserver(syncHudHeight).observe(hudEl);
+  addEventListener('resize', syncHudHeight);
+
+  updateHUD();
   showMenu('start');
 })();
 </script>

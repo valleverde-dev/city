@@ -8,14 +8,15 @@ Isometric city builder with a first playable prototype already running (web, Syn
 
 ## Current status — v0.1.0 (Oct 25, 2026)
 
-- Web prototype verified with an automated smoke test (18/18 checks: build, demolish, adjacency, funds, rotation, pause, save/load, tick, persistence).
+- Web prototype verified with an automated smoke test (21 checks: build, demolish, adjacency, funds, rotation, pause, save/load, tick, persistence, coin-exploit regression, hint layout on iPad/iPhone).
 - Installable PWA build for iPad/iPhone ("Add to Home Screen"), with offline mode.
 - CI on GitHub Actions: build + test + deploy to GitHub Pages on every push to `main` → https://valleverde-dev.github.io/city/
 - Game, code and docs in English.
 
 **Known bugs**
 
-- [ ] **Coin exploit:** every tap on a tile calls `tick()`, so repeatedly tapping with "Demolish" (cost 0) generates unlimited income. Fix: in `handleBuild`, refresh only the HUD instead of running a tick.
+- [x] **Coin exploit** (fixed Oct 25): taps used to run `tick()`, so repeatedly tapping "Demolish" (cost 0) generated unlimited income. Income now comes only from the timed tick; actions just refresh the HUD.
+- [x] **Hint overlapped by the HUD** (fixed Oct 25): "Tap to build" now sits below the top bar whatever its height (safe area, two-line HUD on iPhone).
 - [ ] Fonts (Orbitron, Share Tech Mono, Material Icons) load from Google Fonts, so the first load needs a connection. Consider bundling them in `public/fonts/`.
 
 ## Mechanics

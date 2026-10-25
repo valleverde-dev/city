@@ -77,6 +77,24 @@ with sync_playwright() as p:
     tile(5, 6).click(force=True)
     check(tile(5, 6).get_attribute("data-t") == "grass", "demolish turns the tile back to grass")
 
+    # Regression: tapping must never generate coins (old exploit: demolish on grass = free tick)
+    # No houses or shops right now, so the timed tick also adds 0.
+    c_before = int(page.inner_text("#coin"))
+    for _ in range(30):
+        tile(0, 0).click(force=True)
+    check(int(page.inner_text("#coin")) == c_before, "tapping 'Demolish' repeatedly gives no coins")
+
+    # Hint text sits below the HUD (not covered by it)
+    hud_bottom = page.evaluate("document.getElementById('hud').getBoundingClientRect().bottom")
+    hint_top = page.evaluate("document.getElementById('hint').getBoundingClientRect().top")
+    check(hint_top >= hud_bottom + 8, f"hint below the HUD on iPad (hud {hud_bottom:.0f}px, hint {hint_top:.0f}px)")
+    page.set_viewport_size({"width": 390, "height": 844})  # iPhone: the HUD wraps to two lines
+    page.wait_for_timeout(100)
+    hud_bottom = page.evaluate("document.getElementById('hud').getBoundingClientRect().bottom")
+    hint_top = page.evaluate("document.getElementById('hint').getBoundingClientRect().top")
+    check(hint_top >= hud_bottom + 8, f"hint below the HUD on iPhone (hud {hud_bottom:.0f}px, hint {hint_top:.0f}px)")
+    page.set_viewport_size({"width": 1180, "height": 820})
+
     # Rotate view
     before = tile(0, 0).get_attribute("style")
     page.click("#rotateBtn")
