@@ -1,5 +1,5 @@
-// Build del prototipo web: src/ + public/ -> dist/
-// Sin dependencias: solo Node 18+.  Uso: node scripts/build.mjs
+// Web prototype build: src/ + public/ -> dist/
+// No dependencies: Node 18+ only.  Usage: node scripts/build.mjs
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
@@ -20,7 +20,7 @@ rmSync(dist, { recursive: true, force: true });
 mkdirSync(dist, { recursive: true });
 cpSync(pub, dist, { recursive: true });
 
-// index.html + etiquetas PWA para iPad/iPhone
+// index.html + PWA tags for iPad/iPhone
 const head = [
   '<link rel="manifest" href="manifest.webmanifest">',
   '<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">',
@@ -34,7 +34,7 @@ const head = [
 const swReg = `<script>if('serviceWorker' in navigator && location.protocol!=='file:'){addEventListener('load',()=>navigator.serviceWorker.register('sw.js'));}</script>`;
 
 let html = readFileSync(join(src, 'index.html'), 'utf8');
-if (!html.includes('</head>') || !html.includes('</body>')) throw new Error('index.html sin </head> o </body>');
+if (!html.includes('</head>') || !html.includes('</body>')) throw new Error('index.html is missing </head> or </body>');
 html = html.replace('</head>', `${head}\n</head>`).replace('</body>', `${swReg}\n</body>`);
 writeFileSync(join(dist, 'index.html'), html);
 

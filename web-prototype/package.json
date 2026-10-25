@@ -2,7 +2,7 @@
   "name": "city-builder-web-prototype",
   "version": "0.1.0",
   "private": true,
-  "description": "Prototipo web isométrico de City Builder (estética Syndicate 1993)",
+  "description": "Isometric City Builder web prototype (Syndicate 1993 aesthetic)",
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",

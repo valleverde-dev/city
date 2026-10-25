@@ -1,5 +1,5 @@
-// Service worker: permite jugar sin conexión una vez cargado.
-// __BUILD_ID__ lo sustituye el script de build para invalidar la caché en cada versión.
+// Service worker: lets the game run offline once loaded.
+// __BUILD_ID__ is replaced by the build script so each release gets a fresh cache.
 const CACHE = 'citybuilder-__BUILD_ID__';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 
@@ -15,7 +15,7 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Caché primero para el juego; red con respaldo en caché para las fuentes de Google.
+// Cache-first for the game; network with cache fallback for Google Fonts.
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   e.respondWith(

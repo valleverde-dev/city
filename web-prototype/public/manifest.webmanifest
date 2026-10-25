@@ -1,8 +1,8 @@
 {
   "name": "City Builder",
   "short_name": "CityBuilder",
-  "description": "Prototipo de city builder isométrico (estética Syndicate 1993)",
-  "lang": "es",
+  "description": "Isometric city builder prototype (Syndicate 1993 aesthetic)",
+  "lang": "en",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",

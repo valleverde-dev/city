@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
@@ -134,7 +134,7 @@
     <button class="hud-btn" id="menuBtn"><span class="material-icons">menu</span></button>
   </div>
 </div>
-<div id="hint">Toca para construir · pellizca para zoom</div>
+<div id="hint">Tap to build · pinch to zoom</div>
 <div id="world"><div id="viewport"><div id="grid"></div></div></div>
 <div id="tools"></div>
 <div id="menu"><div class="menu-panel" id="menuPanel"></div></div>
@@ -144,11 +144,11 @@
   const N = 10;
   const TW = 64, TH = 32;
   const types = [
-    {id:'grass', label:'Demoler', icon:'delete', color:'var(--danger)', cost:0},
-    {id:'road',  label:'Calle',   icon:'add_road', color:'var(--road)', cost:1},
-    {id:'house', label:'Casa',    icon:'home', color:'var(--house)', cost:5},
-    {id:'shop',  label:'Tienda',  icon:'store', color:'var(--shop)', cost:10},
-    {id:'park',  label:'Parque',  icon:'park', color:'var(--park)', cost:3},
+    {id:'grass', label:'Demolish', icon:'delete', color:'var(--danger)', cost:0},
+    {id:'road',  label:'Road',    icon:'add_road', color:'var(--road)', cost:1},
+    {id:'house', label:'House',   icon:'home', color:'var(--house)', cost:5},
+    {id:'shop',  label:'Shop',    icon:'store', color:'var(--shop)', cost:10},
+    {id:'park',  label:'Park',    icon:'park', color:'var(--park)', cost:3},
   ];
   const costMap = Object.fromEntries(types.map(t=>[t.id, t.cost]));
   let current = 'road';
@@ -251,14 +251,14 @@
     const r = +el.dataset.r, c = +el.dataset.c, i = r*N+c;
     const cost = costMap[current]||0;
     if(current!=='grass' && current!=='road' && !hasAdjacentRoad(r,c)){
-      playSound('fail'); flash(el); floatText(cx,cy,'sin calle cerca','block'); return;
+      playSound('fail'); flash(el); floatText(cx,cy,'no road nearby','block'); return;
     }
-    if(state.coin < cost){ playSound('fail'); flash(el); floatText(cx,cy,'sin fondos','money_off'); return; }
+    if(state.coin < cost){ playSound('fail'); flash(el); floatText(cx,cy,'no funds','money_off'); return; }
     state.coin -= cost;
     state.grid[i] = current;
     el.dataset.t = current;
     if(current==='grass'){
-      playSound('demolish'); floatText(cx,cy,'demolido','delete');
+      playSound('demolish'); floatText(cx,cy,'demolished','delete');
     }else{
       playSound('build'); floatText(cx,cy, cost ? ('-'+cost) : 'ok', 'add_circle');
     }
@@ -266,7 +266,7 @@
     tick();
   }
 
-  // --- Zoom (gesto de pellizco / rueda) — sin paneo ni giro por gesto ---
+  // --- Zoom (pinch gesture / mouse wheel) — no gesture panning or rotation ---
   const worldEl = document.getElementById('world');
   const viewportEl = document.getElementById('viewport');
   let scale=1;
@@ -337,7 +337,7 @@
     saveState();
   }
 
-  // --- Menu: inicio / pausa / guardar / cargar / salir ---
+  // --- Menu: start / pause / save / load / exit ---
   let tickTimer=null;
   function startTick(){ if(!tickTimer) tickTimer=setInterval(tick,2000); }
   function stopTick(){ if(tickTimer){ clearInterval(tickTimer); tickTimer=null; } }
@@ -348,41 +348,41 @@
   function hideMenu(){ menuEl.classList.add('hidden'); }
 
   function doSave(){
-    try{ localStorage.setItem('citybuilder_save', JSON.stringify(state)); toast('guardado','check_circle'); }
-    catch(e){ toast('error al guardar','warning'); }
+    try{ localStorage.setItem('citybuilder_save', JSON.stringify(state)); toast('saved','check_circle'); }
+    catch(e){ toast('save failed','warning'); }
   }
   function doLoad(){
     try{
       const raw=localStorage.getItem('citybuilder_save');
-      if(!raw){ toast('sin partida guardada','warning'); return; }
+      if(!raw){ toast('no saved game','warning'); return; }
       state=JSON.parse(raw); rebuildGrid(); saveState();
-      hideMenu(); startTick(); tick(); toast('cargado','check_circle');
-    }catch(e){ toast('error al cargar','warning'); }
+      hideMenu(); startTick(); tick(); toast('loaded','check_circle');
+    }catch(e){ toast('load failed','warning'); }
   }
 
   function renderMenu(screen){
     if(screen==='start'){
-      menuPanel.innerHTML = `<h2><span class="material-icons">location_city</span>City Builder</h2><p>Prototipo isométrico</p>
-        <button class="menu-btn primary" id="btnPlay"><span class="material-icons">play_arrow</span>Jugar</button>
-        <button class="menu-btn" id="btnLoad"><span class="material-icons">folder_open</span>Cargar partida</button>
-        <button class="menu-btn danger" id="btnExit"><span class="material-icons">power_settings_new</span>Salir</button>`;
+      menuPanel.innerHTML = `<h2><span class="material-icons">location_city</span>City Builder</h2><p>Isometric prototype</p>
+        <button class="menu-btn primary" id="btnPlay"><span class="material-icons">play_arrow</span>Play</button>
+        <button class="menu-btn" id="btnLoad"><span class="material-icons">folder_open</span>Load game</button>
+        <button class="menu-btn danger" id="btnExit"><span class="material-icons">power_settings_new</span>Exit</button>`;
       document.getElementById('btnPlay').onclick=()=>{ hideMenu(); startTick(); tick(); };
       document.getElementById('btnLoad').onclick=doLoad;
       document.getElementById('btnExit').onclick=()=>showMenu('exit');
     }else if(screen==='pause'){
-      menuPanel.innerHTML = `<h2><span class="material-icons">pause</span>Pausa</h2>
-        <button class="menu-btn primary" id="btnResume"><span class="material-icons">play_arrow</span>Continuar</button>
-        <button class="menu-btn" id="btnSave"><span class="material-icons">save</span>Guardar partida</button>
-        <button class="menu-btn" id="btnLoad"><span class="material-icons">folder_open</span>Cargar partida</button>
-        <button class="menu-btn danger" id="btnExit"><span class="material-icons">power_settings_new</span>Salir</button>`;
+      menuPanel.innerHTML = `<h2><span class="material-icons">pause</span>Paused</h2>
+        <button class="menu-btn primary" id="btnResume"><span class="material-icons">play_arrow</span>Resume</button>
+        <button class="menu-btn" id="btnSave"><span class="material-icons">save</span>Save game</button>
+        <button class="menu-btn" id="btnLoad"><span class="material-icons">folder_open</span>Load game</button>
+        <button class="menu-btn danger" id="btnExit"><span class="material-icons">power_settings_new</span>Exit</button>`;
       document.getElementById('btnResume').onclick=()=>{ hideMenu(); startTick(); };
       document.getElementById('btnSave').onclick=doSave;
       document.getElementById('btnLoad').onclick=doLoad;
       document.getElementById('btnExit').onclick=()=>showMenu('exit');
     }else if(screen==='exit'){
       stopTick();
-      menuPanel.innerHTML = `<h2><span class="material-icons">power_settings_new</span>Desconectado</h2><p>Tu partida se guarda automáticamente. Puedes cerrar esta pestaña.</p>
-        <button class="menu-btn primary" id="btnBack"><span class="material-icons">arrow_back</span>Volver al inicio</button>`;
+      menuPanel.innerHTML = `<h2><span class="material-icons">power_settings_new</span>Disconnected</h2><p>Your game is saved automatically. You can close this tab.</p>
+        <button class="menu-btn primary" id="btnBack"><span class="material-icons">arrow_back</span>Back to start</button>`;
       document.getElementById('btnBack').onclick=()=>showMenu('start');
     }
   }

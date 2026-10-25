@@ -1,41 +1,43 @@
 # City Builder
 
-City builder isométrico con estética de terminal corporativo (Syndicate, 1993). Prototipo web jugable en iPad, iPhone y escritorio; port previsto a Godot para App Store y Steam.
+Isometric city builder with a corporate-terminal look (Syndicate, 1993). Web prototype playable on iPad, iPhone and desktop; a Godot port is planned for the App Store and Steam.
 
-Plan y estado: [ROADMAP.md](ROADMAP.md)
+Plan and status: [ROADMAP.md](ROADMAP.md)
 
-## Estructura
+**Play it:** https://valleverde-dev.github.io/city/
+
+## Structure
 
 ```
 .
-├── ROADMAP.md                  documento vivo del proyecto
+├── ROADMAP.md                  living project document
 ├── web-prototype/
-│   ├── src/index.html          el juego (un único HTML autocontenido)
-│   ├── public/                 manifest PWA, service worker, iconos
-│   ├── scripts/build.mjs       build src + public → dist (sin dependencias)
-│   ├── tests/smoke_test.py     test automático en Chromium (Playwright)
+│   ├── src/index.html          the game (a single self-contained HTML file)
+│   ├── public/                 PWA manifest, service worker, icons
+│   ├── scripts/build.mjs       build src + public → dist (no dependencies)
+│   ├── tests/smoke_test.py     automated test in Chromium (Playwright)
 │   └── package.json
-├── godot/                      port a Godot (fase 4)
+├── godot/                      Godot port (phase 4)
 └── .github/workflows/          CI: build + test + GitHub Pages
 ```
 
-## Prototipo web
+## Web prototype
 
 ```bash
 cd web-prototype
-npm run build        # genera dist/
+npm run build        # generates dist/
 npm run serve        # http://localhost:8080
-npm test             # smoke test sobre src/ (requiere: pip install playwright && python -m playwright install chromium)
+npm test             # smoke test against src/ (requires: pip install playwright && python -m playwright install chromium)
 ```
 
-Para iterar basta con abrir `web-prototype/src/index.html` en el navegador. El build añade lo necesario para instalarlo como app (PWA) y jugar offline.
+To iterate, just open `web-prototype/src/index.html` in a browser. The build adds what's needed to install it as an app (PWA) and play offline.
 
-### Jugar en el iPad
+### Playing on iPad
 
-Con GitHub Pages activado (Settings → Pages → Source: *GitHub Actions*), cada push a `main` publica el build en `https://<usuario>.github.io/<repo>/`. En Safari: Compartir → *Añadir a pantalla de inicio* para abrirlo a pantalla completa como una app.
+Every push to `main` publishes the build to GitHub Pages. In Safari, open the link above, then Share → *Add to Home Screen* to launch it full-screen like an app.
 
-## Controles
+## Controls
 
-- Toca una casilla para construir con la herramienta activa (calle, casa, tienda, parque) o demoler.
-- Casas, tiendas y parques necesitan una calle adyacente.
-- Pellizco o rueda del ratón: zoom. Botón ⟳: rotar la vista. Menú: pausa, guardar, cargar.
+- Tap a tile to build with the active tool (road, house, shop, park) or demolish.
+- Houses, shops and parks need an adjacent road.
+- Pinch or mouse wheel: zoom. ⟳ button: rotate the view. Menu: pause, save, load.

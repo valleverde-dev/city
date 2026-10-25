@@ -1,95 +1,96 @@
 # Roadmap — CityBuilder
 
-Documento vivo del proyecto · actualízalo a medida que avanza el prototipo.
+Living project document · update it as the prototype evolves.
 
-## Visión general
+## Overview
 
-City builder isométrico, con un primer prototipo jugable ya en marcha (web, estética tipo Syndicate 1993). El plan: validar mecánicas en el prototipo web/iPad, consolidar el game design, y portar a Godot para publicar en App Store y Steam.
+Isometric city builder with a first playable prototype already running (web, Syndicate 1993-style aesthetic). The plan: validate mechanics in the web/iPad prototype, consolidate the game design, and port to Godot to ship on the App Store and Steam.
 
-## Estado actual — v0.1.0 (25-oct-2026)
+## Current status — v0.1.0 (Oct 25, 2026)
 
-- Prototipo web verificado con smoke test automático (18/18 comprobaciones: construir, demoler, adyacencia, fondos, rotación, pausa, guardar/cargar, tick, persistencia).
-- Build PWA instalable en iPad/iPhone ("Añadir a pantalla de inicio"), con modo offline.
-- CI en GitHub Actions: build + test + despliegue a GitHub Pages en cada push a `main`.
+- Web prototype verified with an automated smoke test (18/18 checks: build, demolish, adjacency, funds, rotation, pause, save/load, tick, persistence).
+- Installable PWA build for iPad/iPhone ("Add to Home Screen"), with offline mode.
+- CI on GitHub Actions: build + test + deploy to GitHub Pages on every push to `main` → https://valleverde-dev.github.io/city/
+- Game, code and docs in English.
 
-**Bugs conocidos**
+**Known bugs**
 
-- [ ] **Exploit de monedas:** cada toque en una casilla llama a `tick()`, así que tocar repetidamente con "Demoler" (coste 0) genera ingresos infinitos. Arreglo: en `handleBuild` refrescar solo el HUD en vez de ejecutar un tick.
-- [ ] Las fuentes (Orbitron, Share Tech Mono, Material Icons) se cargan de Google Fonts: la primera carga necesita conexión. Valorar empaquetarlas en `public/fonts/`.
+- [ ] **Coin exploit:** every tap on a tile calls `tick()`, so repeatedly tapping with "Demolish" (cost 0) generates unlimited income. Fix: in `handleBuild`, refresh only the HUD instead of running a tick.
+- [ ] Fonts (Orbitron, Share Tech Mono, Material Icons) load from Google Fonts, so the first load needs a connection. Consider bundling them in `public/fonts/`.
 
-## Mecánicas
+## Mechanics
 
 ### Game loop
 
-- **Bucle corto (ya prototipado):** tocar casilla → construir/demoler → coste en monedas → tick de simulación → población e ingresos suben.
-- **Bucle medio (por definir):** gestionar recursos más allá de monedas (energía, agua, seguridad — temática corporativa/distópica encaja con Syndicate), equilibrar gasto vs ingreso, desbloquear nuevos tipos de edificio según hitos.
-- **Bucle largo (por definir):** progresión entre partidas o "eras" de la ciudad, prestigio/reinicio, o modo sandbox sin fin.
-- **Pregunta abierta:** ¿un solo bucle sandbox, o capas de dificultad/campaña encima?
+- **Short loop (already prototyped):** tap a tile → build/demolish → coin cost → simulation tick → population and income go up.
+- **Mid loop (TBD):** manage resources beyond coins (power, water, security — a corporate/dystopian theme fits Syndicate), balance spending vs. income, unlock new building types at milestones.
+- **Long loop (TBD):** progression across games or city "eras", prestige/reset, or an endless sandbox mode.
+- **Open question:** a single sandbox loop, or difficulty/campaign layers on top?
 
-### Objetivos
+### Goals
 
-- **Corto plazo:** hitos tipo "alcanza X población", "construye tu primera manzana".
-- **Medio plazo:** desbloqueo de edificios/mecánicas nuevas (p. ej. distrito industrial, corporación rival).
-- **Largo plazo:** condición de "victoria" en modo campaña (ciudad autosuficiente, dominancia económica) vs modo sandbox sin objetivo final.
+- **Short term:** milestones like "reach X population", "build your first block".
+- **Mid term:** unlock new buildings/mechanics (e.g. industrial district, rival corporation).
+- **Long term:** a "victory" condition in campaign mode (self-sufficient city, economic dominance) vs. a sandbox mode with no end goal.
 
-### Misiones
+### Missions
 
-- Tutorial guiado (ya hay base: pantalla de inicio, herramientas, coste/adyacencia).
-- Contratos/encargos tipo Syndicate: misiones cortas generadas ("construye 5 tiendas en X turnos", "mantén el descontento bajo Y").
-- Posible hilo narrativo corporativo si se quiere dar más identidad al juego (encaja con la estética ya elegida).
+- Guided tutorial (the groundwork is there: start screen, tools, cost/adjacency).
+- Syndicate-style contracts: short generated missions ("build 5 shops in X turns", "keep unrest below Y").
+- A possible corporate storyline to give the game more identity (fits the chosen aesthetic).
 
 ### Game over
 
-- **Modo sandbox:** sin game over, solo progresión libre.
-- **Modo escenario/campaña:** condiciones de derrota (bancarrota, disturbios/descontento, límite de tiempo no cumplido).
-- **Recomendación:** empezar sin game over (sandbox) para validar el loop, añadir condiciones de fallo cuando haya un modo campaña definido.
+- **Sandbox mode:** no game over, just free progression.
+- **Scenario/campaign mode:** lose conditions (bankruptcy, riots/unrest, missed time limit).
+- **Recommendation:** start without game over (sandbox) to validate the loop; add fail conditions once a campaign mode is defined.
 
 ## Assets
 
-### Gráficos
+### Graphics
 
-- Definir pipeline de arte: tiles isométricos dibujados a mano vs generados, tamaño de tile base (el prototipo usa 64×32 px).
-- Decidir si se mantiene estilo plano/vectorial (como el prototipo) o se pasa a pixel art/sprites más detallados al portar a Godot.
+- Define the art pipeline: hand-drawn vs. generated isometric tiles, base tile size (the prototype uses 64×32 px).
+- Decide whether to keep the flat/vector style (as in the prototype) or move to pixel art/more detailed sprites when porting to Godot.
 
-### Dirección de arte
+### Art direction
 
-- Ya establecida en el prototipo: estética Syndicate (1993) — paleta oscura casi negra, acentos neón (cian, rojo de alerta, ámbar, verde ácido), tipografía Orbitron/Share Tech Mono, UI de "terminal corporativo" con textura CRT.
-- Recomendación: documentar esto como guía de estilo (moodboard + paleta + tipografías) para mantener consistencia al escalar assets.
+- Already established in the prototype: Syndicate (1993) aesthetic — near-black dark palette, neon accents (cyan, alert red, amber, acid green), Orbitron/Share Tech Mono typography, "corporate terminal" UI with a CRT texture.
+- Recommendation: document this as a style guide (moodboard + palette + typefaces) to keep assets consistent as they scale.
 
-### Música
+### Music
 
-- Estilo sugerido: synthwave/darksynth, coherente con la estética ya elegida.
-- Opciones: herramientas de generación por IA, librerías de música libre de derechos, o composición encargada más adelante.
-- Abierto a usar otras IAs (Gemini, ChatGPT, Atlas) también para generación de assets 3D cuando el proyecto lo requiera.
+- Suggested style: synthwave/darksynth, consistent with the chosen aesthetic.
+- Options: AI generation tools, royalty-free music libraries, or commissioned music later on.
+- Open to using other AIs (Gemini, ChatGPT, Atlas) for 3D asset generation too when the project needs it.
 
 ## Exports
 
 ### Godot
 
-- **Momento de portar:** una vez el game loop esté validado en el prototipo web (evitar portar demasiado pronto y tener que rehacer diseño).
-- **Qué migra directamente:** lógica de grid, costes/adyacencia, estructura de estado (ya en JSON, fácil de llevar a GDScript/Resources de Godot).
-- **Motivo de elegir Godot:** exporta nativamente a iOS y a escritorio (Windows/Mac/Linux) para Steam, y es más ligero para iterar en solitario que Unity.
+- **When to port:** once the game loop is validated in the web prototype (avoid porting too early and having to redo the design).
+- **What carries over directly:** grid logic, costs/adjacency, state structure (already JSON, easy to move to GDScript/Godot Resources).
+- **Why Godot:** native export to iOS and desktop (Windows/Mac/Linux) for Steam, and lighter than Unity for solo iteration.
 
 ### GitHub
 
-- Repositorio con `/web-prototype` (versión actual), `/godot` (port, cuando arranque) y este `ROADMAP.md` como referencia viva. ✅
+- Repository with `/web-prototype` (current version), `/godot` (port, once it starts) and this `ROADMAP.md` as a living reference. ✅ https://github.com/valleverde-dev/city
 
-## Producción
+## Production
 
 ### App Store
 
-- Cuenta de desarrollador Apple (99 USD/año).
-- Aunque el desarrollo se haga desde el iPad, el envío final a la App Store requiere Xcode, que solo corre en Mac. Opciones para no depender de comprar un Mac de inmediato: servicios de Mac en la nube (MacStadium, etc.), runners macOS de CI/CD (GitHub Actions, Codemagic) que compilan y firman el build de iOS automáticamente, o pedir prestado/alquilar un Mac solo para el paso de publicación.
+- Apple Developer account (USD 99/year).
+- Even if the game is developed on the iPad, the final App Store submission requires Xcode, which only runs on a Mac. Options that avoid buying a Mac right away: cloud Mac services (MacStadium, etc.), macOS CI/CD runners (GitHub Actions, Codemagic) that build and sign the iOS build automatically, or borrowing/renting a Mac just for the publishing step.
 
 ### Steam
 
-- Cuenta de Steamworks (100 USD, reembolsable).
-- Build de escritorio generado directamente desde Godot (Windows/Mac/Linux) — sin la limitación de Xcode que sí aplica a iOS.
+- Steamworks account (USD 100, recoupable).
+- Desktop build generated directly from Godot (Windows/Mac/Linux) — without the Xcode limitation that applies to iOS.
 
-## Fases sugeridas
+## Suggested phases
 
-1. **Prototipo web (actual):** validar game loop, mecánicas de coste/adyacencia, estética.
-2. **Diseño de mecánicas:** cerrar objetivos, misiones y condición de game over.
-3. **Producción de assets:** consolidar guía de estilo, música, posibles assets 3D.
-4. **Port a Godot:** migrar lógica y UI, repositorio en GitHub ya activo.
-5. **Producción:** preparar builds para Steam (directo) y App Store (resolver el paso de Xcode/Mac).
+1. **Web prototype (current):** validate the game loop, cost/adjacency mechanics, aesthetic.
+2. **Mechanics design:** settle goals, missions and the game-over condition.
+3. **Asset production:** consolidate the style guide, music, possible 3D assets.
+4. **Godot port:** migrate logic and UI, with the GitHub repository already active.
+5. **Production:** prepare builds for Steam (direct) and the App Store (solve the Xcode/Mac step).

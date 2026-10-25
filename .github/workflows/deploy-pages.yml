@@ -1,5 +1,5 @@
-# Build + test del prototipo web y publicación en GitHub Pages en cada push a main.
-# Activa Pages en el repo: Settings → Pages → Source: "GitHub Actions".
+# Build + test the web prototype and publish it to GitHub Pages on every push to main.
+# Enable Pages in the repo: Settings → Pages → Source: "GitHub Actions".
 name: Web prototype
 
 on:
@@ -33,13 +33,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Instalar Playwright
+      - name: Install Playwright
         run: |
           pip install playwright
           python -m playwright install --with-deps chromium
       - name: Build
         run: npm run build
-      - name: Smoke test (build)
+      - name: Smoke test (build output)
         run: npm run test:dist
       - uses: actions/upload-pages-artifact@v3
         with:

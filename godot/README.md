@@ -1,9 +1,9 @@
 # /godot
 
-Reservado para el port a Godot (fase 4 del [ROADMAP](../ROADMAP.md)).
+Reserved for the Godot port (phase 4 of the [ROADMAP](../ROADMAP.md)).
 
-Se arranca cuando el game loop esté validado en `/web-prototype`. Lo que migra directamente:
+It starts once the game loop is validated in `/web-prototype`. What carries over directly:
 
-- Lógica de grid isométrico (10×10, tile 64×32 px) y rotación de vista.
-- Tabla de costes y regla de adyacencia a calle.
-- Estado de partida en JSON (`{ grid: string[], coin: number }`) → `Resource` / `FileAccess` en GDScript.
+- Isometric grid logic (10×10, 64×32 px tiles) and view rotation.
+- Cost table and the adjacent-road rule.
+- Save state in JSON (`{ grid: string[], coin: number }`) → `Resource` / `FileAccess` in GDScript.
