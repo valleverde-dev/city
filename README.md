@@ -9,16 +9,18 @@ Web prototype playable on iPad, iPhone and desktop; a Godot port is planned for 
 - Game design: [docs/GDD.md](docs/GDD.md)
 - Plan and status: [ROADMAP.md](ROADMAP.md)
 
-## How to play (v0.2)
+## How to play (v0.3)
 
 - Each turn is **one month**; you get **3 agenda slots** per month. Press **End month** when you're done.
-- **Tap a parcel** to see what you can (not) do: buy it, request a permit (it needs a road next to it), follow its construction.
-- Buildings go through *acquire → permit review → contractor queue → construction*. Permits can be rejected.
-- People only move in if there are **homes, jobs, school places and health care** — the panel tells you which one is holding growth back.
-- Keep the **mayor** (local support), the **neighbours** and the **Commission** (compliance) happy enough. Spend at least 20% of the grant by month 12 and 50% by month 24, or the shortfall is taken back.
-- Complete **directives** for a perk (pick 1 of 3). Fail two and the programme is suspended.
-- **Win:** 600 registered residents before month 36. **Lose:** bankruptcy, audit, annulled plan, two failed directives, or time out.
-- Pinch or mouse wheel to zoom; ⟳ button to rotate the view. Your game is saved automatically.
+- **Tap a parcel** to see what you can (not) do. A road on any of the 8 neighbouring parcels (diagonals too) gives access.
+- Farmland is **rustic**: only roads and parks. Submit an **urban plan** to rezone what you own — then build homes, factories, schools and health centres, or **sell plots to developers** (they pay you and build housing at their own pace).
+- Buildings go through *permit review → contractor queue → construction*. Permits can be rejected.
+- People only move in if there are **homes, jobs, school places and health care**.
+- Every crisis is a **card**: a character tells you what happened and you choose how to respond.
+- **What needs attention** (top of the panel) lists your problems; tap one to find it on the map. Tap a meter to see why it moved.
+- Spend 20% of the grant by month 12 and 50% by month 24, or half the shortfall is taken back. Out of money? The bank lends — with interest, and only up to a limit.
+- **Win:** 700 registered residents before month 36. **Lose:** debt over the bank's limit, audit, annulled plan, two failed directives, or time out.
+- **Language:** English / Español (button in the top bar or the menus).
 
 ## Structure
 

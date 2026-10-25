@@ -13,6 +13,7 @@
     color-scheme: light;
   }
   *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
   html,body{height:100%;}
   body{
     margin:0; background:var(--bg); color:var(--ink);
@@ -39,23 +40,36 @@
   .stat{display:flex; align-items:center; gap:4px; white-space:nowrap;}
   .stat b{font-variant-numeric:tabular-nums;}
   .stat .material-icons{font-size:16px; opacity:.85;}
+  .stat.debt{background:var(--bad); border-radius:10px; padding:1px 7px;}
   .slots{display:flex; gap:3px;}
   .slot{width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,.25); border:1px solid rgba(255,255,255,.6);}
   .slot.on{background:var(--yellow); border-color:var(--yellow);}
   .hud-actions{display:flex; gap:6px;}
   .hud-btn{background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.35); border-radius:6px;
-           padding:5px 7px; color:#fff; cursor:pointer; display:flex; align-items:center;}
+           padding:5px 7px; color:#fff; cursor:pointer; display:flex; align-items:center; font-size:12px; font-weight:700; min-width:30px; justify-content:center;}
 
-  /* --- Meters --- */
+  /* --- Meters (tap one to see why it moved) --- */
   #meters{display:flex; gap:10px; padding:6px 12px; background:var(--paper); border-bottom:1px solid var(--line); flex-wrap:wrap;}
-  .meter{flex:1 1 140px; min-width:120px; font-size:11px; color:var(--sub);}
+  .meter{flex:1 1 140px; min-width:120px; font-size:11px; color:var(--sub); cursor:pointer; border-radius:6px; padding:2px 4px; margin:-2px -4px;}
+  .meter:active, .meter.open{background:var(--blue-soft);}
   .meter .top{display:flex; justify-content:space-between; align-items:center; gap:4px;}
   .meter .top span{display:flex; align-items:center; gap:3px;}
   .meter .top .material-icons{font-size:14px;}
   .meter b{color:var(--ink); font-variant-numeric:tabular-nums;}
+  .meter .delta{font-weight:700; font-size:10px; margin-left:3px;}
+  .delta.up{color:var(--ok);} .delta.down{color:var(--bad);}
   .bar{height:6px; background:var(--blue-soft); border-radius:3px; overflow:hidden; margin-top:3px;}
   .bar i{display:block; height:100%; background:var(--blue2); border-radius:3px; transition:width .3s;}
   .bar i.low{background:var(--bad);} .bar i.mid{background:var(--warn);}
+  .meter.alarm{animation:alarm 1s ease-in-out 3;}
+  @keyframes alarm{50%{background:#fde2e2;}}
+  #pop{position:fixed; z-index:25; background:#fff; border:1px solid var(--line); border-radius:10px; box-shadow:0 8px 30px rgba(0,0,0,.2);
+       padding:10px 12px; width:290px; max-width:calc(100vw - 20px); font-size:12px; line-height:1.45;}
+  #pop.hidden{display:none;}
+  #pop h4{margin:0 0 4px; font-size:13px; display:flex; align-items:center; gap:6px;}
+  #pop p{margin:4px 0 8px; color:var(--sub);}
+  #pop ul{margin:0; padding-left:16px;}
+  #pop li .d{font-weight:700;} #pop li .d.up{color:var(--ok);} #pop li .d.down{color:var(--bad);}
 
   /* --- Main area: map + panel (side panel on wide screens) --- */
   #main{flex:1; display:flex; flex-direction:column; min-height:0;}
@@ -69,7 +83,7 @@
          padding:10px 12px 12px; -webkit-overflow-scrolling:touch; touch-action:pan-y;}
   @media (min-width:900px) and (min-aspect-ratio:1/1){
     #main{flex-direction:row;}
-    #panel{width:360px; max-height:none; border-top:none; border-left:1px solid var(--line);}
+    #panel{width:370px; max-height:none; border-top:none; border-left:1px solid var(--line);}
   }
 
   .card{border:1px solid var(--line); border-radius:8px; padding:10px; margin-bottom:10px; background:#fff;}
@@ -88,26 +102,39 @@
   .act:disabled{opacity:.45; cursor:not-allowed;}
   .act.primary{background:var(--blue); color:#fff; border-color:var(--blue);}
   .act.primary .material-icons, .act.primary small{color:#fff;}
+  .act.money{background:#e9f7ef;} .act.money .material-icons{color:var(--ok);}
   #endTurn{width:100%; justify-content:center; font-size:14px; font-weight:700; padding:12px; margin-bottom:10px;}
+  .problems{list-style:none; margin:0; padding:0;}
+  .problems li{display:flex; gap:8px; align-items:flex-start; font-size:12px; padding:6px 4px; border-top:1px solid var(--line); cursor:pointer; line-height:1.35;}
+  .problems li:first-child{border-top:none;}
+  .problems li .material-icons{font-size:17px;}
+  .problems li.bad .material-icons{color:var(--bad);} .problems li.warn .material-icons{color:var(--warn);} .problems li.info .material-icons{color:var(--blue2);}
+  .problems li small{display:block; color:var(--sub); font-size:11px;}
+  .card.alert{border-color:#f0b4b4; background:#fff8f8;}
   .log{font-size:11px; color:var(--sub); margin:0; padding-left:16px; line-height:1.5;}
   .log li.bad{color:var(--bad);} .log li.good{color:var(--ok);}
   .bottleneck{font-size:11px; color:var(--sub);} .bottleneck b{color:var(--ink);}
-  .tag{display:inline-block; font-size:10px; padding:1px 6px; border-radius:10px; background:var(--blue-soft); color:var(--blue); font-weight:700; margin-left:4px;}
 
   /* --- Floating feedback --- */
   .float-txt{position:fixed; transform:translate(-50%,-50%); font-weight:700; font-size:12px; color:var(--blue);
-    background:rgba(255,255,255,.92); border:1px solid var(--line); border-radius:12px; padding:2px 8px;
-    pointer-events:none; z-index:40; animation:floatUp 1.1s ease-out forwards; display:flex; align-items:center; gap:4px; white-space:nowrap;}
-  .float-txt.bad{color:var(--bad);}
+    background:rgba(255,255,255,.94); border:1px solid var(--line); border-radius:12px; padding:2px 8px;
+    pointer-events:none; z-index:40; animation:floatUp 1.4s ease-out forwards; display:flex; align-items:center; gap:4px; white-space:nowrap;}
+  .float-txt.bad{color:var(--bad);} .float-txt.good{color:var(--ok);}
   .float-txt .material-icons{font-size:14px;}
-  @keyframes floatUp{0%{opacity:1; transform:translate(-50%,-50%);} 100%{opacity:0; transform:translate(-50%,-190%);}}
+  @keyframes floatUp{0%{opacity:0; transform:translate(-50%,-30%) scale(.8);} 12%{opacity:1; transform:translate(-50%,-50%) scale(1.08);} 100%{opacity:0; transform:translate(-50%,-210%);}}
 
-  /* --- Modal: official notices --- */
+  /* --- Modal: official notices and event cards. Docked so the map stays visible. --- */
   #modal{position:fixed; inset:0; z-index:30; display:flex; align-items:center; justify-content:center;
-         background:rgba(16,26,48,.55); padding:16px;}
+         background:rgba(16,26,48,.45); padding:16px;}
   #modal.hidden{display:none;}
-  .notice{background:#fffdf6; border:1px solid #e6dcc0; border-radius:4px; width:100%; max-width:440px; max-height:100%;
-          overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,.3); padding:18px 18px 14px; position:relative; touch-action:pan-y;}
+  #modal.dock{align-items:flex-end; background:rgba(16,26,48,.18);}
+  #modal.dock .notice{max-height:68vh;}
+  @media (max-width:600px){ #modal.dock .speaker svg{width:44px; height:44px;} #modal.dock .notice{padding:12px 14px 10px;} #modal.dock .notice h2{font-size:16px;} }
+  @media (min-width:900px) and (min-aspect-ratio:1/1){ #modal.dock{align-items:center; justify-content:flex-end; padding-right:20px;} }
+  .notice{background:#fffdf6; border:1px solid #e6dcc0; border-radius:6px; width:100%; max-width:440px; max-height:100%;
+          overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,.3); padding:18px 18px 14px; position:relative; touch-action:pan-y;
+          animation:slam .35s cubic-bezier(.2,1.6,.4,1);}
+  @keyframes slam{0%{transform:scale(.6) rotate(-4deg); opacity:0;} 100%{transform:none; opacity:1;}}
   .notice .letterhead{display:flex; align-items:center; gap:8px; color:var(--blue); font-size:11px; font-weight:700;
           letter-spacing:.06em; text-transform:uppercase; border-bottom:2px solid var(--blue); padding-bottom:6px; margin-bottom:10px;}
   .notice h2{margin:0 0 8px; font-size:18px; display:flex; align-items:center; gap:8px;}
@@ -116,12 +143,27 @@
   .notice p{font-size:13.5px; line-height:1.55; margin:8px 0; color:#2b3242;}
   .notice .sig{font-style:italic; color:var(--sub); font-size:12px;}
   .stamp{position:absolute; right:14px; top:44px; transform:rotate(-12deg); border:3px solid currentColor; border-radius:6px;
-         padding:2px 8px; font-weight:900; letter-spacing:.1em; font-size:13px; opacity:.75;}
+         padding:2px 8px; font-weight:900; letter-spacing:.1em; font-size:13px; opacity:.8; animation:stamp .5s .15s both cubic-bezier(.3,1.8,.5,1);}
+  @keyframes stamp{0%{transform:rotate(-12deg) scale(2.6); opacity:0;} 100%{transform:rotate(-12deg) scale(1); opacity:.8;}}
   .stamp.ok{color:var(--ok);} .stamp.bad{color:var(--bad);} .stamp.info{color:var(--blue2);}
   .notice .btns{display:flex; flex-direction:column; gap:8px; margin-top:12px;}
   .btn{display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border-radius:8px;
        border:1px solid var(--line); background:var(--blue-soft); cursor:pointer; font-weight:700; font-size:14px;}
   .btn.primary{background:var(--blue); color:#fff; border-color:var(--blue);}
+  .speaker{display:flex; gap:12px; align-items:center; margin-bottom:6px;}
+  .speaker svg{flex:0 0 auto; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.15);}
+  .speaker b{display:block; font-size:14px;} .speaker small{color:var(--sub); font-size:12px;}
+  .quote{background:#fff; border:1px solid #e9e1c9; border-radius:10px; padding:10px 12px; font-size:13.5px; line-height:1.5; position:relative; margin:8px 0;}
+  .quote:before{content:""; position:absolute; left:22px; top:-7px; width:12px; height:12px; background:#fff; border-left:1px solid #e9e1c9; border-top:1px solid #e9e1c9; transform:rotate(45deg);}
+  .where{display:inline-flex; align-items:center; gap:3px; font-size:11px; font-weight:700; color:var(--bad); background:#fdecec; border-radius:10px; padding:1px 8px;}
+  .choice{display:block; width:100%; text-align:left; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:#fff; cursor:pointer;}
+  .choice:hover{border-color:var(--blue2);}
+  .choice:disabled{opacity:.45; cursor:not-allowed;}
+  .choice b{font-size:14px; display:block; margin-bottom:5px;}
+  .chips{display:flex; flex-wrap:wrap; gap:4px;}
+  .chip{display:inline-flex; align-items:center; gap:2px; font-size:11px; font-weight:700; border-radius:10px; padding:1px 7px; background:var(--blue-soft); color:var(--blue);}
+  .chip .material-icons{font-size:13px;}
+  .chip.good{background:#e3f5ea; color:var(--ok);} .chip.bad{background:#fdecec; color:var(--bad);} .chip.risk{background:#fff3d6; color:#9a6200;}
   .perk{display:flex; gap:10px; text-align:left; align-items:flex-start; padding:10px; border-radius:8px; border:1px solid var(--line);
         background:#fff; cursor:pointer;}
   .perk .material-icons{color:var(--blue); font-size:24px;}
@@ -133,92 +175,449 @@
   <div id="hud">
     <h1><span class="material-icons">account_balance</span>EUROCRAT <small id="townName"></small></h1>
     <div class="stats">
-      <span class="stat" title="Month"><span class="material-icons">event</span><b id="month">1</b>/<span id="months">36</span></span>
-      <span class="stat" title="Programme funds"><span class="material-icons">euro</span><b id="funds">0</b>M</span>
-      <span class="stat" title="Registered residents"><span class="material-icons">groups</span><b id="residents">0</b>/<span id="target">600</span></span>
-      <span class="stat" title="Agenda slots left this month"><span class="slots" id="slots"></span></span>
+      <span class="stat" id="st-month"><span class="material-icons">event</span><b id="month">1</b>/<span id="months">36</span></span>
+      <span class="stat" id="st-funds"><span class="material-icons">euro</span><b id="funds">0</b></span>
+      <span class="stat debt" id="st-debt" hidden><span class="material-icons">account_balance_wallet</span><b id="debt">0</b></span>
+      <span class="stat" id="st-res"><span class="material-icons">groups</span><b id="residents">0</b>/<span id="target">600</span></span>
+      <span class="stat" id="st-slots"><span class="slots" id="slots"></span></span>
     </div>
     <div class="hud-actions">
-      <button class="hud-btn" id="musicBtn" aria-label="Toggle music"><span class="material-icons">music_note</span></button>
+      <button class="hud-btn" id="langBtn" aria-label="Language">ES</button>
+      <button class="hud-btn" id="musicBtn" aria-label="Music"><span class="material-icons">music_note</span></button>
       <button class="hud-btn" id="menuBtn" aria-label="Menu"><span class="material-icons">menu</span></button>
     </div>
   </div>
   <div id="meters">
-    <div class="meter" id="m-local"><div class="top"><span><span class="material-icons">how_to_vote</span>Local support</span><b>0</b></div><div class="bar"><i></i></div></div>
-    <div class="meter" id="m-neigh"><div class="top"><span><span class="material-icons">diversity_3</span>Neighbours</span><b>0</b></div><div class="bar"><i></i></div></div>
-    <div class="meter" id="m-comp"><div class="top"><span><span class="material-icons">fact_check</span>Compliance</span><b>0</b></div><div class="bar"><i></i></div></div>
-    <div class="meter" id="m-spent"><div class="top"><span><span class="material-icons">savings</span>Spent</span><b>0</b></div><div class="bar"><i></i></div></div>
+    <div class="meter" id="m-local" data-m="local"><div class="top"><span><span class="material-icons">how_to_vote</span><span class="lbl"></span></span><span><b>0</b><span class="delta"></span></span></div><div class="bar"><i></i></div></div>
+    <div class="meter" id="m-neigh" data-m="neigh"><div class="top"><span><span class="material-icons">diversity_3</span><span class="lbl"></span></span><span><b>0</b><span class="delta"></span></span></div><div class="bar"><i></i></div></div>
+    <div class="meter" id="m-comp" data-m="comp"><div class="top"><span><span class="material-icons">fact_check</span><span class="lbl"></span></span><span><b>0</b><span class="delta"></span></span></div><div class="bar"><i></i></div></div>
+    <div class="meter" id="m-spent" data-m="spent"><div class="top"><span><span class="material-icons">savings</span><span class="lbl"></span></span><span><b>0</b></span></div><div class="bar"><i></i></div></div>
   </div>
   <div id="main">
     <div id="world">
       <canvas id="map"></canvas>
-      <div id="hint">Tap a parcel to see what you can (not) do · pinch to zoom</div>
+      <div id="hint"></div>
       <button id="rotateBtn" aria-label="Rotate view"><span class="material-icons">rotate_right</span></button>
     </div>
     <div id="panel"></div>
   </div>
 </div>
+<div id="pop" class="hidden"></div>
 <div id="modal" class="hidden"><div class="notice" id="notice"></div></div>
 
 <script>
 (function(){
 'use strict';
+
+// =====================================================================
+//  I18N — every player-facing string lives here, in English and Spanish.
+//  t('key', {params}) fills {placeholders}. Missing keys fall back to English.
+// =====================================================================
+const LANGS = ['en','es'];
+let LANG = (()=>{ try{ const s=localStorage.getItem('eurocrat_lang'); if(LANGS.includes(s)) return s; }catch(e){}
+  return (navigator.language||'en').toLowerCase().startsWith('es') ? 'es' : 'en'; })();
+function t(k, p){
+  let s = (I18N[LANG] && I18N[LANG][k] !== undefined) ? I18N[LANG][k] : (I18N.en[k] !== undefined ? I18N.en[k] : k);
+  if(p) s = s.replace(/\{(\w+)\}/g, (m,n)=> p[n]!==undefined && p[n]!==null ? p[n] : m);
+  return s;
+}
+function money(x){
+  const v = Math.round(x*10)/10;
+  if(LANG==='es') return v.toLocaleString('es-ES',{minimumFractionDigits:1, maximumFractionDigits:1})+' M€';
+  return (v<0?'-':'')+'€'+Math.abs(v).toFixed(1)+'M';
+}
+const I18N = {
+en: {
+  'lang.en':'English', 'lang.es':'Español', 'on':'On', 'off':'Off', 'menu.music':'Music: {s}',
+  'menu.new':'New programme', 'menu.continue':'Continue · {town}, month {m}',
+  'menu.pitch':'A satirical city builder. You have money from Brussels, 36 months and no power whatsoever.',
+  'menu.version':'Prototype v0.3 · buy the land, get it rezoned, file the paperwork, survive the neighbours — and decide every crisis.',
+  'pause.t':'Coffee break', 'pause.x':'{town}, {country} · month {m} of {n}. Your game is saved automatically.',
+  'pause.back':'Back to work', 'pause.abandon':'Abandon programme',
+  'intro.t':'Letter of appointment', 'intro.ok':'Accept the appointment',
+  'intro.x':'<p class="ref">Ref. {ref}</p><p>Dear Programme Officer,</p><p>Congratulations. Under the <b>MOTHER</b> programme (Model Town for Harmonised European Resilience), the Union has allocated <b>{x}</b> to build a model town in <b>{town}</b>, {country}.</p><p>You have <b>{m} months</b> to reach <b>{n} registered residents</b>. The Union owns no land, issues no permits and has no bulldozers. Farmland must be <b>rezoned</b> before anyone may build homes on it. Funds not spent on time will be partly decommitted.</p><p>Please keep the Commission informed. Regularly.</p><p class="sig">— Directorate-General for Harmonised Urban Futures</p>',
+  'ui.lang':'Language', 'ui.hint':'Tap a parcel to see what you can (not) do · pinch to zoom',
+  'ui.month':'Month', 'ui.funds':'Programme funds', 'ui.residents':'Registered residents', 'ui.slots':'Agenda slots left this month', 'ui.debt':'Debt with the regional bank',
+  'ui.recent':'Recent changes', 'ui.noChanges':'No changes yet.',
+  'ui.endMonth':'End month {m}', 'ui.forecast':'Next month: −{c} · taxes +{t}',
+  'ui.problems':'What needs attention', 'ui.directiveRef':'Directive · ref. {ref}', 'ui.due':'Due end of month {m} · {n} month(s) left',
+  'ui.town':'Town', 'ui.homes':'Homes', 'ui.jobs':'Jobs support', 'ui.jobsN':'{n} residents', 'ui.schoolPl':'School places', 'ui.health':'Health care',
+  'ui.construction':'Construction', 'ui.sites':'{a}/{c} sites', 'ui.odds':'Approval odds', 'ui.market':'Property market', 'ui.taxes':'Tax share', 'ui.mo':'month',
+  'ui.perks':'Perks', 'ui.limitedBy':'Growth is limited by:', 'ui.inbox':'Inbox', 'ui.agenda':'Your agenda',
+  'ui.agendaHint':'Tap a parcel to buy it, build or sell it. Or spend your time on politics:',
+  'ui.parcel':'Parcel {at}', 'ui.urban':'urban land', 'ui.deselect':'Deselect', 'ui.noted':'Noted', 'ui.choose':'Your decision:',
+  'ui.letterhead':'Union · DG Harmonised Urban Futures', 'ui.directivesMet':'Directives met', 'ui.score':'Score', 'ui.lookMap':'Look at the map',
+  'meter.local':'Mayor', 'meter.neigh':'Neighbours', 'meter.comp':'Compliance', 'meter.spent':'Spent', 'meter.spentBy':'Spent (≥{p}% by m{m})',
+  'meterd.local':'How much the mayor and the council back you. Needed for municipal land and the urban plan; raises permit odds. Drops a little every month (politicians forget). Lunches help.',
+  'meterd.neigh':'Public opinion in the area. Low = slower permits and lawsuits; below 15 a court may annul your plan. Construction noise lowers it every month; parks and consultations raise it.',
+  'meterd.comp':'How happy the Commission is with your reporting. Decays every month. Reports restore it. At 0: audit and game over.',
+  'meterd.spent':'Use it or lose it: by month 12 you must have spent 20% of the grant, by month 24 50%. Half of any shortfall is taken back. Money from selling land does not count as spending.',
+  'meterd.spentNext':'Next milestone: month {m}, {need}. Spent so far: {spent}.',
+  'bn.homes':'housing', 'bn.jobs':'jobs', 'bn.school':'school places', 'bn.health':'health care',
+  'b.road':'Road', 'b.housing':'Housing block', 'b.factory':'Factory', 'b.school':'School', 'b.clinic':'Health centre', 'b.park':'Park',
+  'bd.road':'Access for every parcel around it (diagonals too)', 'bd.housing':'+150 homes', 'bd.factory':'+150 jobs, pays local taxes · the neighbours hate it',
+  'bd.school':'+300 school places', 'bd.clinic':'+600 patients', 'bd.park':'Neighbours +6 · people move in faster',
+  'k.farm':'Private farmland', 'k.muni':'Municipal land', 'k.flood':'Flood zone', 'k.habitat':'Protected habitat', 'k.village':'Old village', 'k.regional':'Regional road',
+  'pc.habitat':'Protected habitat. Home to a toad with better lawyers than you.',
+  'pc.village':'The old village: 30 residents, one bar, strong opinions. Building next to it annoys them.',
+  'pc.regional':'The regional road. Managed by another administration. Do not touch.',
+  'pc.muni':'Owned by the municipality and already urban. Cheap, if the mayor agrees (support ≥ 40).',
+  'pc.flood':'Cheap land in the flood zone. Rustic; building here costs 50% more.',
+  'pc.farm':'Rustic land owned by a local farmer. May hold out for a better price.',
+  'pc.farmHeld':'Rustic land. The farmer already raised the price once.',
+  'pc.noAccess':'You own it, but it has no road access. Plan a road on a neighbouring parcel (diagonals count).',
+  'pc.ownedRustic':'You own it, but it is still rustic: only roads and parks are allowed. Include it in an urban plan to build homes, factories or services.',
+  'pc.ownedUrban':'Urban land with road access. Build it yourself, or sell it to a developer and let them build homes.',
+  'pc.needsUrban':'needs urban land', 'pc.timing':'permit {p}m · build {b}m · {x}',
+  'pc.review':'<b>{b}</b>: permit under review. Decision in {n} month(s). Approval odds today: {o}%.',
+  'pc.approved':'<b>{b}</b>: permit approved. Waiting for a free contractor.',
+  'pc.building':'<b>{b}</b> under construction: {n} month(s) left. Costs {x} per month.', 'pc.halted':'Halted {n} more month(s).',
+  'pc.privPermit':'Sold to a developer. They are getting their permit ({n} month(s)).', 'pc.privBuild':'The developer is building housing ({n} month(s) left, if all goes well).',
+  'pc.privPaused':'Paused: the market is cold.', 'pc.ruin':'An abandoned development. The developer went bust; the bank owns the concrete. You can buy it back.',
+  'pc.private':'Built by a developer: no upkeep for you.', 'pc.upkeep':'Upkeep {x}/month.', 'pc.road':'A road. Every parcel around it (diagonals too) can get permits.',
+  'act.acquire':'Acquire · {x}', 'act.buyBack':'Buy back · {x}', 'act.slot1':'1 agenda slot',
+  'act.sell':'Sell to a developer · +{x}', 'act.sellSub':'1 slot · they build homes, at their pace', 'act.sellCold':'No developer is buying: the market is cold',
+  'act.plan':'Submit an urban plan', 'act.planSub':'2 slots · {x} · rezones all your rustic parcels', 'act.planBusy':'Under review · {n} month(s)',
+  'act.lobby':'Lobby the mayor', 'act.lobbySub':'1 slot · {x} · mayor +{n}',
+  'act.consult':'Public consultation', 'act.consultSub':'2 slots · neighbours +15 · delays reviews 1 month',
+  'act.report':'File a report', 'act.reportSub':'1 slot · compliance +22',
+  'act.repay':'Repay {x}', 'act.repaySub':'No slot · interest stops on what you repay',
+  'err.slots':'No agenda slots left', 'err.slots2':'Needs 2 agenda slots', 'err.funds':'Not enough money', 'err.notForSale':'Not for sale',
+  'err.mayorNo':'The mayor says no (support < 40)', 'err.mustOwn':'You must own the parcel', 'err.noAccess':'No road access',
+  'err.rustic':'Rustic land: needs an urban plan first', 'err.sellUrban':'Only urban land you own can be sold', 'err.noBuyers':'No developer is interested right now',
+  'err.planBusy':'A plan is already under review', 'err.planNothing':'You own no rustic parcels to rezone', 'err.noDebt':'No debt to repay',
+  'fx.money':'{x}', 'fx.holdout':'Owner holds out!', 'fx.filed':'Filed', 'fx.local':'Mayor +{n}', 'fx.neigh':'Neighbours +{n}', 'fx.comp':'Compliance +{n}',
+  'fx.approved':'Approved', 'fx.rejected':'Rejected', 'fx.urban':'Rezoned!', 'fx.strike':'Strike', 'fx.completed':'{b} done!',
+  'pb.noAccess':'Parcel {at} has no road access', 'pb.noAccess.h':'Plan a road next to it (diagonals count).',
+  'pb.halted':'{b} on {at} is halted', 'pb.halted.h':'{n} more month(s). Costs nothing meanwhile.',
+  'pb.rejected':'Permit rejected on {at}', 'pb.rejected.h':'You can file again. Raise the mayor or neighbours first.',
+  'pb.paused':'Developer paused on {at}', 'pb.paused.h':'The market is cold. They resume when it recovers.',
+  'pb.ruin':'Abandoned development on {at}', 'pb.ruin.h':'Buy it back from the bank to use the parcel again.',
+  'pb.needPlan':'{n} rustic parcel(s) cannot take buildings', 'pb.needPlan.h':'Submit an urban plan (agenda) to rezone them.',
+  'pb.queue':'{n} approved permit(s) waiting for contractors', 'pb.queue.h':'All {c} contractors are busy.',
+  'pb.cash':'Next month you cannot pay ({x})', 'pb.cash.h':'The bank will lend you money — with interest.',
+  'pb.comp':'Compliance is {n}: audit at 0', 'pb.comp.h':'File a report.',
+  'pb.neighCourt':'Neighbours furious: a court may annul the plan', 'pb.neighCourt.h':'Public consultation or a park, now.',
+  'pb.neigh':'Neighbours angry: slower permits, lawsuits', 'pb.neigh.h':'Public consultation, parks, fewer simultaneous works.',
+  'pb.local':'The mayor is cold: no municipal land, lower odds', 'pb.local.h':'Lobby the mayor.',
+  'pb.milestone':'Spend {x} more by month {m}', 'pb.milestone.h':'Or half the shortfall is decommitted.',
+  'pb.directive':'Directive "{d}" is about to fail', 'pb.directive.h':'Two failures suspend the programme.',
+  'pb.debt':'Debt {x} at {r}%/month', 'pb.debt.h':'Above {cap} the bank pulls the plug.',
+  'pb.market':'The property market is cold', 'pb.market.h':'Developers will not buy land nor build.',
+  'pb.growth':'Growth limited by {w}', 'pb.growth.h':'People need homes, jobs, school places and health care.',
+  'why.factory':'Factory permit', 'why.village':'Works next to the village', 'why.lobby':'Lunch with the mayor', 'why.consult':'Public consultation',
+  'why.report':'Report filed', 'why.park':'New park', 'why.taxes':'New tax revenue', 'why.decay':'The Commission waits for your next report',
+  'why.forget':'Politicians forget', 'why.noise':'Construction noise', 'why.comms':'Comms agency', 'why.directiveFail':'Directive failed',
+  'chip.risk':'{n}% risk', 'chip.delay':'+{n} month(s)', 'chip.slot':'{n} slot next month', 'chip.lose':'lose the parcel', 'chip.land':'get the parcel',
+  'chip.cost':'costs {x}', 'chip.later':'back {x}', 'chip.rate':'interest {x}', 'chip.market':'market falls',
+  'map.m':'{n}m', 'map.queue':'queue', 'map.halt':'halt {n}m', 'map.plan':'plan',
+  'stamp.approved':'APPROVED', 'stamp.rejected':'REJECTED', 'stamp.decommitted':'DECOMMITTED', 'stamp.ontrack':'ON TRACK', 'stamp.warning':'WARNING',
+  'stamp.compliant':'COMPLIANT', 'stamp.noncompliant':'NON-COMPLIANT', 'stamp.loan':'LOAN', 'stamp.appointed':'APPOINTED', 'stamp.urgent':'URGENT', 'stamp.bad':'OOPS', 'stamp.done':'DONE',
+  'char.mayor':'Mayor of {town}', 'char.neighbour':'President of the neighbours’ association', 'char.heritage':'Regional Heritage Office',
+  'char.brussels':'Desk officer, DG HUF (Brussels)', 'char.developer':'CEO, Ladrillo Holdings', 'char.banker':'Regional Savings Bank', 'char.union':'Construction union', 'char.farmer':'Landowner',
+  'country.0':'Republic of Valdoria', 'country.1':'Grand Duchy of Brennmark', 'country.2':'Kingdom of Esterra', 'country.3':'Republic of Calvadia', 'country.4':'Federal Republic of Morvania',
+  'rej.0':'Form 27-B was submitted in the wrong font.', 'rej.1':'The architect’s signature exceeds the box.', 'rej.2':'A sunlight study for the existing sheep is missing.',
+  'rej.3':'The councillor in charge is on holiday until further notice.', 'rej.4':'Missing stamp. Which stamp? A stamp.', 'rej.5':'The Heritage Office has not replied (estimated: 2031).',
+  'rej.6':'Annex IV must be printed, scanned and printed again.', 'rej.7':'The parking ratio was calculated per resident, not per car.',
+  'dir.spend.t':'Absorption Rate Alert', 'dir.spend.x':'Spend {n} million more before the deadline. Unspent funds send the wrong signal.',
+  'dir.park.t':'Green Transition', 'dir.park.x':'Deliver a new park. Something green, for the brochure.',
+  'dir.school.t':'Social Cohesion Pillar', 'dir.school.x':'Deliver a new school. Families need somewhere to wait for the bus.',
+  'dir.consult.t':'Stakeholder Engagement', 'dir.consult.x':'Hold a public consultation. Nobody has to agree, but they must have been asked.',
+  'dir.reports.t':'Reporting Harmonisation', 'dir.reports.x':'File {n} reports using the new template (which replaces the template).',
+  'dir.residents.t':'KPI 3.2.b', 'dir.residents.x':'Reach {n} registered residents. The indicator is already printed in the annual report.',
+  'dir.roads.t':'Connectivity Agenda', 'dir.roads.x':'Build 3 new road segments. Connectivity is a priority (it is in the title).',
+  'dir.deadline':'Deadline: end of month {m}.', 'dir.rules':'Success will be rewarded. Failure will be noted. Two failures and the programme is suspended.', 'dir.ack':'Acknowledge receipt',
+  'dir.met.t':'Directive met: {d}', 'dir.met.x':'The Commission acknowledges receipt of your success and grants you a reward. Choose wisely.',
+  'dir.failed1.t':'Directive failed: {d}', 'dir.failed1.x':'Deadline missed. {x} are clawed back and compliance drops. One more failure and the programme is suspended.',
+  'dir.failed2.t':'Directive failed: {d}', 'dir.failed2.x':'Deadline missed — again. The programme is suspended.',
+  'perk.title':'Choose a reward', 'perk.x':'Your compliance has been noticed. Pick one, and do not tell the other programmes.',
+  'perk.notary':'Friendly Notary', 'perkd.notary':'Land costs 30% less.', 'perk.fasttrack':'Fast-track Decree', 'perkd.fasttrack':'Permits take 1 month less.',
+  'perk.prefab':'Prefab Supplier', 'perkd.prefab':'Construction takes 1 month less.', 'perk.contractor':'Extra Contractor', 'perkd.contractor':'+1 construction site at the same time.',
+  'perk.cousin':'Cousin at the Ministry', 'perkd.cousin':'+1 agenda slot every month.', 'perk.translation':'Translation Unit', 'perkd.translation':'Compliance decays half as fast.',
+  'perk.comms':'Comms Agency', 'perkd.comms':'Neighbours +2 every month.', 'perk.fixer':'Local Fixer', 'perkd.fixer':'The mayor’s support never drops below 30.',
+  'perk.shovel':'Golden Shovel', 'perkd.shovel':'Your next construction is paid by a sponsor.', 'perk.lobbyist':'Professional Lobbyist', 'perkd.lobbyist':'Lobbying the mayor gives +20 support.',
+  'plan.ok.t':'Urban plan approved', 'plan.ok.x':'The council approved your partial plan: {n} parcel(s) are now urban land. Their value has tripled. Some of my cousins are very interested.',
+  'plan.no.t':'Urban plan rejected', 'plan.no.x':'The council rejected the plan. Official reason: "{r}" Unofficial reason: you did not invite me to lunch.',
+  'ms.ok.t':'Spending milestone met', 'ms.ok.x':'By month {m} you had to spend {need}. You spent {spent}. The absorption chart is green; everyone is relieved.',
+  'ms.cut.t':'Funds decommitted', 'ms.cut.x':'By month {m} you had to spend {need}. You spent {spent}. Half of the shortfall, {cut}, returns to the Union budget.',
+  'ms.warn.t':'Absorption warning', 'ms.warn.x':'Friendly reminder: by month {m} you must have spent {need}. You are {gap} short. Please spend faster. On anything eligible.',
+  'loan.t':'Bridge loan granted', 'loan.x':'Your accounts went into the red, so we lent you {x}. Total debt: {debt} at {rate}% per month. Above {cap} we stop lending, and that is the end.',
+  'ev.archaeology.t':'Archaeological find', 'ev.archaeology.x':'Your workers found something on parcel {at}. Possibly Roman coins. Possibly bottle caps. By law, I must be informed.',
+  'ev.archaeology.c.call':'Call the Heritage Office (by the book)', 'ev.archaeology.c.concrete':'Pour concrete over it, quietly', 'ev.archaeology.c.museum':'Build a little museum',
+  'ev.archaeology.r.caught':'A neighbour filmed the concrete truck. It is on the evening news. The Commission is "deeply concerned".', 'ev.archaeology.r.quiet':'Nobody noticed. The coins will be found again in 2,000 years.',
+  'ev.toad.t':'Protected species', 'ev.toad.x':'A natterjack toad has been seen on parcel {at}. It is protected. It is also very relaxed about your deadlines.',
+  'ev.toad.c.accept':'Declare it a habitat', 'ev.toad.c.study':'Commission a relocation study', 'ev.toad.c.mascot':'Make the toad the town mascot',
+  'ev.toad.r.moved':'The toad accepted a new pond. The parcel is yours again.', 'ev.toad.r.stays':'The study concludes the toad stays. The study cost money anyway.',
+  'ev.election.t':'Municipal elections', 'ev.election.x':'Elections are coming. My rival promises to "review every inherited project". Will you help an old friend?',
+  'ev.election.c.fund':'Fund my campaign (discreetly)', 'ev.election.c.neutral':'Stay neutral', 'ev.election.c.meet':'Meet every candidate',
+  'ev.election.r.won':'Re-elected! I will not forget this. Probably.', 'ev.election.r.lost':'I lost. The new mayor found out about the donation. Brussels too.', 'ev.election.r.neutral':'A new council takes office. Their opinion of you: to be determined.',
+  'ev.lawsuit.t':'The neighbours sue', 'ev.lawsuit.x':'The neighbours’ association has filed an appeal against your works. We have lawyers, and time. Lots of time.',
+  'ev.lawsuit.c.court':'Fight it in court', 'ev.lawsuit.c.negotiate':'Negotiate: more green space', 'ev.lawsuit.c.ignore':'Ignore it',
+  'ev.lawsuit.r.lostCase':'You lost. A permit is frozen for 4 more months.', 'ev.lawsuit.r.wonCase':'The judge dismissed the appeal. The association announces another one.', 'ev.lawsuit.r.annulled':'The court annulled the urban plan.',
+  'ev.inflation.t':'Construction costs rise', 'ev.inflation.x':'Steel, cement and coffee are 12% more expensive. My bank can of course finance the difference.',
+  'ev.inflation.c.accept':'Accept the new prices', 'ev.inflation.c.renegotiate':'Renegotiate every contract', 'ev.inflation.c.prefab':'Switch to a cheaper prefab supplier',
+  'ev.strike.t':'Construction strike', 'ev.strike.x':'The lads have not had a raise since the last programme. Next month, nobody climbs a crane.',
+  'ev.strike.c.wait':'Let them strike', 'ev.strike.c.bonus':'Pay a bonus', 'ev.strike.c.mediation':'Ask Brussels to mediate',
+  'ev.strike.r.long':'Brussels sent a questionnaire. The strike lasts two months.', 'ev.strike.r.deal':'A deal! Nobody knows exactly what was agreed.',
+  'ev.delegation.t':'Delegation from Brussels', 'ev.delegation.x':'I am visiting with a delegation next week. We would love to see progress. Or at least a render.',
+  'ev.delegation.c.photo':'Photo opportunity with the mayor', 'ev.delegation.c.askmore':'Ask for more money', 'ev.delegation.c.renders':'Show them the 3D renders', 'ev.delegation.c.lunch':'Long lunch at the best restaurant',
+  'ev.delegation.r.granted':'Extra funds approved! Nobody can explain why.', 'ev.delegation.r.refused':'"Absorb what you have first." Compliance suffers.',
+  'ev.delegation.r.impressed':'They loved the drone flythrough.', 'ev.delegation.r.unimpressed':'They noticed the renders show mountains. There are no mountains.',
+  'ev.cofinance.t':'Co-financing delayed', 'ev.cofinance.x':'The Ministry of Finance "temporarily retains" 3 million of national co-financing. It should arrive in 4 months. Should.',
+  'ev.cofinance.c.wait':'Wait patiently', 'ev.cofinance.c.complain':'Complain to Brussels', 'ev.cofinance.c.bridge':'Cover it with a bank loan',
+  'ev.ribbon.t':'Premature inauguration', 'ev.ribbon.x':'The regional president wants to inaugurate your works on parcel {at}. It is a hole, but it is a photogenic hole.',
+  'ev.ribbon.c.smile':'Smile for the photo', 'ev.ribbon.c.refuse':'Refuse: it is a hole',
+  'ev.influencer.t':'Viral video', 'ev.influencer.x':'My granddaughter filmed the sunset in your park. Four thousand comments. I have read none.',
+  'ev.influencer.c.share':'Share it everywhere', 'ev.influencer.c.hire':'Hire her as the town’s influencer',
+  'ev.discount.t':'Inheritance settled', 'ev.discount.x':'My cousins and I finally agree to sell parcel {at}. Cheap — {x} — before we change our minds.',
+  'ev.discount.c.buy':'Buy it now (no slot needed)', 'ev.discount.c.later':'Not now',
+  'ev.template.t':'New reporting template', 'ev.template.x':'We have published a new template for the reporting template. Your previous reports must be re-submitted.',
+  'ev.template.c.fill':'Fill it in yourself', 'ev.template.c.ignore':'Ignore it', 'ev.template.c.consultants':'Hire consultants',
+  'ev.devOffer.t':'An offer you could refuse', 'ev.devOffer.x':'I like parcel {at}. I pay {x}, cash, 30% above market. I build luxury flats. Everybody wins. Mostly me.',
+  'ev.devOffer.c.sell':'Sell it to Ladrillo Holdings', 'ev.devOffer.c.decline':'Decline politely',
+  'ev.crash.t':'Property market crash', 'ev.crash.x':'The property market has collapsed. Developers are stopping their works and some may not survive. We are, naturally, very sorry.',
+  'ev.crash.c.bailout':'Bail out the developers', 'ev.crash.c.letfall':'Let the market decide', 'ev.crash.c.hold':'Hold on and wait',
+  'ev.crash.r.ruin':'One developer went bust. A concrete skeleton now decorates your town.',
+  'ev.loanCall.t':'The bank calls', 'ev.loanCall.x':'We are reviewing our exposure to your programme. A partial repayment would be… appreciated.',
+  'ev.loanCall.c.repay':'Repay now', 'ev.loanCall.c.renegotiate':'Renegotiate (higher interest)',
+  'ev.fiesta.t':'Village fiesta', 'ev.fiesta.x':'It is the patron saint’s day. The whole village expects the programme to pay for the fireworks.',
+  'ev.fiesta.c.sponsor':'Sponsor the fiesta', 'ev.fiesta.c.skip':'Send a polite email',
+  'log.opened':'Programme opened in {town}.', 'log.buyback':'Parcel {at} bought back from the bank for {x}.', 'log.holdout':'Owner of {at} holds out. New price: {x}.',
+  'log.acquired':'Parcel {at} acquired for {x}.', 'log.village':'The village association "has concerns".', 'log.permit':'Permit requested: {b} on {at} ({n} months).',
+  'log.sold':'Parcel {at} sold to a developer for {x}.', 'log.planSubmitted':'Urban plan submitted: {n} parcel(s), {m} months.', 'log.lobby':'Networking lunch with the mayor. Mayor +{n}.',
+  'log.consult':'Public consultation held. {n} permit(s) delayed a month.', 'log.report':'Report filed (84 pages, 3 annexes).', 'log.repaid':'Repaid {x} to the bank.',
+  'log.directiveNew':'New directive: {d} (due month {m}).', 'log.perk':'Perk acquired: {k}.', 'log.event':'Notice: {e}.', 'log.choice':'{e}: {c}.',
+  'log.approved':'Permit APPROVED: {b} on {at}.', 'log.rejected':'Permit REJECTED ({b}): {r}', 'log.planApproved':'Urban plan APPROVED: {n} parcel(s) rezoned.', 'log.planRejected':'Urban plan REJECTED.',
+  'log.sponsor':'A sponsor pays for this site (logo on the fence).', 'log.strike':'Strike: no construction this month.', 'log.completed':'{b} completed on {at}.',
+  'log.devDone':'The developer finished housing on {at}.', 'log.cofin':'National co-financing arrived: {x}. A miracle.', 'log.decommitted':'{x} decommitted.',
+  'log.directiveMet':'Directive met: {d}.', 'log.directiveFailed':'Directive failed: {d}.', 'log.loan':'Bridge loan: {x}.',
+  'over.target.t':'Inauguration!', 'over.target.s':'INAUGURATED', 'over.target.x':'{town} has {n} registered residents. I cut the ribbon, gave a speech about "our" town and took all the credit. You were not in the photo.',
+  'over.bankrupt.t':'The bank pulls the plug', 'over.bankrupt.s':'INSOLVENT', 'over.bankrupt.x':'Your debt passed the limit. The half-built town becomes a case study in a Court of Auditors report.',
+  'over.audit.t':'Audit', 'over.audit.s':'AUDITED', 'over.audit.x':'Your compliance reached zero. The anti-fraud office is looking for 3,000 missing pages. You have been transferred to the archives.',
+  'over.suspended.t':'Programme suspended', 'over.suspended.s':'SUSPENDED', 'over.suspended.x':'Two directives failed. The programme is suspended "pending a strategic review", expected to last a decade.',
+  'over.court.t':'Plan annulled', 'over.court.s':'ANNULLED', 'over.court.x':'The court annulled the urban plan. Everything you built is in legal limbo. The neighbours are delighted.',
+  'over.timeout.t':'The programme has ended', 'over.timeout.s':'CLOSED', 'over.timeout.x':'Month {m} is over with {n} of {target} residents. The programme "will be evaluated". A successor with a longer acronym is already being drafted.',
+},
+es: {
+  'lang.en':'English', 'lang.es':'Español', 'on':'Sí', 'off':'No', 'menu.music':'Música: {s}',
+  'menu.new':'Nuevo programa', 'menu.continue':'Continuar · {town}, mes {m}',
+  'menu.pitch':'Un city builder satírico. Tienes dinero de Bruselas, 36 meses y ningún poder.',
+  'menu.version':'Prototipo v0.3 · compra el suelo, consigue que lo recalifiquen, presenta los papeles, sobrevive a los vecinos… y decide en cada crisis.',
+  'pause.t':'Pausa para el café', 'pause.x':'{town}, {country} · mes {m} de {n}. La partida se guarda sola.',
+  'pause.back':'Volver al trabajo', 'pause.abandon':'Abandonar el programa',
+  'intro.t':'Carta de nombramiento', 'intro.ok':'Aceptar el nombramiento',
+  'intro.x':'<p class="ref">Ref. {ref}</p><p>Estimado/a responsable de programa:</p><p>Enhorabuena. Dentro del programa <b>MOTHER</b> (Modelo de Ordenación de Territorios Habitables Europeos Resilientes), la Unión ha asignado <b>{x}</b> para construir una ciudad modelo en <b>{town}</b>, {country}.</p><p>Tiene <b>{m} meses</b> para alcanzar <b>{n} vecinos empadronados</b>. La Unión no tiene suelo, no concede licencias y no tiene excavadoras. El suelo rústico debe <b>recalificarse</b> antes de construir viviendas. Los fondos no gastados a tiempo se descomprometerán en parte.</p><p>Le rogamos que mantenga informada a la Comisión. Con regularidad.</p><p class="sig">— Dirección General de Futuros Urbanos Armonizados</p>',
+  'ui.lang':'Idioma', 'ui.hint':'Toca una parcela para ver qué puedes (y qué no) hacer · pellizca para hacer zoom',
+  'ui.month':'Mes', 'ui.funds':'Fondos del programa', 'ui.residents':'Vecinos empadronados', 'ui.slots':'Huecos de agenda que te quedan este mes', 'ui.debt':'Deuda con la caja regional',
+  'ui.recent':'Cambios recientes', 'ui.noChanges':'Aún no hay cambios.',
+  'ui.endMonth':'Terminar el mes {m}', 'ui.forecast':'Próximo mes: −{c} · impuestos +{t}',
+  'ui.problems':'Lo que requiere atención', 'ui.directiveRef':'Directiva · ref. {ref}', 'ui.due':'Vence a final del mes {m} · quedan {n} mes(es)',
+  'ui.town':'Municipio', 'ui.homes':'Viviendas', 'ui.jobs':'Empleo para', 'ui.jobsN':'{n} vecinos', 'ui.schoolPl':'Plazas escolares', 'ui.health':'Atención sanitaria',
+  'ui.construction':'Obras', 'ui.sites':'{a}/{c} obras', 'ui.odds':'Prob. de aprobación', 'ui.market':'Mercado inmobiliario', 'ui.taxes':'Parte de impuestos', 'ui.mo':'mes',
+  'ui.perks':'Ventajas', 'ui.limitedBy':'El crecimiento lo frena:', 'ui.inbox':'Bandeja de entrada', 'ui.agenda':'Tu agenda',
+  'ui.agendaHint':'Toca una parcela para comprarla, construir o venderla. O dedica tu tiempo a la política:',
+  'ui.parcel':'Parcela {at}', 'ui.urban':'suelo urbano', 'ui.deselect':'Deseleccionar', 'ui.noted':'Enterado', 'ui.choose':'Tu decisión:',
+  'ui.letterhead':'Unión · DG Futuros Urbanos Armonizados', 'ui.directivesMet':'Directivas cumplidas', 'ui.score':'Puntuación', 'ui.lookMap':'Ver el mapa',
+  'meter.local':'Alcalde', 'meter.neigh':'Vecinos', 'meter.comp':'Cumplimiento', 'meter.spent':'Gastado', 'meter.spentBy':'Gastado (≥{p}% en el mes {m})',
+  'meterd.local':'Cuánto te apoyan el alcalde y el pleno. Hace falta para el suelo municipal y el plan urbanístico, y sube la probabilidad de licencia. Baja un poco cada mes (los políticos olvidan). Las comidas ayudan.',
+  'meterd.neigh':'La opinión pública de la zona. Si es baja, las licencias tardan más y llegan las demandas; por debajo de 15 un juez puede anular el plan. El ruido de las obras la baja cada mes; los parques y las consultas la suben.',
+  'meterd.comp':'Lo contenta que está la Comisión con tus informes. Baja cada mes. Los informes la recuperan. A 0: auditoría y fin de la partida.',
+  'meterd.spent':'Úsalo o piérdelo: en el mes 12 debes haber gastado el 20% de la subvención, y en el 24 el 50%. Se retira la mitad de lo que falte. El dinero de vender suelo no cuenta como gasto.',
+  'meterd.spentNext':'Próximo hito: mes {m}, {need}. Gastado hasta ahora: {spent}.',
+  'bn.homes':'la vivienda', 'bn.jobs':'el empleo', 'bn.school':'las plazas escolares', 'bn.health':'la sanidad',
+  'b.road':'Calle', 'b.housing':'Bloque de viviendas', 'b.factory':'Fábrica', 'b.school':'Colegio', 'b.clinic':'Centro de salud', 'b.park':'Parque',
+  'bd.road':'Da acceso a todas las parcelas de alrededor (también en diagonal)', 'bd.housing':'+150 viviendas', 'bd.factory':'+150 empleos, paga impuestos locales · los vecinos la odian',
+  'bd.school':'+300 plazas escolares', 'bd.clinic':'+600 pacientes', 'bd.park':'Vecinos +6 · la gente llega más rápido',
+  'k.farm':'Finca rústica privada', 'k.muni':'Suelo municipal', 'k.flood':'Zona inundable', 'k.habitat':'Hábitat protegido', 'k.village':'Pueblo viejo', 'k.regional':'Carretera comarcal',
+  'pc.habitat':'Hábitat protegido. Aquí vive un sapo con mejores abogados que tú.',
+  'pc.village':'El pueblo viejo: 30 vecinos, un bar y opiniones firmes. Construir al lado les molesta.',
+  'pc.regional':'La carretera comarcal. La gestiona otra administración. No tocar.',
+  'pc.muni':'Del ayuntamiento y ya es urbano. Barato, si el alcalde quiere (apoyo ≥ 40).',
+  'pc.flood':'Suelo barato en zona inundable. Rústico; construir aquí cuesta un 50% más.',
+  'pc.farm':'Suelo rústico de un agricultor del pueblo. Puede pedir más dinero.',
+  'pc.farmHeld':'Suelo rústico. El agricultor ya subió el precio una vez.',
+  'pc.noAccess':'Es tuya, pero no tiene acceso por calle. Haz una calle en una parcela vecina (las diagonales cuentan).',
+  'pc.ownedRustic':'Es tuya, pero sigue siendo rústica: solo se permiten calles y parques. Inclúyela en un plan urbanístico para construir viviendas, fábricas o servicios.',
+  'pc.ownedUrban':'Suelo urbano con acceso. Constrúyelo tú o véndeselo a una promotora y que construya ella las viviendas.',
+  'pc.needsUrban':'necesita suelo urbano', 'pc.timing':'licencia {p}m · obra {b}m · {x}',
+  'pc.review':'<b>{b}</b>: licencia en trámite. Resolución en {n} mes(es). Probabilidad de aprobación hoy: {o}%.',
+  'pc.approved':'<b>{b}</b>: licencia concedida. Esperando a que quede libre una constructora.',
+  'pc.building':'<b>{b}</b> en obras: faltan {n} mes(es). Cuesta {x} al mes.', 'pc.halted':'Paralizada {n} mes(es) más.',
+  'pc.privPermit':'Vendida a una promotora. Está tramitando su licencia ({n} mes(es)).', 'pc.privBuild':'La promotora está construyendo viviendas (faltan {n} mes(es), si todo va bien).',
+  'pc.privPaused':'Parada: el mercado está frío.', 'pc.ruin':'Una promoción abandonada. La promotora quebró y el hormigón es del banco. Puedes recomprarla.',
+  'pc.private':'Construido por una promotora: no te cuesta mantenimiento.', 'pc.upkeep':'Mantenimiento {x}/mes.', 'pc.road':'Una calle. Todas las parcelas de alrededor (también en diagonal) pueden pedir licencia.',
+  'act.acquire':'Comprar · {x}', 'act.buyBack':'Recomprar · {x}', 'act.slot1':'1 hueco de agenda',
+  'act.sell':'Vender a una promotora · +{x}', 'act.sellSub':'1 hueco · construye ella las viviendas, a su ritmo', 'act.sellCold':'Ninguna promotora compra: el mercado está frío',
+  'act.plan':'Presentar un plan urbanístico', 'act.planSub':'2 huecos · {x} · recalifica todas tus parcelas rústicas', 'act.planBusy':'En trámite · {n} mes(es)',
+  'act.lobby':'Comer con el alcalde', 'act.lobbySub':'1 hueco · {x} · alcalde +{n}',
+  'act.consult':'Consulta pública', 'act.consultSub':'2 huecos · vecinos +15 · retrasa los trámites 1 mes',
+  'act.report':'Enviar un informe', 'act.reportSub':'1 hueco · cumplimiento +22',
+  'act.repay':'Devolver {x}', 'act.repaySub':'Sin hueco · dejas de pagar intereses por lo devuelto',
+  'err.slots':'No te quedan huecos de agenda', 'err.slots2':'Hacen falta 2 huecos de agenda', 'err.funds':'No hay dinero suficiente', 'err.notForSale':'No está en venta',
+  'err.mayorNo':'El alcalde dice que no (apoyo < 40)', 'err.mustOwn':'La parcela tiene que ser tuya', 'err.noAccess':'Sin acceso por calle',
+  'err.rustic':'Suelo rústico: primero hace falta un plan urbanístico', 'err.sellUrban':'Solo puedes vender suelo urbano tuyo', 'err.noBuyers':'Ahora mismo no hay promotoras interesadas',
+  'err.planBusy':'Ya hay un plan en trámite', 'err.planNothing':'No tienes parcelas rústicas que recalificar', 'err.noDebt':'No hay deuda que devolver',
+  'fx.money':'{x}', 'fx.holdout':'¡El dueño pide más!', 'fx.filed':'Registrado', 'fx.local':'Alcalde +{n}', 'fx.neigh':'Vecinos +{n}', 'fx.comp':'Cumplimiento +{n}',
+  'fx.approved':'Concedida', 'fx.rejected':'Denegada', 'fx.urban':'¡Recalificada!', 'fx.strike':'Huelga', 'fx.completed':'¡{b} terminado!',
+  'pb.noAccess':'La parcela {at} no tiene acceso', 'pb.noAccess.h':'Haz una calle al lado (las diagonales cuentan).',
+  'pb.halted':'{b} en {at} está paralizada', 'pb.halted.h':'{n} mes(es) más. Mientras tanto no cuesta nada.',
+  'pb.rejected':'Licencia denegada en {at}', 'pb.rejected.h':'Puedes volver a pedirla. Mejor sube antes al alcalde o a los vecinos.',
+  'pb.paused':'Promotora parada en {at}', 'pb.paused.h':'El mercado está frío. Seguirá cuando se recupere.',
+  'pb.ruin':'Promoción abandonada en {at}', 'pb.ruin.h':'Recómprala al banco para volver a usar la parcela.',
+  'pb.needPlan':'{n} parcela(s) rústica(s) no admiten edificios', 'pb.needPlan.h':'Presenta un plan urbanístico (agenda) para recalificarlas.',
+  'pb.queue':'{n} licencia(s) concedida(s) esperando constructora', 'pb.queue.h':'Las {c} constructoras están ocupadas.',
+  'pb.cash':'El mes que viene no podrás pagar ({x})', 'pb.cash.h':'El banco te prestará dinero… con intereses.',
+  'pb.comp':'Cumplimiento en {n}: auditoría al llegar a 0', 'pb.comp.h':'Envía un informe.',
+  'pb.neighCourt':'Vecinos furiosos: un juez puede anular el plan', 'pb.neighCourt.h':'Consulta pública o un parque, ya.',
+  'pb.neigh':'Vecinos enfadados: licencias más lentas y demandas', 'pb.neigh.h':'Consulta pública, parques y menos obras a la vez.',
+  'pb.local':'El alcalde está frío: sin suelo municipal y menos licencias', 'pb.local.h':'Invita al alcalde a comer.',
+  'pb.milestone':'Gasta {x} más antes del mes {m}', 'pb.milestone.h':'O se descomprometerá la mitad de lo que falte.',
+  'pb.directive':'La directiva «{d}» está a punto de fallar', 'pb.directive.h':'Dos fallos suspenden el programa.',
+  'pb.debt':'Deuda de {x} al {r}% mensual', 'pb.debt.h':'Por encima de {cap} el banco corta el grifo.',
+  'pb.market':'El mercado inmobiliario está frío', 'pb.market.h':'Las promotoras no compran suelo ni construyen.',
+  'pb.growth':'El crecimiento lo frena {w}', 'pb.growth.h':'La gente necesita vivienda, empleo, plazas escolares y sanidad.',
+  'why.factory':'Licencia de fábrica', 'why.village':'Obras junto al pueblo', 'why.lobby':'Comida con el alcalde', 'why.consult':'Consulta pública',
+  'why.report':'Informe enviado', 'why.park':'Parque nuevo', 'why.taxes':'Nuevos ingresos fiscales', 'why.decay':'La Comisión espera tu próximo informe',
+  'why.forget':'Los políticos olvidan', 'why.noise':'Ruido de obras', 'why.comms':'Agencia de comunicación', 'why.directiveFail':'Directiva incumplida',
+  'chip.risk':'{n}% de riesgo', 'chip.delay':'+{n} mes(es)', 'chip.slot':'{n} hueco el mes que viene', 'chip.lose':'pierdes la parcela', 'chip.land':'te quedas la parcela',
+  'chip.cost':'costes {x}', 'chip.later':'vuelven {x}', 'chip.rate':'interés {x}', 'chip.market':'el mercado cae',
+  'map.m':'{n}m', 'map.queue':'cola', 'map.halt':'parada {n}m', 'map.plan':'plan',
+  'stamp.approved':'APROBADO', 'stamp.rejected':'DENEGADO', 'stamp.decommitted':'DESCOMPROMETIDO', 'stamp.ontrack':'EN PLAZO', 'stamp.warning':'AVISO',
+  'stamp.compliant':'CONFORME', 'stamp.noncompliant':'NO CONFORME', 'stamp.loan':'PRÉSTAMO', 'stamp.appointed':'NOMBRADO', 'stamp.urgent':'URGENTE', 'stamp.bad':'VAYA', 'stamp.done':'HECHO',
+  'char.mayor':'Alcalde de {town}', 'char.neighbour':'Presidenta de la asociación de vecinos', 'char.heritage':'Servicio Regional de Patrimonio',
+  'char.brussels':'Técnico de la DG FUA (Bruselas)', 'char.developer':'Consejero delegado, Ladrillo Holdings', 'char.banker':'Caja de Ahorros Regional', 'char.union':'Sindicato de la construcción', 'char.farmer':'Propietario',
+  'country.0':'República de Valdoria', 'country.1':'Gran Ducado de Brennmark', 'country.2':'Reino de Esterra', 'country.3':'República de Calvadia', 'country.4':'República Federal de Morvania',
+  'rej.0':'El formulario 27-B se presentó con la tipografía equivocada.', 'rej.1':'La firma del arquitecto se sale del recuadro.', 'rej.2':'Falta el estudio de soleamiento para las ovejas existentes.',
+  'rej.3':'El concejal responsable está de vacaciones hasta nuevo aviso.', 'rej.4':'Falta un sello. ¿Cuál? Un sello.', 'rej.5':'Patrimonio no ha contestado (previsión: 2031).',
+  'rej.6':'El anexo IV debe imprimirse, escanearse y volver a imprimirse.', 'rej.7':'La dotación de aparcamiento se calculó por vecino y no por coche.',
+  'dir.spend.t':'Alerta de absorción', 'dir.spend.x':'Gaste {n} millones más antes del plazo. Los fondos sin gastar envían una señal equivocada.',
+  'dir.park.t':'Transición verde', 'dir.park.x':'Entregue un parque nuevo. Algo verde, para el folleto.',
+  'dir.school.t':'Pilar de cohesión social', 'dir.school.x':'Entregue un colegio nuevo. Las familias necesitan un sitio donde esperar al autobús.',
+  'dir.consult.t':'Participación de las partes interesadas', 'dir.consult.x':'Celebre una consulta pública. Nadie tiene que estar de acuerdo, pero hay que haber preguntado.',
+  'dir.reports.t':'Armonización de informes', 'dir.reports.x':'Envíe {n} informes con la nueva plantilla (que sustituye a la plantilla).',
+  'dir.residents.t':'Indicador 3.2.b', 'dir.residents.x':'Alcance {n} vecinos empadronados. El indicador ya está impreso en el informe anual.',
+  'dir.roads.t':'Agenda de conectividad', 'dir.roads.x':'Construya 3 tramos de calle nuevos. La conectividad es una prioridad (está en el título).',
+  'dir.deadline':'Plazo: final del mes {m}.', 'dir.rules':'El éxito tendrá recompensa. El fracaso quedará anotado. Con dos fracasos se suspende el programa.', 'dir.ack':'Acusar recibo',
+  'dir.met.t':'Directiva cumplida: {d}', 'dir.met.x':'La Comisión acusa recibo de su éxito y le concede una recompensa. Elija con cuidado.',
+  'dir.failed1.t':'Directiva incumplida: {d}', 'dir.failed1.x':'Plazo vencido. Se le retiran {x} y baja su cumplimiento. Un fallo más y el programa queda suspendido.',
+  'dir.failed2.t':'Directiva incumplida: {d}', 'dir.failed2.x':'Plazo vencido… otra vez. El programa queda suspendido.',
+  'perk.title':'Elige una recompensa', 'perk.x':'Su cumplimiento no ha pasado desapercibido. Elija una, y no se lo cuente a los demás programas.',
+  'perk.notary':'Notario amigo', 'perkd.notary':'El suelo cuesta un 30% menos.', 'perk.fasttrack':'Decreto de vía rápida', 'perkd.fasttrack':'Las licencias tardan 1 mes menos.',
+  'perk.prefab':'Proveedor de prefabricados', 'perkd.prefab':'Las obras tardan 1 mes menos.', 'perk.contractor':'Constructora extra', 'perkd.contractor':'+1 obra a la vez.',
+  'perk.cousin':'Primo en el Ministerio', 'perkd.cousin':'+1 hueco de agenda cada mes.', 'perk.translation':'Unidad de traducción', 'perkd.translation':'El cumplimiento baja la mitad de rápido.',
+  'perk.comms':'Agencia de comunicación', 'perkd.comms':'Vecinos +2 cada mes.', 'perk.fixer':'Conseguidor local', 'perkd.fixer':'El apoyo del alcalde nunca baja de 30.',
+  'perk.shovel':'Pala de oro', 'perkd.shovel':'Tu próxima obra la paga un patrocinador.', 'perk.lobbyist':'Lobista profesional', 'perkd.lobbyist':'Comer con el alcalde da +20 de apoyo.',
+  'plan.ok.t':'Plan urbanístico aprobado', 'plan.ok.x':'El pleno ha aprobado tu plan parcial: {n} parcela(s) ya son suelo urbano. Su valor se ha triplicado. Algunos primos míos están muy interesados.',
+  'plan.no.t':'Plan urbanístico denegado', 'plan.no.x':'El pleno ha rechazado el plan. Motivo oficial: «{r}» Motivo extraoficial: no me invitaste a comer.',
+  'ms.ok.t':'Hito de gasto cumplido', 'ms.ok.x':'En el mes {m} había que haber gastado {need}. Has gastado {spent}. El gráfico de absorción está en verde y todos respiramos.',
+  'ms.cut.t':'Fondos descomprometidos', 'ms.cut.x':'En el mes {m} había que haber gastado {need}. Has gastado {spent}. La mitad de lo que falta, {cut}, vuelve al presupuesto de la Unión.',
+  'ms.warn.t':'Aviso de absorción', 'ms.warn.x':'Recordatorio amistoso: en el mes {m} debe haber gastado {need}. Le faltan {gap}. Gaste más rápido, por favor. En cualquier cosa subvencionable.',
+  'loan.t':'Préstamo puente concedido', 'loan.x':'Sus cuentas han entrado en números rojos, así que le hemos prestado {x}. Deuda total: {debt} al {rate}% mensual. Por encima de {cap} dejamos de prestar, y se acabó.',
+  'ev.archaeology.t':'Hallazgo arqueológico', 'ev.archaeology.x':'Sus obreros han encontrado algo en la parcela {at}. Quizá monedas romanas. Quizá chapas. Por ley, tengo que estar informada.',
+  'ev.archaeology.c.call':'Avisar a Patrimonio (como manda la ley)', 'ev.archaeology.c.concrete':'Echar hormigón encima, sin hacer ruido', 'ev.archaeology.c.museum':'Hacer un pequeño museo',
+  'ev.archaeology.r.caught':'Un vecino grabó la hormigonera. Sale en el telediario. La Comisión está «profundamente preocupada».', 'ev.archaeology.r.quiet':'Nadie se ha dado cuenta. Las monedas se volverán a encontrar dentro de 2.000 años.',
+  'ev.toad.t':'Especie protegida', 'ev.toad.x':'Han visto un sapo corredor en la parcela {at}. Está protegido. Y tus plazos le dan bastante igual.',
+  'ev.toad.c.accept':'Declararla hábitat', 'ev.toad.c.study':'Encargar un estudio de traslado', 'ev.toad.c.mascot':'Hacer del sapo la mascota del pueblo',
+  'ev.toad.r.moved':'El sapo aceptó una charca nueva. La parcela vuelve a ser tuya.', 'ev.toad.r.stays':'El estudio concluye que el sapo se queda. El estudio se cobra igual.',
+  'ev.election.t':'Elecciones municipales', 'ev.election.x':'Vienen elecciones. Mi rival promete «revisar todos los proyectos heredados». ¿Ayudará a un viejo amigo?',
+  'ev.election.c.fund':'Financiar mi campaña (con discreción)', 'ev.election.c.neutral':'Mantenerse neutral', 'ev.election.c.meet':'Reunirse con todos los candidatos',
+  'ev.election.r.won':'¡Reelegido! No lo olvidaré. Probablemente.', 'ev.election.r.lost':'Perdí. El nuevo alcalde se enteró de la donación. Y Bruselas también.', 'ev.election.r.neutral':'Toma posesión un nuevo pleno. Su opinión sobre ti: por determinar.',
+  'ev.lawsuit.t':'Los vecinos denuncian', 'ev.lawsuit.x':'La asociación de vecinos ha recurrido sus obras. Tenemos abogados y tiempo. Mucho tiempo.',
+  'ev.lawsuit.c.court':'Pelearlo en los tribunales', 'ev.lawsuit.c.negotiate':'Negociar: más zonas verdes', 'ev.lawsuit.c.ignore':'Ignorarlo',
+  'ev.lawsuit.r.lostCase':'Has perdido. Una licencia queda congelada 4 meses más.', 'ev.lawsuit.r.wonCase':'El juez desestima el recurso. La asociación anuncia otro.', 'ev.lawsuit.r.annulled':'El juez ha anulado el plan urbanístico.',
+  'ev.inflation.t':'Suben los costes de construcción', 'ev.inflation.x':'El acero, el cemento y el café están un 12% más caros. Mi caja, por supuesto, puede financiar la diferencia.',
+  'ev.inflation.c.accept':'Aceptar los nuevos precios', 'ev.inflation.c.renegotiate':'Renegociar todos los contratos', 'ev.inflation.c.prefab':'Cambiar a un proveedor de prefabricados más barato',
+  'ev.strike.t':'Huelga de la construcción', 'ev.strike.x':'Los chavales no tienen subida desde el anterior programa. El mes que viene no se sube nadie a una grúa.',
+  'ev.strike.c.wait':'Que hagan huelga', 'ev.strike.c.bonus':'Pagar una prima', 'ev.strike.c.mediation':'Pedir a Bruselas que medie',
+  'ev.strike.r.long':'Bruselas envió un cuestionario. La huelga dura dos meses.', 'ev.strike.r.deal':'¡Acuerdo! Nadie sabe exactamente qué se ha pactado.',
+  'ev.delegation.t':'Delegación de Bruselas', 'ev.delegation.x':'La semana que viene voy de visita con una delegación. Nos encantaría ver avances. O al menos un render.',
+  'ev.delegation.c.photo':'Foto con el alcalde', 'ev.delegation.c.askmore':'Pedir más dinero', 'ev.delegation.c.renders':'Enseñarles los renders en 3D', 'ev.delegation.c.lunch':'Comida larga en el mejor restaurante',
+  'ev.delegation.r.granted':'¡Fondos extra aprobados! Nadie sabe explicar por qué.', 'ev.delegation.r.refused':'«Absorba primero lo que tiene». Tu cumplimiento se resiente.',
+  'ev.delegation.r.impressed':'Les encantó el vídeo con dron.', 'ev.delegation.r.unimpressed':'Se han dado cuenta de que en los renders salen montañas. No hay montañas.',
+  'ev.cofinance.t':'Cofinanciación retrasada', 'ev.cofinance.x':'El Ministerio de Hacienda «retiene temporalmente» 3 millones de la cofinanciación nacional. Deberían llegar en 4 meses. Deberían.',
+  'ev.cofinance.c.wait':'Esperar con paciencia', 'ev.cofinance.c.complain':'Quejarse a Bruselas', 'ev.cofinance.c.bridge':'Cubrirlo con un préstamo',
+  'ev.ribbon.t':'Inauguración prematura', 'ev.ribbon.x':'El presidente regional quiere inaugurar sus obras de la parcela {at}. Es un agujero, pero es un agujero fotogénico.',
+  'ev.ribbon.c.smile':'Sonreír para la foto', 'ev.ribbon.c.refuse':'Negarse: es un agujero',
+  'ev.influencer.t':'Vídeo viral', 'ev.influencer.x':'Mi nieta grabó la puesta de sol en su parque. Cuatro mil comentarios. No he leído ninguno.',
+  'ev.influencer.c.share':'Compartirlo por todas partes', 'ev.influencer.c.hire':'Contratarla como influencer del pueblo',
+  'ev.discount.t':'Herencia resuelta', 'ev.discount.x':'Mis primos y yo por fin nos ponemos de acuerdo para vender la parcela {at}. Barata, {x}, antes de que cambiemos de idea.',
+  'ev.discount.c.buy':'Comprarla ya (sin gastar hueco)', 'ev.discount.c.later':'Ahora no',
+  'ev.template.t':'Nueva plantilla de informes', 'ev.template.x':'Hemos publicado una nueva plantilla de la plantilla de informes. Debe volver a presentar los informes anteriores.',
+  'ev.template.c.fill':'Rellenarla tú mismo', 'ev.template.c.ignore':'Ignorarla', 'ev.template.c.consultants':'Contratar una consultora',
+  'ev.devOffer.t':'Una oferta que puedes rechazar', 'ev.devOffer.x':'Me gusta la parcela {at}. Pago {x}, al contado, un 30% sobre mercado. Hago pisos de lujo. Ganamos todos. Sobre todo yo.',
+  'ev.devOffer.c.sell':'Vendérsela a Ladrillo Holdings', 'ev.devOffer.c.decline':'Rechazar con educación',
+  'ev.crash.t':'Se hunde el mercado inmobiliario', 'ev.crash.x':'El mercado inmobiliario se ha hundido. Las promotoras paran sus obras y alguna puede no sobrevivir. Lo sentimos mucho, naturalmente.',
+  'ev.crash.c.bailout':'Rescatar a las promotoras', 'ev.crash.c.letfall':'Que decida el mercado', 'ev.crash.c.hold':'Aguantar y esperar',
+  'ev.crash.r.ruin':'Una promotora ha quebrado. Ahora un esqueleto de hormigón decora tu pueblo.',
+  'ev.loanCall.t':'Llama el banco', 'ev.loanCall.x':'Estamos revisando nuestra exposición a su programa. Una amortización parcial sería… bienvenida.',
+  'ev.loanCall.c.repay':'Devolver ahora', 'ev.loanCall.c.renegotiate':'Renegociar (más interés)',
+  'ev.fiesta.t':'Fiestas del pueblo', 'ev.fiesta.x':'Son las fiestas patronales. Todo el pueblo espera que el programa pague los fuegos artificiales.',
+  'ev.fiesta.c.sponsor':'Patrocinar las fiestas', 'ev.fiesta.c.skip':'Mandar un correo muy educado',
+  'log.opened':'Programa abierto en {town}.', 'log.buyback':'Parcela {at} recomprada al banco por {x}.', 'log.holdout':'El dueño de {at} pide más. Nuevo precio: {x}.',
+  'log.acquired':'Parcela {at} comprada por {x}.', 'log.village':'La asociación del pueblo «tiene sus dudas».', 'log.permit':'Licencia solicitada: {b} en {at} ({n} meses).',
+  'log.sold':'Parcela {at} vendida a una promotora por {x}.', 'log.planSubmitted':'Plan urbanístico presentado: {n} parcela(s), {m} meses.', 'log.lobby':'Comida con el alcalde. Alcalde +{n}.',
+  'log.consult':'Consulta pública celebrada. {n} licencia(s) se retrasan un mes.', 'log.report':'Informe enviado (84 páginas, 3 anexos).', 'log.repaid':'Devueltos {x} al banco.',
+  'log.directiveNew':'Nueva directiva: {d} (vence el mes {m}).', 'log.perk':'Ventaja conseguida: {k}.', 'log.event':'Aviso: {e}.', 'log.choice':'{e}: {c}.',
+  'log.approved':'Licencia CONCEDIDA: {b} en {at}.', 'log.rejected':'Licencia DENEGADA ({b}): {r}', 'log.planApproved':'Plan urbanístico APROBADO: {n} parcela(s) recalificada(s).', 'log.planRejected':'Plan urbanístico DENEGADO.',
+  'log.sponsor':'Un patrocinador paga esta obra (logo en la valla).', 'log.strike':'Huelga: este mes no avanza ninguna obra.', 'log.completed':'{b} terminado en {at}.',
+  'log.devDone':'La promotora ha terminado viviendas en {at}.', 'log.cofin':'Ha llegado la cofinanciación nacional: {x}. Un milagro.', 'log.decommitted':'{x} descomprometidos.',
+  'log.directiveMet':'Directiva cumplida: {d}.', 'log.directiveFailed':'Directiva incumplida: {d}.', 'log.loan':'Préstamo puente: {x}.',
+  'over.target.t':'¡Inauguración!', 'over.target.s':'INAUGURADO', 'over.target.x':'{town} tiene {n} vecinos empadronados. Corté la cinta, di un discurso sobre «nuestro» pueblo y me llevé todo el mérito. Tú no salías en la foto.',
+  'over.bankrupt.t':'El banco corta el grifo', 'over.bankrupt.s':'INSOLVENTE', 'over.bankrupt.x':'Tu deuda superó el límite. El pueblo a medio hacer acaba como caso de estudio en un informe del Tribunal de Cuentas.',
+  'over.audit.t':'Auditoría', 'over.audit.s':'AUDITADO', 'over.audit.x':'Tu cumplimiento llegó a cero. La oficina antifraude busca 3.000 páginas desaparecidas. Te han trasladado al archivo.',
+  'over.suspended.t':'Programa suspendido', 'over.suspended.s':'SUSPENDIDO', 'over.suspended.x':'Dos directivas incumplidas. El programa queda suspendido «a la espera de una revisión estratégica» que durará una década.',
+  'over.court.t':'Plan anulado', 'over.court.s':'ANULADO', 'over.court.x':'El juez anuló el plan urbanístico. Todo lo construido queda en un limbo legal. Los vecinos, encantados.',
+  'over.timeout.t':'Se acabó el programa', 'over.timeout.s':'CERRADO', 'over.timeout.x':'Termina el mes {m} con {n} de {target} vecinos. El programa «será evaluado». Ya se redacta un sucesor con unas siglas más largas.',
+},
+};
+
 // =====================================================================
 //  CONFIG — tuning knobs (see docs/GDD.md)
 // =====================================================================
-const N = 10, TW = 64, TH = 32;
+const N = 12, TW = 64, TH = 32;
 const CFG = {
-  months: 36, grant: 150, target: 600, slots: 3, contractors: 3,
-  village: 30, permitFee: 0.2, lobbyCost: 0.3, consultCost: 0.2,
-  milestones: { 12: 0.20, 24: 0.50 },          // share of the grant that must be spent by then
+  months: 36, grant: 130, target: 700, slots: 3, contractors: 3,
+  village: 30, permitFee: 0.2, lobbyCost: 0.3, consultCost: 0.2, planCost: 0.5, planMonths: 2,
+  milestones: { 12: 0.20, 24: 0.50 },     // share of the grant that must be spent by then
+  decommitShare: 0.5,                      // share of the shortfall that is taken back
   complianceDecay: 5, localDecay: 1, noisePerSite: 1,
   jobsPerResident: 1/1.6, baseSchool: 150, baseHealth: 250, baseJobs: 40,
+  urbanUplift: 3,                          // urban land is worth x3 its rustic price (land value capture)
+  devMinMarket: 0.8,                       // developers only buy when the market is at least this hot
+  taxShare: 0.5, taxPerFactory: 0.25, taxPerResident: 0.0008,
+  loanStep: 5, debtCap: 35, interest: 0.02,
 };
 const B = {
-  road:    {name:'Road',          icon:'add_road',       cost:0.6, build:1, permit:1, upkeep:0.01, desc:'Access for the parcels next to it'},
-  housing: {name:'Housing block', icon:'apartment',      cost:7,   build:3, permit:3, upkeep:0.06, desc:'+150 homes', homes:150},
-  factory: {name:'Factory',       icon:'factory',        cost:9,   build:4, permit:3, upkeep:0.06, desc:'+150 jobs · the neighbours hate it', jobs:150},
-  school:  {name:'School',        icon:'school',         cost:5,   build:4, permit:3, upkeep:0.06, desc:'+300 school places', school:300},
-  clinic:  {name:'Health centre', icon:'local_hospital', cost:6,   build:4, permit:3, upkeep:0.06, desc:'+600 patients', health:600},
-  park:    {name:'Park',          icon:'park',           cost:1.5, build:2, permit:1, upkeep:0.02, desc:'Neighbours +6 · people move in faster'},
+  road:    {icon:'add_road',       cost:0.6, build:1, permit:1, upkeep:0.01},
+  housing: {icon:'apartment',      cost:7,   build:3, permit:2, upkeep:0.06, homes:150, urban:true},
+  factory: {icon:'factory',        cost:9,   build:4, permit:3, upkeep:0.06, jobs:150, urban:true},
+  school:  {icon:'school',         cost:5,   build:3, permit:2, upkeep:0.06, school:300, urban:true},
+  clinic:  {icon:'local_hospital', cost:6,   build:3, permit:2, upkeep:0.06, health:600, urban:true},
+  park:    {icon:'park',           cost:1.5, build:2, permit:1, upkeep:0.02},
 };
 const BUILD_TYPES = ['road','housing','factory','school','clinic','park'];
-const KIND = {
-  farm:     {name:'Private farmland',  icon:'agriculture'},
-  muni:     {name:'Municipal land',    icon:'account_balance'},
-  flood:    {name:'Flood zone',        icon:'water'},
-  habitat:  {name:'Protected habitat', icon:'forest'},
-  village:  {name:'Old village',       icon:'cottage'},
-  regional: {name:'Regional road',     icon:'add_road'},
-};
+const KIND = { farm:'agriculture', muni:'account_balance', flood:'water', habitat:'forest', village:'cottage', regional:'add_road' };
 const PERKS = {
-  notary:      {name:'Friendly Notary',        icon:'history_edu',    desc:'Land costs 30% less.'},
-  fasttrack:   {name:'Fast-track Decree',      icon:'bolt',           desc:'Permits take 1 month less.'},
-  prefab:      {name:'Prefab Supplier',        icon:'view_in_ar',     desc:'Construction takes 1 month less.'},
-  contractor:  {name:'Extra Contractor',       icon:'engineering',    desc:'+1 construction site at the same time.'},
-  cousin:      {name:'Cousin at the Ministry', icon:'family_restroom',desc:'+1 agenda slot every month.'},
-  translation: {name:'Translation Unit',       icon:'translate',      desc:'Compliance decays half as fast.'},
-  comms:       {name:'Comms Agency',           icon:'campaign',       desc:'Neighbours +2 every month.'},
-  fixer:       {name:'Local Fixer',            icon:'handshake',      desc:'Local support never drops below 30.'},
-  shovel:      {name:'Golden Shovel',          icon:'workspace_premium', desc:'Your next construction is paid by a sponsor.'},
-  lobbyist:    {name:'Professional Lobbyist',  icon:'restaurant',     desc:'Lobbying the mayor gives +20 support.'},
+  notary:'history_edu', fasttrack:'bolt', prefab:'view_in_ar', contractor:'engineering', cousin:'family_restroom',
+  translation:'translate', comms:'campaign', fixer:'handshake', shovel:'workspace_premium', lobbyist:'restaurant',
 };
-const COUNTRIES = ['Republic of Valdoria','Grand Duchy of Brennmark','Kingdom of Esterra','Republic of Calvadia','Federal Republic of Morvania'];
+// Recurring characters (fictional). Portrait parameters are drawn as SVG in the UI.
+const CHARS = {
+  mayor:     {name:'Gilberto Plaza',          look:{skin:'#f1c7a1', hair:'#3b2a1e', style:'side',  acc:'sash',    mouth:'smile', coat:'#2d3f6b'}},
+  neighbour: {name:'Remedios Quintana',       look:{skin:'#f3d1b5', hair:'#cfcfcf', style:'bun',   acc:'glasses', mouth:'frown', coat:'#8e4f6d'}},
+  heritage:  {name:'Dr. Ottilie Steinbach',   look:{skin:'#f5dccb', hair:'#a0522d', style:'long',  acc:'glasses', mouth:'flat',  coat:'#5b6b4a'}},
+  brussels:  {name:'Joost van der Formulier', look:{skin:'#f0c9a8', hair:'#e2c35a', style:'short', acc:'tie',     mouth:'flat',  coat:'#33415c'}},
+  developer: {name:'Bruno Ladrillo',          look:{skin:'#e0ac83', hair:'#1b1b1b', style:'slick', acc:'gold',    mouth:'grin',  coat:'#1c1c24'}},
+  banker:    {name:'Konrad Grüngeld',         look:{skin:'#f2cfb3', hair:'#8a8a8a', style:'bald',  acc:'monocle', mouth:'flat',  coat:'#2a3a2f'}},
+  union:     {name:'Paco Hormigón',           look:{skin:'#c98b5e', hair:'#2b1b10', style:'short', acc:'hardhat', mouth:'flat',  coat:'#e0712b', mustache:true}},
+  farmer:    {name:'Benito Terrón',           look:{skin:'#d9a57a', hair:'#dddddd', style:'cap',   acc:'none',    mouth:'grin',  coat:'#5d7a3a', mustache:true}},
+};
+const N_COUNTRIES = 5, N_REJECTIONS = 8;
 const TOWN_A = ['San','Villanueva del','Bad','Sankt','Pontevieja-sur-','Nieuw','Santa Maria do','Klein'];
 const TOWN_B = ['Expediente','Formular','Paragraph','Dossier','Tramite','Stempel','Protocolo','Annex'];
-const REJECTIONS = [
-  'Form 27-B was submitted in the wrong font.',
-  "The architect's signature exceeds the box.",
-  'A sunlight study for the existing sheep is missing.',
-  'The councillor in charge is on holiday until further notice.',
-  'Missing stamp. Which stamp? A stamp.',
-  'The Heritage Office has not yet replied (estimated: 2031).',
-  'Annex IV must be printed, scanned and printed again.',
-  'The parking-space ratio was calculated per resident, not per car.',
-];
 
 // =====================================================================
-//  RNG (seeded, stored in the save so runs are reproducible)
+//  RNG (seeded, stored in the save so runs are reproducible) + helpers
 // =====================================================================
 let S = null;   // the whole game state
 function rnd(){
@@ -232,11 +631,13 @@ const ri = (a,b)=> a + Math.floor(rnd()*(b-a+1));
 const pick = arr => arr[Math.floor(rnd()*arr.length)];
 const r1 = x => Math.round(x*10)/10;
 const clamp = (x,a,b)=> Math.max(a, Math.min(b, x));
-const fmt = x => (Math.round(x*10)/10).toFixed(1);
 const idx = (r,c)=> r*N+c;
+const rc = i => [Math.floor(i/N), i%N];
 const inside = (r,c)=> r>=0 && r<N && c>=0 && c<N;
 const NB = [[-1,0],[1,0],[0,-1],[0,1]];
+const NB8 = [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]];
 const has = p => S.perks.includes(p);
+const pname = i => { const [r,c]=rc(i); return `${r+1}-${c+1}`; };
 
 // =====================================================================
 //  NEW GAME — random site, country and town
@@ -244,16 +645,16 @@ const has = p => S.perks.includes(p);
 function newGame(seed){
   if(seed === undefined) seed = (Math.random()*2147483647)|0;
   S = {
-    v:2, seed, rng:seed|0, month:1, funds:CFG.grant, grant:CFG.grant, spent:0,
-    slots:CFG.slots, local:55, neigh:55, comp:60, inflation:1, strikes:0, perks:[],
-    grid:[], newcomers:0, qseq:0, directive:null, directivesDone:0,
-    reports:0, consults:0, lobbied:0, strike:false, electionDone:false, refunds:[],
-    shovel:false, log:[], notices:[], perkChoice:null, over:null, bottleneck:'homes',
-    country:'', town:'',
+    v:3, seed, rng:seed|0, month:1, funds:CFG.grant, grant:CFG.grant, spent:0, debt:0, rate:CFG.interest,
+    slots:CFG.slots, slotPenalty:0, local:55, neigh:55, comp:60, inflation:1, market:1, strikes:0, perks:[],
+    grid:[], newcomers:0, qseq:0, directive:null, directivesDone:0, plan:null,
+    reports:0, consults:0, lobbied:0, strike:0, electionDone:false, crashDone:false, refunds:[],
+    shovel:false, log:[], cards:[], perkChoice:null, over:null, bottleneck:'homes',
+    country:0, town:'', trail:[], prev:null, lastTax:0, fx:[], focus:-1,
   };
-  S.country = pick(COUNTRIES);
+  S.country = Math.floor(rnd()*N_COUNTRIES);
   S.town = (()=>{ const a=pick(TOWN_A), b=pick(TOWN_B); return a.endsWith('-') ? a+b : a+' '+b; })();
-  for(let i=0;i<N*N;i++) S.grid.push({k:'farm', st:'land', ty:null, t:0, halt:0, price:r1(1.2+rnd()*1.4), hold:false, mcost:0});
+  for(let i=0;i<N*N;i++) S.grid.push({k:'farm', st:'land', ty:null, t:0, halt:0, price:r1(1.0+rnd()*1.4), hold:false, mcost:0, urban:false, flag:null});
   const set = (r,c,k,extra)=>{ if(!inside(r,c)) return false; const p=S.grid[idx(r,c)];
     if(p.k!=='farm') return false; Object.assign(p,{k},extra||{}); return true; };
   // Regional road along the west edge
@@ -261,46 +662,58 @@ function newGame(seed){
   // Old village next to the road
   const vr = ri(1, N-4);
   for(let r=vr;r<vr+3;r++) set(r,1,'village',{st:'built', price:0});
-  if(rnd()<0.5) set(vr+1,2,'village',{st:'built', price:0});
+  if(rnd()<0.6) set(vr+1,2,'village',{st:'built', price:0});
   // A small river with a flood zone
   let fr = ri(2, N-3);
-  for(let c=ri(4,6); c<N; c++){ set(fr,c,'flood',{price:0.7}); if(rnd()<0.4) fr = clamp(fr+(rnd()<0.5?-1:1),1,N-2); }
+  for(let c=ri(4,7); c<N; c++){ set(fr,c,'flood',{price:0.6}); if(rnd()<0.4) fr = clamp(fr+(rnd()<0.5?-1:1),1,N-2); }
   // Protected habitats
-  for(let h=0;h<2;h++){ let r=ri(1,N-2), c=ri(4,N-1);
+  for(let h=0;h<3;h++){ let r=ri(1,N-2), c=ri(4,N-1);
     for(let s=0;s<4;s++){ set(r,c,'habitat',{price:0}); const d=pick(NB); r=clamp(r+d[0],0,N-1); c=clamp(c+d[1],2,N-1); } }
-  // Municipal land in two clusters
+  // Municipal land (already urban: the town's reserve) in two clusters
   for(let m=0;m<2;m++){ let r=ri(0,N-1), c=ri(2,N-1), n=0, guard=0;
-    while(n<5 && guard++<40){ if(set(r,c,'muni',{price:0.4})) n++; const d=pick(NB); r=clamp(r+d[0],0,N-1); c=clamp(c+d[1],2,N-1); } }
-  log(`Programme opened in ${S.town}, ${S.country}.`, 'good');
-  S.notices.push({kind:'intro'});
+    while(n<6 && guard++<50){ if(set(r,c,'muni',{price:0.6, urban:true})) n++; const d=pick(NB); r=clamp(r+d[0],0,N-1); c=clamp(c+d[1],2,N-1); } }
+  S.prev = snapshot();
+  log('log.opened', {town:S.town}, 'good');
+  S.cards.push({type:'intro'});
   return S;
 }
+function snapshot(){ return {local:S.local, neigh:S.neigh, comp:S.comp, funds:S.funds, res:residents()}; }
 
 // =====================================================================
 //  RULES
 // =====================================================================
-function log(text, cls){ S.log.unshift({m:S.month, text, cls:cls||''}); S.log.length = Math.min(S.log.length, 40); }
+function log(k, p, cls){ S.log.unshift({m:S.month, k, p:p||{}, c:cls||''}); S.log.length = Math.min(S.log.length, 50); }
 function spend(x){ S.funds -= x; S.spent += x; }
+// Change a meter and remember why (shown when the player taps the meter)
+function bump(m, d, why){
+  if(!d) return 0;
+  const lo = (m==='local' && has('fixer')) ? 30 : 0, before = S[m];
+  S[m] = clamp(S[m]+d, lo, 100);
+  const real = S[m]-before;
+  if(real){ S.trail.unshift({m:S.month, meter:m, d:real, why}); S.trail.length = Math.min(S.trail.length, 60); }
+  return real;
+}
 function isRoad(p, planned){
   if(p.ty !== 'road') return false;
   if(p.k === 'regional' || p.st === 'built') return true;
   return planned && (p.st==='review' || p.st==='approved' || p.st==='building');
 }
+// Access counts the 8 neighbours: a parcel touching a road corner-to-corner is connected
 function hasAccess(r,c){
-  return NB.some(([dr,dc])=> inside(r+dr,c+dc) && isRoad(S.grid[idx(r+dr,c+dc)], true));
+  return NB8.some(([dr,dc])=> inside(r+dr,c+dc) && isRoad(S.grid[idx(r+dr,c+dc)], true));
 }
-function nextToVillage(r,c){ return NB.some(([dr,dc])=> inside(r+dr,c+dc) && S.grid[idx(r+dr,c+dc)].k==='village'); }
+function nextToVillage(r,c){ return NB8.some(([dr,dc])=> inside(r+dr,c+dc) && S.grid[idx(r+dr,c+dc)].k==='village'); }
 function landPrice(p){ return r1(p.price * (has('notary') ? 0.7 : 1)); }
+function plotValue(p){ return r1(p.price * CFG.urbanUplift * S.market); }
 function buildCost(p, ty){ return r1(B[ty].cost * S.inflation * (p.k==='flood' ? 1.5 : 1)); }
 function permitMonths(ty){
-  let m = B[ty].permit + (S.neigh<40?1:0) + (S.neigh<25?1:0) - (has('fasttrack')?1:0);
-  return Math.max(1, m);
+  return Math.max(1, B[ty].permit + (S.neigh<40?1:0) + (S.neigh<25?1:0) - (has('fasttrack')?1:0));
 }
 function buildMonths(ty){ return Math.max(1, B[ty].build - (has('prefab')?1:0)); }
 function contractors(){ return CFG.contractors + (has('contractor')?1:0); }
 function slotsPerMonth(){ return CFG.slots + (has('cousin')?1:0); }
 function approvalChance(){
-  return clamp(0.62 + (S.local-50)/150 + (S.neigh-50)/200 + (S.comp-50)/300, 0.15, 0.97);
+  return clamp(0.58 + (S.local-50)/150 + (S.neigh-50)/200 + (S.comp-50)/300, 0.15, 0.97);
 }
 function count(ty, st='built'){ return S.grid.filter(p=>p.ty===ty && p.st===st && p.k!=='regional').length; }
 function activeSites(){ return S.grid.filter(p=>p.st==='building').length; }
@@ -314,81 +727,110 @@ function caps(){
   return {...all, cap: all[k], bottleneck: k};
 }
 function residents(){ return S.newcomers + CFG.village; }
+function taxIncome(){ return r1(CFG.taxShare*(count('factory')*CFG.taxPerFactory + S.newcomers*CFG.taxPerResident)*100)/100; }
 function monthlyCosts(){
-  let c = 0;
+  let c = S.debt*S.rate;
   S.grid.forEach(p=>{ if(p.st==='building' && !p.halt) c += p.mcost;
-    if(p.st==='built' && p.ty && p.k!=='regional') c += B[p.ty].upkeep; });
+    if(p.st==='built' && p.ty && p.k!=='regional' && !p.priv) c += B[p.ty].upkeep; });
   return c;
 }
+function nextMilestone(){ const m = Object.keys(CFG.milestones).map(Number).find(m=>m>=S.month); return m ? {m, need:r1(S.grant*CFG.milestones[m])} : null; }
 
-// --- Player actions. Each returns {ok, msg, bad?} and never grants anything for free. ---
+// --- Player actions. Each returns {ok, msg:{k,p}, bad?} and never grants anything for free. ---
+const fail = (k,p) => ({ok:false, bad:true, msg:{k, p}});
 function canAct(n=1){ return !S.over && !S.perkChoice && S.slots >= n; }
 function acquire(i){
-  const p = S.grid[i], [r,c] = [Math.floor(i/N), i%N];
-  if(!canAct()) return {ok:false, bad:true, msg:'No agenda slots left'};
-  if(p.st!=='land' || !['farm','muni','flood'].includes(p.k)) return {ok:false, bad:true, msg:'Not for sale'};
-  if(p.k==='muni' && S.local < 40) return {ok:false, bad:true, msg:'The mayor says no (support < 40)'};
+  const p = S.grid[i];
+  if(!canAct()) return fail('err.slots');
+  if(p.st==='ruin'){ const price=r1(p.price*1.5); if(S.funds<price) return fail('err.funds');
+    S.slots--; spend(price); Object.assign(p,{st:'owned', ty:null, dev:null}); log('log.buyback',{at:pname(i), x:money(price)}); return {ok:true, msg:{k:'fx.money', p:{x:money(-price)}}}; }
+  if(p.st!=='land' || !['farm','muni','flood'].includes(p.k)) return fail('err.notForSale');
+  if(p.k==='muni' && S.local < 40) return fail('err.mayorNo');
   const price = landPrice(p);
-  if(S.funds < price) return {ok:false, bad:true, msg:'No funds'};
+  if(S.funds < price) return fail('err.funds');
   S.slots--;
   if(p.k==='farm' && !p.hold && rnd() < 0.28){
-    p.hold = true; p.price = r1(p.price*1.8);
-    log(`Owner of parcel ${r+1}-${c+1} holds out. New price: €${fmt(landPrice(p))}M.`, 'bad');
-    return {ok:false, bad:true, msg:'Owner holds out!'};
+    p.hold = true; p.price = r1(p.price*1.8); p.flag = {k:'holdout', until:S.month+1};
+    log('log.holdout', {at:pname(i), x:money(landPrice(p))}, 'bad');
+    return {ok:false, bad:true, msg:{k:'fx.holdout'}, sfx:'farmer'};
   }
   spend(price); p.st = 'owned';
-  log(`Parcel ${r+1}-${c+1} acquired for €${fmt(price)}M.`);
-  return {ok:true, msg:`-€${fmt(price)}M`};
+  log('log.acquired', {at:pname(i), x:money(price)});
+  return {ok:true, msg:{k:'fx.money', p:{x:money(-price)}}};
 }
 function requestPermit(i, ty){
-  const p = S.grid[i], [r,c] = [Math.floor(i/N), i%N];
-  if(!canAct()) return {ok:false, bad:true, msg:'No agenda slots left'};
-  if(p.st!=='owned') return {ok:false, bad:true, msg:'You must own the parcel'};
-  if(!hasAccess(r,c)) return {ok:false, bad:true, msg:'No road access'};
-  if(S.funds < CFG.permitFee) return {ok:false, bad:true, msg:'No funds'};
+  const p = S.grid[i], [r,c] = rc(i);
+  if(!canAct()) return fail('err.slots');
+  if(p.st!=='owned') return fail('err.mustOwn');
+  if(!hasAccess(r,c)) return fail('err.noAccess');
+  if(B[ty].urban && !p.urban) return fail('err.rustic');
+  if(S.funds < CFG.permitFee) return fail('err.funds');
   S.slots--; spend(CFG.permitFee);
-  p.st = 'review'; p.ty = ty; p.t = permitMonths(ty);
-  if(ty==='factory'){ S.neigh = clamp(S.neigh-3, 0, 100); }
-  if(nextToVillage(r,c) && ty!=='park'){ S.neigh = clamp(S.neigh-3, 0, 100); log('The village association "has concerns".', 'bad'); }
-  log(`Permit requested: ${B[ty].name} on ${r+1}-${c+1} (${p.t} months).`);
-  return {ok:true, msg:'Filed'};
+  p.st = 'review'; p.ty = ty; p.t = permitMonths(ty); p.flag = null;
+  if(ty==='factory') bump('neigh', -3, 'why.factory');
+  if(nextToVillage(r,c) && ty!=='park'){ bump('neigh', -3, 'why.village'); log('log.village', {}, 'bad'); }
+  log('log.permit', {b:ty, at:pname(i), n:p.t});
+  return {ok:true, msg:{k:'fx.filed'}, sfx:'stamp'};
+}
+function sellPlot(i){
+  const p = S.grid[i], [r,c] = rc(i);
+  if(!canAct()) return fail('err.slots');
+  if(p.st!=='owned' || !p.urban) return fail('err.sellUrban');
+  if(!hasAccess(r,c)) return fail('err.noAccess');
+  if(S.market < CFG.devMinMarket) return fail('err.noBuyers');
+  const price = plotValue(p);
+  S.slots--; S.funds += price;
+  Object.assign(p, {st:'private', ty:'housing', dev:{phase:'permit', t:ri(2,3)}, flag:null});
+  log('log.sold', {at:pname(i), x:money(price)}, 'good');
+  return {ok:true, msg:{k:'fx.money', p:{x:money(price)}}, cls:'good', sfx:'cash'};
+}
+function submitPlan(){
+  if(!canAct(2)) return fail('err.slots2');
+  if(S.plan) return fail('err.planBusy');
+  const list = S.grid.map((p,i)=>i).filter(i=>{ const p=S.grid[i]; return p.st==='owned' && !p.urban; });
+  if(!list.length) return fail('err.planNothing');
+  if(S.funds < CFG.planCost) return fail('err.funds');
+  S.slots -= 2; spend(CFG.planCost);
+  S.plan = {t: CFG.planMonths + (S.neigh<30?1:0), list};
+  log('log.planSubmitted', {n:list.length, m:S.plan.t});
+  return {ok:true, msg:{k:'fx.filed'}, sfx:'stamp'};
 }
 function lobby(){
-  if(!canAct()) return {ok:false, bad:true, msg:'No agenda slots left'};
-  if(S.funds < CFG.lobbyCost) return {ok:false, bad:true, msg:'No funds'};
+  if(!canAct()) return fail('err.slots');
+  if(S.funds < CFG.lobbyCost) return fail('err.funds');
   S.slots--; spend(CFG.lobbyCost);
   const g = has('lobbyist') ? 20 : (S.lobbied ? 6 : 12); S.lobbied++;
-  S.local = clamp(S.local+g, 0, 100);
-  log(`Networking lunch with the mayor. Local support +${g}.`, 'good');
-  return {ok:true, msg:`+${g} support`};
+  bump('local', g, 'why.lobby');
+  log('log.lobby', {n:g}, 'good');
+  return {ok:true, msg:{k:'fx.local', p:{n:g}}, cls:'good'};
 }
 function consult(){
-  if(!canAct(2)) return {ok:false, bad:true, msg:'Needs 2 agenda slots'};
-  if(S.funds < CFG.consultCost) return {ok:false, bad:true, msg:'No funds'};
+  if(!canAct(2)) return fail('err.slots2');
+  if(S.funds < CFG.consultCost) return fail('err.funds');
   S.slots -= 2; spend(CFG.consultCost); S.consults++;
-  S.neigh = clamp(S.neigh+15, 0, 100);
+  bump('neigh', 15, 'why.consult');
   let delayed = 0; S.grid.forEach(p=>{ if(p.st==='review'){ p.t++; delayed++; } });
-  log(`Public consultation held. Neighbours +15${delayed?`; ${delayed} permit(s) delayed 1 month for the consultation period`:''}.`, 'good');
-  return {ok:true, msg:'+15 neighbours'};
+  if(S.plan) S.plan.t++;
+  log('log.consult', {n:delayed}, 'good');
+  return {ok:true, msg:{k:'fx.neigh', p:{n:15}}, cls:'good', sfx:'crowd'};
 }
 function fileReport(){
-  if(!canAct()) return {ok:false, bad:true, msg:'No agenda slots left'};
+  if(!canAct()) return fail('err.slots');
   S.slots--; S.reports++;
-  S.comp = clamp(S.comp+22, 0, 100);
-  log('Quarterly report filed (84 pages, 3 annexes). Compliance +22.', 'good');
-  return {ok:true, msg:'+22 compliance'};
+  bump('comp', 22, 'why.report');
+  log('log.report', {}, 'good');
+  return {ok:true, msg:{k:'fx.comp', p:{n:22}}, cls:'good', sfx:'stamp'};
+}
+function repay(){
+  if(S.over || S.debt<=0) return fail('err.noDebt');
+  const x = Math.min(CFG.loanStep, S.debt);
+  if(S.funds < x) return fail('err.funds');
+  S.funds -= x; S.debt = r1(S.debt - x);
+  log('log.repaid', {x:money(x)}, 'good');
+  return {ok:true, msg:{k:'fx.money', p:{x:money(-x)}}, sfx:'cash'};
 }
 
-// --- Directives (random missions) ---
-const DIRECTIVES = {
-  spend:    {title:'Absorption Rate Alert', icon:'payments',     text:p=>`Spend €${p.param}M more within the deadline. Unspent funds send the wrong signal.`},
-  park:     {title:'Green Transition',      icon:'park',         text:()=>'Deliver a new park. Something green, for the brochure.'},
-  school:   {title:'Social Cohesion Pillar',icon:'school',       text:()=>'Deliver a new school. Families need somewhere to wait for the bus.'},
-  consult:  {title:'Stakeholder Engagement',icon:'forum',        text:()=>'Hold a public consultation. Nobody has to agree, but they must have been asked.'},
-  reports:  {title:'Reporting Harmonisation',icon:'description', text:p=>`File ${p.param} reports using the new template (which replaces the template).`},
-  residents:{title:'KPI 3.2.b',             icon:'groups',       text:p=>`Reach ${p.param} registered residents. The indicator has already been printed in the annual report.`},
-  roads:    {title:'Connectivity Agenda',   icon:'add_road',     text:()=>'Build 3 new road segments. Connectivity is a priority (it is in the title).'},
-};
+// --- Directives (random missions from Brussels) ---
 function directiveProgress(d){
   switch(d.kind){
     case 'spend': return S.spent >= d.base + d.param;
@@ -401,13 +843,14 @@ function directiveProgress(d){
   }
   return false;
 }
+const DIRECTIVE_ICON = {spend:'payments', park:'park', school:'school', consult:'forum', reports:'description', residents:'groups', roads:'add_road'};
 function issueDirective(){
   const m = S.month;
   const pool = ['spend','park','consult','reports','roads','school'];
   if(m >= 8) pool.push('residents','residents');
   const kind = pick(pool);
   const dur = {spend:5, park:5, school:7, consult:3, reports:4, residents:6, roads:5}[kind];
-  const d = {kind, deadline: m+dur, param:0, base:0};
+  const d = {kind, deadline: m+dur, param:0, base:0, ref:`HUF/${m}/${kind.toUpperCase()}`};
   if(kind==='spend'){ d.param = ri(8,12); d.base = S.spent; }
   if(kind==='park') d.base = count('park');
   if(kind==='school') d.base = count('school');
@@ -417,8 +860,8 @@ function issueDirective(){
   if(kind==='residents') d.param = Math.round((40 + (m+dur)*12)/10)*10;
   if(d.deadline > CFG.months) return;
   S.directive = d;
-  S.notices.push({kind:'directive', d});
-  log(`New directive: ${DIRECTIVES[kind].title} (due month ${d.deadline}).`);
+  S.cards.push({type:'directive', d});
+  log('log.directiveNew', {d:d.kind, m:d.deadline});
 }
 function offerPerks(){
   const free = Object.keys(PERKS).filter(k=>!S.perks.includes(k) || k==='shovel');
@@ -431,108 +874,225 @@ function choosePerk(k){
   if(k==='shovel') S.shovel = true; else S.perks.push(k);
   if(k==='cousin') S.slots++;
   S.perkChoice = null;
-  log(`Perk acquired: ${PERKS[k].name}.`, 'good');
+  log('log.perk', {k}, 'good');
   save();
   return {ok:true};
 }
 
-// --- Random events (official notices) ---
-const EVENTS = [
-  {id:'archaeology', w:3, ok:()=>S.grid.some(p=>p.st==='building'&&!p.halt), run(){
-    const p = pick(S.grid.filter(p=>p.st==='building'&&!p.halt)); p.halt = 3;
-    return {title:'Archaeological find', icon:'account_balance', stamp:'HALTED', cls:'bad',
-      body:`Workers on the ${B[p.ty].name.toLowerCase()} site found what may be Roman coins (or bottle caps). Works are halted for 3 months while the Heritage Office decides.`}; }},
-  {id:'toad', w:2, ok:()=>S.grid.some(p=>p.st==='owned' || (p.st==='land'&&p.k==='farm')), run(){
-    const p = pick(S.grid.filter(p=>p.st==='owned' || (p.st==='land'&&p.k==='farm'))); const lost = p.st==='owned';
-    Object.assign(p,{k:'habitat', st:'land', ty:null});
-    return {title:'Protected species', icon:'cruelty_free', stamp:'PROTECTED', cls:'bad',
-      body:`A rare natterjack toad was spotted on a parcel${lost?' you own. The money is gone; the toad stays':''}. The parcel is now a protected habitat.`}; }},
-  {id:'election', w:3, ok:()=>!S.electionDone && S.month>=15 && S.month<=21, run(){
-    S.electionDone = true; const old = S.local; S.local = ri(25,70);
-    return {title:'Municipal elections', icon:'how_to_vote', stamp:'NEW MAYOR', cls:'info',
-      body:`The new mayor promises to "review every inherited project". Local support goes from ${old} to ${S.local}.`}; }},
-  {id:'lawsuit', w:3, ok:()=>S.neigh<35, run(){
-    if(S.neigh < 15){ S.over = {win:false, why:'court'};
-      return {title:'Plan annulled', icon:'gavel', stamp:'ANNULLED', cls:'bad', body:'The regional court annuls the whole urban plan after a lawsuit by the neighbours’ association. Back to square one.'}; }
-    const rev = S.grid.filter(p=>p.st==='review');
-    if(rev.length){ const p = pick(rev); p.t += 3; }
-    return {title:'Neighbours sue', icon:'gavel', stamp:'APPEAL', cls:'bad',
-      body:`The neighbours' association files an appeal.${rev.length?' A permit under review is delayed 3 months.':' Nothing to delay yet, but the lawyers are ready.'} Neighbours are watching closely.`}; }},
-  {id:'inflation', w:2, ok:()=>S.inflation<1.2, run(){
-    S.inflation = r1(S.inflation*1.12*100)/100;
-    return {title:'Construction costs rise', icon:'trending_up', stamp:'+12%', cls:'bad',
-      body:'Steel, cement and coffee are 12% more expensive. New construction sites will cost more.'}; }},
-  {id:'strike', w:2, ok:()=>S.grid.some(p=>p.st==='building'), run(){
-    S.strike = true;
-    return {title:'Construction strike', icon:'front_hand', stamp:'STRIKE', cls:'bad',
-      body:'The construction unions call a strike next month. No site will progress.'}; }},
-  {id:'delegation', w:2, ok:()=>true, run(){
-    if(S.comp >= 60){ S.local = clamp(S.local+8,0,100);
-      return {title:'Delegation from Brussels', icon:'flight_land', stamp:'PHOTO OP', cls:'ok',
-        body:'A delegation visits, takes photos with the mayor and leaves before lunch. Local support +8.'}; }
-    S.comp = clamp(S.comp-12,0,100);
-    return {title:'Delegation from Brussels', icon:'flight_land', stamp:'CONCERNS', cls:'bad',
-      body:'A delegation visits and cannot find your last report. Compliance -12.'}; }},
-  {id:'cofinance', w:2, ok:()=>S.month<30, run(){
-    S.funds -= 3; S.refunds.push({m:S.month+4, x:3});
-    return {title:'National co-financing delayed', icon:'hourglass_top', stamp:'PENDING', cls:'bad',
-      body:'The Ministry of Finance "temporarily retains" €3M of co-financing. It should arrive in 4 months. Should.'}; }},
-  {id:'ribbon', w:2, ok:()=>S.grid.some(p=>p.st==='building'), run(){
-    S.local = clamp(S.local+10,0,100); S.neigh = clamp(S.neigh-6,0,100);
-    return {title:'Premature inauguration', icon:'content_cut', stamp:'OPENED*', cls:'info',
-      body:'The regional president inaugurates one of your construction sites. It is a hole. Local support +10, neighbours -6.'}; }},
-  {id:'influencer', w:1, ok:()=>count('park')>0, run(){
-    S.neigh = clamp(S.neigh+8,0,100);
-    return {title:'Viral video', icon:'smartphone', stamp:'TRENDING', cls:'ok',
-      body:'An influencer films a sunset in your park. Neighbours +8. Comments: 4,000. Read: none.'}; }},
-  {id:'discount', w:2, ok:()=>S.grid.some(p=>p.st==='land'&&p.k==='farm'), run(){
-    const p = pick(S.grid.filter(p=>p.st==='land'&&p.k==='farm')); p.price = r1(p.price*0.6); p.hold = true;
-    return {title:'Inheritance dispute settled', icon:'sell', stamp:'FOR SALE', cls:'ok',
-      body:`Three cousins finally agree to sell a farm parcel, cheap (€${fmt(landPrice(p))}M), before they change their minds.`}; }},
-  {id:'template', w:2, ok:()=>true, run(){
-    S.comp = clamp(S.comp-10,0,100);
-    return {title:'New reporting template', icon:'description', stamp:'v7.2', cls:'bad',
-      body:'The Commission publishes a new template for the reporting template. Your previous reports must be re-submitted. Compliance -10.'}; }},
-];
+// =====================================================================
+//  EVENT CARDS — every event is a dilemma: 2–3 choices with visible trade-offs.
+//  chips: ['money',±x] ['local'|'neigh'|'comp',±n] ['delay',n] ['risk',pct] ['slot',-n] ['lose'] ['debt',x] ['market',±]
+//  run() applies the choice and may return a result key (shown as a follow-up notice).
+// =====================================================================
+const sitesFree = () => S.grid.map((p,i)=>i).filter(i=>S.grid[i].st==='building' && !S.grid[i].halt);
+const halt = (i,n) => { const p=S.grid[i]; p.halt = Math.max(p.halt, n); p.flag = {k:'halt', until:S.month+n}; };
+const EVENTS = {
+  archaeology: {char:'heritage', sfx:'clink', icon:'account_balance', w:3,
+    ok:()=>sitesFree().length>0, setup:()=>({i:pick(sitesFree())}),
+    choices:[
+      {k:'call',     fx:()=>[['delay',3]], run:v=>{ halt(v.i,3); }},
+      {k:'concrete', fx:()=>[['risk',35],['comp',-30],['neigh',-15]], run:v=>{ if(rnd()<0.35){ bump('comp',-30,'ev:archaeology'); bump('neigh',-15,'ev:archaeology'); return 'caught'; } return 'quiet'; }},
+      {k:'museum',   fx:()=>[['delay',2],['money',-1.5],['neigh',+10],['local',+5]], can:()=>S.funds>=1.5,
+        run:v=>{ halt(v.i,2); spend(1.5); bump('neigh',10,'ev:archaeology'); bump('local',5,'ev:archaeology'); }},
+    ]},
+  toad: {char:'heritage', sfx:'frog', icon:'cruelty_free', w:2,
+    ok:()=>S.grid.some(p=>p.st==='owned' || (p.st==='land'&&p.k==='farm')),
+    setup:()=>{ const c = S.grid.map((p,i)=>i).filter(i=>S.grid[i].st==='owned' || (S.grid[i].st==='land'&&S.grid[i].k==='farm')); const i = pick(c); return {i, owned:S.grid[i].st==='owned'}; },
+    choices:[
+      {k:'accept', fx:v=>v.owned?[['lose'],['money',+r1(S.grid[v.i].price*0.5)]]:[['lose']], run:v=>{ toHabitat(v.i, v.owned); }},
+      {k:'study',  fx:()=>[['money',-0.8],['risk',50],['lose']], can:()=>S.funds>=0.8,
+        run:v=>{ spend(0.8); if(rnd()<0.5) return 'moved'; toHabitat(v.i, v.owned); return 'stays'; }},
+      {k:'mascot', fx:()=>[['lose'],['neigh',+8]], run:v=>{ toHabitat(v.i, v.owned); bump('neigh',8,'ev:toad'); }},
+    ]},
+  election: {char:'mayor', sfx:'crowd', icon:'how_to_vote', w:3,
+    ok:()=>!S.electionDone && S.month>=15 && S.month<=21, setup:()=>{ S.electionDone = true; return {}; },
+    choices:[
+      {k:'fund',    fx:()=>[['money',-1],['risk',40],['comp',-10]], can:()=>S.funds>=1,
+        run:()=>{ spend(1); if(rnd()<0.6){ bump('local', Math.max(0,65-S.local), 'ev:election'); return 'won'; } bump('local', 25-S.local, 'ev:election'); bump('comp',-10,'ev:election'); return 'lost'; }},
+      {k:'neutral', fx:()=>[['local','?']], run:()=>{ bump('local', ri(30,65)-S.local, 'ev:election'); return 'neutral'; }},
+      {k:'meet',    fx:()=>[['slot',-1],['local','≈50']], run:()=>{ S.slotPenalty++; bump('local', ri(45,62)-S.local, 'ev:election'); return 'neutral'; }},
+    ]},
+  lawsuit: {char:'neighbour', sfx:'crowd', icon:'gavel', w:3,
+    ok:()=>S.neigh<35, setup:()=>{ const rev = S.grid.map((p,i)=>i).filter(i=>S.grid[i].st==='review'); return {i: rev.length ? pick(rev) : -1}; },
+    choices:[
+      {k:'court',     fx:()=>[['money',-1],['risk',30],['delay',4]], can:()=>S.funds>=1,
+        run:v=>{ spend(1); if(rnd()<0.3){ if(v.i>=0) S.grid[v.i].t += 4; bump('neigh',-5,'ev:lawsuit'); return 'lostCase'; } return 'wonCase'; }},
+      {k:'negotiate', fx:()=>[['money',-0.5],['neigh',+15]], can:()=>S.funds>=0.5, run:()=>{ spend(0.5); bump('neigh',15,'ev:lawsuit'); }},
+      {k:'ignore',    fx:()=>[['delay',3],['neigh',-5],['risk',S.neigh<20?50:0]],
+        run:v=>{ if(v.i>=0) S.grid[v.i].t += 3; bump('neigh',-5,'ev:lawsuit');
+          if(S.neigh < 15 && rnd()<0.5){ S.over = {win:false, why:'court'}; return 'annulled'; } }},
+    ]},
+  inflation: {char:'banker', sfx:'crash', icon:'trending_up', w:2,
+    ok:()=>S.inflation<1.2, setup:()=>({}),
+    choices:[
+      {k:'accept',      fx:()=>[['cost','+12%']], run:()=>{ S.inflation = Math.round(S.inflation*1.12*100)/100; }},
+      {k:'renegotiate', fx:()=>[['delay',1]], run:()=>{ S.grid.forEach((p,i)=>{ if(p.st==='building') halt(i,1); }); }},
+      {k:'prefab',      fx:()=>[['money',-2],['cost','+4%']], can:()=>S.funds>=2, run:()=>{ spend(2); S.inflation = Math.round(S.inflation*1.04*100)/100; }},
+    ]},
+  strike: {char:'union', sfx:'siren', icon:'front_hand', w:2,
+    ok:()=>activeSites()>0, setup:()=>({}),
+    choices:[
+      {k:'wait',      fx:()=>[['delay',1]], run:()=>{ S.strike = 1; }},
+      {k:'bonus',     fx:()=>[['money',-1.5],['local',+3]], can:()=>S.funds>=1.5, run:()=>{ spend(1.5); bump('local',3,'ev:strike'); }},
+      {k:'mediation', fx:()=>[['comp',-5],['risk',50],['delay',2]], run:()=>{ bump('comp',-5,'ev:strike'); if(rnd()<0.5){ S.strike = 2; return 'long'; } return 'deal'; }},
+    ]},
+  delegation: {char:'brussels', sfx:'phone', icon:'flight_land', w:2,
+    ok:()=>true, setup:()=>({good:S.comp>=60}),
+    choices:[
+      {k:'photo',   when:v=>v.good,  fx:()=>[['local',+8]], run:()=>{ bump('local',8,'ev:delegation'); }},
+      {k:'askmore', when:v=>v.good,  fx:()=>[['risk',60],['money',+8],['comp',-10]],
+        run:()=>{ if(rnd()<0.4){ S.funds += 8; S.grant += 8; return 'granted'; } bump('comp',-10,'ev:delegation'); return 'refused'; }},
+      {k:'renders', when:v=>!v.good, fx:()=>[['risk',50],['comp',+10],['comp',-15]],
+        run:()=>{ if(rnd()<0.5){ bump('comp',10,'ev:delegation'); return 'impressed'; } bump('comp',-15,'ev:delegation'); return 'unimpressed'; }},
+      {k:'lunch',   when:v=>!v.good, fx:()=>[['money',-0.5],['comp',+6]], can:()=>S.funds>=0.5, run:()=>{ spend(0.5); bump('comp',6,'ev:delegation'); }},
+    ]},
+  cofinance: {char:'banker', sfx:'phone', icon:'hourglass_top', w:2,
+    ok:()=>S.month<30, setup:()=>({}),
+    choices:[
+      {k:'wait',     fx:()=>[['money',-3],['later','+3 · 4m']], run:()=>{ S.funds -= 3; S.refunds.push({m:S.month+4, x:3}); }},
+      {k:'complain', fx:()=>[['money',-3],['comp',-5],['later','+3 · 2m']], run:()=>{ S.funds -= 3; bump('comp',-5,'ev:cofinance'); S.refunds.push({m:S.month+2, x:3}); }},
+      {k:'bridge',   fx:()=>[['debt',+3]], run:()=>{ S.debt = r1(S.debt+3); S.refunds.push({m:S.month+4, x:3}); }},
+    ]},
+  ribbon: {char:'mayor', sfx:'fanfare', icon:'content_cut', w:2,
+    ok:()=>activeSites()>0, setup:()=>({i:pick(S.grid.map((p,i)=>i).filter(i=>S.grid[i].st==='building'))}),
+    choices:[
+      {k:'smile',  fx:()=>[['local',+10],['neigh',-6]], run:()=>{ bump('local',10,'ev:ribbon'); bump('neigh',-6,'ev:ribbon'); }},
+      {k:'refuse', fx:()=>[['local',-10],['neigh',+4]], run:()=>{ bump('local',-10,'ev:ribbon'); bump('neigh',4,'ev:ribbon'); }},
+    ]},
+  influencer: {char:'neighbour', sfx:'fanfare', icon:'smartphone', w:1,
+    ok:()=>count('park')>0, setup:()=>({i:S.grid.findIndex(p=>p.ty==='park'&&p.st==='built')}),
+    choices:[
+      {k:'share', fx:()=>[['neigh',+8]], run:()=>{ bump('neigh',8,'ev:influencer'); }},
+      {k:'hire',  fx:()=>[['money',-0.3],['neigh',+15]], can:()=>S.funds>=0.3, run:()=>{ spend(0.3); bump('neigh',15,'ev:influencer'); }},
+    ]},
+  discount: {char:'farmer', sfx:'farmer', icon:'sell', w:2,
+    ok:()=>S.grid.some(p=>p.st==='land'&&p.k==='farm'),
+    setup:()=>{ const i = pick(S.grid.map((p,i)=>i).filter(i=>S.grid[i].st==='land'&&S.grid[i].k==='farm')); const p=S.grid[i]; p.price=r1(p.price*0.6); p.hold=true; return {i, x:money(landPrice(p))}; },
+    choices:[
+      {k:'buy',   fx:v=>[['money',-landPrice(S.grid[v.i])],['land']], can:v=>S.funds>=landPrice(S.grid[v.i]),
+        run:v=>{ const p=S.grid[v.i], x=landPrice(p); spend(x); p.st='owned'; log('log.acquired',{at:pname(v.i), x:money(x)}); }},
+      {k:'later', fx:()=>[], run:()=>{}},
+    ]},
+  template: {char:'brussels', sfx:'phone', icon:'description', w:2,
+    ok:()=>true, setup:()=>({}),
+    choices:[
+      {k:'fill',        fx:()=>[['slot',-1]], run:()=>{ S.slotPenalty++; }},
+      {k:'ignore',      fx:()=>[['comp',-10]], run:()=>{ bump('comp',-10,'ev:template'); }},
+      {k:'consultants', fx:()=>[['money',-0.6],['comp',+5]], can:()=>S.funds>=0.6, run:()=>{ spend(0.6); bump('comp',5,'ev:template'); }},
+    ]},
+  devOffer: {char:'developer', sfx:'cash', icon:'handshake', w:3,
+    ok:()=>S.market>=CFG.devMinMarket && urbanIdle().length>0,
+    setup:()=>{ const i = pick(urbanIdle()); return {i, x:money(r1(plotValue(S.grid[i])*1.3))}; },
+    choices:[
+      {k:'sell',    fx:v=>[['money',+r1(plotValue(S.grid[v.i])*1.3)],['lose']], run:v=>{ const p=S.grid[v.i], x=r1(plotValue(p)*1.3);
+        S.funds += x; Object.assign(p,{st:'private', ty:'housing', dev:{phase:'permit', t:ri(2,3)}}); log('log.sold',{at:pname(v.i), x:money(x)},'good'); }},
+      {k:'decline', fx:()=>[], run:()=>{}},
+    ]},
+  crash: {char:'banker', sfx:'crash', icon:'trending_down', w:1,
+    ok:()=>S.month>=10 && !S.crashDone, setup:()=>{ S.crashDone = true; S.market = Math.max(0.6, r1(S.market-0.35)); return {priv:S.grid.some(p=>p.st==='private')}; },
+    choices:[
+      {k:'bailout', when:v=>v.priv, fx:()=>[['money',-3]], can:()=>S.funds>=3, run:()=>{ spend(3); S.grid.forEach(p=>{ if(p.st==='private') p.dev.bailed = 6; }); }},
+      {k:'letfall', when:v=>v.priv, fx:()=>[['risk',100],['lose']], run:()=>{ const pv = S.grid.map((p,i)=>i).filter(i=>S.grid[i].st==='private');
+        const i = pick(pv); Object.assign(S.grid[i], {st:'ruin', ty:null, dev:null, flag:{k:'ruin', until:S.month+99}}); return 'ruin'; }},
+      {k:'hold',    when:v=>!v.priv, fx:()=>[['market','−']], run:()=>{}},
+    ]},
+  loanCall: {char:'banker', sfx:'phone', icon:'account_balance_wallet', w:2,
+    ok:()=>S.debt>0, setup:()=>({}),
+    choices:[
+      {k:'repay',       fx:()=>[['money',-Math.min(5,S.debt)],['debt',-Math.min(5,S.debt)]], can:()=>S.funds>=Math.min(5,S.debt),
+        run:()=>{ const x=Math.min(5,S.debt); S.funds-=x; S.debt=r1(S.debt-x); }},
+      {k:'renegotiate', fx:()=>[['rate','+0.5%']], run:()=>{ S.rate = Math.round((S.rate+0.005)*1000)/1000; }},
+    ]},
+  fiesta: {char:'mayor', sfx:'fanfare', icon:'celebration', w:1,
+    ok:()=>true, setup:()=>({}),
+    choices:[
+      {k:'sponsor', fx:()=>[['money',-0.4],['local',+6],['neigh',+6]], can:()=>S.funds>=0.4, run:()=>{ spend(0.4); bump('local',6,'ev:fiesta'); bump('neigh',6,'ev:fiesta'); }},
+      {k:'skip',    fx:()=>[['neigh',-3]], run:()=>{ bump('neigh',-3,'ev:fiesta'); }},
+    ]},
+};
+function urbanIdle(){ return S.grid.map((p,i)=>i).filter(i=>{ const p=S.grid[i]; return p.st==='owned' && p.urban && hasAccess(...rc(i)); }); }
+function toHabitat(i, owned){
+  const p = S.grid[i];
+  if(owned){ const back = r1(p.price*0.5); S.funds += back; }
+  Object.assign(p,{k:'habitat', st:'land', ty:null, urban:false, flag:{k:'toad', until:S.month+2}});
+}
 function rollEvent(){
-  if(S.month < 2 || rnd() > 0.45) return;
-  const pool = EVENTS.filter(e=>e.ok()); if(!pool.length) return;
-  let tot = pool.reduce((a,e)=>a+e.w,0), x = rnd()*tot, ev = pool[0];
-  for(const e of pool){ x -= e.w; if(x<=0){ ev = e; break; } }
-  const n = ev.run(); S.notices.push({kind:'event', ...n}); log(n.title + '.', n.cls==='ok'?'good':(n.cls==='bad'?'bad':''));
+  if(S.month < 2 || rnd() > 0.6) return;
+  const pool = Object.keys(EVENTS).filter(id=>EVENTS[id].ok()); if(!pool.length) return;
+  let tot = pool.reduce((a,id)=>a+EVENTS[id].w,0), x = rnd()*tot, id = pool[0];
+  for(const e of pool){ x -= EVENTS[e].w; if(x<=0){ id = e; break; } }
+  const v = EVENTS[id].setup();
+  if(v.i>=0 && v.i!==undefined) S.grid[v.i].flag = S.grid[v.i].flag || {k:'event', until:S.month+1};
+  S.cards.push({type:'event', id, v});
+  log('log.event', {e:id}, 'bad');
+}
+function choicesFor(card){ const E=EVENTS[card.id]; return E.choices.filter(ch=>!ch.when || ch.when(card.v)); }
+// Resolve an event card with the chosen option. Returns the result key (or null).
+function resolveEvent(card, k){
+  const ch = choicesFor(card).find(c=>c.k===k); if(!ch) return null;
+  if(ch.can && !ch.can(card.v)) return null;
+  const res = ch.run(card.v) || null;
+  log('log.choice', {e:card.id, c:k, res}, res && /caught|lost|stays|refused|unimpressed|ruin|annulled|long/.test(res) ? 'bad' : '');
+  return res;
 }
 
-// --- END MONTH: the world resolves ---
+// =====================================================================
+//  END MONTH: the world resolves
+// =====================================================================
+function fx(i, k, p, cls){ S.fx.push({i, k, p:p||{}, cls:cls||''}); }
 function endMonth(){
-  if(S.over || S.perkChoice) return {ok:false};
+  if(S.over || S.perkChoice || S.cards.length) return {ok:false};
+  S.fx = []; S.prev = snapshot();
   // 1. Permit reviews
   S.grid.forEach((p,i)=>{
     if(p.st!=='review') return;
     if(--p.t > 0) return;
-    if(rnd() < approvalChance()){ p.st='approved'; p.q = ++S.qseq; log(`Permit APPROVED: ${B[p.ty].name} on ${Math.floor(i/N)+1}-${i%N+1}.`, 'good'); }
-    else { log(`Permit REJECTED (${B[p.ty].name}): ${pick(REJECTIONS)}`, 'bad'); p.st='owned'; p.ty=null; }
+    if(rnd() < approvalChance()){ p.st='approved'; p.q = ++S.qseq; log('log.approved', {b:p.ty, at:pname(i)}, 'good'); fx(i,'fx.approved',{},'good'); }
+    else { const r = Math.floor(rnd()*N_REJECTIONS); log('log.rejected', {b:p.ty, r}, 'bad'); fx(i,'fx.rejected',{},'bad');
+      p.st='owned'; p.ty=null; p.flag={k:'rejected', until:S.month+1}; }
   });
-  // 2. Start construction where contractors are free
+  // 2. The urban plan (rezoning)
+  if(S.plan && --S.plan.t <= 0){
+    const ok = rnd() < Math.min(0.97, approvalChance()+0.05);
+    if(ok){ let n=0; S.plan.list.forEach(i=>{ const p=S.grid[i]; if(['owned','review','approved','building','built'].includes(p.st) && p.k!=='habitat'){ p.urban=true; n++; fx(i,'fx.urban',{},'good'); } });
+      S.cards.push({type:'notice', char:'mayor', icon:'map', key:'plan.ok', p:{n}, stamp:'stamp.approved', cls:'ok', sfx:'stamp'}); log('log.planApproved',{n},'good'); }
+    else { S.cards.push({type:'notice', char:'mayor', icon:'map', key:'plan.no', p:{r:Math.floor(rnd()*N_REJECTIONS)}, stamp:'stamp.rejected', cls:'bad', sfx:'fail'}); log('log.planRejected',{},'bad'); }
+    S.plan = null;
+  }
+  // 3. Start construction where contractors are free
   let free = contractors() - activeSites();
   S.grid.filter(p=>p.st==='approved').sort((a,b)=>a.q-b.q).forEach(p=>{
     if(free<=0) return; free--;
     p.st='building'; p.t=buildMonths(p.ty);
-    const total = S.shovel ? 0 : buildCost(p, p.ty); if(S.shovel){ S.shovel=false; log('A sponsor pays for this site (logo on the fence).','good'); }
+    const total = S.shovel ? 0 : buildCost(p, p.ty); if(S.shovel){ S.shovel=false; log('log.sponsor',{},'good'); }
     p.mcost = total / p.t;
   });
-  // 3. Construction progress
-  if(S.strike){ log('Strike: no construction this month.', 'bad'); S.strike=false; }
+  // 4. Construction progress
+  if(S.strike){ log('log.strike',{},'bad'); S.strike--; S.grid.forEach((p,i)=>{ if(p.st==='building') fx(i,'fx.strike',{},'bad'); }); }
   else S.grid.forEach((p,i)=>{
     if(p.st!=='building') return;
-    if(p.halt){ p.halt--; return; }
+    if(p.halt){ p.halt--; if(!p.halt && p.flag && p.flag.k==='halt') p.flag=null; return; }
     spend(p.mcost);
     if(--p.t <= 0){ p.st='built';
-      if(p.ty==='park') S.neigh = clamp(S.neigh+6,0,100);
-      log(`${B[p.ty].name} completed on ${Math.floor(i/N)+1}-${i%N+1}.`, 'good'); }
+      if(p.ty==='park') bump('neigh', 6, 'why.park');
+      log('log.completed', {b:p.ty, at:pname(i)}, 'good'); fx(i,'fx.completed',{b:p.ty},'good'); }
   });
-  // 4. Upkeep of finished buildings
-  S.grid.forEach(p=>{ if(p.st==='built' && p.ty && p.k!=='regional') spend(B[p.ty].upkeep); });
-  // 5. Residents move in (or out) toward the tightest limit
+  // 5. Private developers build at their own pace (and stop when the market is cold)
+  S.grid.forEach((p,i)=>{
+    if(p.st!=='private') return;
+    const cold = S.market < CFG.devMinMarket && !(p.dev.bailed>0);
+    if(p.dev.bailed>0) p.dev.bailed--;
+    if(cold){ p.flag = {k:'paused', until:S.month+1}; return; }
+    if(--p.dev.t > 0) return;
+    if(p.dev.phase==='permit'){ p.dev.phase='build'; p.dev.t=ri(3,5); }
+    else { p.st='built'; p.priv=true; p.dev=null; log('log.devDone',{at:pname(i)},'good'); fx(i,'fx.completed',{b:'housing'},'good'); }
+  });
+  // 6. Upkeep, interest and the municipality's share of new taxes
+  S.grid.forEach(p=>{ if(p.st==='built' && p.ty && p.k!=='regional' && !p.priv) spend(B[p.ty].upkeep); });
+  if(S.debt>0) S.funds -= S.debt*S.rate;
+  S.lastTax = taxIncome(); S.funds += S.lastTax;
+  if(count('factory')>0) bump('local', 1, 'why.taxes');
+  // 7. Residents move in (or out) toward the tightest limit
   const cp = caps(); S.bottleneck = cp.bottleneck;
   if(cp.cap > S.newcomers){
     const rate = Math.min(0.6, 0.3 + 0.06*count('park'));
@@ -540,47 +1100,57 @@ function endMonth(){
   } else if(cp.cap < S.newcomers){
     S.newcomers -= Math.ceil((S.newcomers - cp.cap)*0.15);
   }
-  // 6. Meters drift
-  S.comp  = clamp(S.comp - CFG.complianceDecay*(has('translation')?0.5:1), 0, 100);
-  S.local = clamp(S.local - CFG.localDecay, has('fixer')?30:0, 100);
-  S.neigh = clamp(S.neigh - activeSites()*CFG.noisePerSite + (has('comms')?2:0), 0, 100);
-  // 7. Delayed national co-financing
-  S.refunds = S.refunds.filter(f=>{ if(f.m<=S.month){ S.funds += f.x; log(`National co-financing arrived: +€${f.x}M. A miracle.`, 'good'); return false; } return true; });
-  // 8. Use-it-or-lose-it milestones
-  const share = CFG.milestones[S.month];
-  if(share){
-    const need = r1(S.grant*share), gap = r1(need - S.spent);
-    if(gap > 0){ S.funds -= gap; S.notices.push({kind:'event', title:'Funds decommitted', icon:'money_off', stamp:'DECOMMITTED', cls:'bad',
-        body:`By month ${S.month} you had to spend €${fmt(need)}M. You spent €${fmt(S.spent)}M, so €${fmt(gap)}M return to the Union budget. Spending money is harder than it looks.`});
-      log(`€${fmt(gap)}M decommitted (spending milestone missed).`, 'bad'); }
-    else { S.notices.push({kind:'event', title:'Spending milestone met', icon:'verified', stamp:'ON TRACK', cls:'ok',
-        body:`You spent €${fmt(S.spent)}M of the required €${fmt(need)}M by month ${S.month}. The absorption chart is green. Everyone is relieved.`}); }
+  // 8. Meters drift, the market drifts
+  bump('comp', -CFG.complianceDecay*(has('translation')?0.5:1), 'why.decay');
+  bump('local', -CFG.localDecay, 'why.forget');
+  bump('neigh', -activeSites()*CFG.noisePerSite, 'why.noise');
+  if(has('comms')) bump('neigh', 2, 'why.comms');
+  S.market = r1(clamp(S.market + (1-S.market)*0.15 + (rnd()-0.5)*0.1, 0.6, 1.3)*100)/100;
+  // 9. Delayed national co-financing
+  S.refunds = S.refunds.filter(f=>{ if(f.m<=S.month){ S.funds += f.x; log('log.cofin',{x:money(f.x)},'good'); return false; } return true; });
+  // 10. Use-it-or-lose-it: a warning 3 months before, then half the shortfall is taken back
+  const ms = CFG.milestones[S.month];
+  if(ms){
+    const need = r1(S.grant*ms), gap = r1(need - S.spent);
+    if(gap > 0){ const cut = r1(gap*CFG.decommitShare); S.funds -= cut;
+      S.cards.push({type:'notice', char:'brussels', icon:'money_off', key:'ms.cut', p:{m:S.month, need:money(need), spent:money(S.spent), cut:money(cut)}, stamp:'stamp.decommitted', cls:'bad', sfx:'fail'});
+      log('log.decommitted', {x:money(cut)}, 'bad'); }
+    else S.cards.push({type:'notice', char:'brussels', icon:'verified', key:'ms.ok', p:{m:S.month, need:money(need), spent:money(S.spent)}, stamp:'stamp.ontrack', cls:'ok', sfx:'stamp'});
   }
-  // 9. Directives
+  const warnAt = Object.keys(CFG.milestones).map(Number).find(m=>m-3===S.month);
+  if(warnAt){ const need = r1(S.grant*CFG.milestones[warnAt]);
+    if(S.spent < need) S.cards.push({type:'notice', char:'brussels', icon:'warning', key:'ms.warn', p:{m:warnAt, need:money(need), gap:money(need-S.spent)}, stamp:'stamp.warning', cls:'bad', sfx:'phone'}); }
+  // 11. Directives
   const d = S.directive;
   if(d){
     if(directiveProgress(d)){
       S.directive = null; S.directivesDone++; offerPerks();
-      S.notices.push({kind:'event', title:`Directive met: ${DIRECTIVES[d.kind].title}`, icon:'task_alt', stamp:'COMPLIANT', cls:'ok',
-        body:'The Commission acknowledges receipt of your success and grants you a reward. Choose wisely.'});
-      log(`Directive met: ${DIRECTIVES[d.kind].title}.`, 'good');
+      S.cards.push({type:'notice', char:'brussels', icon:'task_alt', key:'dir.met', p:{d:d.kind}, stamp:'stamp.compliant', cls:'ok', sfx:'fanfare'});
+      log('log.directiveMet', {d:d.kind}, 'good');
     } else if(S.month >= d.deadline){
       S.directive = null; S.strikes++;
-      const claw = S.strikes===1 ? 5 : 0; S.funds -= claw; S.comp = clamp(S.comp-15,0,100);
-      S.notices.push({kind:'event', title:`Directive failed: ${DIRECTIVES[d.kind].title}`, icon:'cancel', stamp:'NON-COMPLIANT', cls:'bad',
-        body:`Deadline missed.${claw?` €${claw}M are clawed back and`:''} compliance -15. ${S.strikes>=2?'This is your second failure.':'One more failure and the programme is suspended.'}`});
-      log(`Directive failed: ${DIRECTIVES[d.kind].title}.`, 'bad');
+      const claw = S.strikes===1 ? 5 : 0; S.funds -= claw; bump('comp', -15, 'why.directiveFail');
+      S.cards.push({type:'notice', char:'brussels', icon:'cancel', key: S.strikes>=2 ? 'dir.failed2' : 'dir.failed1', p:{d:d.kind, x:money(claw)}, stamp:'stamp.noncompliant', cls:'bad', sfx:'fail'});
+      log('log.directiveFailed', {d:d.kind}, 'bad');
     }
   }
   if(!S.directive && !S.over && (S.month===2 || (S.month>2 && (S.month-2)%5===0))) issueDirective();
-  // 10. Random event
+  // 12. Random event (a card with choices)
   if(!S.over) rollEvent();
-  // 11. Next month
-  S.month++; S.slots = slotsPerMonth(); S.lobbied = 0;
-  // 12. Win / lose
+  // 13. Money trouble: the regional bank lends a bridge loan instead of game over
+  if(S.funds < 0 && !S.over){
+    const loan = Math.ceil((-S.funds+1)/CFG.loanStep)*CFG.loanStep;
+    S.debt = r1(S.debt + loan); S.funds += loan;
+    S.cards.unshift({type:'notice', char:'banker', icon:'account_balance_wallet', key:'loan', p:{x:money(loan), debt:money(S.debt), rate:(S.rate*100).toFixed(1), cap:money(CFG.debtCap)}, stamp:'stamp.loan', cls:'bad', sfx:'cash'});
+    log('log.loan', {x:money(loan)}, 'bad');
+  }
+  // 14. Next month
+  S.month++; S.slots = Math.max(1, slotsPerMonth() - S.slotPenalty); S.slotPenalty = 0; S.lobbied = 0;
+  S.grid.forEach(p=>{ if(p.flag && p.flag.until < S.month) p.flag = null; });
+  // 15. Win / lose
   if(!S.over){
     if(residents() >= CFG.target) S.over = {win:true, why:'target'};
-    else if(S.funds < 0) S.over = {win:false, why:'bankrupt'};
+    else if(S.debt > CFG.debtCap) S.over = {win:false, why:'bankrupt'};
     else if(S.comp <= 0) S.over = {win:false, why:'audit'};
     else if(S.strikes >= 2) S.over = {win:false, why:'suspended'};
     else if(S.month > CFG.months) S.over = {win:false, why:'timeout'};
@@ -593,12 +1163,12 @@ function endMonth(){
 // =====================================================================
 //  PERSISTENCE
 // =====================================================================
-const SAVE_KEY = 'eurocrat_v2';
+const SAVE_KEY = 'eurocrat_v3';
 function save(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){} }
-function loadSave(){ try{ const raw=localStorage.getItem(SAVE_KEY); if(raw){ const s=JSON.parse(raw); if(s && s.v===2) return s; } }catch(e){} return null; }
+function loadSave(){ try{ const raw=localStorage.getItem(SAVE_KEY); if(raw){ const s=JSON.parse(raw); if(s && s.v===3) return s; } }catch(e){} return null; }
 
 // =====================================================================
-//  AUDIO — music (from the soundtrack) + tiny synthesized sound effects
+//  AUDIO — music (soundtrack) + synthesized sound effects
 // =====================================================================
 let actx;
 function ensureAudio(){
@@ -668,7 +1238,7 @@ function setMusic(track, level=1){ music.want = track; music.level = level; sync
 function updateMusicBtn(){
   document.querySelector('#musicBtn .material-icons').textContent = music.on ? 'music_note' : 'music_off';
   const m = document.getElementById('btnMusic');
-  if(m) m.querySelector('.label').textContent = 'Music: ' + (music.on ? 'On' : 'Off');
+  if(m) m.querySelector('.label').textContent = t('menu.music', {s: t(music.on ? 'on' : 'off')});
 }
 function toggleMusic(){
   music.on = !music.on;
@@ -688,22 +1258,47 @@ document.addEventListener('visibilitychange', ()=>{
   if(!actx) return;
   if(document.hidden) actx.suspend(); else actx.resume();
 });
-function playSound(type){
-  try{
-    ensureAudio();
-    const o = actx.createOscillator(), g = actx.createGain();
-    o.connect(g); g.connect(actx.destination);
-    const f = {click:520, ok:700, fail:150, stamp:90, turn:330, win:880}[type]||440;
-    o.frequency.value = f;
-    o.type = type==='fail' ? 'square' : (type==='stamp' ? 'triangle' : 'sine');
-    const t = actx.currentTime, len = type==='stamp' ? 0.12 : (type==='win'?0.5:0.18);
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(type==='stamp'?0.5:0.18, t+0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001, t+len);
-    if(type==='win'){ o.frequency.setValueAtTime(523,t); o.frequency.setValueAtTime(659,t+0.15); o.frequency.setValueAtTime(784,t+0.3); }
-    o.start(t); o.stop(t+len+0.02);
-  }catch(e){}
+
+// --- Sound effects: tiny synthesized sounds, Constructor-style (one per character/event) ---
+let noiseBuf = null;
+function noiseBuffer(){
+  if(noiseBuf) return noiseBuf;
+  noiseBuf = actx.createBuffer(1, actx.sampleRate*1.5, actx.sampleRate);
+  const d = noiseBuf.getChannelData(0); for(let i=0;i<d.length;i++) d[i] = Math.random()*2-1;
+  return noiseBuf;
 }
+function tone(f, at, dur, type, vol, f2){
+  const t0 = actx.currentTime + at, o = actx.createOscillator(), g = actx.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t0); if(f2) o.frequency.exponentialRampToValueAtTime(f2, t0+dur);
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0+0.012); g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+  o.connect(g); g.connect(actx.destination); o.start(t0); o.stop(t0+dur+0.02);
+}
+function noise(at, dur, vol, freq, q, wobble){
+  const t0 = actx.currentTime + at, s = actx.createBufferSource(), f = actx.createBiquadFilter(), g = actx.createGain();
+  s.buffer = noiseBuffer(); f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q;
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0+0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+  if(wobble){ const l = actx.createOscillator(), lg = actx.createGain(); l.frequency.value = wobble; lg.gain.value = vol*0.6;
+    l.connect(lg); lg.connect(g.gain); l.start(t0); l.stop(t0+dur); }
+  s.connect(f); f.connect(g); g.connect(actx.destination); s.start(t0); s.stop(t0+dur+0.02);
+}
+const SFX = {
+  click:  ()=> tone(520,0,0.06,'sine',0.1),
+  ok:     ()=>{ tone(660,0,0.08,'sine',0.14); tone(880,0.07,0.12,'sine',0.12); },
+  fail:   ()=>{ tone(200,0,0.22,'square',0.07,110); },
+  turn:   ()=>{ tone(392,0,0.08,'triangle',0.12); tone(523,0.08,0.14,'triangle',0.12); },
+  stamp:  ()=>{ noise(0,0.1,0.7,700,0.8); tone(80,0,0.14,'sine',0.6,40); },
+  frog:   ()=>{ for(let k=0;k<3;k++) tone(150,k*0.15,0.1,'square',0.1,95); },
+  crowd:  ()=>{ noise(0,1.3,0.22,450,0.6,3.5); noise(0.1,1.1,0.12,900,1.2,5); },
+  siren:  ()=>{ tone(900,0,0.35,'sine',0.12,1500); tone(1500,0.35,0.35,'sine',0.12,900); tone(900,0.7,0.35,'sine',0.12,1500); },
+  cash:   ()=>{ noise(0,0.05,0.25,4000,1); tone(1568,0.03,0.08,'square',0.06); tone(2093,0.1,0.3,'triangle',0.12); },
+  fanfare:()=>{ [523,659,784,1047].forEach((f,k)=>tone(f,k*0.09,0.22,'triangle',0.12)); tone(1047,0.36,0.4,'triangle',0.1); },
+  clink:  ()=>{ tone(1800,0,0.25,'triangle',0.12); tone(2400,0.06,0.2,'sine',0.08); tone(1250,0.14,0.35,'triangle',0.08); },
+  phone:  ()=>{ for(let k=0;k<2;k++) for(let j=0;j<6;j++) tone(j%2?480:440, k*0.5+j*0.05, 0.05, 'square', 0.05); },
+  crash:  ()=>{ tone(620,0,0.7,'sawtooth',0.08,70); noise(0.1,0.6,0.15,300,0.7); },
+  farmer: ()=>{ tone(170,0,0.25,'sawtooth',0.06,120); tone(130,0.25,0.3,'sawtooth',0.06,95); },
+  win:    ()=>{ [523,659,784,1047,1319].forEach((f,k)=>tone(f,k*0.12,0.3,'triangle',0.14)); },
+};
+function playSound(name){ try{ ensureAudio(); (SFX[name]||SFX.click)(); }catch(e){} }
 
 // =====================================================================
 //  RENDERING — isometric pixel art. Every sprite is painted pixel by pixel
@@ -844,6 +1439,9 @@ const GROUNDS = {
       if((lu>0.36&&lu<0.4&&lw<0.17)||(lw>0.15&&lw<0.19&&lu<0.4)||(Math.abs(u-0.5)<0.02&&lw<0.17)) return PX.paint;
       return speck(x,y,v,C('#c5643d'),C('#b65a36'),C('#d2724a'),0.06); }
     return speck(x,y,v,PX.pave,PX.paveD,sh(PX.pave,1.05),0.05); }),
+  serviced: v => ground((u,w,x,y)=>{ if(u<0.06||w<0.06||u>0.94||w>0.94) return grassPx(x,y,v);
+    if(Math.abs(u-0.5)<0.014 || Math.abs(w-0.5)<0.014) return PX.paint;
+    return speck(x,y,v,C('#cdb88c'),C('#b9a275'),C('#dbc9a0'),0.1); }),
   park: v => ground((u,w,x,y)=>{
     if(Math.abs(u-w)<0.05 || Math.abs(u+w-1)<0.05) return speck(x,y,v,C('#dccb9f'),C('#c9b78a'),C('#e8dab2'),0.1);
     const n=hsh(x,y,v); if(n>0.99) return C('#f2d14b');
@@ -851,7 +1449,17 @@ const GROUNDS = {
 };
 // Roads: one sprite per 4-way connection mask (1 NE · 2 SE · 4 SW · 8 NW, in screen space)
 function inRoad(du,dv,m,w){ if(Math.abs(du)<w && Math.abs(dv)<w) return true;
-  return (m&1 && dv<0 && Math.abs(du)<w) || (m&2 && du>0 && Math.abs(dv)<w) || (m&4 && dv>0 && Math.abs(du)<w) || (m&8 && du<0 && Math.abs(dv)<w); }
+  return (m&1 && dv<0 && Math.abs(du)<w) || (m&2 && du>0 && Math.abs(dv)<w) || (m&4 && dv>0 && Math.abs(du)<w) || (m&8 && du<0 && Math.abs(dv)<w)
+    // diagonal neighbours sit straight up/right/down/left on screen: the strip runs to the tile corner
+    || (m&16 && du+dv<0 && Math.abs(du-dv)<w*0.9) || (m&64 && du+dv>0 && Math.abs(du-dv)<w*0.9)
+    || (m&32 && du-dv>0 && Math.abs(du+dv)<w*1.8) || (m&128 && du-dv<0 && Math.abs(du+dv)<w*1.8); }
+// The two tiles beside a diagonal road link get a wedge of asphalt at the shared corner (1 N · 2 E · 4 S · 8 W corner)
+function wedgeTile(m){ return ground((u,v,x,y)=>{ const du=u-0.5, dv=v-0.5;
+  const band = k => (m&1 && Math.abs(du+dv+1)<k*1.8) || (m&4 && Math.abs(du+dv-1)<k*1.8) || (m&2 && Math.abs(du-dv-1)<k*0.9) || (m&8 && Math.abs(du-dv+1)<k*0.9);
+  if(band(0.28)) return speck(x,y,m+9,PX.asphalt,sh(PX.asphalt,0.92),PX.asphaltL,0.1);
+  if(band(0.305)) return PX.curb;
+  if(band(0.37)) return speck(x,y,m+9,PX.walk,sh(PX.walk,0.93),sh(PX.walk,1.04),0.06);
+  return null; }); }
 function roadTile(m, regional){ const w = regional ? 0.34 : 0.28, side = regional ? 0.42 : 0.37;
   return ground((u,v,x,y)=>{ const du=u-0.5, dv=v-0.5;
     if(inRoad(du,dv,m,w)){
@@ -1015,6 +1623,19 @@ const fenceSprite = () => thing(e=>{ const T=(s)=> Math.floor(s/3)%2 ? C('#f4f4f
   for(const [a,b] of [[-0.44,-0.44],[0.44,-0.44],[-0.44,0.44],[0.44,0.44]]){ const x=Math.round(e.ox+(a-b)*32), y=Math.round(e.oy+(a+b)*16);
     for(let j=0;j<6;j++) e.put(x,y-j,C('#4a3b2d')); }
 }, false);
+// A developer's billboard (private project getting its permit): black and gold, very luxurious
+const billboardSprite = () => thing(e=>{ const x0=e.ox-12, y0=e.oy-30;
+  for(let j=0;j<18;j++){ e.put(x0+3,y0+10+j,C('#3a3a3a')); e.put(x0+20,y0+10+j,C('#3a3a3a')); }
+  for(let j=0;j<13;j++) for(let i=0;i<24;i++){ let c = C('#1c1c24');
+    if(j===0||j===12||i===0||i===23) c = C('#d4af37'); else if(j>=3&&j<=5&&i>3&&i<20&&(i%3)) c = C('#e6c34a'); else if(j>=8&&j<=9&&i>5&&i<18&&i%2) c = C('#9a9aa8'); e.put(x0+i,y0+j,c); }
+});
+// Abandoned development: bare concrete frame, rusty rebar, weeds
+const ruinSprite = () => thing(e=>{ const G=C('#a3a09a');
+  for(const [a,b] of [[-0.3,-0.3],[0.3,-0.3],[-0.3,0.3],[0.3,0.3]]) box(e,a-0.04,a+0.04,b-0.04,b+0.04,0,26,()=>sh(G,0.95),()=>sh(G,0.72),()=>G);
+  box(e,-0.34,0.34,-0.34,0.34,12,14,()=>sh(G,0.9),()=>sh(G,0.68),()=>sh(G,1.05));
+  box(e,-0.34,0.34,-0.34,0.34,24,26,()=>sh(G,0.9),()=>sh(G,0.68),()=>sh(G,1.05));
+}, true, e=>{ for(const [a,b] of [[-0.3,-0.3],[0.3,-0.3],[-0.3,0.3],[0.3,0.3]]){ const x=Math.round(e.ox+(a-b)*32), y=Math.round(e.oy+(a+b)*16);
+  for(let j=0;j<5;j++) e.put(x+(j%2),y-27-j,C('#8b4a2b')); e.put(x-2,y,C('#5e8f31')); e.put(x+2,y-1,C('#6aa846')); } });
 const flagSprite = () => thing(e=>{ const x=e.ox, y=e.oy;
   for(let j=0;j<16;j++) e.put(x,y-j,C('#5d4030'));
   for(let i=1;i<9;i++){ const half=Math.round(3*(1-i/9)); for(let j=-half;j<=half;j++) e.put(x+i,y-13+j, Math.abs(j)===half ? C('#ffffff') : C('#1d3c78')); }
@@ -1027,20 +1648,31 @@ const gx = art.getContext('2d');
 const variant = (i, n) => Math.floor(hsh(i, S.seed & 0xffff, 77) * n);
 const isRoadAt = (r,c) => inside(r,c) && (()=>{ const q=S.grid[idx(r,c)]; return q.ty==='road' && (q.st==='built' || q.k==='regional'); })();
 // Which screen directions (NE/SE/SW/NW bits) connect to a matching neighbour, in the current rotation
-function connMask(r,c,match,offMap){ const [r2,c2]=rotateCoord(r,c,viewRot); let m=0;
-  for(const [dr,dc] of NB){ const nr=r+dr, nc=c+dc; const ok = inside(nr,nc) ? match(nr,nc) : offMap(dr,dc); if(!ok) continue;
+function connMask(r,c,match,offMap,diag){ const [r2,c2]=rotateCoord(r,c,viewRot); let m=0;
+  for(const [dr,dc] of (diag ? NB8 : NB)){ const nr=r+dr, nc=c+dc; const ok = inside(nr,nc) ? match(nr,nc) : offMap(dr,dc); if(!ok) continue;
+    if(dr && dc && ((inside(r+dr,c) && match(r+dr,c)) || (inside(r,c+dc) && match(r,c+dc)))) continue;   // already joined around the corner
     const [nr2,nc2] = rotateCoord(nr,nc,viewRot), d2r = nr2-r2, d2c = nc2-c2;
-    m |= d2r===-1 ? 1 : d2c===1 ? 2 : d2r===1 ? 4 : 8; }
+    m |= (d2r===-1&&d2c===0) ? 1 : (d2r===0&&d2c===1) ? 2 : (d2r===1&&d2c===0) ? 4 : (d2r===0&&d2c===-1) ? 8
+       : (d2r===-1&&d2c===-1) ? 16 : (d2r===-1&&d2c===1) ? 32 : (d2r===1&&d2c===1) ? 64 : 128; }
+  return m; }
+function wedgeMask(r,c){ const [r2,c2]=rotateCoord(r,c,viewRot);
+  const R = (a,b)=>{ if(!inside(a,b)) return false; const [o0,o1]=rotateCoord(a,b,4-viewRot); return isRoadAt(o0,o1); };
+  if(R(r2,c2)) return 0; let m=0;
+  if(R(r2-1,c2)&&R(r2,c2-1)&&!R(r2-1,c2-1)) m|=1;
+  if(R(r2-1,c2)&&R(r2,c2+1)&&!R(r2-1,c2+1)) m|=2;
+  if(R(r2+1,c2)&&R(r2,c2+1)&&!R(r2+1,c2+1)) m|=4;
+  if(R(r2,c2-1)&&R(r2+1,c2)&&!R(r2+1,c2-1)) m|=8;
   return m; }
 function blit(s, ix, iy){ gx.drawImage(s.c, AOX + ix - s.ox, AOY + iy - s.oy); }
 function groundKey(i){
   const p = S.grid[i], r=Math.floor(i/N), c=i%N;
   if(p.ty==='road' && (p.st==='built' || p.k==='regional')){
-    const m = connMask(r,c,isRoadAt, (dr,dc)=> p.k==='regional' && dc===0);
+    const m = connMask(r,c,isRoadAt, (dr,dc)=> p.k==='regional' && dc===0, true);
     return ['road'+m+(p.k==='regional'?'R':''), ()=>roadTile(m, p.k==='regional')]; }
   if(p.st==='built' && p.ty){ const g = {housing:'plaza', clinic:'plaza', factory:'yard', school:'school', park:'park'}[p.ty]; const v=variant(i,3);
     return [g+v, ()=>GROUNDS[g](v)]; }
-  if(p.st==='building' || p.st==='approved'){ const v=variant(i,3); return ['earth'+v, ()=>GROUNDS.earth(v)]; }
+  if(p.st==='building' || p.st==='approved' || p.st==='private' || p.st==='ruin'){ const v=variant(i,3); return ['earth'+v, ()=>GROUNDS.earth(v)]; }
+  if((p.st==='owned' || p.st==='review') && p.urban){ const v=variant(i,3); return ['serviced'+v, ()=>GROUNDS.serviced(v)]; }
   if(p.k==='flood'){ const m = connMask(r,c,(nr,nc)=>S.grid[idx(nr,nc)].k==='flood', (dr,dc)=>true);
     return ['river'+m, ()=>riverTile(m)]; }
   if(p.k==='farm'){ const v=variant(i,4), o=(variant(i+500,2)+viewRot)%2; return ['farm'+v+o, ()=>GROUNDS.farm(v+4*o,o)]; }
@@ -1050,6 +1682,7 @@ function groundKey(i){
 function drawTile(i){
   const p = S.grid[i], r=Math.floor(i/N), c=i%N, [x,y] = isoOf(r,c), [r2,c2] = rotateCoord(r,c,viewRot);
   const [k, make] = groundKey(i); blit(spr('g:'+k, make), x, y);
+  const wm = wedgeMask(r,c); if(wm) blit(spr('wedge'+wm, ()=>wedgeTile(wm)), x, y);
   if(r2===N-1) blit(spr('skirtL', ()=>skirt('L')), x, y);
   if(c2===N-1) blit(spr('skirtR', ()=>skirt('R')), x, y);
   if(p.st==='owned' || p.st==='review' || p.st==='approved') blit(spr('ringOwned', ()=>ring(C('#1d3c78'),0.05,true)), x, y);
@@ -1064,6 +1697,10 @@ function drawThing(i){
     blit(spr(p.ty+v, ()=>BUILDINGS[p.ty](v)), x, y); return; }
   if(p.k==='muni' && p.st==='land') blit(spr('flag', flagSprite), x, y);
   if(p.st==='review') blit(spr('notice', noticeSprite), x, y);
+  if(p.st==='ruin'){ blit(spr('ruin', ruinSprite), x, y); return; }
+  if(p.st==='private'){
+    if(p.dev.phase==='permit'){ blit(spr('billboard', billboardSprite), x, y); return; }
+    const hh = 6 + Math.round(clamp(1 - p.dev.t/5, 0, 1)*5)*5; blit(spr('site'+hh, ()=>siteSprite(hh)), x, y); return; }
   if(p.st==='approved') blit(spr('fence', fenceSprite), x, y);
   if(p.st==='building'){
     if(p.ty==='road'){ blit(spr('cones', cones), x, y); return; }
@@ -1086,6 +1723,8 @@ function spriteSheet(){
   for(let v=0; v<2; v++) addS('habitat'+v, BUILDINGS.habitat(v));
   for(let hh=6; hh<=31; hh+=5) addS('site'+hh, siteSprite(hh));
   addS('cones', cones()); addS('notice', noticeSprite()); addS('fence', fenceSprite()); addS('flag', flagSprite());
+  addS('serviced', GROUNDS.serviced(0)); addS('billboard', billboardSprite()); addS('ruin', ruinSprite());
+  [16,32,64,128,17,68,34,136].forEach(m=>addS('road'+m, roadTile(m,false))); [1,2,4,8].forEach(m=>addS('wedge'+m, wedgeTile(m)));
   const cols = 8, cw = 64, ch = 112, rows = Math.ceil(items.length/cols);
   const cv = document.createElement('canvas'); cv.width = cols*cw; cv.height = rows*ch; const g = cv.getContext('2d');
   const atlas = {};
@@ -1097,12 +1736,17 @@ const HEIGHT = {housing:46, factory:56, school:34, clinic:30, park:24, road:6};
 function badge(x,y,text,col){ ctx.font='bold 7px -apple-system, sans-serif'; const w=ctx.measureText(text).width+6;
   ctx.fillStyle=col; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x-w/2,y-5,w,9,4) : ctx.rect(x-w/2,y-5,w,9); ctx.fill();
   ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(text,x,y-0.5); }
+const MARK = {rejected:['✕','#d64545'], event:['!','#e8442e'], toad:['!','#2e7d32'], holdout:['€↑','#d98a00'], paused:['II','#d98a00'], ruin:['!','#6b6b6b'], halt:null};
 function drawLabels(i){
   const p = S.grid[i], r=Math.floor(i/N), c=i%N, [x,y] = isoOf(r,c);
-  if(p.st==='review') badge(x+10,y-24,p.t+'m','#1d3c78');
-  if(p.st==='approved') badge(x,y-12,'queue','#e8762b');
+  if(p.st==='review') badge(x+10,y-24,t('map.m',{n:p.t}),'#1d3c78');
+  if(p.st==='approved') badge(x,y-12,t('map.queue'),'#e8762b');
   if(p.st==='building'){ const hh = p.ty==='road' ? 2 : 6 + Math.round((1-p.t/buildMonths(p.ty))*5)*5;
-    badge(x-12,y-hh-14, p.halt ? 'halt '+p.halt+'m' : p.t+'m', p.halt ? '#d64545' : '#d0571b'); }
+    badge(x-12,y-hh-14, p.halt ? t('map.halt',{n:p.halt}) : t('map.m',{n:p.t}), p.halt ? '#d64545' : '#d0571b'); }
+  if(p.st==='private' && p.dev) badge(x-12,y-30, t('map.m',{n:p.dev.t}), '#8a6d1f');
+  if(S.plan && S.plan.list.includes(i) && p.st==='owned') badge(x,y-6,t('map.plan'),'#2d5bb5');
+  const mk = p.flag && MARK[p.flag.k]; if(mk) badge(x+14,y-40,mk[0],mk[1]);
+  if(p.st==='owned' && !hasAccess(r,c)) badge(x,y-14,'?','#7a8599');
 }
 function draw(){
   if(!S || !W) return;
@@ -1120,205 +1764,365 @@ function draw(){
   ctx.setTransform(k,0,0,k, dpr*(W/2 - MAPCX*s), dpr*(H/2 - MAPCY*s)); ctx.imageSmoothingEnabled = true;
   order.forEach(o=>drawLabels(o[2]));
   if(selected>=0){ const p=S.grid[selected], [x,y]=isoOf(Math.floor(selected/N), selected%N);
-    const top = y - (p.st==='built' && p.ty ? HEIGHT[p.ty] : p.k==='village' ? 34 : p.k==='habitat' ? 26 : p.st==='building' ? 70 : 14) - 6;
+    const top = y - (p.st==='built' && p.ty ? HEIGHT[p.ty] : p.k==='village' ? 34 : p.k==='habitat' ? 26 : p.st==='building' || p.st==='private' ? 70 : p.st==='ruin' ? 40 : 14) - 6;
     ctx.fillStyle='#ffd23f'; ctx.strokeStyle='#5a4300'; ctx.lineWidth=0.8;
     ctx.beginPath(); ctx.moveTo(x-4,top-6); ctx.lineTo(x+4,top-6); ctx.lineTo(x,top); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+  // Event / problem focus: a pulsing red diamond so the player sees where it happens
+  const live = S.focus>=0 && (!modal.classList.contains('hidden') || performance.now() < pulseUntil);
+  if(live){ const [x,y]=isoOf(...rc(S.focus)), ph=(performance.now()%1100)/1100;
+    for(const k of [ph, (ph+0.5)%1]){ const s2=0.75+k*0.9; ctx.globalAlpha = 1-k; ctx.strokeStyle='#e8442e'; ctx.lineWidth=2.2;
+      ctx.beginPath(); ctx.moveTo(x,y-TH/2*s2); ctx.lineTo(x+TW/2*s2,y); ctx.lineTo(x,y+TH/2*s2); ctx.lineTo(x-TW/2*s2,y); ctx.closePath(); ctx.stroke(); }
+    ctx.globalAlpha = 1;
+    if(!pulseTimer) pulseTimer = setTimeout(()=>{ pulseTimer = 0; draw(); }, 40); }
 }
+let pulseTimer = 0;
 
 // =====================================================================
 //  UI
 // =====================================================================
 const $ = id => document.getElementById(id);
-function floatAt(i, text, bad, icon){
-  let x = innerWidth/2, y = 120;
-  if(i>=0){ const r=Math.floor(i/N), c=i%N, [ix,iy] = isoOf(r,c), [sx,sy] = toScreen(ix,iy), rc = worldEl.getBoundingClientRect(); x = rc.left+sx; y = rc.top+sy-10; }
-  const f = document.createElement('div'); f.className = 'float-txt'+(bad?' bad':'');
-  f.innerHTML = (icon?`<span class="material-icons">${icon}</span>`:'')+`<span>${text}</span>`;
-  f.style.left = x+'px'; f.style.top = y+'px'; document.body.appendChild(f); setTimeout(()=>f.remove(), 1100);
+// Translate the parameters stored in logs/cards (building ids, directive kinds…) at render time,
+// so switching language re-renders everything already on screen.
+function P(p){ const o = {...(p||{})};
+  if(p && p.b) o.b = t('b.'+p.b);
+  if(p && typeof p.r==='number') o.r = t('rej.'+p.r);
+  if(p && p.d) o.d = t('dir.'+p.d+'.t');
+  if(p && p.k) o.k = t('perk.'+p.k);
+  if(p && p.e){ o.e = t('ev.'+p.e+'.t'); if(p.c) o.c = t('ev.'+p.e+'.c.'+p.c); }
+  return o; }
+function country(){ return t('country.'+S.country); }
+
+function portrait(id, size=64){
+  const L = CHARS[id].look, hair = L.hair;
+  const hairSvg = {
+    side:  `<path d="M18 28 Q19 13 33 14 Q46 14 46 27 Q40 19 30 20 Q22 21 18 28Z" fill="${hair}"/>`,
+    bun:   `<circle cx="32" cy="12" r="6" fill="${hair}"/><path d="M18 30 Q17 15 32 15 Q47 15 46 30 Q44 20 32 20 Q21 20 18 30Z" fill="${hair}"/>`,
+    long:  `<path d="M16 44 Q14 14 32 14 Q50 14 48 44 L44 44 Q46 24 32 21 Q19 24 20 44Z" fill="${hair}"/>`,
+    short: `<path d="M18 26 Q18 13 32 13 Q46 13 46 26 Q44 19 32 18 Q21 19 18 26Z" fill="${hair}"/>`,
+    slick: `<path d="M17 27 Q17 12 34 13 Q47 15 46 25 Q38 17 17 27Z" fill="${hair}"/>`,
+    bald:  `<path d="M18 30 Q17 24 20 22 L20 32Z M46 30 Q47 24 44 22 L44 32Z" fill="${hair}"/>`,
+    cap:   `<path d="M17 23 Q18 11 32 11 Q46 11 47 23Z" fill="#3e6b2a"/><path d="M40 22 L54 24 L47 25Z" fill="#2f5420"/>`,
+  }[L.style] || '';
+  const mouth = {smile:'M27 37 Q32 41 37 37', grin:'M26 36 Q32 42 38 36 Z', frown:'M27 39 Q32 35 37 39', flat:'M28 38 L36 38'}[L.mouth];
+  const acc = {
+    glasses: `<g stroke="#222" stroke-width="1.3" fill="rgba(255,255,255,.25)"><circle cx="27" cy="29" r="4"/><circle cx="37" cy="29" r="4"/><path d="M31 29h2" fill="none"/></g>`,
+    monocle: `<circle cx="37" cy="29" r="4.2" fill="rgba(255,255,255,.25)" stroke="#c9a227" stroke-width="1.4"/><path d="M41 31 Q44 40 40 48" stroke="#c9a227" fill="none"/>`,
+    hardhat: `<path d="M17 24 Q18 10 32 10 Q46 10 47 24Z" fill="#f2c230"/><rect x="14" y="22" width="36" height="4" rx="2" fill="#e0a800"/>`,
+    tie:     `<path d="M32 50 l-3 4 3 10 3-10z" fill="#c0392b"/>`,
+    sash:    `<path d="M16 54 L48 64" stroke="#ffcc33" stroke-width="5"/>`,
+    gold:    `<path d="M24 52 Q32 58 40 52" stroke="#e6c34a" stroke-width="2" fill="none"/>`,
+    none: '',
+  }[L.acc];
+  return `<svg viewBox="0 0 64 64" width="${size}" height="${size}" aria-hidden="true">
+    <rect width="64" height="64" fill="#dfe7f5"/><path d="M8 64 Q32 40 56 64Z" fill="${L.coat}"/>
+    <path d="M27 45 h10 v6 h-10z" fill="${L.skin}"/>
+    ${L.acc==='tie'||L.acc==='sash'||L.acc==='gold' ? acc : ''}
+    <ellipse cx="32" cy="30" rx="14" ry="15" fill="${L.skin}"/>
+    <ellipse cx="18" cy="31" rx="2.5" ry="3.5" fill="${L.skin}"/><ellipse cx="46" cy="31" rx="2.5" ry="3.5" fill="${L.skin}"/>
+    ${hairSvg}
+    <circle cx="27" cy="29" r="1.7" fill="#222"/><circle cx="37" cy="29" r="1.7" fill="#222"/>
+    <path d="M24 24 l5 -1 M35 23 l5 1" stroke="#3a2a1e" stroke-width="1.4"/>
+    ${L.mustache ? '<path d="M25 35 Q32 31 39 35 Q32 34 25 35Z" fill="#4a3424"/>' : ''}
+    <path d="${mouth}" stroke="#7a3b2e" stroke-width="1.6" fill="${L.mouth==='grin'?'#fff':'none'}" stroke-linecap="round"/>
+    ${L.acc==='glasses'||L.acc==='monocle'||L.acc==='hardhat' ? acc : ''}
+  </svg>`;
 }
-function setMeter(id, v, warnBelow=40, badBelow=25){
+
+function screenOfParcel(i){ const [ix,iy] = isoOf(...rc(i)), [sx,sy] = toScreen(ix,iy), r = worldEl.getBoundingClientRect(); return [r.left+sx, r.top+sy-10]; }
+function floatAt(i, text, cls, icon, delay=0){
+  setTimeout(()=>{
+    let x = innerWidth/2, y = 120; if(i>=0) [x,y] = screenOfParcel(i);
+    const f = document.createElement('div'); f.className = 'float-txt '+(cls||'');
+    f.innerHTML = (icon?`<span class="material-icons">${icon}</span>`:'')+`<span>${text}</span>`;
+    f.style.left = x+'px'; f.style.top = y+'px'; document.body.appendChild(f); setTimeout(()=>f.remove(), 1400);
+  }, delay);
+}
+function flushFx(){ (S.fx||[]).forEach((f,j)=>floatAt(f.i, t(f.k, P(f.p)), f.cls, f.cls==='bad'?'error':'check_circle', j*140)); S.fx = []; }
+
+// --- Static texts (re-applied when the language changes) ---
+function applyStatic(){
+  document.documentElement.lang = LANG;
+  $('langBtn').textContent = LANG==='es' ? 'EN' : 'ES';
+  $('langBtn').setAttribute('aria-label', t('ui.lang'));
+  $('hint').textContent = t('ui.hint');
+  [['m-local','meter.local'],['m-neigh','meter.neigh'],['m-comp','meter.comp']].forEach(([id,k])=>$(id).querySelector('.lbl').textContent = t(k));
+  $('st-month').title = t('ui.month'); $('st-funds').title = t('ui.funds'); $('st-res').title = t('ui.residents'); $('st-slots').title = t('ui.slots'); $('st-debt').title = t('ui.debt');
+}
+function setMeter(id, v, prev, warnBelow=40, badBelow=25){
   const el = $(id); el.querySelector('b').textContent = Math.round(v);
   const i = el.querySelector('i'); i.style.width = clamp(v,0,100)+'%';
   i.className = v < badBelow ? 'low' : (v < warnBelow ? 'mid' : '');
+  const d = Math.round(v - prev), de = el.querySelector('.delta');
+  de.textContent = d ? (d>0?'▲':'▼')+Math.abs(d) : ''; de.className = 'delta '+(d>0?'up':'down');
+  el.classList.toggle('alarm', d <= -8);
 }
 function updateHUD(){
   $('townName').textContent = `· ${S.town}`;
   $('month').textContent = Math.min(S.month, CFG.months); $('months').textContent = CFG.months;
-  $('funds').textContent = fmt(S.funds); $('residents').textContent = residents(); $('target').textContent = CFG.target;
+  $('funds').textContent = money(S.funds); $('residents').textContent = residents(); $('target').textContent = CFG.target;
+  $('st-debt').hidden = !(S.debt>0); $('debt').textContent = money(-S.debt);
   const sl = $('slots'); sl.innerHTML = '';
-  for(let k=0;k<slotsPerMonth();k++){ const d=document.createElement('span'); d.className='slot'+(k<S.slots?' on':''); sl.appendChild(d); }
-  setMeter('m-local', S.local); setMeter('m-neigh', S.neigh, 35, 15); setMeter('m-comp', S.comp, 35, 15);
-  // Spending vs. next milestone
-  const next = Object.keys(CFG.milestones).map(Number).find(m=>m>=S.month);
-  const sp = $('m-spent'); const pct = S.spent / S.grant * 100;
-  sp.querySelector('.top span').lastChild.textContent = next ? `Spent (≥${CFG.milestones[next]*100}% by m${next})` : 'Spent';
+  for(let k=0;k<Math.max(slotsPerMonth(), S.slots);k++){ const d=document.createElement('span'); d.className='slot'+(k<S.slots?' on':''); sl.appendChild(d); }
+  const pv = S.prev || snapshot();
+  setMeter('m-local', S.local, pv.local); setMeter('m-neigh', S.neigh, pv.neigh, 35, 15); setMeter('m-comp', S.comp, pv.comp, 35, 15);
+  const nm = nextMilestone(), sp = $('m-spent'), pct = S.spent / S.grant * 100;
+  sp.querySelector('.lbl').textContent = nm ? t('meter.spentBy', {p:Math.round(CFG.milestones[nm.m]*100), m:nm.m}) : t('meter.spent');
   sp.querySelector('b').textContent = Math.round(pct)+'%';
   const bar = sp.querySelector('i'); bar.style.width = clamp(pct,0,100)+'%';
-  bar.className = next && pct < CFG.milestones[next]*100 && next-S.month<=3 ? 'low' : '';
+  bar.className = nm && S.spent < nm.need && nm.m-S.month<=3 ? 'low' : '';
 }
-function actBtn(icon, label, sub, fn, disabled, primary){
-  const b = document.createElement('button'); b.className = 'act'+(primary?' primary':''); b.disabled = !!disabled;
+// Tap a meter: what it does, and why it moved
+function showMeterPop(m){
+  const pop = $('pop'), el = document.querySelector(`.meter[data-m="${m}"]`);
+  document.querySelectorAll('.meter').forEach(x=>x.classList.toggle('open', x===el && pop.classList.contains('hidden') || x===el && pop.dataset.m!==m));
+  if(!pop.classList.contains('hidden') && pop.dataset.m===m){ hidePop(); return; }
+  pop.dataset.m = m;
+  let html = `<h4>${t(m==='spent'?'meter.spent':'meter.'+m)}</h4><p>${t('meterd.'+m, {cap:money(CFG.debtCap)})}</p>`;
+  if(m==='spent'){ const nm = nextMilestone();
+    html += nm ? `<p>${t('meterd.spentNext', {m:nm.m, need:money(nm.need), spent:money(S.spent)})}</p>` : ''; }
+  else { const tr = S.trail.filter(x=>x.meter===m).slice(0,7);
+    html += tr.length ? `<b>${t('ui.recent')}</b><ul>${tr.map(x=>`<li>m${x.m} · ${whyText(x.why)} <span class="d ${x.d>0?'up':'down'}">${x.d>0?'+':''}${Math.round(x.d)}</span></li>`).join('')}</ul>` : `<p>${t('ui.noChanges')}</p>`; }
+  pop.innerHTML = html; pop.classList.remove('hidden');
+  const r = el.getBoundingClientRect(); pop.style.top = (r.bottom+6)+'px'; pop.style.left = clamp(r.left, 10, innerWidth-pop.offsetWidth-10)+'px';
+}
+function hidePop(){ $('pop').classList.add('hidden'); document.querySelectorAll('.meter').forEach(x=>x.classList.remove('open')); }
+function whyText(w){ return w.startsWith('ev:') ? t('ev.'+w.slice(3)+'.t') : t(w); }
+
+function actBtn(icon, label, sub, fn, disabled, cls){
+  const b = document.createElement('button'); b.className = 'act'+(cls?' '+cls:''); b.disabled = !!disabled;
   b.innerHTML = `<span class="material-icons">${icon}</span><span>${label}<small>${sub||''}</small></span>`;
   b.onclick = fn; return b;
 }
 function doAction(res, i){
-  playSound(res.ok ? 'ok' : 'fail'); floatAt(i, res.msg, !res.ok, res.ok ? 'check_circle' : 'block');
+  playSound(res.sfx || (res.ok ? 'ok' : 'fail'));
+  floatAt(i, t(res.msg.k, P(res.msg.p)), res.ok ? (res.cls||'') : 'bad', res.ok ? 'check_circle' : 'block');
   save(); refresh();
 }
-const BOTTLENECK_TXT = {homes:'housing', jobs:'jobs', school:'school places', health:'health care'};
-function renderPanel(){
-  const P = $('panel'); P.innerHTML = '';
-  const end = actBtn('skip_next', `End month ${Math.min(S.month,CFG.months)}`, `Next month costs ≈ €${fmt(monthlyCosts())}M`, ()=>{ playSound('turn'); endMonth(); selected=-1; refresh(); showNotices(); }, !!S.over, true);
-  end.id = 'endTurn'; P.appendChild(end);
-  // Directive
-  if(S.directive){ const d=S.directive, D=DIRECTIVES[d.kind];
-    const c = document.createElement('div'); c.className='card directive';
-    const left = d.deadline - S.month + 1;
-    c.innerHTML = `<div class="ref">Directive · ref. HUF/${S.month}/${d.kind.toUpperCase()}</div><h3><span class="material-icons">${D.icon}</span>${D.title}</h3><p>${D.text(d)}</p><div class="due" style="color:${left<=1?'var(--bad)':'var(--ink)'}">Due end of month ${d.deadline} · ${left} month${left>1?'s':''} left</div>`;
-    P.appendChild(c); }
-  // Selected parcel or general actions
-  if(selected >= 0) P.appendChild(parcelCard(selected)); else P.appendChild(generalCard());
-  // Status
-  const cp = caps(); const st = document.createElement('div'); st.className='card';
-  st.innerHTML = `<h3><span class="material-icons">insights</span>Town</h3>
-    <dl class="kv"><dt>Homes</dt><dd>${cp.homes}</dd><dt>Jobs support</dt><dd>${cp.jobs} residents</dd><dt>School places</dt><dd>${cp.school}</dd><dt>Health care</dt><dd>${cp.health}</dd>
-    <dt>Construction</dt><dd>${activeSites()}/${contractors()} sites${S.grid.some(p=>p.st==='approved')?` · ${S.grid.filter(p=>p.st==='approved').length} queued`:''}</dd>
-    <dt>Approval odds</dt><dd>${Math.round(approvalChance()*100)}%</dd>
-    ${S.perks.length||S.shovel?`<dt>Perks</dt><dd>${S.perks.map(k=>PERKS[k].name).join(', ')}${S.shovel?(S.perks.length?', ':'')+'Golden Shovel':''}</dd>`:''}</dl>
-    <div class="bottleneck">Growth is limited by: <b>${BOTTLENECK_TXT[cp.bottleneck]}</b></div>`;
-  P.appendChild(st);
-  // Log
-  const lg = document.createElement('div'); lg.className='card';
-  lg.innerHTML = `<h3><span class="material-icons">inbox</span>Inbox</h3><ul class="log">${S.log.slice(0,8).map(l=>`<li class="${l.cls}">m${l.m} · ${l.text}</li>`).join('')}</ul>`;
-  P.appendChild(lg);
+// --- What's wrong right now (shown at the top of the panel; tap to locate) ---
+function problems(){
+  const L = [], add = (sev, icon, k, p, i=-1) => L.push({sev, icon, k, p, i});
+  let rustic = 0;
+  S.grid.forEach((p,i)=>{ const [r,c] = rc(i);
+    if(p.st==='owned' && !hasAccess(r,c)) add('warn','wrong_location','pb.noAccess',{at:pname(i)},i);
+    else if(p.st==='owned' && !p.urban) rustic++;
+    if(p.st==='building' && p.halt) add('bad','pan_tool','pb.halted',{at:pname(i), b:p.ty, n:p.halt},i);
+    if(p.flag && p.flag.k==='rejected') add('bad','cancel','pb.rejected',{at:pname(i)},i);
+    if(p.st==='private' && p.flag && p.flag.k==='paused') add('warn','pause_circle','pb.paused',{at:pname(i)},i);
+    if(p.st==='ruin') add('bad','domain_disabled','pb.ruin',{at:pname(i)},i);
+  });
+  if(rustic && !S.plan) add('info','map','pb.needPlan',{n:rustic});
+  const q = S.grid.filter(p=>p.st==='approved').length;
+  if(q && activeSites() >= contractors()) add('warn','engineering','pb.queue',{n:q, c:contractors()});
+  if(S.funds - monthlyCosts() + taxIncome() < 0) add('bad','money_off','pb.cash',{x:money(monthlyCosts())});
+  if(S.comp < 30) add('bad','fact_check','pb.comp',{n:Math.round(S.comp)});
+  if(S.neigh < 15) add('bad','gavel','pb.neighCourt',{});
+  else if(S.neigh < 35) add('warn','diversity_3','pb.neigh',{});
+  if(S.local < 40) add('warn','how_to_vote','pb.local',{});
+  const nm = nextMilestone(); if(nm && nm.m-S.month<=4 && S.spent<nm.need) add('warn','savings','pb.milestone',{m:nm.m, x:money(nm.need-S.spent)});
+  if(S.directive && S.directive.deadline - S.month <= 1 && !directiveProgress(S.directive)) add('bad','assignment_late','pb.directive',{d:S.directive.kind});
+  if(S.debt>0) add('warn','account_balance_wallet','pb.debt',{x:money(S.debt), r:(S.rate*100).toFixed(1), cap:money(CFG.debtCap)});
+  if(S.market < CFG.devMinMarket) add('info','trending_down','pb.market',{});
+  add('info','insights','pb.growth',{w:t('bn.'+caps().bottleneck)});
+  const order = {bad:0, warn:1, info:2}; return L.sort((a,b)=>order[a.sev]-order[b.sev]);
 }
-function generalCard(){
+function renderPanel(){
+  const Pn = $('panel'); Pn.innerHTML = '';
+  const cost = monthlyCosts(), tax = taxIncome();
+  const end = actBtn('skip_next', t('ui.endMonth', {m:Math.min(S.month,CFG.months)}), t('ui.forecast', {c:money(cost), t:money(tax)}),
+    ()=>{ if(S.cards.length || S.perkChoice){ showNext(); return; }
+          playSound('turn'); endMonth(); selected=-1; refresh(); flushFx(); setTimeout(showNext, (S.fx||[]).length ? 0 : 0); }, !!S.over, 'primary');
+  end.id = 'endTurn'; Pn.appendChild(end);
+  // Problems
+  const pb = problems(), card = document.createElement('div');
+  card.className = 'card'+(pb.some(x=>x.sev==='bad')?' alert':'');
+  card.innerHTML = `<h3><span class="material-icons">report</span>${t('ui.problems')}</h3>`;
+  const ul = document.createElement('ul'); ul.className='problems';
+  pb.slice(0,7).forEach(x=>{ const li=document.createElement('li'); li.className=x.sev;
+    li.innerHTML = `<span class="material-icons">${x.icon}</span><span>${t(x.k, P(x.p))}<small>${t(x.k+'.h', P(x.p))}</small></span>`;
+    if(x.i>=0) li.onclick = ()=>{ selected = x.i; pulse(x.i); playSound('click'); refresh(); };
+    ul.appendChild(li); });
+  card.appendChild(ul); Pn.appendChild(card);
+  // Directive
+  if(S.directive){ const d=S.directive, left = d.deadline - S.month + 1, c = document.createElement('div'); c.className='card directive';
+    c.innerHTML = `<div class="ref">${t('ui.directiveRef', {ref:d.ref})}</div><h3><span class="material-icons">${DIRECTIVE_ICON[d.kind]}</span>${t('dir.'+d.kind+'.t')}</h3><p>${t('dir.'+d.kind+'.x', {n:d.param})}</p>
+      <div class="due" style="color:${left<=1?'var(--bad)':'var(--ink)'}">${t('ui.due', {m:d.deadline, n:left})}</div>`;
+    Pn.appendChild(c); }
+  Pn.appendChild(selected >= 0 ? parcelCard(selected) : agendaCard());
+  // Town
+  const cp = caps(), st = document.createElement('div'); st.className='card';
+  st.innerHTML = `<h3><span class="material-icons">insights</span>${t('ui.town')}</h3>
+    <dl class="kv"><dt>${t('ui.homes')}</dt><dd>${cp.homes}</dd><dt>${t('ui.jobs')}</dt><dd>${t('ui.jobsN',{n:cp.jobs})}</dd><dt>${t('ui.schoolPl')}</dt><dd>${cp.school}</dd><dt>${t('ui.health')}</dt><dd>${cp.health}</dd>
+    <dt>${t('ui.construction')}</dt><dd>${t('ui.sites',{a:activeSites(), c:contractors()})}</dd>
+    <dt>${t('ui.odds')}</dt><dd>${Math.round(approvalChance()*100)}%</dd>
+    <dt>${t('ui.market')}</dt><dd>${Math.round(S.market*100)}%</dd>
+    <dt>${t('ui.taxes')}</dt><dd>${money(tax)}/${t('ui.mo')}</dd>
+    ${S.perks.length||S.shovel?`<dt>${t('ui.perks')}</dt><dd>${S.perks.map(k=>t('perk.'+k)).concat(S.shovel?[t('perk.shovel')]:[]).join(', ')}</dd>`:''}</dl>
+    <div class="bottleneck">${t('ui.limitedBy')} <b>${t('bn.'+cp.bottleneck)}</b></div>`;
+  Pn.appendChild(st);
+  // Inbox
+  const lg = document.createElement('div'); lg.className='card';
+  lg.innerHTML = `<h3><span class="material-icons">inbox</span>${t('ui.inbox')}</h3><ul class="log">${S.log.slice(0,10).map(l=>`<li class="${l.c}">m${l.m} · ${t(l.k, P(l.p))}</li>`).join('')}</ul>`;
+  Pn.appendChild(lg);
+}
+function agendaCard(){
   const c = document.createElement('div'); c.className='card';
-  c.innerHTML = `<h3><span class="material-icons">work</span>Your agenda</h3><p>Tap a parcel to buy it or request a permit. Or spend your time on politics:</p>`;
-  const a = document.createElement('div'); a.className='actions';
-  a.appendChild(actBtn('restaurant','Lobby the mayor',`1 slot · €${CFG.lobbyCost}M · support +${has('lobbyist')?20:(S.lobbied?6:12)}`, ()=>doAction(lobby(),-1), S.slots<1||S.over));
-  a.appendChild(actBtn('forum','Public consultation',`2 slots · neighbours +15 · delays reviews`, ()=>doAction(consult(),-1), S.slots<2||S.over));
-  a.appendChild(actBtn('description','File a report','1 slot · compliance +22', ()=>doAction(fileReport(),-1), S.slots<1||S.over));
+  c.innerHTML = `<h3><span class="material-icons">work</span>${t('ui.agenda')}</h3><p>${t('ui.agendaHint')}</p>`;
+  const a = document.createElement('div'); a.className='actions'; const off = !!S.over;
+  a.appendChild(actBtn('map', t('act.plan'), S.plan ? t('act.planBusy',{n:S.plan.t}) : t('act.planSub',{x:money(CFG.planCost)}), ()=>doAction(submitPlan(),-1), off||!!S.plan||S.slots<2));
+  a.appendChild(actBtn('restaurant', t('act.lobby'), t('act.lobbySub',{x:money(CFG.lobbyCost), n:has('lobbyist')?20:(S.lobbied?6:12)}), ()=>doAction(lobby(),-1), off||S.slots<1));
+  a.appendChild(actBtn('forum', t('act.consult'), t('act.consultSub'), ()=>doAction(consult(),-1), off||S.slots<2));
+  a.appendChild(actBtn('description', t('act.report'), t('act.reportSub'), ()=>doAction(fileReport(),-1), off||S.slots<1));
+  if(S.debt>0) a.appendChild(actBtn('account_balance_wallet', t('act.repay',{x:money(Math.min(CFG.loanStep,S.debt))}), t('act.repaySub'), ()=>doAction(repay(),-1), off||S.funds<Math.min(CFG.loanStep,S.debt), 'money'));
   c.appendChild(a); return c;
 }
 function parcelCard(i){
-  const p = S.grid[i], r=Math.floor(i/N), c=i%N, K = KIND[p.k];
+  const p = S.grid[i], [r,c] = rc(i);
   const card = document.createElement('div'); card.className='card';
-  const title = p.ty && p.k!=='regional' ? B[p.ty].name : K.name;
-  const icon = p.ty && p.k!=='regional' ? B[p.ty].icon : K.icon;
-  let html = `<div class="ref">Cadastral parcel ${r+1}-${c+1}</div><h3><span class="material-icons">${icon}</span>${title}</h3>`;
-  const a = document.createElement('div'); a.className='actions';
-  if(p.k==='habitat') html += '<p>Protected habitat. Home to a toad with better lawyers than you.</p>';
-  else if(p.k==='village') html += '<p>The old village: 30 residents, one bar, strong opinions. Building next to it annoys them.</p>';
-  else if(p.k==='regional') html += '<p>The regional road. Managed by another administration. Do not touch.</p>';
+  const isB = p.ty && p.k!=='regional';
+  const title = isB ? t('b.'+p.ty) : t('k.'+p.k);
+  const icon = isB ? B[p.ty].icon : KIND[p.k];
+  let html = `<div class="ref">${t('ui.parcel',{at:pname(i)})}${p.urban && !isB ? ' · '+t('ui.urban') : ''}</div><h3><span class="material-icons">${icon}</span>${title}</h3>`;
+  const a = document.createElement('div'); a.className='actions'; const off = !!S.over || S.slots<1;
+  if(p.k==='habitat') html += `<p>${t('pc.habitat')}</p>`;
+  else if(p.k==='village') html += `<p>${t('pc.village')}</p>`;
+  else if(p.k==='regional') html += `<p>${t('pc.regional')}</p>`;
   else if(p.st==='land'){
-    const price = landPrice(p);
-    html += `<p>${p.k==='muni'?'Owned by the municipality. Cheap, if the mayor agrees (support ≥ 40).':p.k==='flood'?'Cheap land in the flood zone. Building here costs 50% more.':'Owned by a local farmer'+(p.hold?' who already raised the price once.':'. May hold out for a better price.')}</p>`;
-    a.appendChild(actBtn('real_estate_agent', `Acquire · €${fmt(price)}M`, '1 agenda slot', ()=>doAction(acquire(i),i), S.slots<1||S.over));
+    html += `<p>${t(p.k==='muni'?'pc.muni':p.k==='flood'?'pc.flood':(p.hold?'pc.farmHeld':'pc.farm'))}</p>`;
+    a.appendChild(actBtn('real_estate_agent', t('act.acquire',{x:money(landPrice(p))}), t('act.slot1'), ()=>doAction(acquire(i),i), off));
   } else if(p.st==='owned'){
     const acc = hasAccess(r,c);
-    html += `<p>${acc?'You own it. Request a permit for:':'You own it, but it has no road access. Plan a road next to it first.'}</p>`;
-    BUILD_TYPES.forEach(ty=>{ const bt=B[ty];
-      a.appendChild(actBtn(bt.icon, bt.name, `${bt.desc} · permit ${permitMonths(ty)}m · build ${buildMonths(ty)}m · €${fmt(buildCost(p,ty))}M`,
-        ()=>doAction(requestPermit(i,ty),i), !acc || S.slots<1 || S.over)); });
-  } else if(p.st==='review') html += `<p><span class="material-icons" style="font-size:14px">hourglass_top</span> <b>${B[p.ty].name}</b>: permit under review. Decision in ${p.t} month${p.t>1?'s':''}. Approval odds today: ${Math.round(approvalChance()*100)}%.</p>`;
-  else if(p.st==='approved') html += `<p><b>${B[p.ty].name}</b>: permit approved. Waiting for a free contractor.</p>`;
-  else if(p.st==='building') html += `<p><b>${B[p.ty].name}</b> under construction: ${p.t} month${p.t>1?'s':''} left${p.halt?`, <b style="color:var(--bad)">halted ${p.halt} more month(s)</b>`:''}. Costs €${fmt(p.mcost)}M per month.</p>`;
-  else if(p.st==='built' && p.ty && p.ty!=='road') html += `<p>${B[p.ty].desc}. Upkeep €${B[p.ty].upkeep}M/month.</p>`;
-  else if(p.st==='built') html += '<p>A road. Parcels next to it can get permits.</p>';
+    html += `<p>${!acc ? t('pc.noAccess') : p.urban ? t('pc.ownedUrban') : t('pc.ownedRustic')}</p>`;
+    BUILD_TYPES.forEach(ty=>{ const bt=B[ty], blocked = !acc || (bt.urban && !p.urban);
+      a.appendChild(actBtn(bt.icon, t('b.'+ty), (bt.urban && !p.urban ? t('pc.needsUrban')+' · ' : '')+t('bd.'+ty)+' · '+t('pc.timing',{p:permitMonths(ty), b:buildMonths(ty), x:money(buildCost(p,ty))}),
+        ()=>doAction(requestPermit(i,ty),i), blocked || off)); });
+    if(p.urban) a.appendChild(actBtn('sell', t('act.sell',{x:money(plotValue(p))}), S.market<CFG.devMinMarket ? t('act.sellCold') : t('act.sellSub'), ()=>doAction(sellPlot(i),i), !acc || off || S.market<CFG.devMinMarket, 'money'));
+  }
+  else if(p.st==='review') html += `<p>${t('pc.review',{b:t('b.'+p.ty), n:p.t, o:Math.round(approvalChance()*100)})}</p>`;
+  else if(p.st==='approved') html += `<p>${t('pc.approved',{b:t('b.'+p.ty)})}</p>`;
+  else if(p.st==='building') html += `<p>${t('pc.building',{b:t('b.'+p.ty), n:p.t, x:money(p.mcost)})}${p.halt?' <b style="color:var(--bad)">'+t('pc.halted',{n:p.halt})+'</b>':''}</p>`;
+  else if(p.st==='private') html += `<p>${t(p.dev.phase==='permit'?'pc.privPermit':'pc.privBuild',{n:p.dev.t})}${S.market<CFG.devMinMarket?' <b style="color:var(--warn)">'+t('pc.privPaused')+'</b>':''}</p>`;
+  else if(p.st==='ruin'){ html += `<p>${t('pc.ruin')}</p>`; a.appendChild(actBtn('real_estate_agent', t('act.buyBack',{x:money(r1(p.price*1.5))}), t('act.slot1'), ()=>doAction(acquire(i),i), off)); }
+  else if(p.st==='built' && isB && p.ty!=='road') html += `<p>${t('bd.'+p.ty)}. ${p.priv ? t('pc.private') : t('pc.upkeep',{x:money(B[p.ty].upkeep)})}</p>`;
+  else if(p.st==='built') html += `<p>${t('pc.road')}</p>`;
   card.innerHTML = html; if(a.children.length) card.appendChild(a);
-  const back = actBtn('close','Deselect','', ()=>{ selected=-1; refresh(); }); back.style.marginTop='8px'; card.appendChild(back);
+  const back = actBtn('close', t('ui.deselect'), '', ()=>{ selected=-1; refresh(); }); back.style.marginTop='8px'; card.appendChild(back);
   return card;
 }
-function refresh(){ updateHUD(); renderPanel(); draw(); }
+function refresh(){ applyStatic(); updateHUD(); renderPanel(); draw(); }
+let pulseUntil = 0;
+function pulse(i){ S.focus = i; pulseUntil = performance.now()+2600; draw(); }
 
-// --- Modal notices ---
+// =====================================================================
+//  CARDS & NOTICES (modal). One renderer per card type; re-rendered on language change.
+// =====================================================================
 const modal = $('modal'), notice = $('notice');
-function letter(icon, title, stamp, cls, body, buttons){
-  notice.innerHTML = `<div class="letterhead"><span class="material-icons">account_balance</span>Union · DG Harmonised Urban Futures</div>
-    ${stamp?`<div class="stamp ${cls||'info'}">${stamp}</div>`:''}<h2><span class="material-icons">${icon}</span>${title}</h2>${body}<div class="btns"></div>`;
-  notice.classList.toggle('stamped', !!stamp);
+let rerender = null;
+function letter({icon, title, stamp, cls, body, buttons, dock, speaker}){
+  notice.innerHTML = `<div class="letterhead"><span class="material-icons">account_balance</span>${t('ui.letterhead')}</div>
+    ${stamp?`<div class="stamp ${cls||'info'}">${stamp}</div>`:''}
+    ${speaker?`<div class="speaker">${portrait(speaker)}<div><b>${CHARS[speaker].name}</b><small>${t('char.'+speaker,{town:S.town})}</small></div></div>`:''}
+    <h2><span class="material-icons">${icon}</span>${title}</h2>${body}<div class="btns"></div>`;
+  notice.classList.toggle('stamped', !!stamp && !speaker);
   const box = notice.querySelector('.btns'); buttons.forEach(b=>box.appendChild(b));
-  modal.classList.remove('hidden'); notice.scrollTop = 0;
+  modal.classList.remove('hidden'); modal.classList.toggle('dock', !!dock); notice.scrollTop = 0;
+  notice.style.animation = 'none'; void notice.offsetWidth; notice.style.animation = '';
 }
 function btn(label, icon, fn, primary){ const b=document.createElement('button'); b.className='btn'+(primary?' primary':''); b.innerHTML=`<span class="material-icons">${icon}</span>${label}`; b.onclick=fn; return b; }
-function hideModal(){ modal.classList.add('hidden'); }
-function showNotices(){
-  if(S.notices.length){
-    const n = S.notices.shift(); save();
-    if(n.kind==='intro'){
-      letter('mail','Letter of appointment','APPOINTED','info',
-        `<p class="ref">Ref. HUF/MOTHER/${S.seed%10000}-B</p>
-         <p>Dear Programme Officer,</p>
-         <p>Congratulations. Under the <b>MOTHER</b> programme (Model Town for Harmonised European Resilience), the Union has allocated <b>€${S.grant}M</b> to build a model town in <b>${S.town}</b>, ${S.country}.</p>
-         <p>You have <b>${CFG.months} months</b> to reach <b>${CFG.target} registered residents</b>. Kindly note that the Union owns no land, issues no permits and has no bulldozers. Funds not spent on time will be decommitted.</p>
-         <p>Please keep the Commission informed. Regularly.</p>
-         <p class="sig">— Directorate-General for Harmonised Urban Futures</p>`,
-        [btn('Accept the appointment','draw', ()=>{ playSound('stamp'); hideModal(); showNotices(); }, true)]);
-      return;
-    }
-    if(n.kind==='directive'){ const d=n.d, D=DIRECTIVES[d.kind];
-      letter(D.icon, `Directive: ${D.title}`, 'URGENT', 'info', `<p>${D.text(d)}</p><p><b>Deadline: end of month ${d.deadline}.</b></p><p>Success will be rewarded. Failure will be noted. Two failures and the programme is suspended.</p>`,
-        [btn('Acknowledge receipt','task_alt', ()=>{ playSound('stamp'); hideModal(); showNotices(); }, true)]);
-      return; }
-    letter(n.icon, n.title, n.stamp, n.cls, `<p>${n.body}</p>`, [btn('Noted','check', ()=>{ playSound('click'); hideModal(); showNotices(); }, true)]);
-    playSound(n.cls==='bad'?'fail':'stamp');
-    return;
-  }
-  if(S.perkChoice){
-    const wrap = S.perkChoice.map(k=>{ const pk=PERKS[k]; const b=document.createElement('button'); b.className='perk';
-      b.innerHTML=`<span class="material-icons">${pk.icon}</span><span><b>${pk.name}</b><small>${pk.desc}</small></span>`;
-      b.onclick=()=>{ choosePerk(k); playSound('ok'); hideModal(); refresh(); showNotices(); }; return b; });
-    letter('workspace_premium','Choose a reward', null, null, '<p>Your compliance has been noticed. Pick one:</p>', wrap);
-    return;
-  }
-  if(S.over){ gameOver(); return; }
-  hideModal(); refresh();
+function hideModal(){ modal.classList.add('hidden'); rerender = null; }
+const CHIP_ICON = {money:'euro', local:'how_to_vote', neigh:'diversity_3', comp:'fact_check', delay:'schedule', risk:'casino', slot:'event_busy', lose:'block', land:'add_location', debt:'account_balance_wallet', cost:'trending_up', later:'schedule', rate:'percent', market:'trending_down'};
+function chip([type, v]){
+  let cls = '', txt = '';
+  if(type==='money'){ txt = (v>0?'+':'')+money(v); cls = v>0?'good':'bad'; }
+  else if(type==='debt'){ txt = (v>0?'+':'')+money(v); cls = v>0?'bad':'good'; }
+  else if(['local','neigh','comp'].includes(type)){ txt = t('meter.'+type)+' '+(typeof v==='number' ? (v>0?'+':'')+v : v); cls = typeof v==='number' ? (v>0?'good':'bad') : ''; }
+  else if(type==='risk'){ if(!v) return ''; txt = t('chip.risk',{n:v}); cls='risk'; }
+  else { txt = t('chip.'+type, {n:v, x:v}); cls = ['delay','slot','lose','cost','rate','market'].includes(type) ? 'bad' : (type==='land'?'good':''); }
+  return `<span class="chip ${cls}"><span class="material-icons">${CHIP_ICON[type]}</span>${txt}</span>`;
 }
-const OVER = {
-  target:   {icon:'celebration', title:'Inauguration!', stamp:'INAUGURATED', cls:'ok', text:()=>`${S.town} has ${residents()} registered residents. The Minister cut the ribbon, gave a speech about "our" town and took all the credit. You were not invited to the photo.`},
-  bankrupt: {icon:'money_off', title:'Funds exhausted', stamp:'INSOLVENT', cls:'bad', text:()=>'The programme ran out of money. The half-built town becomes a case study in a Court of Auditors report.'},
-  audit:    {icon:'search', title:'Audit', stamp:'AUDITED', cls:'bad', text:()=>'Your compliance reached zero. The anti-fraud office opened an investigation into 3,000 missing pages. You have been transferred to the archives.'},
-  suspended:{icon:'block', title:'Programme suspended', stamp:'SUSPENDED', cls:'bad', text:()=>'Two directives failed. The Commission suspends the programme "pending a strategic review", which is expected to last a decade.'},
-  court:    {icon:'gavel', title:'Plan annulled', stamp:'ANNULLED', cls:'bad', text:()=>'The court annulled the urban plan. Everything you built is now in legal limbo. The neighbours are delighted.'},
-  timeout:  {icon:'hourglass_bottom', title:'The programme has ended', stamp:'CLOSED', cls:'bad', text:()=>`Month ${CFG.months} is over with ${residents()} of ${CFG.target} residents. The programme "will be evaluated". A successor programme with a longer acronym is already being drafted.`},
+function showNext(){
+  hidePop();
+  if(S.cards.length){ const c = S.cards[0]; (CARD[c.type])(c); rerender = ()=>CARD[c.type](c); return; }
+  if(S.perkChoice){ perkCard(); rerender = perkCard; return; }
+  if(S.over){ gameOver(); rerender = gameOver; return; }
+  S.focus = -1; hideModal(); refresh();
+}
+function nextCard(sfx){ S.cards.shift(); if(sfx) playSound(sfx); save(); refresh(); showNext(); }
+const CARD = {
+  intro: ()=> letter({icon:'mail', title:t('intro.t'), stamp:t('stamp.appointed'), cls:'info',
+    body: t('intro.x', {ref:`HUF/MOTHER/${S.seed%10000}-B`, x:money(S.grant), town:S.town, country:country(), m:CFG.months, n:CFG.target}),
+    buttons:[btn(t('intro.ok'),'draw', ()=>nextCard('stamp'), true)]}),
+  directive: c => { const d=c.d;
+    letter({icon:DIRECTIVE_ICON[d.kind], title:t('dir.'+d.kind+'.t'), stamp:t('stamp.urgent'), cls:'info', speaker:'brussels',
+      body:`<div class="quote">${t('dir.'+d.kind+'.x',{n:d.param})}</div><p><b>${t('dir.deadline',{m:d.deadline})}</b></p><p>${t('dir.rules')}</p>`,
+      buttons:[btn(t('dir.ack'),'task_alt', ()=>nextCard('stamp'), true)]}); playSound('phone'); },
+  notice: c => { letter({icon:c.icon, title:t(c.key+'.t', P(c.p)), stamp:t(c.stamp), cls:c.cls, speaker:c.char,
+      body:`<div class="quote">${t(c.key+'.x', P(c.p))}</div>`, buttons:[btn(t('ui.noted'),'check', ()=>nextCard('click'), true)]});
+    if(!c.played){ c.played = true; playSound(c.sfx||'stamp'); } },
+  event: c => { const E = EVENTS[c.id], v = c.v;
+    if(v.i>=0 && v.i!==undefined) pulse(v.i);
+    const where = v.i>=0 && v.i!==undefined ? `<span class="where"><span class="material-icons" style="font-size:13px">place</span>${t('ui.parcel',{at:pname(v.i)})}</span>` : '';
+    const buttons = choicesFor(c).map(ch=>{ const b = document.createElement('button'); b.className='choice'; const can = !ch.can || ch.can(v);
+      b.disabled = !can; b.innerHTML = `<b>${t('ev.'+c.id+'.c.'+ch.k)}</b><div class="chips">${ch.fx(v).map(chip).join('')}${can?'':`<span class="chip bad">${t('err.funds')}</span>`}</div>`;
+      b.onclick = ()=>{ const res = resolveEvent(c, ch.k); S.cards.shift();
+        if(res) S.cards.unshift({type:'result', id:c.id, res, v});
+        playSound(res && /caught|lost|stays|refused|unimpressed|ruin|annulled|long/.test(res) ? 'fail' : 'stamp');
+        save(); refresh(); showNext(); };
+      return b; });
+    letter({icon:E.icon, title:t('ev.'+c.id+'.t'), speaker:E.char, dock:true,
+      body:`${where}<div class="quote">${t('ev.'+c.id+'.x', {...P(v), x:v.x, at:v.i>=0?pname(v.i):''})}</div><p style="font-size:12px;color:var(--sub)">${t('ui.choose')}</p>`, buttons});
+    if(!c.played){ c.played = true; playSound(E.sfx); } },
+  result: c => { const E = EVENTS[c.id], bad = /caught|lost|stays|refused|unimpressed|ruin|annulled|long/.test(c.res);
+    letter({icon:E.icon, title:t('ev.'+c.id+'.t'), stamp:t(bad?'stamp.bad':'stamp.done'), cls:bad?'bad':'ok', speaker:E.char,
+      body:`<div class="quote">${t('ev.'+c.id+'.r.'+c.res)}</div>`, buttons:[btn(t('ui.noted'),'check', ()=>nextCard('click'), true)]}); },
 };
-function score(){ return residents() + Math.max(0,Math.round(S.funds))*5 + (S.over&&S.over.win ? (CFG.months+1-S.month)*25 : 0) + S.directivesDone*50; }
+function perkCard(){
+  const wrap = S.perkChoice.map(k=>{ const b=document.createElement('button'); b.className='perk';
+    b.innerHTML=`<span class="material-icons">${PERKS[k]}</span><span><b>${t('perk.'+k)}</b><small>${t('perkd.'+k)}</small></span>`;
+    b.onclick=()=>{ choosePerk(k); playSound('ok'); refresh(); showNext(); }; return b; });
+  letter({icon:'workspace_premium', title:t('perk.title'), speaker:'brussels', body:`<div class="quote">${t('perk.x')}</div>`, buttons:wrap});
+}
+function score(){ return residents() + Math.max(0,Math.round(S.funds))*5 - Math.round(S.debt)*5 + (S.over&&S.over.win ? (CFG.months+1-S.month)*25 : 0) + S.directivesDone*50; }
 function gameOver(){
-  const o = OVER[S.over.why];
-  playSound(S.over.win?'win':'fail'); setMusic(S.over.win ? 'win' : 'menu', S.over.win ? 1 : 0.6);
-  letter(o.icon, o.title, o.stamp, o.cls, `<p>${o.text()}</p><dl class="kv"><dt>Residents</dt><dd>${residents()}</dd><dt>Month</dt><dd>${Math.min(S.month,CFG.months)}</dd><dt>Funds left</dt><dd>€${fmt(S.funds)}M</dd><dt>Directives met</dt><dd>${S.directivesDone}</dd><dt>Score</dt><dd>${score()}</dd></dl>`,
-    [btn('New programme','replay', ()=>{ startNew(); }, true), btn('Look at the map','map', ()=>{ hideModal(); refresh(); })]);
+  const w = S.over.why, win = S.over.win;
+  if(!S.over.played){ S.over.played = true; playSound(win?'win':'fail'); setMusic(win ? 'win' : 'menu', win ? 1 : 0.6); }
+  letter({icon: win?'celebration':'report', title:t('over.'+w+'.t'), stamp:t('over.'+w+'.s'), cls:win?'ok':'bad', speaker: win?'mayor':'brussels',
+    body:`<div class="quote">${t('over.'+w+'.x',{town:S.town, n:residents(), target:CFG.target, m:CFG.months})}</div>
+      <dl class="kv"><dt>${t('ui.residents')}</dt><dd>${residents()}</dd><dt>${t('ui.month')}</dt><dd>${Math.min(S.month,CFG.months)}</dd><dt>${t('ui.funds')}</dt><dd>${money(S.funds)}</dd>
+      ${S.debt?`<dt>${t('ui.debt')}</dt><dd>${money(S.debt)}</dd>`:''}<dt>${t('ui.directivesMet')}</dt><dd>${S.directivesDone}</dd><dt>${t('ui.score')}</dt><dd>${score()}</dd></dl>`,
+    buttons:[btn(t('menu.new'),'replay', ()=>startNew(), true), btn(t('ui.lookMap'),'map', ()=>{ hideModal(); refresh(); })]});
 }
 
-// --- Start / pause menu ---
+// --- Start / pause menu (with language switch) ---
+function langButtons(){ return ['en','es'].map(l=>{ const b = btn(t('lang.'+l), 'translate', ()=>{ setLang(l); }, false); if(l===LANG) b.style.outline='2px solid var(--blue2)'; return b; }); }
+function musicButton(){ const m = btn('', 'music_note', toggleMusic); m.id='btnMusic'; m.innerHTML='<span class="material-icons">music_note</span><span class="label"></span>'; return m; }
 function startMenu(){
   setMusic('menu');
   const saved = loadSave();
-  const items = [btn('New programme','add_circle', ()=>startNew(), true)];
-  if(saved && !saved.over) items.push(btn(`Continue · ${saved.town}, month ${saved.month}`,'play_arrow', ()=>{ S=saved; afterLoad(); }));
-  const m = btn('Music','music_note', toggleMusic); m.id='btnMusic'; m.innerHTML='<span class="material-icons">music_note</span><span class="label">Music</span>';
-  items.push(m);
-  letter('account_balance','EUROCRAT', null, null,
-    `<p>A satirical city builder. You have money from Brussels, 36 months and no power whatsoever.</p><p style="font-size:12px;color:var(--sub)">Prototype v0.2 · build a town the European way: buy the land, file the paperwork, survive the neighbours.</p>`, items);
-  updateMusicBtn();
+  const items = [btn(t('menu.new'),'add_circle', ()=>startNew(), true)];
+  if(saved && !saved.over) items.push(btn(t('menu.continue',{town:saved.town, m:saved.month}),'play_arrow', ()=>{ S=saved; afterLoad(); }));
+  items.push(musicButton(), ...langButtons());
+  letter({icon:'account_balance', title:'EUROCRAT', body:`<p>${t('menu.pitch')}</p><p style="font-size:12px;color:var(--sub)">${t('menu.version')}</p>`, buttons:items});
+  updateMusicBtn(); rerender = startMenu;
 }
 function pauseMenu(){
   setMusic('main', 0.4);
-  const m = btn('Music','music_note', toggleMusic); m.id='btnMusic'; m.innerHTML='<span class="material-icons">music_note</span><span class="label">Music</span>';
-  letter('pause','Coffee break', null, null, `<p>${S.town}, ${S.country} · month ${Math.min(S.month,CFG.months)} of ${CFG.months}. Your game is saved automatically.</p>`,
-    [btn('Back to work','play_arrow', ()=>{ setMusic('main'); hideModal(); }, true), m,
-     btn('Abandon programme','logout', ()=>{ startMenu(); })]);
-  updateMusicBtn();
+  letter({icon:'pause', title:t('pause.t'), body:`<p>${t('pause.x',{town:S.town, country:country(), m:Math.min(S.month,CFG.months), n:CFG.months})}</p>`,
+    buttons:[btn(t('pause.back'),'play_arrow', ()=>{ setMusic('main'); hideModal(); }, true), musicButton(), ...langButtons(), btn(t('pause.abandon'),'logout', ()=>{ startMenu(); })]});
+  updateMusicBtn(); rerender = pauseMenu;
 }
-function startNew(seed){ newGame(seed); selected=-1; zoom=1; viewRot=0; save(); setMusic('main'); refresh(); showNotices(); }
-function afterLoad(){ selected=-1; setMusic('main'); refresh(); showNotices(); }
+function setLang(l){
+  LANG = l; try{ localStorage.setItem('eurocrat_lang', l); }catch(e){}
+  playSound('click'); refresh(); if(rerender && !modal.classList.contains('hidden')) rerender();
+}
+function startNew(seed){ newGame(seed); selected=-1; zoom=1; viewRot=0; save(); setMusic('main'); refresh(); showNext(); }
+function afterLoad(){ selected=-1; setMusic('main'); refresh(); showNext(); }
 
 // =====================================================================
 //  INPUT — tap to select, pinch / wheel to zoom (no panning, no gesture rotation)
 // =====================================================================
 const pointers = new Map(); let pinchD=0, pinchZ=1, pinched=false, downAt=null;
 cvs.addEventListener('pointerdown', e=>{
+  hidePop();
   pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(pointers.size===1){ downAt={x:e.clientX,y:e.clientY}; pinched=false; }
   if(pointers.size===2){ const p=[...pointers.values()]; pinchD=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y)||1; pinchZ=zoom; pinched=true; }
@@ -1330,7 +2134,7 @@ cvs.addEventListener('pointermove', e=>{
 function up(e){
   const wasSingle = pointers.size===1; pointers.delete(e.pointerId);
   if(wasSingle && !pinched && downAt && Math.hypot(e.clientX-downAt.x, e.clientY-downAt.y) < 10){
-    const rc = cvs.getBoundingClientRect(); const i = tileAt(e.clientX-rc.left, e.clientY-rc.top);
+    const r = cvs.getBoundingClientRect(); const i = tileAt(e.clientX-r.left, e.clientY-r.top);
     selected = (i===selected) ? -1 : i; playSound('click'); refresh();
   }
   if(!pointers.size) downAt=null;
@@ -1340,17 +2144,23 @@ cvs.addEventListener('wheel', e=>{ e.preventDefault(); zoom=clamp(zoom - e.delta
 $('rotateBtn').onclick = ()=>{ viewRot=(viewRot+1)%4; playSound('click'); draw(); };
 $('menuBtn').onclick = ()=>{ playSound('click'); pauseMenu(); };
 $('musicBtn').onclick = toggleMusic;
+$('langBtn').onclick = ()=> setLang(LANG==='es' ? 'en' : 'es');
+document.querySelectorAll('.meter').forEach(el=> el.addEventListener('click', ev=>{ ev.stopPropagation(); playSound('click'); showMeterPop(el.dataset.m); }));
+document.addEventListener('pointerdown', e=>{ if(!e.target.closest('#pop') && !e.target.closest('.meter')) hidePop(); });
 addEventListener('resize', resize);
 if(window.ResizeObserver) new ResizeObserver(resize).observe(worldEl);
 
 // =====================================================================
-//  BOOT + test hook (used by tests/smoke_test.py)
+//  BOOT + test hook (used by tests/smoke_test.py and tests/balance.py)
 // =====================================================================
 window.__eurocrat = {
-  get S(){ return S; }, CFG, B, newGame:(seed)=>{ startNew(seed); hideModal(); return S; },
-  acquire, requestPermit, lobby, consult, fileReport, endMonth, choosePerk, caps, residents, hasAccess,
-  tileAt:(x,y)=>tileAt(x,y), screenOf:(i)=>{ const [ix,iy]=isoOf(Math.floor(i/N), i%N); return toScreen(ix,iy); },
-  refresh, showNotices, hideModal, get selected(){ return selected; }, spriteSheet,
+  get S(){ return S; }, CFG, B, EVENTS, newGame:(seed)=>{ startNew(seed); S.cards=[]; hideModal(); return S; },
+  acquire, requestPermit, sellPlot, submitPlan, lobby, consult, fileReport, repay, endMonth, choosePerk, caps, residents, hasAccess,
+  choicesFor, resolveEvent, problems, t, setLang, get lang(){ return LANG; },
+  // resolve the first pending card: event cards with the given (or first) choice, other cards just acknowledged
+  resolveCard:(k)=>{ const c=S.cards[0]; if(!c) return null; if(c.type==='event'){ const ch=k||choicesFor(c)[0].k; S.cards.shift(); const r=resolveEvent(c,ch); if(r) S.cards.unshift({type:'result', id:c.id, res:r, v:c.v}); return r; } S.cards.shift(); return true; },
+  tileAt:(x,y)=>tileAt(x,y), screenOf:(i)=>{ const [ix,iy]=isoOf(...rc(i)); return toScreen(ix,iy); },
+  refresh, showNext, hideModal, get selected(){ return selected; }, spriteSheet, portrait,
 };
 newGame(1); resize(); refresh(); startMenu();
 })();

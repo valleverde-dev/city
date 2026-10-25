@@ -6,16 +6,17 @@ Living project document · update it as the prototype evolves. The game design l
 
 **Eurocrat** (working title): a satirical, turn-based roguelike city builder. You are a Brussels programme officer who must deliver a model European town with plenty of money and no power — buy the land, file the permits, survive the neighbours, spend the funds before they expire. Tone and references: *Constructor* (1997), with a hyper-realistic, comic look at how building actually works in contemporary Europe. The plan: validate the loop in the web/iPad prototype, then port to Godot to ship on the App Store and Steam.
 
-## Current status — v0.2.0 (Oct 25, 2026)
+## Current status — v0.3.0 (Oct 25, 2026)
 
-- **Pivot from "City Builder" to Eurocrat.** New concept, lore, loop and art direction, documented in `docs/GDD.md`.
-- **Playable v0.2 web prototype:** monthly turns (36), agenda slots, parcel pipeline (acquire → permit review → contractor queue → construction → built), six building types, residents limited by homes/jobs/school/health, four meters (local support, neighbours, compliance, spending vs. use-it-or-lose-it milestones), random directives with deadlines, 12 random events, 10 perks (pick 1 of 3), win/lose conditions, seeded runs, autosave + continue.
-- **Art:** isometric **pixel art** (64×32 tiles), painted in code pixel by pixel and scaled up with nearest-neighbour at whole-pixel zoom steps: crop fields (wheat, rapeseed, young crops, ploughed), auto-joining roads and river, earth slab under the map, housing blocks, factory with sawtooth roof and chimney, brick school with sports court, clinic with helipad, old village with church, woodland, scaffolding + tower cranes, planning notices and barrier tape. `web-prototype/tools/export_sprites.py` dumps every sprite to `art/sprites/` (PNG sheet + JSON atlas) for review and the Godot port. UI parodies an institutional e-government portal; official notices with rubber stamps. Material Icons, system fonts.
-- **Difficulty:** "hard" by design. A greedy test bot wins ~8% of 150 seeded runs (`tests/balance.py`); losses are mostly bankruptcy, then failed directives and timeouts. A careful player should do better.
-- **Tests:** 35-check smoke test (UI flow, tap hit-testing in all rotations, land/permit/construction rules, no free money, decommitment, directives, perks, win/lose, save/continue, iPad/iPhone layout). Runs in CI on every push.
-- Installable PWA, CI + GitHub Pages → https://valleverde-dev.github.io/city/
-- The soundtrack (darksynth) still plays; whether it fits the new tone is an open question.
-- `/godot` holds a Godot 4 skeleton of the **v0.1** mechanics (grid, costs, menus, music). It is now behind the design; port v0.2 once the loop feels right.
+- **Event cards with choices.** 15 events arrive as cards told by 8 recurring characters (portraits + their own sound), each with 2–3 options whose consequences are shown up front. The affected parcel pulses on the map.
+- **Problems made visible.** "What needs attention" list (tap to locate), markers on the map, and every meter explains why it moved.
+- **Realistic money.** Urban plans (rezoning), land value capture (urban land ×3), selling plots to developers who build at their own pace (and may stop or go bust), local tax share, bridge loans instead of instant bankruptcy, a warning before each spending milestone and only half the shortfall decommitted.
+- **Map.** 12×12; road access counts diagonals; diagonal roads join visually on the pixel-art map.
+- **Languages.** English and Spanish (HUD button or menus), 440 strings each.
+- **Difficulty.** Target 700 residents, €130M grant. The test bot wins ~37% of 200 runs (v0.2: 8%), losses spread across bankruptcy, suspension and timeout.
+- **Tests.** 55-check smoke test (both languages, every card renders without raw keys, diagonal access, plan, developers, loans, cards through the UI, layout). Runs in CI.
+- Pixel-art map, Eurocrat soundtrack (menu / in-game / win), PWA, GitHub Pages → https://valleverde-dev.github.io/city/
+- `/godot` still mirrors the v0.1 mechanics; port v0.3 once the loop is validated.
 
 **Known issues**
 
@@ -24,12 +25,13 @@ Living project document · update it as the prototype evolves. The game design l
 
 ## Next steps
 
-1. Playtest v0.2 on the iPad; tune costs, timings, event odds and directive targets.
+1. Playtest v0.3 on the iPad; tune costs, timings, event odds and directive targets.
 2. Tutorial / first-run guidance (the first month is confusing without it).
+2b. Turn player actions into cards too (favours, consultants, dirty tricks)?
 3. *Constructor*-style characters: named residents, complaints, a mayor with a face.
 4. Member states with their own rule quirks; more buildings (logistics hub, data centre, social housing).
 5. Decide on meta-progression between runs.
-6. Port v0.2 to Godot when the loop is validated.
+6. Port v0.3 to Godot when the loop is validated.
 
 ## Assets
 
@@ -82,8 +84,8 @@ Living project document · update it as the prototype evolves. The game design l
 
 ## Suggested phases
 
-1. **Web prototype:** ✅ v0.1 (basic loop) · ✅ v0.2 (Eurocrat roguelike loop).
-2. **Mechanics design (current):** playtest and tune v0.2; tutorial; characters.
+1. **Web prototype:** ✅ v0.1 (basic loop) · ✅ v0.2 (Eurocrat roguelike loop) · ✅ v0.3 (cards, land economy, EN/ES).
+2. **Mechanics design (current):** ✅ v0.3 cards, characters, land economy, i18n · next: playtest, tutorial.
 3. **Asset production:** consolidate the style guide, music, possible 3D assets.
 4. **Godot port:** migrate logic and UI, with the GitHub repository already active.
 5. **Production:** prepare builds for Steam (direct) and the App Store (solve the Xcode/Mac step).

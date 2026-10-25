@@ -11,9 +11,11 @@ import sys
 from playwright.sync_api import sync_playwright
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-runs = int(sys.argv[1]) if len(sys.argv) > 1 else 60
-target = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else ROOT / "src" / "index.html"
+args = [a for a in sys.argv[1:] if not a.startswith("--")]
+runs = int(args[0]) if args else 60
+target = pathlib.Path(args[1]) if len(args) > 1 else ROOT / "src" / "index.html"
 bot = (ROOT / "tests" / "balance_bot.js").read_text()
+SELL = "--sell" in sys.argv
 
 with sync_playwright() as p:
     browser = p.chromium.launch()
@@ -21,7 +23,7 @@ with sync_playwright() as p:
     page.route("**/fonts.*/**", lambda r: r.abort())
     page.goto(target.resolve().as_uri())
     page.add_script_tag(content=bot)
-    results = [page.evaluate(f"__playOneRun({seed})") for seed in range(1, runs + 1)]
+    results = [page.evaluate(f"__playOneRun({seed}, {{sell: {str(SELL).lower()}}})") for seed in range(1, runs + 1)]
     browser.close()
 
 wins = [r for r in results if r["win"]]
@@ -32,3 +34,4 @@ print("avg residents:", sum(r["residents"] for r in results) // runs,
       "| avg end month:", sum(r["month"] for r in results) // runs)
 if wins:
     print("win months:", sorted(r["month"] for r in wins))
+print("ended in debt:", sum(1 for r in results if r["debt"] > 0))
