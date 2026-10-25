@@ -33,6 +33,8 @@ with sync_playwright() as p:
     page.on("console", lambda m: m.type == "error" and "Failed to load resource" not in m.text and errors.append(m.text))
     page.route("**/fonts.googleapis.com/**", lambda r: r.abort())
     page.route("**/fonts.gstatic.com/**", lambda r: r.abort())
+    external = []   # the game must be fully self-contained: fonts and icons are embedded
+    page.on("request", lambda r: r.url.split(":")[0] in ("http", "https") and external.append(r.url))
 
     print(f"Loading {URL}")
     page.goto(URL)
@@ -245,6 +247,10 @@ with sync_playwright() as p:
     page.screenshot(path=str(ROOT / "tests" / "last-run.png"))
     # Pixel-art sprites: the whole sheet builds (it is also what tools/export_sprites.py dumps)
     check(ev(f"Object.keys({G}.spriteSheet().atlas).length") >= 60, "pixel-art sprite sheet builds")
+    # Pixel UI: no icon font left, icons are pixel masks, fonts are embedded, nothing loads from the network
+    check(page.locator(".material-icons").count() == 0 and page.locator("#hud .ico").count() >= 5, "pixel icons replace the icon font")
+    check(ev("document.fonts.check('20px Jersey') && document.fonts.check('14px Pixel')"), "embedded pixel fonts are available")
+    check(not external, "no external requests" + (f": {external[:3]}" if external else ""))
     check(not errors, "no JS errors in the console" + (f": {errors}" if errors else ""))
     browser.close()
 

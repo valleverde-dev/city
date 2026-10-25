@@ -15,7 +15,7 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Cache-first for the game; network with cache fallback for Google Fonts.
+// Cache-first for the game (fonts and icons are embedded in index.html, so nothing else is fetched).
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   e.respondWith(

@@ -120,8 +120,9 @@ Later: member states with their own rule quirks; meta-progression between runs (
 
 From *Syndicate* neon to **Constructor-style** colourful isometric with a bureaucratic UI:
 - Map: **isometric pixel art**, 64×32 px tiles shown at whole-pixel zoom steps (crisp, no blur). Bright European countryside: patchwork crop fields with hedges, a river with reed banks, woodland, an old village with a church; roads join automatically; the board sits on an earth slab. Buildings have a dark pixel outline and a soft shadow to the right (light from the upper left). Construction shows scaffolding and a tower crane; permits show a planning notice; approved plots get barrier tape. Pennants instead of flags — no real-world emblems.
-- UI: a parody of an institutional e-government portal — white panels, institutional blue, yellow highlights, rubber stamps, reference numbers, "Your request is being processed".
-- Icons: Material Icons (no emoji). System fonts (no runtime font downloads).
+- UI: a **pixel-art parody of an institutional portal of "the Union"**, in the imagery of Brussels institutions but with nothing real: institutional blue `#163f94`, navy ink `#0b1f4d`, Union yellow `#ffd200`, document paper `#fbf8ee`. A fictional emblem (yellow portico on blue, no stars). Hard 2–3 px borders, offset shadows and raised keys instead of rounded corners and blur; segmented meters; case-file cards; official letters with letterhead, "Brussels · M7" date line, reference numbers and stamps; a title screen with an "official website of the Union — How do you know?" banner; the map sits on a cadastral grid.
+- Type: **Jersey 10** (titles, figures, buttons), **Pixelify Sans** (UI and body text), **Silkscreen** (stamps, reference numbers). All SIL OFL, subset and embedded.
+- Icons: 66 hand-drawn **12×12 one-colour pixel icons**, tinted with the text colour (no emoji, no icon font). Character portraits are rasterised to 32×32 and outlined.
 
 ## 12. Language
 

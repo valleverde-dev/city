@@ -15,12 +15,13 @@ Living project document · update it as the prototype evolves. The game design l
 - **Languages.** English and Spanish (HUD button or menus), 440 strings each.
 - **Difficulty.** Target 700 residents, €130M grant. The test bot wins ~37% of 200 runs (v0.2: 8%), losses spread across bankruptcy, suspension and timeout.
 - **Tests.** 55-check smoke test (both languages, every card renders without raw keys, diagonal access, plan, developers, loans, cards through the UI, layout). Runs in CI.
+- **Pixel UI, institutional look.** The whole interface is now pixel art in the visual language of a (fictional) Union portal: blue header with a yellow rule, the Union's portico emblem, counters as inset tiles, segmented meters, case-file cards with hard shadows, raised pixel buttons, official letters on paper with a letterhead, date line, reference numbers and rubber stamps, stepped speech bubbles, pixelated character portraits, a title screen with an "official website of the Union" banner, and the map on a cadastral grid. 66 hand-drawn 12×12 icons replace Material Icons; three OFL pixel fonts (Jersey 10, Pixelify Sans, Silkscreen) are embedded. Compact two-row header on phones.
 - Pixel-art map, Eurocrat soundtrack (menu / in-game / win), PWA, GitHub Pages → https://valleverde-dev.github.io/city/
 - `/godot` still mirrors the v0.1 mechanics; port v0.3 once the loop is validated.
 
 **Known issues**
 
-- [ ] Material Icons load from Google Fonts: the first load needs a connection. Consider bundling the font in `public/fonts/`.
+- [x] ~~Material Icons load from Google Fonts~~ — replaced by embedded pixel icons and fonts; the game makes no network requests.
 - [ ] Balance needs human playtesting (the bot is a sanity check, not a player).
 
 ## Next steps
