@@ -95,7 +95,7 @@ Later: member states with their own rule quirks; meta-progression between runs (
 ## 11. Art direction
 
 From *Syndicate* neon to **Constructor-style** colourful isometric with a bureaucratic UI:
-- Map: bright, slightly cartoony isometric blocks (grass, farmland stripes, trees, red-roof village, cranes and scaffolding on construction sites).
+- Map: **isometric pixel art**, 64×32 px tiles shown at whole-pixel zoom steps (crisp, no blur). Bright European countryside: patchwork crop fields with hedges, a river with reed banks, woodland, an old village with a church; roads join automatically; the board sits on an earth slab. Buildings have a dark pixel outline and a soft shadow to the right (light from the upper left). Construction shows scaffolding and a tower crane; permits show a planning notice; approved plots get barrier tape. Pennants instead of flags — no real-world emblems.
 - UI: a parody of an institutional e-government portal — white panels, institutional blue, yellow highlights, rubber stamps, reference numbers, "Your request is being processed".
 - Icons: Material Icons (no emoji). System fonts (no runtime font downloads).
 

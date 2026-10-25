@@ -10,7 +10,7 @@ Living project document · update it as the prototype evolves. The game design l
 
 - **Pivot from "City Builder" to Eurocrat.** New concept, lore, loop and art direction, documented in `docs/GDD.md`.
 - **Playable v0.2 web prototype:** monthly turns (36), agenda slots, parcel pipeline (acquire → permit review → contractor queue → construction → built), six building types, residents limited by homes/jobs/school/health, four meters (local support, neighbours, compliance, spending vs. use-it-or-lose-it milestones), random directives with deadlines, 12 random events, 10 perks (pick 1 of 3), win/lose conditions, seeded runs, autosave + continue.
-- **Art:** Constructor-style colourful isometric blocks drawn on canvas; UI parodies an institutional e-government portal; official notices with rubber stamps. Material Icons, system fonts.
+- **Art:** isometric **pixel art** (64×32 tiles), painted in code pixel by pixel and scaled up with nearest-neighbour at whole-pixel zoom steps: crop fields (wheat, rapeseed, young crops, ploughed), auto-joining roads and river, earth slab under the map, housing blocks, factory with sawtooth roof and chimney, brick school with sports court, clinic with helipad, old village with church, woodland, scaffolding + tower cranes, planning notices and barrier tape. `web-prototype/tools/export_sprites.py` dumps every sprite to `art/sprites/` (PNG sheet + JSON atlas) for review and the Godot port. UI parodies an institutional e-government portal; official notices with rubber stamps. Material Icons, system fonts.
 - **Difficulty:** "hard" by design. A greedy test bot wins ~8% of 150 seeded runs (`tests/balance.py`); losses are mostly bankruptcy, then failed directives and timeouts. A careful player should do better.
 - **Tests:** 35-check smoke test (UI flow, tap hit-testing in all rotations, land/permit/construction rules, no free money, decommitment, directives, perks, win/lose, save/continue, iPad/iPhone layout). Runs in CI on every push.
 - Installable PWA, CI + GitHub Pages → https://valleverde-dev.github.io/city/
@@ -35,8 +35,9 @@ Living project document · update it as the prototype evolves. The game design l
 
 ### Graphics
 
-- Define the art pipeline: hand-drawn vs. generated isometric tiles, base tile size (the prototype uses 64×32 px).
-- Decide whether to keep the flat/vector style (as in the prototype) or move to pixel art/more detailed sprites when porting to Godot.
+- ✅ Pixel art chosen (Oct 2026) over flat vector and over satellite imagery (satellite tiles don't fit an isometric view and their licences don't allow shipping them in a commercial game).
+- ✅ Pipeline: sprites are generated in code (`RENDERING` section of `web-prototype/src/index.html`) at 64×32 px per tile; `tools/export_sprites.py` writes `art/sprites/eurocrat_sprites.png` + `.json` atlas, ready to import in Godot (TileSet / AtlasTexture, filter = nearest).
+- Next: animation frames (smoke, water, cranes), seasonal palettes per member state, hand-touched hero sprites (town hall, mayor's office).
 
 ### Art direction
 

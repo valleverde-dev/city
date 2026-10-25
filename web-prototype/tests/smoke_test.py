@@ -183,6 +183,8 @@ with sync_playwright() as p:
     page.set_viewport_size({"width": 1180, "height": 820})
 
     page.screenshot(path=str(ROOT / "tests" / "last-run.png"))
+    # Pixel-art sprites: the whole sheet builds (it is also what tools/export_sprites.py dumps)
+    check(ev(f"Object.keys({G}.spriteSheet().atlas).length") >= 60, "pixel-art sprite sheet builds")
     check(not errors, "no JS errors in the console" + (f": {errors}" if errors else ""))
     browser.close()
 
