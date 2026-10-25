@@ -131,6 +131,7 @@
     <span><span class="material-icons" style="font-size:16px;">attach_money</span><b id="coin">0</b></span>
   </div>
   <div class="hud-actions">
+    <button class="hud-btn" id="musicBtn" aria-label="Toggle music"><span class="material-icons">music_note</span></button>
     <button class="hud-btn" id="rotateBtn"><span class="material-icons">sync</span></button>
     <button class="hud-btn" id="menuBtn"><span class="material-icons">menu</span></button>
   </div>
@@ -160,6 +161,90 @@
     if(!actx){ actx = new (window.AudioContext||window.webkitAudioContext)(); }
     if(actx.state==='suspended') actx.resume();
   }
+  // --- Music: looping soundtrack via Web Audio (gapless loops, crossfades) ---
+  // Ogg Vorbis where supported, AAC (.m4a) fallback for older Safari/iOS.
+  const music = {
+    on: (()=>{ try{ return localStorage.getItem('citybuilder_music') !== 'off'; }catch(e){ return true; } })(),
+    want: null, playing: null, src: null, gain: null, buffers: {}, loading: {},
+    ext: (()=>{ const a=document.createElement('audio');
+      return a.canPlayType && a.canPlayType('audio/ogg; codecs="vorbis"') ? 'ogg' : 'm4a'; })(),
+    level: 1,
+  };
+  const TRACKS = { menu:'citybuilder_menu_theme', main:'citybuilder_main_theme' };
+  const MUSIC_VOL = 0.45;
+  function loadTrack(name){
+    if(music.buffers[name]) return Promise.resolve(music.buffers[name]);
+    if(!music.loading[name]){
+      music.loading[name] = fetch(`audio/${TRACKS[name]}.${music.ext}`)
+        .then(r=>{ if(!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+        .then(b=>new Promise((ok,ko)=>actx.decodeAudioData(b, ok, ko)))
+        .then(buf=>(music.buffers[name]=buf))
+        .catch(e=>{ delete music.loading[name]; throw e; });
+    }
+    return music.loading[name];
+  }
+  function fadeOutCurrent(t=0.8){
+    music.playing = null;
+    if(!music.src) return;
+    const {src, gain} = music, now = actx.currentTime;
+    gain.gain.cancelScheduledValues(now);
+    gain.gain.setValueAtTime(gain.gain.value, now);
+    gain.gain.linearRampToValueAtTime(0, now+t);
+    src.stop(now+t+0.05);
+    music.src = music.gain = music.playing = null;
+  }
+  function syncMusic(){
+    // No music when opened as a local file (fetch is blocked there) or when muted
+    if(location.protocol==='file:' || !actx) return;
+    const name = music.on ? music.want : null;
+    if(name === music.playing){
+      if(music.gain){ const now=actx.currentTime;
+        music.gain.gain.cancelScheduledValues(now);
+        music.gain.gain.setValueAtTime(music.gain.gain.value, now);
+        music.gain.gain.linearRampToValueAtTime(MUSIC_VOL*music.level, now+0.4); }
+      return;
+    }
+    fadeOutCurrent();
+    if(!name) return;
+    music.playing = name;
+    loadTrack(name).then(buf=>{
+      if(music.playing !== name || music.src) return;  // changed while loading
+      const src = actx.createBufferSource(), gain = actx.createGain();
+      src.buffer = buf; src.loop = true;
+      src.connect(gain); gain.connect(actx.destination);
+      const now = actx.currentTime;
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(MUSIC_VOL*music.level, now+1.2);
+      src.start(now);
+      music.src = src; music.gain = gain;
+    }).catch(()=>{ if(music.playing===name) music.playing=null; });
+  }
+  // track: 'menu' | 'main'; level: 1 = full, <1 = ducked (pause screen)
+  function setMusic(track, level=1){ music.want = track; music.level = level; syncMusic(); }
+  function updateMusicBtn(){
+    document.querySelector('#musicBtn .material-icons').textContent = music.on ? 'music_note' : 'music_off';
+    const m = document.getElementById('btnMusic');
+    if(m) m.querySelector('.label').textContent = 'Music: ' + (music.on ? 'On' : 'Off');
+  }
+  function toggleMusic(){
+    music.on = !music.on;
+    try{ localStorage.setItem('citybuilder_music', music.on ? 'on' : 'off'); }catch(e){}
+    ensureAudio(); updateMusicBtn(); syncMusic();
+  }
+  // iOS/Safari only allow audio after a user gesture: unlock on the first touch/click
+  function unlockAudio(){
+    try{ ensureAudio(); syncMusic(); }catch(e){}
+    removeEventListener('pointerdown', unlockAudio, true);
+    removeEventListener('keydown', unlockAudio, true);
+  }
+  addEventListener('pointerdown', unlockAudio, true);
+  addEventListener('keydown', unlockAudio, true);
+  // Silence everything while the app is in the background
+  document.addEventListener('visibilitychange', ()=>{
+    if(!actx) return;
+    if(document.hidden) actx.suspend(); else actx.resume();
+  });
+
   function playSound(type){
     try{
       ensureAudio();
@@ -362,7 +447,7 @@
       const raw=localStorage.getItem('citybuilder_save');
       if(!raw){ toast('no saved game','warning'); return; }
       state=JSON.parse(raw); rebuildGrid(); saveState();
-      hideMenu(); startTick(); updateHUD(); toast('loaded','check_circle');
+      hideMenu(); startTick(); setMusic('main'); updateHUD(); toast('loaded','check_circle');
     }catch(e){ toast('load failed','warning'); }
   }
 
@@ -371,28 +456,38 @@
       menuPanel.innerHTML = `<h2><span class="material-icons">location_city</span>City Builder</h2><p>Isometric prototype</p>
         <button class="menu-btn primary" id="btnPlay"><span class="material-icons">play_arrow</span>Play</button>
         <button class="menu-btn" id="btnLoad"><span class="material-icons">folder_open</span>Load game</button>
+        <button class="menu-btn" id="btnMusic"><span class="material-icons">music_note</span><span class="label">Music</span></button>
         <button class="menu-btn danger" id="btnExit"><span class="material-icons">power_settings_new</span>Exit</button>`;
-      document.getElementById('btnPlay').onclick=()=>{ hideMenu(); startTick(); };
+      setMusic('menu');
+      document.getElementById('btnPlay').onclick=()=>{ hideMenu(); startTick(); setMusic('main'); };
       document.getElementById('btnLoad').onclick=doLoad;
       document.getElementById('btnExit').onclick=()=>showMenu('exit');
+      document.getElementById('btnMusic').onclick=toggleMusic;
+      updateMusicBtn();
     }else if(screen==='pause'){
       menuPanel.innerHTML = `<h2><span class="material-icons">pause</span>Paused</h2>
         <button class="menu-btn primary" id="btnResume"><span class="material-icons">play_arrow</span>Resume</button>
         <button class="menu-btn" id="btnSave"><span class="material-icons">save</span>Save game</button>
         <button class="menu-btn" id="btnLoad"><span class="material-icons">folder_open</span>Load game</button>
+        <button class="menu-btn" id="btnMusic"><span class="material-icons">music_note</span><span class="label">Music</span></button>
         <button class="menu-btn danger" id="btnExit"><span class="material-icons">power_settings_new</span>Exit</button>`;
-      document.getElementById('btnResume').onclick=()=>{ hideMenu(); startTick(); };
+      setMusic('main', 0.4);
+      document.getElementById('btnResume').onclick=()=>{ hideMenu(); startTick(); setMusic('main'); };
       document.getElementById('btnSave').onclick=doSave;
       document.getElementById('btnLoad').onclick=doLoad;
       document.getElementById('btnExit').onclick=()=>showMenu('exit');
+      document.getElementById('btnMusic').onclick=toggleMusic;
+      updateMusicBtn();
     }else if(screen==='exit'){
       stopTick();
+      setMusic('menu', 0.6);
       menuPanel.innerHTML = `<h2><span class="material-icons">power_settings_new</span>Disconnected</h2><p>Your game is saved automatically. You can close this tab.</p>
         <button class="menu-btn primary" id="btnBack"><span class="material-icons">arrow_back</span>Back to start</button>`;
       document.getElementById('btnBack').onclick=()=>showMenu('start');
     }
   }
 
+  document.getElementById('musicBtn').addEventListener('click', toggleMusic);
   document.getElementById('menuBtn').addEventListener('click', ()=>{ stopTick(); showMenu('pause'); });
 
   // Keep the hint below the HUD: expose the HUD height as a CSS variable
@@ -404,6 +499,7 @@
 
   updateHUD();
   showMenu('start');
+  updateMusicBtn();
 })();
 </script>
 </body>
