@@ -12,6 +12,7 @@ Isometric city builder with a first playable prototype already running (web, Syn
 - Installable PWA build for iPad/iPhone ("Add to Home Screen"), with offline mode.
 - CI on GitHub Actions: build + test + deploy to GitHub Pages on every push to `main` → https://valleverde-dev.github.io/city/
 - Game, code and docs in English.
+- Godot 4 skeleton in `/godot` (phase 4 started in parallel, for Xogot on iPad): same grid, costs, adjacency, tick income, menus, save/load and music as the web prototype, with headless tests. The web prototype stays the sandbox for new mechanics.
 
 **Known bugs**
 
