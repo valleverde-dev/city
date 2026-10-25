@@ -1,6 +1,6 @@
 # EUROCRAT — Game Design Document
 
-*Living document. v0.3 · Oct 25, 2026. Working title. Available in English and Spanish.*
+*Living document. v0.4 · Oct 26, 2026. Working title. Available in English and Spanish.*
 
 > Every city builder is a dictatorship: you click, a house appears, people move in.
 > **Eurocrat** asks what building a new town would *really* take in contemporary Europe —
@@ -41,7 +41,7 @@ Land ──acquire──▶ Owned (rustic) ──urban plan──▶ Owned (urba
 
 - **Acquire.** Private farmland has an owner and a price; owners may *hold out* (price jumps). Municipal land is cheap but needs the mayor (Local support ≥ 40). Protected habitat can never be built on. Flood-zone land costs extra to build on.
 - **Urban plan (rezoning).** Rustic land only takes roads and parks. One plan (2 slots, ~2 months, council approval) rezones every rustic parcel you own. Municipal land is already urban.
-- **Permit.** Needs road access: a road on any of the **8 neighbours** (diagonals count). Review time depends on the building and on how angry the neighbours are. Approval chance depends on Local support, Neighbours and Compliance. Building next to the old village annoys its residents.
+- **Permit.** Needs access on any of the **8 neighbours** (diagonals count): a road (even a planned one), a **finished** building or the old village — built-up land brings its own streets. Works in progress do not count, so the order you build in matters. Review time depends on the building and on how angry the neighbours are. Approval chance depends on Local support, Neighbours and Compliance. Building next to the old village annoys its residents.
 - **Construction.** Limited **contractors** (sites at the same time). Cost is paid month by month.
 
 ### Buildings (v0.3)
@@ -68,6 +68,28 @@ A real new town is not paid for by grants alone; it is paid for by **turning far
 - **Local taxes**: factories and residents pay taxes to the municipality; half comes back to the programme (an urban agreement), and a mayor with revenue is a happier mayor.
 - **Bridge loans**: running out of money no longer ends the game. The regional bank lends in €5M steps at 2%/month; above €35M of debt it pulls the plug.
 - **Use it or lose it**, softened: a warning 3 months before each milestone, and only half of the shortfall is decommitted.
+
+### Combos (v0.4, Kairosoft-style)
+
+Buildings next to each other (8 neighbours) form **combos** — and some combos are bad. Effects apply per pair and are shown on the map as green (good) or red (bad) dotted links.
+
+| Combo | Pieces | Effect |
+|---|---|---|
+| Green Views | Housing + Park | +20 homes, faster move-ins |
+| Walk to School | Housing + School | +60 school places |
+| Doctor on the Corner | Housing + Health centre | +120 patients |
+| Neighbourhood | Housing + Housing | +15 homes |
+| Industrial Estate | Factory + Factory | +40 jobs, +€0.05M taxes/month |
+| Logistics Hub | Factory + Regional road | +25 jobs |
+| Outdoor Classroom | School + Park | Neighbours +1/month |
+| Riverside Park | Park + River | Neighbours +1/month, faster move-ins |
+| Charming Old Quarter | Park + Old village | Mayor and neighbours +1/month |
+| *Smoke in the Living Room* | Factory + Housing | −25 homes, neighbours −1/month |
+| *The Village Revolts* | Factory + Old village | Neighbours −2/month |
+| *Fumes at Playtime* | Factory + School | −80 school places, neighbours −1/month |
+| *Racket in A&E* | Factory + Health centre | −100 patients |
+
+**Discovery:** combos are hidden until you build one. Before that, the build menu only says *"combo?"* (good and bad look the same); afterwards it names them. Each first discovery gets its own card (the mayor for good ones, the neighbours' association for bad ones) and goes into a **combo catalogue that persists between runs** — knowledge, not power.
 
 ## 5. Resources
 
@@ -106,9 +128,9 @@ Picked 1 of 3 after each completed directive: *Friendly Notary* (cheaper land), 
 
 ## 9. Winning and losing
 
-- **Win — Inauguration:** reach **700 registered residents** before the programme ends (month 36). Score: residents, month, funds left minus debt, directives met.
+- **Win — Inauguration:** reach **850 registered residents** before the programme ends (month 36). Score: residents, month, funds left minus debt, directives met.
 - **Lose:** debt above the bank's limit · compliance hits 0 (audit) · a court annuls the plan · 2 failed directives · month 36 without reaching the target ("The programme will be evaluated").
-- **Difficulty:** hard but fair. A greedy test bot that always picks the "by the book" option and never sells land wins ~37% of 200 seeded runs (v0.2: 8%); its losses are spread across bankruptcy, suspension and timeout. Every loss should be traceable to a decision.
+- **Difficulty:** hard but fair. A greedy test bot that always picks the "by the book" option and never sells land plays combo-aware placement and wins ~35% of 200 seeded runs (v0.2: 8%, v0.3: 37%); its losses are spread across bankruptcy, suspension and timeout. Every loss should be traceable to a decision.
 
 ## 10. Roguelike variety
 
@@ -128,11 +150,15 @@ From *Syndicate* neon to **Constructor-style** colourful isometric with a bureau
 
 English and Spanish, switchable at any time (HUD button or menus); the choice is remembered. Every string lives in one dictionary (`I18N` in `index.html`); logs and cards store keys, so switching language re-renders everything.
 
-## 13. Controls (iPad first)
+## 13. Interface
+
+Pixel-art frame in the imagery of a (fictional) Union portal: pixel fonts for titles, figures, buttons and stamps; a crisp system sans at 15–16px for everything you read. Event cards, notices and combos open in the **centre of the screen**.
+
+## 14. Controls (iPad first)
 
 Tap a parcel to select it and see its actions. Pinch / mouse wheel to zoom. Rotate button for the view. No gesture panning or rotation. Turn-based, so nothing is time-pressured on screen.
 
-## 14. Open questions
+## 15. Open questions
 
 - Does the run length (36 months / ~12 min) feel right?
 - Should residents have personalities and complaints (*Constructor*-style tenants)?

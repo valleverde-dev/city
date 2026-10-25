@@ -6,7 +6,15 @@ Living project document · update it as the prototype evolves. The game design l
 
 **Eurocrat** (working title): a satirical, turn-based roguelike city builder. You are a Brussels programme officer who must deliver a model European town with plenty of money and no power — buy the land, file the permits, survive the neighbours, spend the funds before they expire. Tone and references: *Constructor* (1997), with a hyper-realistic, comic look at how building actually works in contemporary Europe. The plan: validate the loop in the web/iPad prototype, then port to Godot to ship on the App Store and Steam.
 
-## Current status — v0.3.0 (Oct 25, 2026)
+## Current status — v0.4.0 (Oct 26, 2026)
+
+- **Adjacency combos** (Kairosoft-style): 9 good and 4 bad combos between neighbouring buildings (8-way), discovered by building, with a catalogue that persists between runs, a "combo?" hint in the build menu, a discovery card and green/red links on the map.
+- **Access through buildings:** a finished building (or the old village) gives access to its 8 neighbours, like a road.
+- **Readability:** pixel fonts only for titles, figures, buttons and stamps; all reading text in a crisp sans at 15–16px with darker contrast. Event cards and notices open in the centre of the screen.
+- **Difficulty:** target raised to 850 residents to compensate; the combo-aware bot wins ~35% of 200 runs.
+- **Tests:** 71-check smoke test (combos, discovery, catalogue persistence, access rules, centred cards, text size and font).
+
+## Previous — v0.3.0
 
 - **Event cards with choices.** 15 events arrive as cards told by 8 recurring characters (portraits + their own sound), each with 2–3 options whose consequences are shown up front. The affected parcel pulses on the map.
 - **Problems made visible.** "What needs attention" list (tap to locate), markers on the map, and every meter explains why it moved.
@@ -32,7 +40,7 @@ Living project document · update it as the prototype evolves. The game design l
 3. *Constructor*-style characters: named residents, complaints, a mayor with a face.
 4. Member states with their own rule quirks; more buildings (logistics hub, data centre, social housing).
 5. Decide on meta-progression between runs.
-6. Port v0.3 to Godot when the loop is validated.
+6. Port v0.4 to Godot when the loop is validated.
 
 ## Assets
 
@@ -85,7 +93,7 @@ Living project document · update it as the prototype evolves. The game design l
 
 ## Suggested phases
 
-1. **Web prototype:** ✅ v0.1 (basic loop) · ✅ v0.2 (Eurocrat roguelike loop) · ✅ v0.3 (cards, land economy, EN/ES).
+1. **Web prototype:** ✅ v0.1 (basic loop) · ✅ v0.2 (Eurocrat roguelike loop) · ✅ v0.3 (cards, land economy, EN/ES) · ✅ v0.4 (combos, readability).
 2. **Mechanics design (current):** ✅ v0.3 cards, characters, land economy, i18n · next: playtest, tutorial.
 3. **Asset production:** consolidate the style guide, music, possible 3D assets.
 4. **Godot port:** migrate logic and UI, with the GitHub repository already active.

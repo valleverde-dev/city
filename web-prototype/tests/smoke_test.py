@@ -1,4 +1,4 @@
-"""Smoke test for the Eurocrat web prototype (v0.3).
+"""Smoke test for the Eurocrat web prototype (v0.4).
 
 Usage:    python3 web-prototype/tests/smoke_test.py [path/to/index.html]
 Requires: pip install playwright && python3 -m playwright install chromium
@@ -231,6 +231,45 @@ with sync_playwright() as p:
     if S("S.cards.length") == 0 and S("S.month") == 2:
         page.click("#endTurn"); drain()
     check(S("S.month") == 3, "the 'End month' button advances to the next month")
+
+    # --- v0.4: adjacency combos (discovered by building), access through finished buildings, centred cards, readability
+    S("localStorage.removeItem('eurocrat_combos')")
+    ev(f"{G}.newGame(3)"); clear_cards()
+    S("(()=>{ const put=(r,c,ty)=>Object.assign(S.grid[r*12+c],{k:'farm',st:'built',ty}); put(6,6,'housing'); put(6,7,'park'); return 0; })()")
+    check(S("g.activeCombos().map(x=>x.id).join()") == "greenViews" and S("g.caps().homes") == 170, "housing next to a park = 'Green Views' combo (+20 homes)")
+    S("(Object.assign(S.grid[7*12+7],{k:'farm',st:'built',ty:'factory'}), 0)")
+    check(S("g.activeCombos().some(x=>x.id==='smoke' && !x.good)") and S("g.caps().homes") == 145, "a factory diagonal to housing = bad combo 'Smoke in the Living Room' (−25 homes)")
+    # Before discovery the build preview only says "combo?"; after, it names it
+    S("(Object.assign(S.grid[5*12+6],{k:'farm',st:'owned',urban:true}), S.slots=3, 0)")
+    S("(g.refresh(), 0)"); x2, y2 = S("g.screenOf(5*12+6)"); box = page.locator("#map").bounding_box()
+    page.mouse.click(box["x"] + x2, box["y"] + y2)
+    check(page.locator("#panel .chip.mystery").count() >= 1, "undiscovered combos show as a mysterious 'combo?' in the build options")
+    S("g.endMonth()")
+    check(S("S.cards.filter(c=>c.type==='combo').length") == 2 and S("g.discovered().length") == 2, "new combos are announced with a card and discovered")
+    S("g.showNext()")
+    check(page.is_visible("text=New combo discovered!") or page.is_visible("text=Bad combo discovered"), "the combo card is shown")
+    nb = page.locator("#notice").bounding_box(); vw = page.viewport_size
+    check(abs((nb["x"] + nb["width"]/2) - vw["width"]/2) < 40, "cards appear in the middle of the screen")
+    clear_cards(); S("g.endMonth()")
+    check(S("S.cards.filter(c=>c.type==='combo').length") == 0, "an existing combo is not announced again")
+    S("(S.cards=[], g.refresh(), 0)"); ev(f"{G}.hideModal()")
+    page.mouse.click(box["x"] + x2, box["y"] + y2); page.mouse.click(box["x"] + x2, box["y"] + y2)
+    check(S("g.selected") == 5*12+6 and page.locator("#panel .chip.good", has_text="Green Views").count() >= 1, "once discovered, the preview names the combo")
+    ev(f"{G}.newGame(4)"); clear_cards()
+    check(S("g.discovered().length") == 2, "the combo catalogue persists between programmes")
+    S("g.catalogueCard()")
+    check(page.locator(".catalogue li").count() == S("g.COMBOS.length") and page.locator(".catalogue li.unknown").count() == S("g.COMBOS.length") - 2, "the catalogue lists discovered and unknown combos")
+    ev(f"{G}.hideModal()")
+    # Access: a finished building (or the old village) gives access to its 8 neighbours; works in progress do not
+    S("(Object.assign(S.grid[3*12+8],{k:'farm',st:'built',ty:'school'}), 0)")
+    check(S("g.hasAccess(4,9)") and S("g.hasAccess(2,7)"), "a finished building gives access to its neighbours (diagonals too)")
+    S("(S.grid[3*12+8].st='building', 0)")
+    check(not S("g.hasAccess(4,9)"), "a building under construction does not give access yet")
+    # Readability: reading text is a crisp sans (not the pixel font) and at least 15px
+    S("(g.refresh(), 0)")
+    fs = ev("parseFloat(getComputedStyle(document.querySelector('#panel .card p')).fontSize)")
+    ff = ev("getComputedStyle(document.querySelector('#panel .card p')).fontFamily")
+    check(fs >= 15 and "Pixel" not in ff.split(",")[0], f"panel text is readable ({fs:.0f}px, {ff.split(',')[0]})")
 
     # --- Layout
     def rect(sel):

@@ -269,6 +269,61 @@
   .notice.title .btns{margin-top:0;}
   .notice.title .row{display:flex; gap:10px;} .notice.title .row .btn{flex:1;}
   .notice.title .foot{font-size:12px; line-height:1.4; color:var(--sub); padding:2px 22px 16px; max-width:440px; margin:0 auto;}
+
+  /* =====================================================================
+     v0.4 READABILITY PASS — pixel fonts stay for titles, figures, buttons and stamps;
+     everything you READ uses a crisp system sans, bigger and darker.
+     ===================================================================== */
+  :root{ --f-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; --sub:#3a4560; }
+  body{font-size:15px;}
+  .card p{font-size:15px; line-height:1.5; color:#2b3550;}
+  .card .ref, .notice .ref{font:700 11.5px/1.5 var(--f-ui); letter-spacing:.07em; color:#4a5570;}
+  .log .m{font:700 10.5px/1 var(--f-ui); letter-spacing:.04em;}
+  .where{font:700 12px/1 var(--f-ui); letter-spacing:.05em; padding:5px 8px 5px 6px;}
+  .notice .letterhead .org{font:700 11px/1.45 var(--f-ui); letter-spacing:.07em;}
+  .meter{font-size:14px; color:#3a4560;}
+  .act{font-size:15.5px; line-height:1.2; padding:8px 10px 8px 8px;}
+  .act small{font-size:13.5px; line-height:1.4; color:#3a4560; margin-top:3px;}
+  .act:disabled small{color:#7d879c;}
+  .act.build small{display:flex; flex-direction:column; gap:3px;}
+  .act.build .meta{font-weight:700; color:var(--blue);}
+  .act.build .why{font-weight:700; color:var(--bad);}
+  .act.build .chips{margin-top:2px;}
+  .act.cat > .ico{background:var(--yellow2);}
+  .problems li{font-size:15px; line-height:1.35;}
+  .problems li small{font-size:13.5px; color:#3a4560;}
+  .log{font-size:13.5px; color:#3a4560;}
+  .bottleneck{font-size:14px;}
+  .kv{font-size:14px;}
+  #endTurn small{font-size:13.5px;}
+  #pop{font-size:14px;} #pop p{color:#3a4560;}
+  .notice p{font-size:16px; line-height:1.55;}
+  .quote{font-size:16.5px; line-height:1.55;}
+  .quote small{display:block; margin-top:6px; font-size:14px; color:#3a4560;}
+  .speaker small{font-size:14.5px; color:#3a4560;}
+  .choice b{font-size:16.5px; line-height:1.3;}
+  .chip{font-size:13px; padding:3px 7px 3px 5px;}
+  .chip.mystery{background:#fff6c7; color:#7a5d00; border-style:dashed;}
+  .perk small{font-size:14.5px;}
+  .hint{font-size:14px; color:#3a4560; margin:10px 0 6px;}
+  .float-txt{font-size:22px;}
+  /* combos */
+  .combos-here{margin-top:8px; padding:8px; background:var(--sky); border:2px dotted var(--blue2);}
+  .combos-here b{display:block; font:400 18px/1 var(--f-display); color:var(--navy); margin-bottom:6px;}
+  .combos-here p{margin:0;}
+  .combo-name{font:400 34px/1 var(--f-display); margin:4px 0 2px;} .combo-name.good{color:var(--ok);} .combo-name.bad{color:var(--bad);}
+  .catalogue{list-style:none; margin:8px 0 0; padding:0; display:grid; gap:6px;}
+  .catalogue li{display:flex; gap:10px; align-items:flex-start; padding:8px; border:2px solid var(--navy); background:var(--white);}
+  .catalogue li > .ico{width:20px; height:20px; flex:0 0 20px; margin-top:2px;}
+  .catalogue li b{display:block; font:400 20px/1.05 var(--f-display); color:var(--navy);}
+  .catalogue li small{display:block; font-size:14px; line-height:1.4; color:#3a4560; margin-top:2px;}
+  .catalogue li.good > .ico{color:var(--ok);} .catalogue li.bad > .ico{color:var(--bad);}
+  .catalogue li.unknown{background:#eef1f6; border-style:dashed;} .catalogue li.unknown b{color:#7d879c;}
+  /* cards in the middle of the screen (the map stays visible around them) */
+  #modal.dock{align-items:center; justify-content:center; background:rgba(11,31,77,.28); padding:16px;}
+  #modal.dock .notice{max-height:90vh;}
+  @media (min-width:900px) and (min-aspect-ratio:1/1){ #modal.dock{align-items:center; justify-content:center; padding-right:16px;} }
+  .notice{max-width:500px;}
 </style>
 </head>
 <body>
@@ -1247,10 +1302,33 @@ function money(x){
 }
 const I18N = {
 en: {
+  'k.serviced':'Urban plot',
+  'combo.greenViews':'Green Views', 'combod.greenViews':'+20 homes and people move in faster: everyone wants a balcony over the park.',
+  'combo.walkToSchool':'Walk to School', 'combod.walkToSchool':'+60 school places. No school run, no traffic jam.',
+  'combo.healthHub':'Doctor on the Corner', 'combod.healthHub':'+120 patients. The waiting room is next door.',
+  'combo.barrio':'Neighbourhood', 'combod.barrio':'+15 homes per pair of blocks: shared courtyards, shared gossip.',
+  'combo.estate':'Industrial Estate', 'combod.estate':'+40 jobs and +€0.05M of taxes a month per pair of factories.',
+  'combo.logistics':'Logistics Hub', 'combod.logistics':'+25 jobs: lorries go straight onto the regional road.',
+  'combo.outdoorClass':'Outdoor Classroom', 'combod.outdoorClass':'Neighbours +1 every month. Biology lessons with real ducks.',
+  'combo.riverside':'Riverside Park', 'combod.riverside':'Neighbours +1 every month and faster move-ins. The flood zone becomes a feature.',
+  'combo.heritage':'Charming Old Quarter', 'combod.heritage':'Mayor and neighbours +1 every month. The village finally approves of something.',
+  'combo.smoke':'Smoke in the Living Room', 'combod.smoke':'−25 homes (nobody wants them) and neighbours −1 every month.',
+  'combo.villageFactory':'The Village Revolts', 'combod.villageFactory':'Neighbours −2 every month. There are banners on the church.',
+  'combo.fumes':'Fumes at Playtime', 'combod.fumes':'−80 school places and neighbours −1 every month.',
+  'combo.clinicNoise':'Racket in A&E', 'combod.clinicNoise':'−100 patients. Hard to recover next to a stamping press.',
+  'combo.new.t':'New combo discovered!', 'combo.newBad.t':'Bad combo discovered', 'combo.new.x':'Added to your combo catalogue. It also works in future programmes.',
+  'combo.newBad.x':'Added to your combo catalogue, so you know what not to do next time.',
+  'combo.cat':'Combo catalogue', 'combo.catSub':'{n}/{t} discovered', 'combo.catx':'Buildings next to each other (diagonals too) create combos. You have discovered {n} of {t}. Undiscovered ones show up as "combo?" when you plan a building.',
+  'combo.unknown':'???', 'combo.unknownHint':'Not discovered yet. Try putting things next to each other.', 'combo.possible':'combo?', 'combo.none':'No combos here yet.',
+  'combo.pieces':'{a} + {b}', 'ui.combosHere':'Combos here', 'ui.close':'Close',
+  'piece.housing':'Housing', 'piece.factory':'Factory', 'piece.school':'School', 'piece.clinic':'Health centre', 'piece.park':'Park',
+  'piece.flood':'River', 'piece.village':'Old village', 'piece.regional':'Regional road',
+  'fx.combo':'Combo: {c}!', 'fx.comboBad':'Bad combo: {c}', 'log.combo':'Combo: {c}.', 'log.comboBad':'Bad combo: {c}.', 'why.combos':'Combos',
+  'stamp.combo':'COMBO!', 'stamp.comboBad':'OOPS',
   'lang.en':'English', 'lang.es':'Español', 'on':'On', 'off':'Off', 'menu.music':'Music: {s}',
   'menu.new':'New programme', 'menu.continue':'Continue · {town}, month {m}',
   'menu.pitch':'A satirical city builder. You have money from Brussels, 36 months and no power whatsoever.',
-  'menu.version':'Prototype v0.3 · buy the land, get it rezoned, file the paperwork, survive the neighbours — and decide every crisis.',
+  'menu.version':'Prototype v0.4 · buy the land, get it rezoned, file the paperwork, survive the neighbours — and decide every crisis.',
   'pause.t':'Coffee break', 'pause.x':'{town}, {country} · month {m} of {n}. Your game is saved automatically.',
   'pause.back':'Back to work', 'pause.abandon':'Abandon programme',
   'intro.t':'Letter of appointment', 'intro.ok':'Accept the appointment',
@@ -1418,10 +1496,33 @@ en: {
   'over.timeout.t':'The programme has ended', 'over.timeout.s':'CLOSED', 'over.timeout.x':'Month {m} is over with {n} of {target} residents. The programme "will be evaluated". A successor with a longer acronym is already being drafted.',
 },
 es: {
+  'k.serviced':'Solar urbano',
+  'combo.greenViews':'Vistas verdes', 'combod.greenViews':'+20 viviendas y la gente llega más rápido: todos quieren un balcón al parque.',
+  'combo.walkToSchool':'Al cole andando', 'combod.walkToSchool':'+60 plazas escolares. Sin coche, sin atasco a las nueve.',
+  'combo.healthHub':'Médico en la esquina', 'combod.healthHub':'+120 pacientes. La sala de espera está al lado.',
+  'combo.barrio':'Barrio', 'combod.barrio':'+15 viviendas por cada par de bloques: patio compartido, cotilleos compartidos.',
+  'combo.estate':'Polígono industrial', 'combod.estate':'+40 empleos y +0,05 M€ de impuestos al mes por cada par de fábricas.',
+  'combo.logistics':'Nave logística', 'combod.logistics':'+25 empleos: los camiones salen directos a la comarcal.',
+  'combo.outdoorClass':'Aula al aire libre', 'combod.outdoorClass':'Vecinos +1 cada mes. Clases de biología con patos de verdad.',
+  'combo.riverside':'Parque fluvial', 'combod.riverside':'Vecinos +1 cada mes y la gente llega más rápido. La zona inundable se convierte en atractivo.',
+  'combo.heritage':'Casco con encanto', 'combod.heritage':'Alcalde y vecinos +1 cada mes. Por fin el pueblo aprueba algo.',
+  'combo.smoke':'Humo en el salón', 'combod.smoke':'−25 viviendas (nadie las quiere) y vecinos −1 cada mes.',
+  'combo.villageFactory':'El pueblo se rebela', 'combod.villageFactory':'Vecinos −2 cada mes. Hay pancartas en la iglesia.',
+  'combo.fumes':'Humo en el recreo', 'combod.fumes':'−80 plazas escolares y vecinos −1 cada mes.',
+  'combo.clinicNoise':'Ruido en urgencias', 'combod.clinicNoise':'−100 pacientes. Difícil recuperarse junto a una prensa hidráulica.',
+  'combo.new.t':'¡Nuevo combo descubierto!', 'combo.newBad.t':'Combo negativo descubierto', 'combo.new.x':'Añadido a tu catálogo de combos. También vale para los próximos programas.',
+  'combo.newBad.x':'Añadido a tu catálogo de combos, para que sepas qué no hacer la próxima vez.',
+  'combo.cat':'Catálogo de combos', 'combo.catSub':'{n}/{t} descubiertos', 'combo.catx':'Los edificios vecinos (también en diagonal) forman combos. Has descubierto {n} de {t}. Los que no conoces aparecen como «¿combo?» cuando planeas un edificio.',
+  'combo.unknown':'???', 'combo.unknownHint':'Aún sin descubrir. Prueba a poner cosas juntas.', 'combo.possible':'¿combo?', 'combo.none':'Aquí todavía no hay combos.',
+  'combo.pieces':'{a} + {b}', 'ui.combosHere':'Combos aquí', 'ui.close':'Cerrar',
+  'piece.housing':'Viviendas', 'piece.factory':'Fábrica', 'piece.school':'Colegio', 'piece.clinic':'Centro de salud', 'piece.park':'Parque',
+  'piece.flood':'Río', 'piece.village':'Pueblo viejo', 'piece.regional':'Carretera comarcal',
+  'fx.combo':'¡Combo: {c}!', 'fx.comboBad':'Combo malo: {c}', 'log.combo':'Combo: {c}.', 'log.comboBad':'Combo malo: {c}.', 'why.combos':'Combos',
+  'stamp.combo':'¡COMBO!', 'stamp.comboBad':'VAYA',
   'lang.en':'English', 'lang.es':'Español', 'on':'Sí', 'off':'No', 'menu.music':'Música: {s}',
   'menu.new':'Nuevo programa', 'menu.continue':'Continuar · {town}, mes {m}',
   'menu.pitch':'Un city builder satírico. Tienes dinero de Bruselas, 36 meses y ningún poder.',
-  'menu.version':'Prototipo v0.3 · compra el suelo, consigue que lo recalifiquen, presenta los papeles, sobrevive a los vecinos… y decide en cada crisis.',
+  'menu.version':'Prototipo v0.4 · compra el suelo, consigue que lo recalifiquen, presenta los papeles, sobrevive a los vecinos… y decide en cada crisis.',
   'pause.t':'Pausa para el café', 'pause.x':'{town}, {country} · mes {m} de {n}. La partida se guarda sola.',
   'pause.back':'Volver al trabajo', 'pause.abandon':'Abandonar el programa',
   'intro.t':'Carta de nombramiento', 'intro.ok':'Aceptar el nombramiento',
@@ -1595,7 +1696,7 @@ es: {
 // =====================================================================
 const N = 12, TW = 64, TH = 32;
 const CFG = {
-  months: 36, grant: 130, target: 700, slots: 3, contractors: 3,
+  months: 36, grant: 130, target: 850, slots: 3, contractors: 3,
   village: 30, permitFee: 0.2, lobbyCost: 0.3, consultCost: 0.2, planCost: 0.5, planMonths: 2,
   milestones: { 12: 0.20, 24: 0.50 },     // share of the grant that must be spent by then
   decommitShare: 0.5,                      // share of the shortfall that is taken back
@@ -1717,9 +1818,11 @@ function isRoad(p, planned){
   if(p.k === 'regional' || p.st === 'built') return true;
   return planned && (p.st==='review' || p.st==='approved' || p.st==='building');
 }
-// Access counts the 8 neighbours: a parcel touching a road corner-to-corner is connected
+// Access counts the 8 neighbours. A road (even a planned one) gives access, and so does a FINISHED
+// building or the old village: built-up land comes with its own streets. Works in progress do not.
+function givesAccess(p){ return isRoad(p, true) || (p.st==='built' && p.k!=='habitat') || p.k==='village'; }
 function hasAccess(r,c){
-  return NB8.some(([dr,dc])=> inside(r+dr,c+dc) && isRoad(S.grid[idx(r+dr,c+dc)], true));
+  return NB8.some(([dr,dc])=> inside(r+dr,c+dc) && givesAccess(S.grid[idx(r+dr,c+dc)]));
 }
 function nextToVillage(r,c){ return NB8.some(([dr,dc])=> inside(r+dr,c+dc) && S.grid[idx(r+dr,c+dc)].k==='village'); }
 function landPrice(p){ return r1(p.price * (has('notary') ? 0.7 : 1)); }
@@ -1737,16 +1840,67 @@ function approvalChance(){
 function count(ty, st='built'){ return S.grid.filter(p=>p.ty===ty && p.st===st && p.k!=='regional').length; }
 function activeSites(){ return S.grid.filter(p=>p.st==='building').length; }
 function caps(){
-  const homes = count('housing')*B.housing.homes;
-  const jobs = Math.floor(count('factory')*B.factory.jobs / CFG.jobsPerResident) + CFG.baseJobs;
-  const school = CFG.baseSchool + count('school')*B.school.school;
-  const health = CFG.baseHealth + count('clinic')*B.clinic.health;
+  const f = comboFx();
+  const homes = Math.max(0, count('housing')*B.housing.homes + f.homes);
+  const jobs = Math.floor(Math.max(0, count('factory')*B.factory.jobs + f.jobs) / CFG.jobsPerResident) + CFG.baseJobs;
+  const school = Math.max(0, CFG.baseSchool + count('school')*B.school.school + f.school);
+  const health = Math.max(0, CFG.baseHealth + count('clinic')*B.clinic.health + f.health);
   const all = {homes, jobs, school, health};
   let k = 'homes'; for(const key in all) if(all[key] < all[k]) k = key;
   return {...all, cap: all[k], bottleneck: k};
 }
+// =====================================================================
+//  COMBOS — Kairosoft-style adjacency bonuses (and penalties), between 8-way neighbours,
+//  counted once per pair. 'b' may be a building or a land feature (flood, village, regional road).
+//  fx per pair: homes / jobs / school / health (capacity), neigh / local (per month), tax (€M/month), rate (move-in speed)
+//  Players discover them by building; the catalogue persists between runs.
+// =====================================================================
+const COMBOS = [
+  {id:'greenViews',     a:'housing', b:'park',     good:true,  fx:{homes:20, rate:0.03}},
+  {id:'walkToSchool',   a:'housing', b:'school',   good:true,  fx:{school:60}},
+  {id:'healthHub',      a:'housing', b:'clinic',   good:true,  fx:{health:120}},
+  {id:'barrio',         a:'housing', b:'housing',  good:true,  fx:{homes:15}},
+  {id:'estate',         a:'factory', b:'factory',  good:true,  fx:{jobs:40, tax:0.05}},
+  {id:'logistics',      a:'factory', b:'regional', good:true,  fx:{jobs:25}},
+  {id:'outdoorClass',   a:'school',  b:'park',     good:true,  fx:{neigh:1}},
+  {id:'riverside',      a:'park',    b:'flood',    good:true,  fx:{neigh:1, rate:0.02}},
+  {id:'heritage',       a:'park',    b:'village',  good:true,  fx:{neigh:1, local:1}},
+  {id:'smoke',          a:'factory', b:'housing',  good:false, fx:{homes:-25, neigh:-1}},
+  {id:'villageFactory', a:'factory', b:'village',  good:false, fx:{neigh:-2}},
+  {id:'fumes',          a:'factory', b:'school',   good:false, fx:{school:-80, neigh:-1}},
+  {id:'clinicNoise',    a:'factory', b:'clinic',   good:false, fx:{health:-100}},
+];
+// What a parcel "is" for combos: its finished building and/or its land feature
+function tokens(p){ const t = [];
+  if(p.st==='built' && p.ty && p.ty!=='road' && p.k!=='regional') t.push(p.ty);
+  if(p.k==='village' || p.k==='regional' || (p.k==='flood' && p.st==='land')) t.push(p.k);
+  return t; }
+function matchCombos(ta, tb){ const out = [];
+  COMBOS.forEach(c=>{ if((ta.includes(c.a) && tb.includes(c.b)) || (ta.includes(c.b) && tb.includes(c.a))) out.push(c); });
+  return out; }
+function activeCombos(){
+  const list = [];
+  for(let i=0;i<N*N;i++){ const ti = tokens(S.grid[i]); if(!ti.length) continue; const [r,c] = rc(i);
+    for(const [dr,dc] of NB8){ const r2=r+dr, c2=c+dc; if(!inside(r2,c2)) continue; const j = idx(r2,c2); if(j<=i) continue;
+      const tj = tokens(S.grid[j]); if(!tj.length) continue;
+      matchCombos(ti, tj).forEach(cb=>list.push({id:cb.id, i, j, good:cb.good})); } }   // every combo needs a building ('a')
+  return list;
+}
+const COMBO_BY_ID = Object.fromEntries(COMBOS.map(c=>[c.id,c]));
+function comboFx(){ const f = {homes:0, jobs:0, school:0, health:0, neigh:0, local:0, tax:0, rate:0};
+  activeCombos().forEach(x=>{ const e = COMBO_BY_ID[x.id].fx; for(const k in e) f[k] += e[k]; }); return f; }
+// Which combos would appear if 'ty' were built on parcel i (used for the preview)
+function comboPreview(i, ty){
+  const [r,c] = rc(i), me = [ty];
+  const seen = new Map();
+  NB8.forEach(([dr,dc])=>{ if(!inside(r+dr,c+dc)) return; matchCombos(me, tokens(S.grid[idx(r+dr,c+dc)])).forEach(cb=>seen.set(cb.id, cb)); });
+  return [...seen.values()];
+}
+// The catalogue of discovered combos survives between runs (it is knowledge, not power)
+function discovered(){ try{ return JSON.parse(localStorage.getItem('eurocrat_combos')||'[]'); }catch(e){ return []; } }
+function discover(id){ const d = discovered(); if(d.includes(id)) return false; d.push(id); try{ localStorage.setItem('eurocrat_combos', JSON.stringify(d)); }catch(e){} return true; }
 function residents(){ return S.newcomers + CFG.village; }
-function taxIncome(){ return r1(CFG.taxShare*(count('factory')*CFG.taxPerFactory + S.newcomers*CFG.taxPerResident)*100)/100; }
+function taxIncome(){ return Math.round((CFG.taxShare*(count('factory')*CFG.taxPerFactory + S.newcomers*CFG.taxPerResident) + comboFx().tax)*100)/100; }
 function monthlyCosts(){
   let c = S.debt*S.rate;
   S.grid.forEach(p=>{ if(p.st==='building' && !p.halt) c += p.mcost;
@@ -2106,6 +2260,12 @@ function endMonth(){
     if(p.dev.phase==='permit'){ p.dev.phase='build'; p.dev.t=ri(3,5); }
     else { p.st='built'; p.priv=true; p.dev=null; log('log.devDone',{at:pname(i)},'good'); fx(i,'fx.completed',{b:'housing'},'good'); }
   });
+  // 5b. Combos: newly formed pairs are announced (and discovered the first time ever)
+  const combosNow = activeCombos(); S.comboSeen = S.comboSeen || [];
+  combosNow.forEach(x=>{ const key = x.id+':'+x.i+':'+x.j; if(S.comboSeen.includes(key)) return; S.comboSeen.push(key);
+    if(discover(x.id)) S.cards.push({type:'combo', id:x.id, i:x.i, j:x.j});
+    else fx(x.good ? x.i : x.j, x.good ? 'fx.combo' : 'fx.comboBad', {c:x.id}, x.good ? 'good' : 'bad');
+    log(x.good ? 'log.combo' : 'log.comboBad', {c:x.id}, x.good ? 'good' : 'bad'); });
   // 6. Upkeep, interest and the municipality's share of new taxes
   S.grid.forEach(p=>{ if(p.st==='built' && p.ty && p.k!=='regional' && !p.priv) spend(B[p.ty].upkeep); });
   if(S.debt>0) S.funds -= S.debt*S.rate;
@@ -2114,7 +2274,7 @@ function endMonth(){
   // 7. Residents move in (or out) toward the tightest limit
   const cp = caps(); S.bottleneck = cp.bottleneck;
   if(cp.cap > S.newcomers){
-    const rate = Math.min(0.6, 0.3 + 0.06*count('park'));
+    const rate = clamp(0.3 + 0.06*count('park') + comboFx().rate, 0.1, 0.6);
     S.newcomers += Math.ceil((cp.cap - S.newcomers)*rate);
   } else if(cp.cap < S.newcomers){
     S.newcomers -= Math.ceil((S.newcomers - cp.cap)*0.15);
@@ -2124,6 +2284,7 @@ function endMonth(){
   bump('local', -CFG.localDecay, 'why.forget');
   bump('neigh', -activeSites()*CFG.noisePerSite, 'why.noise');
   if(has('comms')) bump('neigh', 2, 'why.comms');
+  { const f = comboFx(); if(f.neigh) bump('neigh', f.neigh, 'why.combos'); if(f.local) bump('local', f.local, 'why.combos'); }
   S.market = r1(clamp(S.market + (1-S.market)*0.15 + (rnd()-0.5)*0.1, 0.6, 1.3)*100)/100;
   // 9. Delayed national co-financing
   S.refunds = S.refunds.filter(f=>{ if(f.m<=S.month){ S.funds += f.x; log('log.cofin',{x:money(f.x)},'good'); return false; } return true; });
@@ -2757,6 +2918,17 @@ function badge(x,y,text,col){ ctx.font='700 8px Pixel, sans-serif'; const w=Math
   ctx.fillStyle='#0b1f4d'; ctx.fillRect(x0-1,y0-1,w+2,11); ctx.fillRect(x0,y0+10,w+1,1);
   ctx.fillStyle=col; ctx.fillRect(x0,y0,w,9); ctx.fillStyle='rgba(255,255,255,.28)'; ctx.fillRect(x0,y0,w,1);
   ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(text,x0+w/2,y0+5); }
+// Combo pairs: a dotted link between the two parcels with a small medal (good) or warning (bad) in the middle
+function drawComboLinks(){
+  const known = discovered();
+  activeCombos().forEach(x=>{ if(!known.includes(x.id)) return;
+    const [x1,y1] = isoOf(...rc(x.i)), [x2,y2] = isoOf(...rc(x.j)), col = x.good ? '#1d8148' : '#c62f28';
+    ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 1.6; ctx.setLineDash([2.5,2]);
+    ctx.beginPath(); ctx.moveTo(x1,y1-4); ctx.lineTo(x2,y2-4); ctx.stroke(); ctx.setLineDash([]);
+    const mx=(x1+x2)/2, my=(y1+y2)/2-4; ctx.fillStyle = col; ctx.fillRect(mx-3.5,my-3.5,7,7);
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 6px system-ui, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(x.good?'+':'!', mx, my+0.3);
+    ctx.restore(); });
+}
 const MARK = {rejected:['✕','#d64545'], event:['!','#e8442e'], toad:['!','#2e7d32'], holdout:['€↑','#d98a00'], paused:['II','#d98a00'], ruin:['!','#6b6b6b'], halt:null};
 function drawLabels(i){
   const p = S.grid[i], r=Math.floor(i/N), c=i%N, [x,y] = isoOf(r,c);
@@ -2783,6 +2955,7 @@ function draw(){
   ctx.drawImage(art, Math.round(dpr*(W/2 + (-AOX-MAPCX)*s)), Math.round(dpr*(H/2 + (-AOY-MAPCY)*s)), Math.round(AW*k), Math.round(AH*k));
   // Crisp overlays on top: month badges and the selection marker
   ctx.setTransform(k,0,0,k, dpr*(W/2 - MAPCX*s), dpr*(H/2 - MAPCY*s)); ctx.imageSmoothingEnabled = true;
+  drawComboLinks();
   order.forEach(o=>drawLabels(o[2]));
   if(selected>=0){ const p=S.grid[selected], [x,y]=isoOf(Math.floor(selected/N), selected%N);
     const top = y - (p.st==='built' && p.ty ? HEIGHT[p.ty] : p.k==='village' ? 34 : p.k==='habitat' ? 26 : p.st==='building' || p.st==='private' ? 70 : p.st==='ruin' ? 40 : 14) - 6;
@@ -2812,6 +2985,7 @@ function P(p){ const o = {...(p||{})};
   if(p && p.d) o.d = t('dir.'+p.d+'.t');
   if(p && p.k) o.k = t('perk.'+p.k);
   if(p && p.e){ o.e = t('ev.'+p.e+'.t'); if(p.c) o.c = t('ev.'+p.e+'.c.'+p.c); }
+  else if(p && p.c && COMBO_BY_ID[p.c]) o.c = t('combo.'+p.c);
   return o; }
 function country(){ return t('country.'+S.country); }
 
@@ -2996,13 +3170,14 @@ function agendaCard(){
   a.appendChild(actBtn('forum', t('act.consult'), t('act.consultSub'), ()=>doAction(consult(),-1), off||S.slots<2));
   a.appendChild(actBtn('description', t('act.report'), t('act.reportSub'), ()=>doAction(fileReport(),-1), off||S.slots<1));
   if(S.debt>0) a.appendChild(actBtn('account_balance_wallet', t('act.repay',{x:money(Math.min(CFG.loanStep,S.debt))}), t('act.repaySub'), ()=>doAction(repay(),-1), off||S.funds<Math.min(CFG.loanStep,S.debt), 'money'));
+  a.appendChild(actBtn('workspace_premium', t('combo.cat'), t('combo.catSub',{n:discovered().length, t:COMBOS.length}), ()=>{ playSound('click'); catalogueCard(); }, false, 'cat'));
   c.appendChild(a); return c;
 }
 function parcelCard(i){
   const p = S.grid[i], [r,c] = rc(i);
   const card = document.createElement('div'); card.className='card';
   const isB = p.ty && p.k!=='regional';
-  const title = isB ? t('b.'+p.ty) : t('k.'+p.k);
+  const title = isB ? t('b.'+p.ty) : (p.urban && p.st==='owned' && p.k!=='muni') ? t('k.serviced') : t('k.'+p.k);
   const icon = isB ? B[p.ty].icon : KIND[p.k];
   let html = `<div class="ref">${t('ui.parcel',{at:pname(i)})}${p.urban && !isB ? ' · '+t('ui.urban') : ''}</div><h3>${ic(icon)}${title}</h3>`;
   const a = document.createElement('div'); a.className='actions'; const off = !!S.over || S.slots<1;
@@ -3016,8 +3191,10 @@ function parcelCard(i){
     const acc = hasAccess(r,c);
     html += `<p>${!acc ? t('pc.noAccess') : p.urban ? t('pc.ownedUrban') : t('pc.ownedRustic')}</p>`;
     BUILD_TYPES.forEach(ty=>{ const bt=B[ty], blocked = !acc || (bt.urban && !p.urban);
-      a.appendChild(actBtn(bt.icon, t('b.'+ty), (bt.urban && !p.urban ? t('pc.needsUrban')+' · ' : '')+t('bd.'+ty)+' · '+t('pc.timing',{p:permitMonths(ty), b:buildMonths(ty), x:money(buildCost(p,ty))}),
-        ()=>doAction(requestPermit(i,ty),i), blocked || off)); });
+      const why = !acc ? t('err.noAccess') : (bt.urban && !p.urban) ? t('pc.needsUrban') : '';
+      a.appendChild(actBtn(bt.icon, t('b.'+ty), `<span class="meta">${t('pc.timing',{p:permitMonths(ty), b:buildMonths(ty), x:money(buildCost(p,ty))})}</span>`
+        + `<span class="desc">${t('bd.'+ty)}</span>` + (why ? `<span class="why">${why}</span>` : '') + comboChips(comboPreview(i, ty)),
+        ()=>doAction(requestPermit(i,ty),i), blocked || off, 'build')); });
     if(p.urban) a.appendChild(actBtn('sell', t('act.sell',{x:money(plotValue(p))}), S.market<CFG.devMinMarket ? t('act.sellCold') : t('act.sellSub'), ()=>doAction(sellPlot(i),i), !acc || off || S.market<CFG.devMinMarket, 'money'));
   }
   else if(p.st==='review') html += `<p>${t('pc.review',{b:t('b.'+p.ty), n:p.t, o:Math.round(approvalChance()*100)})}</p>`;
@@ -3025,11 +3202,30 @@ function parcelCard(i){
   else if(p.st==='building') html += `<p>${t('pc.building',{b:t('b.'+p.ty), n:p.t, x:money(p.mcost)})}${p.halt?' <b style="color:var(--bad)">'+t('pc.halted',{n:p.halt})+'</b>':''}</p>`;
   else if(p.st==='private') html += `<p>${t(p.dev.phase==='permit'?'pc.privPermit':'pc.privBuild',{n:p.dev.t})}${S.market<CFG.devMinMarket?' <b style="color:var(--warn)">'+t('pc.privPaused')+'</b>':''}</p>`;
   else if(p.st==='ruin'){ html += `<p>${t('pc.ruin')}</p>`; a.appendChild(actBtn('real_estate_agent', t('act.buyBack',{x:money(r1(p.price*1.5))}), t('act.slot1'), ()=>doAction(acquire(i),i), off)); }
-  else if(p.st==='built' && isB && p.ty!=='road') html += `<p>${t('bd.'+p.ty)}. ${p.priv ? t('pc.private') : t('pc.upkeep',{x:money(B[p.ty].upkeep)})}</p>`;
+  else if(p.st==='built' && isB && p.ty!=='road'){ html += `<p>${t('bd.'+p.ty)}. ${p.priv ? t('pc.private') : t('pc.upkeep',{x:money(B[p.ty].upkeep)})}</p>`;
+    const mine = activeCombos().filter(x=>x.i===i || x.j===i);
+    html += `<div class="combos-here"><b>${t('ui.combosHere')}</b>${mine.length ? comboChips(mine.map(x=>COMBO_BY_ID[x.id]), true) : `<p>${t('combo.none')}</p>`}</div>`; }
   else if(p.st==='built') html += `<p>${t('pc.road')}</p>`;
   card.innerHTML = html; if(a.children.length) card.appendChild(a);
   const back = actBtn('close', t('ui.deselect'), '', ()=>{ selected=-1; refresh(); }); back.style.marginTop='8px'; card.appendChild(back);
   return card;
+}
+// Combo chips: named once discovered; before that only a mysterious "combo?" (good and bad look the same)
+function comboChips(list, showAll){
+  if(!list.length) return '';
+  const known = discovered();
+  return `<span class="chips">${list.map(cb=> known.includes(cb.id) || showAll
+    ? `<span class="chip ${cb.good?'good':'bad'}">${ic(cb.good?'workspace_premium':'warning')}${t('combo.'+cb.id)}</span>`
+    : `<span class="chip mystery">${ic('workspace_premium')}${t('combo.possible')}</span>`).join('')}</span>`;
+}
+function catalogueCard(){
+  const known = discovered();
+  const items = COMBOS.map(cb=>{ const k = known.includes(cb.id);
+    return `<li class="${k?(cb.good?'good':'bad'):'unknown'}">${ic(k?(cb.good?'workspace_premium':'warning'):'info')}<span><b>${k?t('combo.'+cb.id):t('combo.unknown')}</b>
+      <small>${k ? t('combod.'+cb.id) + ' · ' + t('combo.pieces',{a:t('piece.'+cb.a), b:t('piece.'+cb.b)}) : t('combo.unknownHint')}</small></span></li>`; }).join('');
+  letter({icon:'workspace_premium', title:t('combo.cat'), body:`<p>${t('combo.catx',{n:known.length, t:COMBOS.length})}</p><ul class="catalogue">${items}</ul>`,
+    buttons:[btn(t('ui.close'),'close', ()=>{ playSound('click'); if(S && (S.cards.length||S.perkChoice||S.over)) showNext(); else hideModal(); }, true)]});
+  rerender = catalogueCard;
 }
 function refresh(){ applyStatic(); updateHUD(); renderPanel(); draw(); }
 let pulseUntil = 0;
@@ -3124,8 +3320,14 @@ const CARD = {
         save(); refresh(); showNext(); };
       return b; });
     letter({icon:E.icon, title:t('ev.'+c.id+'.t'), speaker:E.char, dock:true,
-      body:`${where}<div class="quote">${t('ev.'+c.id+'.x', {...P(v), x:v.x, at:v.i>=0?pname(v.i):''})}</div><p style="font-size:12px;color:var(--sub)">${t('ui.choose')}</p>`, buttons});
+      body:`${where}<div class="quote">${t('ev.'+c.id+'.x', {...P(v), x:v.x, at:v.i>=0?pname(v.i):''})}</div><p class="hint">${t('ui.choose')}</p>`, buttons});
     if(!c.played){ c.played = true; playSound(E.sfx); } },
+  combo: c => { const cb = COMBO_BY_ID[c.id]; pulse(c.i);
+    letter({icon: cb.good?'workspace_premium':'warning', title: t(cb.good?'combo.new.t':'combo.newBad.t'), stamp: t(cb.good?'stamp.combo':'stamp.comboBad'), cls: cb.good?'ok':'bad',
+      speaker: cb.good ? 'mayor' : 'neighbour',
+      body:`<div class="combo-name ${cb.good?'good':'bad'}">${t('combo.'+cb.id)}</div><div class="quote">${t('combod.'+cb.id)}<br><small>${t('combo.pieces',{a:t('piece.'+cb.a), b:t('piece.'+cb.b)})}</small></div><p class="hint">${t(cb.good?'combo.new.x':'combo.newBad.x')}</p>`,
+      buttons:[btn(t('ui.noted'),'check', ()=>nextCard('click'), true)]});
+    if(!c.played){ c.played = true; playSound(cb.good ? 'fanfare' : 'crowd'); } },
   result: c => { const E = EVENTS[c.id], bad = /caught|lost|stays|refused|unimpressed|ruin|annulled|long/.test(c.res);
     letter({icon:E.icon, title:t('ev.'+c.id+'.t'), stamp:t(bad?'stamp.bad':'stamp.done'), cls:bad?'bad':'ok', speaker:E.char,
       body:`<div class="quote">${t('ev.'+c.id+'.r.'+c.res)}</div>`, buttons:[btn(t('ui.noted'),'check', ()=>nextCard('click'), true)]}); },
@@ -3218,7 +3420,7 @@ if(window.ResizeObserver) new ResizeObserver(resize).observe(worldEl);
 window.__eurocrat = {
   get S(){ return S; }, CFG, B, EVENTS, newGame:(seed)=>{ startNew(seed); S.cards=[]; hideModal(); return S; },
   acquire, requestPermit, sellPlot, submitPlan, lobby, consult, fileReport, repay, endMonth, choosePerk, caps, residents, hasAccess,
-  choicesFor, resolveEvent, problems, t, setLang, get lang(){ return LANG; },
+  choicesFor, resolveEvent, problems, activeCombos, comboPreview, comboFx, discovered, COMBOS, catalogueCard, t, setLang, get lang(){ return LANG; },
   // resolve the first pending card: event cards with the given (or first) choice, other cards just acknowledged
   resolveCard:(k)=>{ const c=S.cards[0]; if(!c) return null; if(c.type==='event'){ const ch=k||choicesFor(c)[0].k; S.cards.shift(); const r=resolveEvent(c,ch); if(r) S.cards.unshift({type:'result', id:c.id, res:r, v:c.v}); return r; } S.cards.shift(); return true; },
   tileAt:(x,y)=>tileAt(x,y), screenOf:(i)=>{ const [ix,iy]=isoOf(...rc(i)); return toScreen(ix,iy); },

@@ -1,4 +1,4 @@
-// A simple greedy player used to sanity-check difficulty (v0.3 rules).
+// A simple greedy player used to sanity-check difficulty (v0.4 rules: combos, access through buildings).
 // Runs inside the page: window.__eurocrat must exist. Returns a summary of one run.
 // It is deliberately decent but not clever: it always picks the first ("by the book") choice on event cards.
 window.__playOneRun = function(seed, opts){
@@ -38,7 +38,10 @@ window.__playOneRun = function(seed, opts){
       const want = (d && d.kind==='park' && !planned('park')) ? 'park' : (d && d.kind==='school' ? 'school' : (d && d.kind==='roads' ? 'road' : desired()));
       if(lots.length < 2 && owned.length && planned('road') < 14){ const src = rusticOwned[0] || owned[0]; if(g.requestPermit(src[1],'road').ok) continue; }
       if(['road','park'].includes(want) && owned.length){ if(g.requestPermit((rusticOwned[0]||owned[0])[1], want).ok) continue; }
-      if(urbanOwned.length && !['road','park'].includes(want)){ if(g.requestPermit(urbanOwned[0][1], want).ok) continue; }
+      // pick the parcel with the best adjacency combos for this building (good +1, bad -2), like a player reading the preview
+      const score = i => g.comboPreview(i, want).reduce((t,c)=>t + (c.good ? 1 : -2), 0);
+      if(urbanOwned.length && !['road','park'].includes(want)){ const best = urbanOwned.slice().sort((x,y)=>score(y[1])-score(x[1]))[0];
+        if(g.requestPermit(best[1], want).ok) continue; }
       if(lots.length){ lots.sort((a,b)=>(b[0].k==='muni')-(a[0].k==='muni') || (a[0].k==='flood')-(b[0].k==='flood') || a[0].price-b[0].price);
         g.acquire(lots[0][1]); continue; }
       break;
