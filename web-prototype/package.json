@@ -1,8 +1,8 @@
 {
-  "name": "city-builder-web-prototype",
-  "version": "0.1.0",
+  "name": "eurocrat-web-prototype",
+  "version": "0.2.0",
   "private": true,
-  "description": "Isometric City Builder web prototype (Syndicate 1993 aesthetic)",
+  "description": "Eurocrat \u2014 satirical roguelike city builder, web prototype",
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
@@ -10,5 +10,7 @@
     "test": "python3 tests/smoke_test.py src/index.html",
     "test:dist": "python3 tests/smoke_test.py dist/index.html"
   },
-  "engines": { "node": ">=18" }
+  "engines": {
+    "node": ">=18"
+  }
 }

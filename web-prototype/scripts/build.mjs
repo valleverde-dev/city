@@ -27,8 +27,8 @@ const head = [
   '<meta name="apple-mobile-web-app-capable" content="yes">',
   '<meta name="mobile-web-app-capable" content="yes">',
   '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">',
-  '<meta name="apple-mobile-web-app-title" content="CityBuilder">',
-  '<meta name="theme-color" content="#060a10">',
+  '<meta name="apple-mobile-web-app-title" content="Eurocrat">',
+  '<meta name="theme-color" content="#1d3c78">',
   `<meta name="build" content="${buildId}">`,
 ].join('\n');
 const swReg = `<script>if('serviceWorker' in navigator && location.protocol!=='file:'){addEventListener('load',()=>navigator.serviceWorker.register('sw.js'));}</script>`;

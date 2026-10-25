@@ -1,51 +1,35 @@
-# Roadmap — CityBuilder
+# Roadmap — Eurocrat
 
-Living project document · update it as the prototype evolves.
+Living project document · update it as the prototype evolves. The game design lives in [docs/GDD.md](docs/GDD.md).
 
 ## Overview
 
-Isometric city builder with a first playable prototype already running (web, Syndicate 1993-style aesthetic). The plan: validate mechanics in the web/iPad prototype, consolidate the game design, and port to Godot to ship on the App Store and Steam.
+**Eurocrat** (working title): a satirical, turn-based roguelike city builder. You are a Brussels programme officer who must deliver a model European town with plenty of money and no power — buy the land, file the permits, survive the neighbours, spend the funds before they expire. Tone and references: *Constructor* (1997), with a hyper-realistic, comic look at how building actually works in contemporary Europe. The plan: validate the loop in the web/iPad prototype, then port to Godot to ship on the App Store and Steam.
 
-## Current status — v0.1.0 (Oct 25, 2026)
+## Current status — v0.2.0 (Oct 25, 2026)
 
-- Web prototype verified with an automated smoke test (21 checks: build, demolish, adjacency, funds, rotation, pause, save/load, tick, persistence, coin-exploit regression, hint layout on iPad/iPhone).
-- Installable PWA build for iPad/iPhone ("Add to Home Screen"), with offline mode.
-- CI on GitHub Actions: build + test + deploy to GitHub Pages on every push to `main` → https://valleverde-dev.github.io/city/
-- Game, code and docs in English.
-- Godot 4 skeleton in `/godot` (phase 4 started in parallel, for Xogot on iPad): same grid, costs, adjacency, tick income, menus, save/load and music as the web prototype, with headless tests. The web prototype stays the sandbox for new mechanics.
+- **Pivot from "City Builder" to Eurocrat.** New concept, lore, loop and art direction, documented in `docs/GDD.md`.
+- **Playable v0.2 web prototype:** monthly turns (36), agenda slots, parcel pipeline (acquire → permit review → contractor queue → construction → built), six building types, residents limited by homes/jobs/school/health, four meters (local support, neighbours, compliance, spending vs. use-it-or-lose-it milestones), random directives with deadlines, 12 random events, 10 perks (pick 1 of 3), win/lose conditions, seeded runs, autosave + continue.
+- **Art:** Constructor-style colourful isometric blocks drawn on canvas; UI parodies an institutional e-government portal; official notices with rubber stamps. Material Icons, system fonts.
+- **Difficulty:** "hard" by design. A greedy test bot wins ~8% of 150 seeded runs (`tests/balance.py`); losses are mostly bankruptcy, then failed directives and timeouts. A careful player should do better.
+- **Tests:** 35-check smoke test (UI flow, tap hit-testing in all rotations, land/permit/construction rules, no free money, decommitment, directives, perks, win/lose, save/continue, iPad/iPhone layout). Runs in CI on every push.
+- Installable PWA, CI + GitHub Pages → https://valleverde-dev.github.io/city/
+- The soundtrack (darksynth) still plays; whether it fits the new tone is an open question.
+- `/godot` holds a Godot 4 skeleton of the **v0.1** mechanics (grid, costs, menus, music). It is now behind the design; port v0.2 once the loop feels right.
 
-**Known bugs**
+**Known issues**
 
-- [x] **Coin exploit** (fixed Oct 25): taps used to run `tick()`, so repeatedly tapping "Demolish" (cost 0) generated unlimited income. Income now comes only from the timed tick; actions just refresh the HUD.
-- [x] **Hint overlapped by the HUD** (fixed Oct 25): "Tap to build" now sits below the top bar whatever its height (safe area, two-line HUD on iPhone).
-- [ ] Fonts (Orbitron, Share Tech Mono, Material Icons) load from Google Fonts, so the first load needs a connection. Consider bundling them in `public/fonts/`.
+- [ ] Material Icons load from Google Fonts: the first load needs a connection. Consider bundling the font in `public/fonts/`.
+- [ ] Balance needs human playtesting (the bot is a sanity check, not a player).
 
-## Mechanics
+## Next steps
 
-### Game loop
-
-- **Short loop (already prototyped):** tap a tile → build/demolish → coin cost → simulation tick → population and income go up.
-- **Mid loop (TBD):** manage resources beyond coins (power, water, security — a corporate/dystopian theme fits Syndicate), balance spending vs. income, unlock new building types at milestones.
-- **Long loop (TBD):** progression across games or city "eras", prestige/reset, or an endless sandbox mode.
-- **Open question:** a single sandbox loop, or difficulty/campaign layers on top?
-
-### Goals
-
-- **Short term:** milestones like "reach X population", "build your first block".
-- **Mid term:** unlock new buildings/mechanics (e.g. industrial district, rival corporation).
-- **Long term:** a "victory" condition in campaign mode (self-sufficient city, economic dominance) vs. a sandbox mode with no end goal.
-
-### Missions
-
-- Guided tutorial (the groundwork is there: start screen, tools, cost/adjacency).
-- Syndicate-style contracts: short generated missions ("build 5 shops in X turns", "keep unrest below Y").
-- A possible corporate storyline to give the game more identity (fits the chosen aesthetic).
-
-### Game over
-
-- **Sandbox mode:** no game over, just free progression.
-- **Scenario/campaign mode:** lose conditions (bankruptcy, riots/unrest, missed time limit).
-- **Recommendation:** start without game over (sandbox) to validate the loop; add fail conditions once a campaign mode is defined.
+1. Playtest v0.2 on the iPad; tune costs, timings, event odds and directive targets.
+2. Tutorial / first-run guidance (the first month is confusing without it).
+3. *Constructor*-style characters: named residents, complaints, a mayor with a face.
+4. Member states with their own rule quirks; more buildings (logistics hub, data centre, social housing).
+5. Decide on meta-progression between runs.
+6. Port v0.2 to Godot when the loop is validated.
 
 ## Assets
 
@@ -56,7 +40,8 @@ Isometric city builder with a first playable prototype already running (web, Syn
 
 ### Art direction
 
-- Already established in the prototype: Syndicate (1993) aesthetic — near-black dark palette, neon accents (cyan, alert red, amber, acid green), Orbitron/Share Tech Mono typography, "corporate terminal" UI with a CRT texture.
+- **v0.2: Constructor-style** colourful isometric map + a UI that parodies an institutional e-government portal (white panels, institutional blue, yellow highlights, rubber stamps). Fictional institutions only — no real EU names, flags or emblems.
+- v0.1 used a Syndicate (1993) neon look; it was dropped with the pivot.
 - Recommendation: document this as a style guide (moodboard + palette + typefaces) to keep assets consistent as they scale.
 
 ### Music
@@ -72,7 +57,7 @@ Isometric city builder with a first playable prototype already running (web, Syn
 ### Godot
 
 - **When to port:** once the game loop is validated in the web prototype (avoid porting too early and having to redo the design).
-- **What carries over directly:** grid logic, costs/adjacency, state structure (already JSON, easy to move to GDScript/Godot Resources).
+- **What carries over directly:** the rules in `index.html` are written as pure functions over one JSON state (grid, meters, rng) — easy to move to GDScript; state structure (already JSON, easy to move to GDScript/Godot Resources).
 - **Why Godot:** native export to iOS and desktop (Windows/Mac/Linux) for Steam, and lighter than Unity for solo iteration.
 
 ### GitHub
@@ -93,8 +78,8 @@ Isometric city builder with a first playable prototype already running (web, Syn
 
 ## Suggested phases
 
-1. **Web prototype (current):** validate the game loop, cost/adjacency mechanics, aesthetic.
-2. **Mechanics design:** settle goals, missions and the game-over condition.
+1. **Web prototype:** ✅ v0.1 (basic loop) · ✅ v0.2 (Eurocrat roguelike loop).
+2. **Mechanics design (current):** playtest and tune v0.2; tutorial; characters.
 3. **Asset production:** consolidate the style guide, music, possible 3D assets.
 4. **Godot port:** migrate logic and UI, with the GitHub repository already active.
 5. **Production:** prepare builds for Steam (direct) and the App Store (solve the Xcode/Mac step).

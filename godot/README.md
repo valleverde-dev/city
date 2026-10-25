@@ -3,6 +3,8 @@
 Minimal Godot port of the web prototype (phase 4 of the [ROADMAP](../ROADMAP.md), started in parallel).
 The web prototype in `/web-prototype` stays the sandbox for trying new mechanics; this project only mirrors what is already decided there.
 
+> **Note (v0.2):** the game pivoted to *Eurocrat* (see [docs/GDD.md](../docs/GDD.md)). This skeleton still implements the **v0.1** mechanics below; it will be updated once the v0.2 loop is validated in the web prototype.
+
 Target: Godot 4.4+ (tested with 4.7.2), Mobile renderer, 2D only. Compatible with **Xogot** on iPad.
 
 ## What is ported

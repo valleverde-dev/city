@@ -3,29 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>City Builder — Terminal</title>
+<title>Eurocrat</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap">
 <style>
   :root{
-    --bg:#060a10; --panel:rgba(8,14,20,.93); --ink:#d9fbff; --sub:#5f8690;
-    --grass:#2d3b30; --road:#15171c; --house:#ffb020; --shop:#00c2ff; --park:#39ff6a;
-    --accent:#00e5ff; --danger:#ff2e4d; --border:rgba(0,229,255,.28);
-    color-scheme: dark;
+    --blue:#1d3c78; --blue2:#2d5bb5; --blue-soft:#e8eef9; --yellow:#ffcc33;
+    --paper:#ffffff; --bg:#eef1f7; --ink:#1b2333; --sub:#5d6880; --line:#d7dce8;
+    --ok:#1f9d55; --bad:#d64545; --warn:#d98a00; --map:#bcdcea;
+    color-scheme: light;
   }
   *{box-sizing:border-box;}
   html,body{height:100%;}
   body{
     margin:0; background:var(--bg); color:var(--ink);
-    font-family:'Share Tech Mono',monospace;
-    overflow:hidden; touch-action:none;
-    padding-top:env(safe-area-inset-top,0px);
-    padding-bottom:env(safe-area-inset-bottom,0px);
-  }
-  body::after{
-    content:""; position:fixed; inset:0; pointer-events:none; z-index:50;
-    background:repeating-linear-gradient(0deg, rgba(255,255,255,.03) 0px, rgba(255,255,255,.03) 1px, transparent 1px, transparent 3px);
-    mix-blend-mode:overlay;
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    overflow:hidden; touch-action:none; -webkit-user-select:none; user-select:none;
   }
   .material-icons{
     font-family:'Material Icons',sans-serif; font-weight:normal; font-style:normal;
@@ -33,473 +25,1017 @@
     display:inline-block; white-space:nowrap; word-wrap:normal; direction:ltr;
     vertical-align:middle; -webkit-font-smoothing:antialiased;
   }
-  #hud{
-    position:fixed; top:env(safe-area-inset-top,0px); left:0; right:0; z-index:10;
-    display:flex; justify-content:space-between; align-items:center;
-    padding:10px 14px; background:var(--panel); backdrop-filter:blur(8px);
-    border-bottom:1px solid var(--border); gap:10px; flex-wrap:wrap;
-    box-shadow:0 0 16px rgba(0,229,255,.1);
-  }
-  #hud h1{
-    font-family:'Orbitron',sans-serif; font-size:14px; margin:0; font-weight:900;
-    letter-spacing:.08em; text-transform:uppercase; display:flex; align-items:center; gap:8px; color:var(--accent);
-  }
-  .stats{display:flex; gap:16px; font-size:13px; color:var(--sub); text-transform:uppercase; letter-spacing:.04em;}
-  .stats span{display:flex; align-items:center; gap:5px;}
-  .stats b{color:var(--ink);}
+  button{font:inherit; color:inherit;}
+
+  #app{display:flex; flex-direction:column; height:100%;
+       padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);}
+
+  /* --- Top bar: a parody of an institutional portal --- */
+  #hud{background:var(--blue); color:#fff; display:flex; align-items:center; gap:10px;
+       padding:8px 12px; flex-wrap:wrap; border-bottom:3px solid var(--yellow);}
+  #hud h1{margin:0; font-size:15px; letter-spacing:.14em; font-weight:800; display:flex; align-items:center; gap:6px;}
+  #hud h1 small{font-weight:500; letter-spacing:.02em; opacity:.75; font-size:11px;}
+  .stats{display:flex; gap:12px; font-size:13px; flex-wrap:wrap; margin-left:auto; align-items:center;}
+  .stat{display:flex; align-items:center; gap:4px; white-space:nowrap;}
+  .stat b{font-variant-numeric:tabular-nums;}
+  .stat .material-icons{font-size:16px; opacity:.85;}
+  .slots{display:flex; gap:3px;}
+  .slot{width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,.25); border:1px solid rgba(255,255,255,.6);}
+  .slot.on{background:var(--yellow); border-color:var(--yellow);}
   .hud-actions{display:flex; gap:6px;}
-  .hud-btn{
-    background:rgba(0,229,255,.06); border:1px solid var(--border); border-radius:0;
-    padding:6px 9px; color:var(--ink); cursor:pointer; display:flex; align-items:center;
+  .hud-btn{background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.35); border-radius:6px;
+           padding:5px 7px; color:#fff; cursor:pointer; display:flex; align-items:center;}
+
+  /* --- Meters --- */
+  #meters{display:flex; gap:10px; padding:6px 12px; background:var(--paper); border-bottom:1px solid var(--line); flex-wrap:wrap;}
+  .meter{flex:1 1 140px; min-width:120px; font-size:11px; color:var(--sub);}
+  .meter .top{display:flex; justify-content:space-between; align-items:center; gap:4px;}
+  .meter .top span{display:flex; align-items:center; gap:3px;}
+  .meter .top .material-icons{font-size:14px;}
+  .meter b{color:var(--ink); font-variant-numeric:tabular-nums;}
+  .bar{height:6px; background:var(--blue-soft); border-radius:3px; overflow:hidden; margin-top:3px;}
+  .bar i{display:block; height:100%; background:var(--blue2); border-radius:3px; transition:width .3s;}
+  .bar i.low{background:var(--bad);} .bar i.mid{background:var(--warn);}
+
+  /* --- Main area: map + panel (side panel on wide screens) --- */
+  #main{flex:1; display:flex; flex-direction:column; min-height:0;}
+  #world{flex:1; position:relative; min-height:0; background:var(--map); overflow:hidden;}
+  #map{position:absolute; inset:0; touch-action:none; display:block;}
+  #hint{position:absolute; top:8px; left:0; right:0; text-align:center; font-size:11px; color:#2a4a5c;
+        pointer-events:none; letter-spacing:.04em; z-index:2;}
+  #rotateBtn{position:absolute; right:10px; bottom:10px; z-index:2; background:var(--paper); border:1px solid var(--line);
+             border-radius:8px; padding:7px; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.15); display:flex;}
+  #panel{background:var(--paper); border-top:1px solid var(--line); overflow-y:auto; max-height:44%;
+         padding:10px 12px 12px; -webkit-overflow-scrolling:touch; touch-action:pan-y;}
+  @media (min-width:900px) and (min-aspect-ratio:1/1){
+    #main{flex-direction:row;}
+    #panel{width:360px; max-height:none; border-top:none; border-left:1px solid var(--line);}
   }
-  #tools{
-    position:fixed; bottom:env(safe-area-inset-bottom,0px); left:0; right:0; z-index:10;
-    display:flex; gap:8px; padding:10px 12px; background:var(--panel);
-    backdrop-filter:blur(8px); border-top:1px solid var(--border); overflow-x:auto;
-    box-shadow:0 0 16px rgba(0,229,255,.1);
-  }
-  .tool{
-    flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:4px;
-    padding:8px 12px; border-radius:0; border:1px solid var(--border); border-top:3px solid var(--tcolor,transparent);
-    background:rgba(0,229,255,.04); cursor:pointer; color:var(--ink); font-size:10px;
-    text-transform:uppercase; letter-spacing:.04em; font-family:'Share Tech Mono',monospace;
-  }
-  .tool.active{border-color:var(--accent); background:rgba(0,229,255,.16); box-shadow:0 0 10px rgba(0,229,255,.35);}
-  #world{ position:absolute; inset:0; overflow:hidden; touch-action:none; }
-  #viewport{
-    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    transform-origin:center center; will-change:transform;
-  }
-  #grid{ position:relative; }
-  .tile{
-    position:absolute; width:64px; height:32px;
-    clip-path:polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-    transition:filter .15s, left .25s ease, top .25s ease;
-    outline:1px solid rgba(0,229,255,.06);
-  }
-  .tile[data-t="grass"]{background:var(--grass);}
-  .tile[data-t="road"]{background:var(--road);}
-  .tile[data-t="house"]{background:var(--house);}
-  .tile[data-t="shop"]{background:var(--shop);}
-  .tile[data-t="park"]{background:var(--park);}
-  #hint{
-    position:fixed; top:calc(env(safe-area-inset-top,0px) + var(--hud-h,48px) + 14px);
-    left:0; right:0; z-index:5; text-align:center; font-size:11px;
-    color:var(--sub); pointer-events:none; text-transform:uppercase; letter-spacing:.06em;
-  }
-  .float-txt{
-    position:fixed; transform:translate(-50%,-50%); font-weight:700; font-size:12px;
-    color:var(--accent); pointer-events:none; z-index:40; text-shadow:0 0 6px rgba(0,229,255,.6);
-    animation: floatUp .9s ease-out forwards; display:flex; align-items:center; gap:4px;
-    text-transform:uppercase; letter-spacing:.04em; font-family:'Share Tech Mono',monospace;
-  }
+
+  .card{border:1px solid var(--line); border-radius:8px; padding:10px; margin-bottom:10px; background:#fff;}
+  .card h3{margin:0 0 4px; font-size:14px; display:flex; align-items:center; gap:6px;}
+  .card p{margin:4px 0; font-size:12px; color:var(--sub); line-height:1.45;}
+  .card .ref{font-size:10px; color:var(--sub); letter-spacing:.04em; text-transform:uppercase;}
+  .directive{border-left:4px solid var(--yellow);}
+  .directive .due{font-size:11px; font-weight:700;}
+  .kv{display:grid; grid-template-columns:auto 1fr; gap:2px 10px; font-size:12px; margin:6px 0;}
+  .kv dt{color:var(--sub);} .kv dd{margin:0; font-weight:600;}
+  .actions{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:6px; margin-top:6px;}
+  .act{display:flex; align-items:center; gap:8px; text-align:left; padding:8px 10px; border-radius:8px;
+       border:1px solid var(--line); background:var(--blue-soft); cursor:pointer; font-size:12px; line-height:1.25;}
+  .act .material-icons{color:var(--blue); font-size:20px;}
+  .act small{display:block; color:var(--sub); font-size:10.5px;}
+  .act:disabled{opacity:.45; cursor:not-allowed;}
+  .act.primary{background:var(--blue); color:#fff; border-color:var(--blue);}
+  .act.primary .material-icons, .act.primary small{color:#fff;}
+  #endTurn{width:100%; justify-content:center; font-size:14px; font-weight:700; padding:12px; margin-bottom:10px;}
+  .log{font-size:11px; color:var(--sub); margin:0; padding-left:16px; line-height:1.5;}
+  .log li.bad{color:var(--bad);} .log li.good{color:var(--ok);}
+  .bottleneck{font-size:11px; color:var(--sub);} .bottleneck b{color:var(--ink);}
+  .tag{display:inline-block; font-size:10px; padding:1px 6px; border-radius:10px; background:var(--blue-soft); color:var(--blue); font-weight:700; margin-left:4px;}
+
+  /* --- Floating feedback --- */
+  .float-txt{position:fixed; transform:translate(-50%,-50%); font-weight:700; font-size:12px; color:var(--blue);
+    background:rgba(255,255,255,.92); border:1px solid var(--line); border-radius:12px; padding:2px 8px;
+    pointer-events:none; z-index:40; animation:floatUp 1.1s ease-out forwards; display:flex; align-items:center; gap:4px; white-space:nowrap;}
+  .float-txt.bad{color:var(--bad);}
   .float-txt .material-icons{font-size:14px;}
-  @keyframes floatUp{
-    0%{ opacity:1; transform:translate(-50%,-50%); }
-    100%{ opacity:0; transform:translate(-50%,-170%); }
-  }
-  #menu{
-    position:fixed; inset:0; z-index:30; display:flex; align-items:center; justify-content:center;
-    background:rgba(2,4,8,.72); backdrop-filter:blur(4px);
-  }
-  #menu.hidden{display:none;}
-  .menu-panel{
-    background:var(--panel); border:1px solid var(--border); border-radius:0;
-    padding:28px 24px; width:88%; max-width:320px; text-align:center;
-    box-shadow:0 0 30px rgba(0,229,255,.18);
-  }
-  .menu-panel h2{
-    font-family:'Orbitron',sans-serif; margin:0 0 4px; font-size:18px; letter-spacing:.06em;
-    text-transform:uppercase; color:var(--accent); display:flex; align-items:center; justify-content:center; gap:8px;
-  }
-  .menu-panel p{color:var(--sub); font-size:12px; margin:0 0 18px; line-height:1.5;}
-  .menu-btn{
-    display:flex; align-items:center; justify-content:center; gap:8px; width:100%; margin-top:10px;
-    padding:13px; border-radius:0; border:1px solid var(--border); background:rgba(0,229,255,.08);
-    color:var(--ink); font-size:13px; font-weight:700; cursor:pointer; text-transform:uppercase;
-    letter-spacing:.05em; font-family:'Share Tech Mono',monospace;
-  }
-  .menu-btn.primary{background:var(--accent); color:#031018; border-color:var(--accent);}
-  .menu-btn.danger{background:transparent; border-color:var(--danger); color:var(--danger);}
+  @keyframes floatUp{0%{opacity:1; transform:translate(-50%,-50%);} 100%{opacity:0; transform:translate(-50%,-190%);}}
+
+  /* --- Modal: official notices --- */
+  #modal{position:fixed; inset:0; z-index:30; display:flex; align-items:center; justify-content:center;
+         background:rgba(16,26,48,.55); padding:16px;}
+  #modal.hidden{display:none;}
+  .notice{background:#fffdf6; border:1px solid #e6dcc0; border-radius:4px; width:100%; max-width:440px; max-height:100%;
+          overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,.3); padding:18px 18px 14px; position:relative; touch-action:pan-y;}
+  .notice .letterhead{display:flex; align-items:center; gap:8px; color:var(--blue); font-size:11px; font-weight:700;
+          letter-spacing:.06em; text-transform:uppercase; border-bottom:2px solid var(--blue); padding-bottom:6px; margin-bottom:10px;}
+  .notice h2{margin:0 0 8px; font-size:18px; display:flex; align-items:center; gap:8px;}
+  .notice.stamped h2{padding-right:120px;}
+  @media (max-width:480px){ .notice.stamped h2{padding-right:0; padding-top:30px;} }
+  .notice p{font-size:13.5px; line-height:1.55; margin:8px 0; color:#2b3242;}
+  .notice .sig{font-style:italic; color:var(--sub); font-size:12px;}
+  .stamp{position:absolute; right:14px; top:44px; transform:rotate(-12deg); border:3px solid currentColor; border-radius:6px;
+         padding:2px 8px; font-weight:900; letter-spacing:.1em; font-size:13px; opacity:.75;}
+  .stamp.ok{color:var(--ok);} .stamp.bad{color:var(--bad);} .stamp.info{color:var(--blue2);}
+  .notice .btns{display:flex; flex-direction:column; gap:8px; margin-top:12px;}
+  .btn{display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border-radius:8px;
+       border:1px solid var(--line); background:var(--blue-soft); cursor:pointer; font-weight:700; font-size:14px;}
+  .btn.primary{background:var(--blue); color:#fff; border-color:var(--blue);}
+  .perk{display:flex; gap:10px; text-align:left; align-items:flex-start; padding:10px; border-radius:8px; border:1px solid var(--line);
+        background:#fff; cursor:pointer;}
+  .perk .material-icons{color:var(--blue); font-size:24px;}
+  .perk b{display:block; font-size:14px;} .perk small{color:var(--sub); font-size:12px; line-height:1.4;}
 </style>
 </head>
 <body>
-<div id="hud">
-  <h1><span class="material-icons">location_city</span>City Builder</h1>
-  <div class="stats">
-    <span><span class="material-icons" style="font-size:16px;">people</span><b id="pop">0</b></span>
-    <span><span class="material-icons" style="font-size:16px;">attach_money</span><b id="coin">0</b></span>
+<div id="app">
+  <div id="hud">
+    <h1><span class="material-icons">account_balance</span>EUROCRAT <small id="townName"></small></h1>
+    <div class="stats">
+      <span class="stat" title="Month"><span class="material-icons">event</span><b id="month">1</b>/<span id="months">36</span></span>
+      <span class="stat" title="Programme funds"><span class="material-icons">euro</span><b id="funds">0</b>M</span>
+      <span class="stat" title="Registered residents"><span class="material-icons">groups</span><b id="residents">0</b>/<span id="target">600</span></span>
+      <span class="stat" title="Agenda slots left this month"><span class="slots" id="slots"></span></span>
+    </div>
+    <div class="hud-actions">
+      <button class="hud-btn" id="musicBtn" aria-label="Toggle music"><span class="material-icons">music_note</span></button>
+      <button class="hud-btn" id="menuBtn" aria-label="Menu"><span class="material-icons">menu</span></button>
+    </div>
   </div>
-  <div class="hud-actions">
-    <button class="hud-btn" id="musicBtn" aria-label="Toggle music"><span class="material-icons">music_note</span></button>
-    <button class="hud-btn" id="rotateBtn"><span class="material-icons">sync</span></button>
-    <button class="hud-btn" id="menuBtn"><span class="material-icons">menu</span></button>
+  <div id="meters">
+    <div class="meter" id="m-local"><div class="top"><span><span class="material-icons">how_to_vote</span>Local support</span><b>0</b></div><div class="bar"><i></i></div></div>
+    <div class="meter" id="m-neigh"><div class="top"><span><span class="material-icons">diversity_3</span>Neighbours</span><b>0</b></div><div class="bar"><i></i></div></div>
+    <div class="meter" id="m-comp"><div class="top"><span><span class="material-icons">fact_check</span>Compliance</span><b>0</b></div><div class="bar"><i></i></div></div>
+    <div class="meter" id="m-spent"><div class="top"><span><span class="material-icons">savings</span>Spent</span><b>0</b></div><div class="bar"><i></i></div></div>
+  </div>
+  <div id="main">
+    <div id="world">
+      <canvas id="map"></canvas>
+      <div id="hint">Tap a parcel to see what you can (not) do · pinch to zoom</div>
+      <button id="rotateBtn" aria-label="Rotate view"><span class="material-icons">rotate_right</span></button>
+    </div>
+    <div id="panel"></div>
   </div>
 </div>
-<div id="hint">Tap to build · pinch to zoom</div>
-<div id="world"><div id="viewport"><div id="grid"></div></div></div>
-<div id="tools"></div>
-<div id="menu"><div class="menu-panel" id="menuPanel"></div></div>
+<div id="modal" class="hidden"><div class="notice" id="notice"></div></div>
 
 <script>
 (function(){
-  const N = 10;
-  const TW = 64, TH = 32;
-  const types = [
-    {id:'grass', label:'Demolish', icon:'delete', color:'var(--danger)', cost:0},
-    {id:'road',  label:'Road',    icon:'add_road', color:'var(--road)', cost:1},
-    {id:'house', label:'House',   icon:'home', color:'var(--house)', cost:5},
-    {id:'shop',  label:'Shop',    icon:'store', color:'var(--shop)', cost:10},
-    {id:'park',  label:'Park',    icon:'park', color:'var(--park)', cost:3},
-  ];
-  const costMap = Object.fromEntries(types.map(t=>[t.id, t.cost]));
-  let current = 'road';
-  let state = null;
+'use strict';
+// =====================================================================
+//  CONFIG — tuning knobs (see docs/GDD.md)
+// =====================================================================
+const N = 10, TW = 64, TH = 32;
+const CFG = {
+  months: 36, grant: 150, target: 600, slots: 3, contractors: 3,
+  village: 30, permitFee: 0.2, lobbyCost: 0.3, consultCost: 0.2,
+  milestones: { 12: 0.20, 24: 0.50 },          // share of the grant that must be spent by then
+  complianceDecay: 5, localDecay: 1, noisePerSite: 1,
+  jobsPerResident: 1/1.6, baseSchool: 150, baseHealth: 250, baseJobs: 40,
+};
+const B = {
+  road:    {name:'Road',          icon:'add_road',       cost:0.6, build:1, permit:1, upkeep:0.01, desc:'Access for the parcels next to it'},
+  housing: {name:'Housing block', icon:'apartment',      cost:7,   build:3, permit:3, upkeep:0.06, desc:'+150 homes', homes:150},
+  factory: {name:'Factory',       icon:'factory',        cost:9,   build:4, permit:3, upkeep:0.06, desc:'+150 jobs · the neighbours hate it', jobs:150},
+  school:  {name:'School',        icon:'school',         cost:5,   build:4, permit:3, upkeep:0.06, desc:'+300 school places', school:300},
+  clinic:  {name:'Health centre', icon:'local_hospital', cost:6,   build:4, permit:3, upkeep:0.06, desc:'+600 patients', health:600},
+  park:    {name:'Park',          icon:'park',           cost:1.5, build:2, permit:1, upkeep:0.02, desc:'Neighbours +6 · people move in faster'},
+};
+const BUILD_TYPES = ['road','housing','factory','school','clinic','park'];
+const KIND = {
+  farm:     {name:'Private farmland',  icon:'agriculture'},
+  muni:     {name:'Municipal land',    icon:'account_balance'},
+  flood:    {name:'Flood zone',        icon:'water'},
+  habitat:  {name:'Protected habitat', icon:'forest'},
+  village:  {name:'Old village',       icon:'cottage'},
+  regional: {name:'Regional road',     icon:'add_road'},
+};
+const PERKS = {
+  notary:      {name:'Friendly Notary',        icon:'history_edu',    desc:'Land costs 30% less.'},
+  fasttrack:   {name:'Fast-track Decree',      icon:'bolt',           desc:'Permits take 1 month less.'},
+  prefab:      {name:'Prefab Supplier',        icon:'view_in_ar',     desc:'Construction takes 1 month less.'},
+  contractor:  {name:'Extra Contractor',       icon:'engineering',    desc:'+1 construction site at the same time.'},
+  cousin:      {name:'Cousin at the Ministry', icon:'family_restroom',desc:'+1 agenda slot every month.'},
+  translation: {name:'Translation Unit',       icon:'translate',      desc:'Compliance decays half as fast.'},
+  comms:       {name:'Comms Agency',           icon:'campaign',       desc:'Neighbours +2 every month.'},
+  fixer:       {name:'Local Fixer',            icon:'handshake',      desc:'Local support never drops below 30.'},
+  shovel:      {name:'Golden Shovel',          icon:'workspace_premium', desc:'Your next construction is paid by a sponsor.'},
+  lobbyist:    {name:'Professional Lobbyist',  icon:'restaurant',     desc:'Lobbying the mayor gives +20 support.'},
+};
+const COUNTRIES = ['Republic of Valdoria','Grand Duchy of Brennmark','Kingdom of Esterra','Republic of Calvadia','Federal Republic of Morvania'];
+const TOWN_A = ['San','Villanueva del','Bad','Sankt','Pontevieja-sur-','Nieuw','Santa Maria do','Klein'];
+const TOWN_B = ['Expediente','Formular','Paragraph','Dossier','Tramite','Stempel','Protocolo','Annex'];
+const REJECTIONS = [
+  'Form 27-B was submitted in the wrong font.',
+  "The architect's signature exceeds the box.",
+  'A sunlight study for the existing sheep is missing.',
+  'The councillor in charge is on holiday until further notice.',
+  'Missing stamp. Which stamp? A stamp.',
+  'The Heritage Office has not yet replied (estimated: 2031).',
+  'Annex IV must be printed, scanned and printed again.',
+  'The parking-space ratio was calculated per resident, not per car.',
+];
 
-  let actx;
-  function ensureAudio(){
-    if(!actx){ actx = new (window.AudioContext||window.webkitAudioContext)(); }
-    if(actx.state==='suspended') actx.resume();
-  }
-  // --- Music: looping soundtrack via Web Audio (gapless loops, crossfades) ---
-  // Ogg Vorbis where supported, AAC (.m4a) fallback for older Safari/iOS.
-  const music = {
-    on: (()=>{ try{ return localStorage.getItem('citybuilder_music') !== 'off'; }catch(e){ return true; } })(),
-    want: null, playing: null, src: null, gain: null, buffers: {}, loading: {},
-    ext: (()=>{ const a=document.createElement('audio');
-      return a.canPlayType && a.canPlayType('audio/ogg; codecs="vorbis"') ? 'ogg' : 'm4a'; })(),
-    level: 1,
+// =====================================================================
+//  RNG (seeded, stored in the save so runs are reproducible)
+// =====================================================================
+let S = null;   // the whole game state
+function rnd(){
+  S.rng = (S.rng + 0x6D2B79F5) | 0;
+  let t = S.rng;
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+const ri = (a,b)=> a + Math.floor(rnd()*(b-a+1));
+const pick = arr => arr[Math.floor(rnd()*arr.length)];
+const r1 = x => Math.round(x*10)/10;
+const clamp = (x,a,b)=> Math.max(a, Math.min(b, x));
+const fmt = x => (Math.round(x*10)/10).toFixed(1);
+const idx = (r,c)=> r*N+c;
+const inside = (r,c)=> r>=0 && r<N && c>=0 && c<N;
+const NB = [[-1,0],[1,0],[0,-1],[0,1]];
+const has = p => S.perks.includes(p);
+
+// =====================================================================
+//  NEW GAME — random site, country and town
+// =====================================================================
+function newGame(seed){
+  if(seed === undefined) seed = (Math.random()*2147483647)|0;
+  S = {
+    v:2, seed, rng:seed|0, month:1, funds:CFG.grant, grant:CFG.grant, spent:0,
+    slots:CFG.slots, local:55, neigh:55, comp:60, inflation:1, strikes:0, perks:[],
+    grid:[], newcomers:0, qseq:0, directive:null, directivesDone:0,
+    reports:0, consults:0, lobbied:0, strike:false, electionDone:false, refunds:[],
+    shovel:false, log:[], notices:[], perkChoice:null, over:null, bottleneck:'homes',
+    country:'', town:'',
   };
-  const TRACKS = { menu:'citybuilder_menu_theme', main:'citybuilder_main_theme' };
-  const MUSIC_VOL = 0.45;
-  function loadTrack(name){
-    if(music.buffers[name]) return Promise.resolve(music.buffers[name]);
-    if(!music.loading[name]){
-      music.loading[name] = fetch(`audio/${TRACKS[name]}.${music.ext}`)
-        .then(r=>{ if(!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
-        .then(b=>new Promise((ok,ko)=>actx.decodeAudioData(b, ok, ko)))
-        .then(buf=>(music.buffers[name]=buf))
-        .catch(e=>{ delete music.loading[name]; throw e; });
+  S.country = pick(COUNTRIES);
+  S.town = (()=>{ const a=pick(TOWN_A), b=pick(TOWN_B); return a.endsWith('-') ? a+b : a+' '+b; })();
+  for(let i=0;i<N*N;i++) S.grid.push({k:'farm', st:'land', ty:null, t:0, halt:0, price:r1(1.2+rnd()*1.4), hold:false, mcost:0});
+  const set = (r,c,k,extra)=>{ if(!inside(r,c)) return false; const p=S.grid[idx(r,c)];
+    if(p.k!=='farm') return false; Object.assign(p,{k},extra||{}); return true; };
+  // Regional road along the west edge
+  for(let r=0;r<N;r++) Object.assign(S.grid[idx(r,0)], {k:'regional', st:'built', ty:'road', price:0});
+  // Old village next to the road
+  const vr = ri(1, N-4);
+  for(let r=vr;r<vr+3;r++) set(r,1,'village',{st:'built', price:0});
+  if(rnd()<0.5) set(vr+1,2,'village',{st:'built', price:0});
+  // A small river with a flood zone
+  let fr = ri(2, N-3);
+  for(let c=ri(4,6); c<N; c++){ set(fr,c,'flood',{price:0.7}); if(rnd()<0.4) fr = clamp(fr+(rnd()<0.5?-1:1),1,N-2); }
+  // Protected habitats
+  for(let h=0;h<2;h++){ let r=ri(1,N-2), c=ri(4,N-1);
+    for(let s=0;s<4;s++){ set(r,c,'habitat',{price:0}); const d=pick(NB); r=clamp(r+d[0],0,N-1); c=clamp(c+d[1],2,N-1); } }
+  // Municipal land in two clusters
+  for(let m=0;m<2;m++){ let r=ri(0,N-1), c=ri(2,N-1), n=0, guard=0;
+    while(n<5 && guard++<40){ if(set(r,c,'muni',{price:0.4})) n++; const d=pick(NB); r=clamp(r+d[0],0,N-1); c=clamp(c+d[1],2,N-1); } }
+  log(`Programme opened in ${S.town}, ${S.country}.`, 'good');
+  S.notices.push({kind:'intro'});
+  return S;
+}
+
+// =====================================================================
+//  RULES
+// =====================================================================
+function log(text, cls){ S.log.unshift({m:S.month, text, cls:cls||''}); S.log.length = Math.min(S.log.length, 40); }
+function spend(x){ S.funds -= x; S.spent += x; }
+function isRoad(p, planned){
+  if(p.ty !== 'road') return false;
+  if(p.k === 'regional' || p.st === 'built') return true;
+  return planned && (p.st==='review' || p.st==='approved' || p.st==='building');
+}
+function hasAccess(r,c){
+  return NB.some(([dr,dc])=> inside(r+dr,c+dc) && isRoad(S.grid[idx(r+dr,c+dc)], true));
+}
+function nextToVillage(r,c){ return NB.some(([dr,dc])=> inside(r+dr,c+dc) && S.grid[idx(r+dr,c+dc)].k==='village'); }
+function landPrice(p){ return r1(p.price * (has('notary') ? 0.7 : 1)); }
+function buildCost(p, ty){ return r1(B[ty].cost * S.inflation * (p.k==='flood' ? 1.5 : 1)); }
+function permitMonths(ty){
+  let m = B[ty].permit + (S.neigh<40?1:0) + (S.neigh<25?1:0) - (has('fasttrack')?1:0);
+  return Math.max(1, m);
+}
+function buildMonths(ty){ return Math.max(1, B[ty].build - (has('prefab')?1:0)); }
+function contractors(){ return CFG.contractors + (has('contractor')?1:0); }
+function slotsPerMonth(){ return CFG.slots + (has('cousin')?1:0); }
+function approvalChance(){
+  return clamp(0.62 + (S.local-50)/150 + (S.neigh-50)/200 + (S.comp-50)/300, 0.15, 0.97);
+}
+function count(ty, st='built'){ return S.grid.filter(p=>p.ty===ty && p.st===st && p.k!=='regional').length; }
+function activeSites(){ return S.grid.filter(p=>p.st==='building').length; }
+function caps(){
+  const homes = count('housing')*B.housing.homes;
+  const jobs = Math.floor(count('factory')*B.factory.jobs / CFG.jobsPerResident) + CFG.baseJobs;
+  const school = CFG.baseSchool + count('school')*B.school.school;
+  const health = CFG.baseHealth + count('clinic')*B.clinic.health;
+  const all = {homes, jobs, school, health};
+  let k = 'homes'; for(const key in all) if(all[key] < all[k]) k = key;
+  return {...all, cap: all[k], bottleneck: k};
+}
+function residents(){ return S.newcomers + CFG.village; }
+function monthlyCosts(){
+  let c = 0;
+  S.grid.forEach(p=>{ if(p.st==='building' && !p.halt) c += p.mcost;
+    if(p.st==='built' && p.ty && p.k!=='regional') c += B[p.ty].upkeep; });
+  return c;
+}
+
+// --- Player actions. Each returns {ok, msg, bad?} and never grants anything for free. ---
+function canAct(n=1){ return !S.over && !S.perkChoice && S.slots >= n; }
+function acquire(i){
+  const p = S.grid[i], [r,c] = [Math.floor(i/N), i%N];
+  if(!canAct()) return {ok:false, bad:true, msg:'No agenda slots left'};
+  if(p.st!=='land' || !['farm','muni','flood'].includes(p.k)) return {ok:false, bad:true, msg:'Not for sale'};
+  if(p.k==='muni' && S.local < 40) return {ok:false, bad:true, msg:'The mayor says no (support < 40)'};
+  const price = landPrice(p);
+  if(S.funds < price) return {ok:false, bad:true, msg:'No funds'};
+  S.slots--;
+  if(p.k==='farm' && !p.hold && rnd() < 0.28){
+    p.hold = true; p.price = r1(p.price*1.8);
+    log(`Owner of parcel ${r+1}-${c+1} holds out. New price: €${fmt(landPrice(p))}M.`, 'bad');
+    return {ok:false, bad:true, msg:'Owner holds out!'};
+  }
+  spend(price); p.st = 'owned';
+  log(`Parcel ${r+1}-${c+1} acquired for €${fmt(price)}M.`);
+  return {ok:true, msg:`-€${fmt(price)}M`};
+}
+function requestPermit(i, ty){
+  const p = S.grid[i], [r,c] = [Math.floor(i/N), i%N];
+  if(!canAct()) return {ok:false, bad:true, msg:'No agenda slots left'};
+  if(p.st!=='owned') return {ok:false, bad:true, msg:'You must own the parcel'};
+  if(!hasAccess(r,c)) return {ok:false, bad:true, msg:'No road access'};
+  if(S.funds < CFG.permitFee) return {ok:false, bad:true, msg:'No funds'};
+  S.slots--; spend(CFG.permitFee);
+  p.st = 'review'; p.ty = ty; p.t = permitMonths(ty);
+  if(ty==='factory'){ S.neigh = clamp(S.neigh-3, 0, 100); }
+  if(nextToVillage(r,c) && ty!=='park'){ S.neigh = clamp(S.neigh-3, 0, 100); log('The village association "has concerns".', 'bad'); }
+  log(`Permit requested: ${B[ty].name} on ${r+1}-${c+1} (${p.t} months).`);
+  return {ok:true, msg:'Filed'};
+}
+function lobby(){
+  if(!canAct()) return {ok:false, bad:true, msg:'No agenda slots left'};
+  if(S.funds < CFG.lobbyCost) return {ok:false, bad:true, msg:'No funds'};
+  S.slots--; spend(CFG.lobbyCost);
+  const g = has('lobbyist') ? 20 : (S.lobbied ? 6 : 12); S.lobbied++;
+  S.local = clamp(S.local+g, 0, 100);
+  log(`Networking lunch with the mayor. Local support +${g}.`, 'good');
+  return {ok:true, msg:`+${g} support`};
+}
+function consult(){
+  if(!canAct(2)) return {ok:false, bad:true, msg:'Needs 2 agenda slots'};
+  if(S.funds < CFG.consultCost) return {ok:false, bad:true, msg:'No funds'};
+  S.slots -= 2; spend(CFG.consultCost); S.consults++;
+  S.neigh = clamp(S.neigh+15, 0, 100);
+  let delayed = 0; S.grid.forEach(p=>{ if(p.st==='review'){ p.t++; delayed++; } });
+  log(`Public consultation held. Neighbours +15${delayed?`; ${delayed} permit(s) delayed 1 month for the consultation period`:''}.`, 'good');
+  return {ok:true, msg:'+15 neighbours'};
+}
+function fileReport(){
+  if(!canAct()) return {ok:false, bad:true, msg:'No agenda slots left'};
+  S.slots--; S.reports++;
+  S.comp = clamp(S.comp+22, 0, 100);
+  log('Quarterly report filed (84 pages, 3 annexes). Compliance +22.', 'good');
+  return {ok:true, msg:'+22 compliance'};
+}
+
+// --- Directives (random missions) ---
+const DIRECTIVES = {
+  spend:    {title:'Absorption Rate Alert', icon:'payments',     text:p=>`Spend €${p.param}M more within the deadline. Unspent funds send the wrong signal.`},
+  park:     {title:'Green Transition',      icon:'park',         text:()=>'Deliver a new park. Something green, for the brochure.'},
+  school:   {title:'Social Cohesion Pillar',icon:'school',       text:()=>'Deliver a new school. Families need somewhere to wait for the bus.'},
+  consult:  {title:'Stakeholder Engagement',icon:'forum',        text:()=>'Hold a public consultation. Nobody has to agree, but they must have been asked.'},
+  reports:  {title:'Reporting Harmonisation',icon:'description', text:p=>`File ${p.param} reports using the new template (which replaces the template).`},
+  residents:{title:'KPI 3.2.b',             icon:'groups',       text:p=>`Reach ${p.param} registered residents. The indicator has already been printed in the annual report.`},
+  roads:    {title:'Connectivity Agenda',   icon:'add_road',     text:()=>'Build 3 new road segments. Connectivity is a priority (it is in the title).'},
+};
+function directiveProgress(d){
+  switch(d.kind){
+    case 'spend': return S.spent >= d.base + d.param;
+    case 'park': return count('park') >= d.base+1;
+    case 'school': return count('school') >= d.base+1;
+    case 'consult': return S.consults >= d.base+1;
+    case 'reports': return S.reports >= d.base + d.param;
+    case 'residents': return residents() >= d.param;
+    case 'roads': return count('road') >= d.base+3;
+  }
+  return false;
+}
+function issueDirective(){
+  const m = S.month;
+  const pool = ['spend','park','consult','reports','roads','school'];
+  if(m >= 8) pool.push('residents','residents');
+  const kind = pick(pool);
+  const dur = {spend:5, park:5, school:7, consult:3, reports:4, residents:6, roads:5}[kind];
+  const d = {kind, deadline: m+dur, param:0, base:0};
+  if(kind==='spend'){ d.param = ri(8,12); d.base = S.spent; }
+  if(kind==='park') d.base = count('park');
+  if(kind==='school') d.base = count('school');
+  if(kind==='consult') d.base = S.consults;
+  if(kind==='reports'){ d.param = 2; d.base = S.reports; }
+  if(kind==='roads') d.base = count('road');
+  if(kind==='residents') d.param = Math.round((40 + (m+dur)*12)/10)*10;
+  if(d.deadline > CFG.months) return;
+  S.directive = d;
+  S.notices.push({kind:'directive', d});
+  log(`New directive: ${DIRECTIVES[kind].title} (due month ${d.deadline}).`);
+}
+function offerPerks(){
+  const free = Object.keys(PERKS).filter(k=>!S.perks.includes(k) || k==='shovel');
+  const choice = [];
+  while(choice.length < 3 && free.length){ choice.push(free.splice(Math.floor(rnd()*free.length),1)[0]); }
+  S.perkChoice = choice;
+}
+function choosePerk(k){
+  if(!S.perkChoice || !S.perkChoice.includes(k)) return {ok:false};
+  if(k==='shovel') S.shovel = true; else S.perks.push(k);
+  if(k==='cousin') S.slots++;
+  S.perkChoice = null;
+  log(`Perk acquired: ${PERKS[k].name}.`, 'good');
+  save();
+  return {ok:true};
+}
+
+// --- Random events (official notices) ---
+const EVENTS = [
+  {id:'archaeology', w:3, ok:()=>S.grid.some(p=>p.st==='building'&&!p.halt), run(){
+    const p = pick(S.grid.filter(p=>p.st==='building'&&!p.halt)); p.halt = 3;
+    return {title:'Archaeological find', icon:'account_balance', stamp:'HALTED', cls:'bad',
+      body:`Workers on the ${B[p.ty].name.toLowerCase()} site found what may be Roman coins (or bottle caps). Works are halted for 3 months while the Heritage Office decides.`}; }},
+  {id:'toad', w:2, ok:()=>S.grid.some(p=>p.st==='owned' || (p.st==='land'&&p.k==='farm')), run(){
+    const p = pick(S.grid.filter(p=>p.st==='owned' || (p.st==='land'&&p.k==='farm'))); const lost = p.st==='owned';
+    Object.assign(p,{k:'habitat', st:'land', ty:null});
+    return {title:'Protected species', icon:'cruelty_free', stamp:'PROTECTED', cls:'bad',
+      body:`A rare natterjack toad was spotted on a parcel${lost?' you own. The money is gone; the toad stays':''}. The parcel is now a protected habitat.`}; }},
+  {id:'election', w:3, ok:()=>!S.electionDone && S.month>=15 && S.month<=21, run(){
+    S.electionDone = true; const old = S.local; S.local = ri(25,70);
+    return {title:'Municipal elections', icon:'how_to_vote', stamp:'NEW MAYOR', cls:'info',
+      body:`The new mayor promises to "review every inherited project". Local support goes from ${old} to ${S.local}.`}; }},
+  {id:'lawsuit', w:3, ok:()=>S.neigh<35, run(){
+    if(S.neigh < 15){ S.over = {win:false, why:'court'};
+      return {title:'Plan annulled', icon:'gavel', stamp:'ANNULLED', cls:'bad', body:'The regional court annuls the whole urban plan after a lawsuit by the neighbours’ association. Back to square one.'}; }
+    const rev = S.grid.filter(p=>p.st==='review');
+    if(rev.length){ const p = pick(rev); p.t += 3; }
+    return {title:'Neighbours sue', icon:'gavel', stamp:'APPEAL', cls:'bad',
+      body:`The neighbours' association files an appeal.${rev.length?' A permit under review is delayed 3 months.':' Nothing to delay yet, but the lawyers are ready.'} Neighbours are watching closely.`}; }},
+  {id:'inflation', w:2, ok:()=>S.inflation<1.2, run(){
+    S.inflation = r1(S.inflation*1.12*100)/100;
+    return {title:'Construction costs rise', icon:'trending_up', stamp:'+12%', cls:'bad',
+      body:'Steel, cement and coffee are 12% more expensive. New construction sites will cost more.'}; }},
+  {id:'strike', w:2, ok:()=>S.grid.some(p=>p.st==='building'), run(){
+    S.strike = true;
+    return {title:'Construction strike', icon:'front_hand', stamp:'STRIKE', cls:'bad',
+      body:'The construction unions call a strike next month. No site will progress.'}; }},
+  {id:'delegation', w:2, ok:()=>true, run(){
+    if(S.comp >= 60){ S.local = clamp(S.local+8,0,100);
+      return {title:'Delegation from Brussels', icon:'flight_land', stamp:'PHOTO OP', cls:'ok',
+        body:'A delegation visits, takes photos with the mayor and leaves before lunch. Local support +8.'}; }
+    S.comp = clamp(S.comp-12,0,100);
+    return {title:'Delegation from Brussels', icon:'flight_land', stamp:'CONCERNS', cls:'bad',
+      body:'A delegation visits and cannot find your last report. Compliance -12.'}; }},
+  {id:'cofinance', w:2, ok:()=>S.month<30, run(){
+    S.funds -= 3; S.refunds.push({m:S.month+4, x:3});
+    return {title:'National co-financing delayed', icon:'hourglass_top', stamp:'PENDING', cls:'bad',
+      body:'The Ministry of Finance "temporarily retains" €3M of co-financing. It should arrive in 4 months. Should.'}; }},
+  {id:'ribbon', w:2, ok:()=>S.grid.some(p=>p.st==='building'), run(){
+    S.local = clamp(S.local+10,0,100); S.neigh = clamp(S.neigh-6,0,100);
+    return {title:'Premature inauguration', icon:'content_cut', stamp:'OPENED*', cls:'info',
+      body:'The regional president inaugurates one of your construction sites. It is a hole. Local support +10, neighbours -6.'}; }},
+  {id:'influencer', w:1, ok:()=>count('park')>0, run(){
+    S.neigh = clamp(S.neigh+8,0,100);
+    return {title:'Viral video', icon:'smartphone', stamp:'TRENDING', cls:'ok',
+      body:'An influencer films a sunset in your park. Neighbours +8. Comments: 4,000. Read: none.'}; }},
+  {id:'discount', w:2, ok:()=>S.grid.some(p=>p.st==='land'&&p.k==='farm'), run(){
+    const p = pick(S.grid.filter(p=>p.st==='land'&&p.k==='farm')); p.price = r1(p.price*0.6); p.hold = true;
+    return {title:'Inheritance dispute settled', icon:'sell', stamp:'FOR SALE', cls:'ok',
+      body:`Three cousins finally agree to sell a farm parcel, cheap (€${fmt(landPrice(p))}M), before they change their minds.`}; }},
+  {id:'template', w:2, ok:()=>true, run(){
+    S.comp = clamp(S.comp-10,0,100);
+    return {title:'New reporting template', icon:'description', stamp:'v7.2', cls:'bad',
+      body:'The Commission publishes a new template for the reporting template. Your previous reports must be re-submitted. Compliance -10.'}; }},
+];
+function rollEvent(){
+  if(S.month < 2 || rnd() > 0.45) return;
+  const pool = EVENTS.filter(e=>e.ok()); if(!pool.length) return;
+  let tot = pool.reduce((a,e)=>a+e.w,0), x = rnd()*tot, ev = pool[0];
+  for(const e of pool){ x -= e.w; if(x<=0){ ev = e; break; } }
+  const n = ev.run(); S.notices.push({kind:'event', ...n}); log(n.title + '.', n.cls==='ok'?'good':(n.cls==='bad'?'bad':''));
+}
+
+// --- END MONTH: the world resolves ---
+function endMonth(){
+  if(S.over || S.perkChoice) return {ok:false};
+  // 1. Permit reviews
+  S.grid.forEach((p,i)=>{
+    if(p.st!=='review') return;
+    if(--p.t > 0) return;
+    if(rnd() < approvalChance()){ p.st='approved'; p.q = ++S.qseq; log(`Permit APPROVED: ${B[p.ty].name} on ${Math.floor(i/N)+1}-${i%N+1}.`, 'good'); }
+    else { log(`Permit REJECTED (${B[p.ty].name}): ${pick(REJECTIONS)}`, 'bad'); p.st='owned'; p.ty=null; }
+  });
+  // 2. Start construction where contractors are free
+  let free = contractors() - activeSites();
+  S.grid.filter(p=>p.st==='approved').sort((a,b)=>a.q-b.q).forEach(p=>{
+    if(free<=0) return; free--;
+    p.st='building'; p.t=buildMonths(p.ty);
+    const total = S.shovel ? 0 : buildCost(p, p.ty); if(S.shovel){ S.shovel=false; log('A sponsor pays for this site (logo on the fence).','good'); }
+    p.mcost = total / p.t;
+  });
+  // 3. Construction progress
+  if(S.strike){ log('Strike: no construction this month.', 'bad'); S.strike=false; }
+  else S.grid.forEach((p,i)=>{
+    if(p.st!=='building') return;
+    if(p.halt){ p.halt--; return; }
+    spend(p.mcost);
+    if(--p.t <= 0){ p.st='built';
+      if(p.ty==='park') S.neigh = clamp(S.neigh+6,0,100);
+      log(`${B[p.ty].name} completed on ${Math.floor(i/N)+1}-${i%N+1}.`, 'good'); }
+  });
+  // 4. Upkeep of finished buildings
+  S.grid.forEach(p=>{ if(p.st==='built' && p.ty && p.k!=='regional') spend(B[p.ty].upkeep); });
+  // 5. Residents move in (or out) toward the tightest limit
+  const cp = caps(); S.bottleneck = cp.bottleneck;
+  if(cp.cap > S.newcomers){
+    const rate = Math.min(0.6, 0.3 + 0.06*count('park'));
+    S.newcomers += Math.ceil((cp.cap - S.newcomers)*rate);
+  } else if(cp.cap < S.newcomers){
+    S.newcomers -= Math.ceil((S.newcomers - cp.cap)*0.15);
+  }
+  // 6. Meters drift
+  S.comp  = clamp(S.comp - CFG.complianceDecay*(has('translation')?0.5:1), 0, 100);
+  S.local = clamp(S.local - CFG.localDecay, has('fixer')?30:0, 100);
+  S.neigh = clamp(S.neigh - activeSites()*CFG.noisePerSite + (has('comms')?2:0), 0, 100);
+  // 7. Delayed national co-financing
+  S.refunds = S.refunds.filter(f=>{ if(f.m<=S.month){ S.funds += f.x; log(`National co-financing arrived: +€${f.x}M. A miracle.`, 'good'); return false; } return true; });
+  // 8. Use-it-or-lose-it milestones
+  const share = CFG.milestones[S.month];
+  if(share){
+    const need = r1(S.grant*share), gap = r1(need - S.spent);
+    if(gap > 0){ S.funds -= gap; S.notices.push({kind:'event', title:'Funds decommitted', icon:'money_off', stamp:'DECOMMITTED', cls:'bad',
+        body:`By month ${S.month} you had to spend €${fmt(need)}M. You spent €${fmt(S.spent)}M, so €${fmt(gap)}M return to the Union budget. Spending money is harder than it looks.`});
+      log(`€${fmt(gap)}M decommitted (spending milestone missed).`, 'bad'); }
+    else { S.notices.push({kind:'event', title:'Spending milestone met', icon:'verified', stamp:'ON TRACK', cls:'ok',
+        body:`You spent €${fmt(S.spent)}M of the required €${fmt(need)}M by month ${S.month}. The absorption chart is green. Everyone is relieved.`}); }
+  }
+  // 9. Directives
+  const d = S.directive;
+  if(d){
+    if(directiveProgress(d)){
+      S.directive = null; S.directivesDone++; offerPerks();
+      S.notices.push({kind:'event', title:`Directive met: ${DIRECTIVES[d.kind].title}`, icon:'task_alt', stamp:'COMPLIANT', cls:'ok',
+        body:'The Commission acknowledges receipt of your success and grants you a reward. Choose wisely.'});
+      log(`Directive met: ${DIRECTIVES[d.kind].title}.`, 'good');
+    } else if(S.month >= d.deadline){
+      S.directive = null; S.strikes++;
+      const claw = S.strikes===1 ? 5 : 0; S.funds -= claw; S.comp = clamp(S.comp-15,0,100);
+      S.notices.push({kind:'event', title:`Directive failed: ${DIRECTIVES[d.kind].title}`, icon:'cancel', stamp:'NON-COMPLIANT', cls:'bad',
+        body:`Deadline missed.${claw?` €${claw}M are clawed back and`:''} compliance -15. ${S.strikes>=2?'This is your second failure.':'One more failure and the programme is suspended.'}`});
+      log(`Directive failed: ${DIRECTIVES[d.kind].title}.`, 'bad');
     }
-    return music.loading[name];
   }
-  function fadeOutCurrent(t=0.8){
-    music.playing = null;
-    if(!music.src) return;
-    const {src, gain} = music, now = actx.currentTime;
-    gain.gain.cancelScheduledValues(now);
-    gain.gain.setValueAtTime(gain.gain.value, now);
-    gain.gain.linearRampToValueAtTime(0, now+t);
-    src.stop(now+t+0.05);
-    music.src = music.gain = music.playing = null;
+  if(!S.directive && !S.over && (S.month===2 || (S.month>2 && (S.month-2)%5===0))) issueDirective();
+  // 10. Random event
+  if(!S.over) rollEvent();
+  // 11. Next month
+  S.month++; S.slots = slotsPerMonth(); S.lobbied = 0;
+  // 12. Win / lose
+  if(!S.over){
+    if(residents() >= CFG.target) S.over = {win:true, why:'target'};
+    else if(S.funds < 0) S.over = {win:false, why:'bankrupt'};
+    else if(S.comp <= 0) S.over = {win:false, why:'audit'};
+    else if(S.strikes >= 2) S.over = {win:false, why:'suspended'};
+    else if(S.month > CFG.months) S.over = {win:false, why:'timeout'};
   }
-  function syncMusic(){
-    // No music when opened as a local file (fetch is blocked there) or when muted
-    if(location.protocol==='file:' || !actx) return;
-    const name = music.on ? music.want : null;
-    if(name === music.playing){
-      if(music.gain){ const now=actx.currentTime;
-        music.gain.gain.cancelScheduledValues(now);
-        music.gain.gain.setValueAtTime(music.gain.gain.value, now);
-        music.gain.gain.linearRampToValueAtTime(MUSIC_VOL*music.level, now+0.4); }
+  if(S.over) S.perkChoice = null;
+  save();
+  return {ok:true};
+}
+
+// =====================================================================
+//  PERSISTENCE
+// =====================================================================
+const SAVE_KEY = 'eurocrat_v2';
+function save(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){} }
+function loadSave(){ try{ const raw=localStorage.getItem(SAVE_KEY); if(raw){ const s=JSON.parse(raw); if(s && s.v===2) return s; } }catch(e){} return null; }
+
+// =====================================================================
+//  AUDIO — music (from the soundtrack) + tiny synthesized sound effects
+// =====================================================================
+let actx;
+function ensureAudio(){
+  if(!actx){ actx = new (window.AudioContext||window.webkitAudioContext)(); }
+  if(actx.state==='suspended') actx.resume();
+}
+// --- Music: looping soundtrack via Web Audio (gapless loops, crossfades) ---
+// Ogg Vorbis where supported, AAC (.m4a) fallback for older Safari/iOS.
+const music = {
+  on: (()=>{ try{ return localStorage.getItem('citybuilder_music') !== 'off'; }catch(e){ return true; } })(),
+  want: null, playing: null, src: null, gain: null, buffers: {}, loading: {},
+  ext: (()=>{ const a=document.createElement('audio');
+    return a.canPlayType && a.canPlayType('audio/ogg; codecs="vorbis"') ? 'ogg' : 'm4a'; })(),
+  level: 1,
+};
+const TRACKS = { menu:'citybuilder_menu_theme', main:'citybuilder_main_theme' };
+const MUSIC_VOL = 0.45;
+function loadTrack(name){
+  if(music.buffers[name]) return Promise.resolve(music.buffers[name]);
+  if(!music.loading[name]){
+    music.loading[name] = fetch(`audio/${TRACKS[name]}.${music.ext}`)
+      .then(r=>{ if(!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+      .then(b=>new Promise((ok,ko)=>actx.decodeAudioData(b, ok, ko)))
+      .then(buf=>(music.buffers[name]=buf))
+      .catch(e=>{ delete music.loading[name]; throw e; });
+  }
+  return music.loading[name];
+}
+function fadeOutCurrent(t=0.8){
+  music.playing = null;
+  if(!music.src) return;
+  const {src, gain} = music, now = actx.currentTime;
+  gain.gain.cancelScheduledValues(now);
+  gain.gain.setValueAtTime(gain.gain.value, now);
+  gain.gain.linearRampToValueAtTime(0, now+t);
+  src.stop(now+t+0.05);
+  music.src = music.gain = music.playing = null;
+}
+function syncMusic(){
+  // No music when opened as a local file (fetch is blocked there) or when muted
+  if(location.protocol==='file:' || !actx) return;
+  const name = music.on ? music.want : null;
+  if(name === music.playing){
+    if(music.gain){ const now=actx.currentTime;
+      music.gain.gain.cancelScheduledValues(now);
+      music.gain.gain.setValueAtTime(music.gain.gain.value, now);
+      music.gain.gain.linearRampToValueAtTime(MUSIC_VOL*music.level, now+0.4); }
+    return;
+  }
+  fadeOutCurrent();
+  if(!name) return;
+  music.playing = name;
+  loadTrack(name).then(buf=>{
+    if(music.playing !== name || music.src) return;  // changed while loading
+    const src = actx.createBufferSource(), gain = actx.createGain();
+    src.buffer = buf; src.loop = true;
+    src.connect(gain); gain.connect(actx.destination);
+    const now = actx.currentTime;
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(MUSIC_VOL*music.level, now+1.2);
+    src.start(now);
+    music.src = src; music.gain = gain;
+  }).catch(()=>{ if(music.playing===name) music.playing=null; });
+}
+// track: 'menu' | 'main'; level: 1 = full, <1 = ducked (pause screen)
+function setMusic(track, level=1){ music.want = track; music.level = level; syncMusic(); }
+function updateMusicBtn(){
+  document.querySelector('#musicBtn .material-icons').textContent = music.on ? 'music_note' : 'music_off';
+  const m = document.getElementById('btnMusic');
+  if(m) m.querySelector('.label').textContent = 'Music: ' + (music.on ? 'On' : 'Off');
+}
+function toggleMusic(){
+  music.on = !music.on;
+  try{ localStorage.setItem('citybuilder_music', music.on ? 'on' : 'off'); }catch(e){}
+  ensureAudio(); updateMusicBtn(); syncMusic();
+}
+// iOS/Safari only allow audio after a user gesture: unlock on the first touch/click
+function unlockAudio(){
+  try{ ensureAudio(); syncMusic(); }catch(e){}
+  removeEventListener('pointerdown', unlockAudio, true);
+  removeEventListener('keydown', unlockAudio, true);
+}
+addEventListener('pointerdown', unlockAudio, true);
+addEventListener('keydown', unlockAudio, true);
+// Silence everything while the app is in the background
+document.addEventListener('visibilitychange', ()=>{
+  if(!actx) return;
+  if(document.hidden) actx.suspend(); else actx.resume();
+});
+function playSound(type){
+  try{
+    ensureAudio();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.connect(g); g.connect(actx.destination);
+    const f = {click:520, ok:700, fail:150, stamp:90, turn:330, win:880}[type]||440;
+    o.frequency.value = f;
+    o.type = type==='fail' ? 'square' : (type==='stamp' ? 'triangle' : 'sine');
+    const t = actx.currentTime, len = type==='stamp' ? 0.12 : (type==='win'?0.5:0.18);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(type==='stamp'?0.5:0.18, t+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+len);
+    if(type==='win'){ o.frequency.setValueAtTime(523,t); o.frequency.setValueAtTime(659,t+0.15); o.frequency.setValueAtTime(784,t+0.3); }
+    o.start(t); o.stop(t+len+0.02);
+  }catch(e){}
+}
+
+// =====================================================================
+//  RENDERING — isometric canvas, Constructor-style blocks
+// =====================================================================
+const worldEl = document.getElementById('world');
+const cvs = document.getElementById('map'), ctx = cvs.getContext('2d');
+let viewRot = 0, zoom = 1, fit = 1, dpr = 1, W = 0, H = 0, selected = -1;
+function rotateCoord(r,c,steps){ let rr=r, cc=c; for(let i=0;i<((steps%4+4)%4);i++){ const nr=cc, nc=N-1-rr; rr=nr; cc=nc; } return [rr,cc]; }
+function scale(){ return fit*zoom; }
+function isoOf(r,c){ const [r2,c2] = rotateCoord(r,c,viewRot); return [(c2-r2)*TW/2, (c2+r2)*TH/2]; }
+const MAPCX = 0, MAPCY = (N-1)*TH/2 - 12;
+function toScreen(ix,iy){ const s=scale(); return [W/2 + (ix-MAPCX)*s, H/2 + (iy-MAPCY)*s]; }
+function tileAt(sx,sy){
+  const s=scale(), ix=(sx-W/2)/s+MAPCX, iy=(sy-H/2)/s+MAPCY;
+  const u = ix/(TW/2), v = iy/(TH/2);
+  const c2 = Math.round((u+v)/2), r2 = Math.round((v-u)/2);
+  if(!inside(r2,c2)) return -1;
+  const [r,c] = rotateCoord(r2,c2,4-viewRot);
+  return idx(r,c);
+}
+function resize(){
+  const rc = worldEl.getBoundingClientRect(); dpr = window.devicePixelRatio||1;
+  W = rc.width; H = rc.height;
+  cvs.width = Math.max(1,Math.round(W*dpr)); cvs.height = Math.max(1,Math.round(H*dpr));
+  cvs.style.width = W+'px'; cvs.style.height = H+'px';
+  fit = Math.min((W-24)/(N*TW), (H-60)/(N*TH+60));
+  draw();
+}
+function diamond(x,y,k){ const w=TW/2*k, h=TH/2*k; ctx.beginPath(); ctx.moveTo(x,y-h); ctx.lineTo(x+w,y); ctx.lineTo(x,y+h); ctx.lineTo(x-w,y); ctx.closePath(); }
+function shade(hex, f){ const n=parseInt(hex.slice(1),16); let r=n>>16, g=(n>>8)&255, b=n&255;
+  r=Math.round(clamp(r*f,0,255)); g=Math.round(clamp(g*f,0,255)); b=Math.round(clamp(b*f,0,255)); return `rgb(${r},${g},${b})`; }
+function box(x,y,k,hgt,wall,roof){
+  const w=TW/2*k, h=TH/2*k;
+  ctx.beginPath(); ctx.moveTo(x-w,y-hgt); ctx.lineTo(x,y+h-hgt); ctx.lineTo(x,y+h); ctx.lineTo(x-w,y); ctx.closePath();
+  ctx.fillStyle = shade(wall,0.82); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x,y+h-hgt); ctx.lineTo(x+w,y-hgt); ctx.lineTo(x+w,y); ctx.lineTo(x,y+h); ctx.closePath();
+  ctx.fillStyle = shade(wall,0.66); ctx.fill();
+  diamond(x,y-hgt,k); ctx.fillStyle = roof; ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.lineWidth=0.6; ctx.stroke();
+  // windows: rows of small marks on both faces
+  if(hgt>12){ ctx.fillStyle='rgba(40,60,90,.45)';
+    for(let fy=7; fy<hgt-3; fy+=7){ for(let j=1;j<=3;j++){ const t=j/4;
+      ctx.fillRect(x-w+(w)*t-1, y-fy+(h)*t-1, 2, 2.5); ctx.fillRect(x+(w)*t-1, y+h-fy-(h)*t-1, 2, 2.5); } } }
+}
+function tree(x,y,s){ ctx.fillStyle='#6b4a2b'; ctx.fillRect(x-0.8*s,y-4*s,1.6*s,4*s);
+  ctx.beginPath(); ctx.arc(x,y-6*s,4*s,0,Math.PI*2); ctx.fillStyle='#2f8f3a'; ctx.fill();
+  ctx.beginPath(); ctx.arc(x-1.2*s,y-7*s,1.6*s,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,.18)'; ctx.fill(); }
+const GROUND = {farm:'#9cc95c', muni:'#c9d98f', flood:'#7fc0b8', habitat:'#4f9a4a', village:'#b9c98a', regional:'#7d8592'};
+function drawTile(i){
+  const p = S.grid[i], r=Math.floor(i/N), c=i%N, [x,y] = isoOf(r,c);
+  const road = p.ty==='road' && (p.st==='built' || p.k==='regional');
+  diamond(x,y,1); ctx.fillStyle = road ? '#80868f' : GROUND[p.k]; ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,.10)'; ctx.lineWidth=0.7; ctx.stroke();
+  if(p.k==='farm' && p.st==='land'){ ctx.strokeStyle='rgba(90,120,40,.35)'; ctx.lineWidth=1;
+    for(let j=-2;j<=2;j++){ ctx.beginPath(); ctx.moveTo(x-12+j*6, y-6+j*3+6); ctx.lineTo(x+12+j*6-12, y+6+j*3-6+6); ctx.stroke(); } }
+  if(p.k==='flood'){ ctx.strokeStyle='rgba(255,255,255,.55)'; ctx.lineWidth=1; ctx.beginPath();
+    for(let t=-14;t<=14;t+=2) ctx.lineTo(x+t, y+Math.sin(t/2)*1.5); ctx.stroke(); }
+  if(p.k==='muni' && p.st==='land'){ ctx.fillStyle='#8a6d3b'; ctx.fillRect(x-0.6,y-10,1.2,10); ctx.fillStyle='#1d3c78'; ctx.fillRect(x,y-10,6,4); }
+  if(road){ ctx.strokeStyle='rgba(255,230,120,.8)'; ctx.setLineDash([3,3]); ctx.lineWidth=1; diamond(x,y,0.35); ctx.stroke(); ctx.setLineDash([]); }
+  if(p.st==='owned' || p.st==='review' || p.st==='approved'){
+    ctx.strokeStyle='#1d3c78'; ctx.lineWidth=1.4; ctx.setLineDash([3,2]); diamond(x,y,0.86); ctx.stroke(); ctx.setLineDash([]); }
+  if(i===selected){ ctx.strokeStyle='#ffcc33'; ctx.lineWidth=2.6; diamond(x,y,0.96); ctx.stroke(); }
+}
+function drawThing(i){
+  const p = S.grid[i], r=Math.floor(i/N), c=i%N, [x,y] = isoOf(r,c);
+  if(p.k==='habitat'){ tree(x-8,y,1); tree(x+7,y-2,0.9); tree(x,y+5,1.1); return; }
+  if(p.k==='village'){ box(x,y,0.55,12,'#f1e6cf','#c4472f'); return; }
+  if(p.st==='built' && p.ty && p.ty!=='road'){
+    if(p.ty==='housing') box(x,y,0.72,30,'#f3e3c3','#d2553f');
+    if(p.ty==='factory'){ box(x,y,0.8,16,'#a3abb5','#6b7480'); ctx.fillStyle='#5e6670'; ctx.fillRect(x+6,y-34,4,20); ctx.fillStyle='rgba(220,220,220,.8)';
+      ctx.beginPath(); ctx.arc(x+9,y-38,3,0,7); ctx.arc(x+13,y-42,4,0,7); ctx.fill(); }
+    if(p.ty==='school') box(x,y,0.78,14,'#ffd866','#e08a2e');
+    if(p.ty==='clinic'){ box(x,y,0.72,18,'#ffffff','#e6f4f2'); ctx.fillStyle='#2bb3a3'; ctx.fillRect(x-1.5,y-24,3,8); ctx.fillRect(x-4,y-21.5,8,3); }
+    if(p.ty==='park'){ tree(x-9,y,0.9); tree(x+8,y-1,1); tree(x,y-5,0.8); ctx.fillStyle='#8a6d3b'; ctx.fillRect(x-3,y+4,6,1.5); }
+    return;
+  }
+  if(p.st==='review'){ // paperwork on the parcel
+    ctx.fillStyle='#fff'; ctx.strokeStyle='#1d3c78'; ctx.lineWidth=0.8; ctx.fillRect(x-5,y-16,10,13); ctx.strokeRect(x-5,y-16,10,13);
+    ctx.fillStyle='#9aa5bd'; for(let l=0;l<3;l++) ctx.fillRect(x-3,y-13+l*3,6,1);
+    badge(x+8,y-16,p.t+'m','#1d3c78'); }
+  if(p.st==='approved'){ ctx.fillStyle='#e8762b'; [[-10,0],[10,0],[0,-5],[0,5]].forEach(([dx,dy])=>ctx.fillRect(x+dx-0.8,y+dy-6,1.6,6)); badge(x,y-12,'queue','#e8762b'); }
+  if(p.st==='building'){
+    const total = buildMonths(p.ty), prog = 1 - p.t/total, hh = 6 + prog*20;
+    ctx.globalAlpha = 0.9; box(x,y,0.7,hh,'#f0b45a','#f6d39b'); ctx.globalAlpha = 1;
+    ctx.strokeStyle='#d0571b'; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(x+10,y); ctx.lineTo(x+10,y-38); ctx.lineTo(x-8,y-38); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x-6,y-38); ctx.lineTo(x-6,y-30); ctx.stroke();
+    badge(x-10,y-hh-6, p.halt ? 'halt '+p.halt+'m' : p.t+'m', p.halt ? '#d64545' : '#d0571b');
+  }
+}
+function badge(x,y,text,col){ ctx.font='bold 7px -apple-system, sans-serif'; const w=ctx.measureText(text).width+6;
+  ctx.fillStyle=col; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x-w/2,y-5,w,9,4) : ctx.rect(x-w/2,y-5,w,9); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(text,x,y-0.5); }
+function draw(){
+  if(!S || !W) return;
+  ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,cvs.width,cvs.height);
+  const s = scale();
+  ctx.setTransform(dpr*s,0,0,dpr*s, dpr*(W/2 - MAPCX*s), dpr*(H/2 - MAPCY*s));
+  const order = [];
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++){ const [r2,c2]=rotateCoord(r,c,viewRot); order.push([r2+c2, c2, idx(r,c)]); }
+  order.sort((a,b)=>a[0]-b[0] || a[1]-b[1]);
+  order.forEach(o=>drawTile(o[2]));
+  order.forEach(o=>drawThing(o[2]));
+}
+
+// =====================================================================
+//  UI
+// =====================================================================
+const $ = id => document.getElementById(id);
+function floatAt(i, text, bad, icon){
+  let x = innerWidth/2, y = 120;
+  if(i>=0){ const r=Math.floor(i/N), c=i%N, [ix,iy] = isoOf(r,c), [sx,sy] = toScreen(ix,iy), rc = worldEl.getBoundingClientRect(); x = rc.left+sx; y = rc.top+sy-10; }
+  const f = document.createElement('div'); f.className = 'float-txt'+(bad?' bad':'');
+  f.innerHTML = (icon?`<span class="material-icons">${icon}</span>`:'')+`<span>${text}</span>`;
+  f.style.left = x+'px'; f.style.top = y+'px'; document.body.appendChild(f); setTimeout(()=>f.remove(), 1100);
+}
+function setMeter(id, v, warnBelow=40, badBelow=25){
+  const el = $(id); el.querySelector('b').textContent = Math.round(v);
+  const i = el.querySelector('i'); i.style.width = clamp(v,0,100)+'%';
+  i.className = v < badBelow ? 'low' : (v < warnBelow ? 'mid' : '');
+}
+function updateHUD(){
+  $('townName').textContent = `· ${S.town}`;
+  $('month').textContent = Math.min(S.month, CFG.months); $('months').textContent = CFG.months;
+  $('funds').textContent = fmt(S.funds); $('residents').textContent = residents(); $('target').textContent = CFG.target;
+  const sl = $('slots'); sl.innerHTML = '';
+  for(let k=0;k<slotsPerMonth();k++){ const d=document.createElement('span'); d.className='slot'+(k<S.slots?' on':''); sl.appendChild(d); }
+  setMeter('m-local', S.local); setMeter('m-neigh', S.neigh, 35, 15); setMeter('m-comp', S.comp, 35, 15);
+  // Spending vs. next milestone
+  const next = Object.keys(CFG.milestones).map(Number).find(m=>m>=S.month);
+  const sp = $('m-spent'); const pct = S.spent / S.grant * 100;
+  sp.querySelector('.top span').lastChild.textContent = next ? `Spent (≥${CFG.milestones[next]*100}% by m${next})` : 'Spent';
+  sp.querySelector('b').textContent = Math.round(pct)+'%';
+  const bar = sp.querySelector('i'); bar.style.width = clamp(pct,0,100)+'%';
+  bar.className = next && pct < CFG.milestones[next]*100 && next-S.month<=3 ? 'low' : '';
+}
+function actBtn(icon, label, sub, fn, disabled, primary){
+  const b = document.createElement('button'); b.className = 'act'+(primary?' primary':''); b.disabled = !!disabled;
+  b.innerHTML = `<span class="material-icons">${icon}</span><span>${label}<small>${sub||''}</small></span>`;
+  b.onclick = fn; return b;
+}
+function doAction(res, i){
+  playSound(res.ok ? 'ok' : 'fail'); floatAt(i, res.msg, !res.ok, res.ok ? 'check_circle' : 'block');
+  save(); refresh();
+}
+const BOTTLENECK_TXT = {homes:'housing', jobs:'jobs', school:'school places', health:'health care'};
+function renderPanel(){
+  const P = $('panel'); P.innerHTML = '';
+  const end = actBtn('skip_next', `End month ${Math.min(S.month,CFG.months)}`, `Next month costs ≈ €${fmt(monthlyCosts())}M`, ()=>{ playSound('turn'); endMonth(); selected=-1; refresh(); showNotices(); }, !!S.over, true);
+  end.id = 'endTurn'; P.appendChild(end);
+  // Directive
+  if(S.directive){ const d=S.directive, D=DIRECTIVES[d.kind];
+    const c = document.createElement('div'); c.className='card directive';
+    const left = d.deadline - S.month + 1;
+    c.innerHTML = `<div class="ref">Directive · ref. HUF/${S.month}/${d.kind.toUpperCase()}</div><h3><span class="material-icons">${D.icon}</span>${D.title}</h3><p>${D.text(d)}</p><div class="due" style="color:${left<=1?'var(--bad)':'var(--ink)'}">Due end of month ${d.deadline} · ${left} month${left>1?'s':''} left</div>`;
+    P.appendChild(c); }
+  // Selected parcel or general actions
+  if(selected >= 0) P.appendChild(parcelCard(selected)); else P.appendChild(generalCard());
+  // Status
+  const cp = caps(); const st = document.createElement('div'); st.className='card';
+  st.innerHTML = `<h3><span class="material-icons">insights</span>Town</h3>
+    <dl class="kv"><dt>Homes</dt><dd>${cp.homes}</dd><dt>Jobs support</dt><dd>${cp.jobs} residents</dd><dt>School places</dt><dd>${cp.school}</dd><dt>Health care</dt><dd>${cp.health}</dd>
+    <dt>Construction</dt><dd>${activeSites()}/${contractors()} sites${S.grid.some(p=>p.st==='approved')?` · ${S.grid.filter(p=>p.st==='approved').length} queued`:''}</dd>
+    <dt>Approval odds</dt><dd>${Math.round(approvalChance()*100)}%</dd>
+    ${S.perks.length||S.shovel?`<dt>Perks</dt><dd>${S.perks.map(k=>PERKS[k].name).join(', ')}${S.shovel?(S.perks.length?', ':'')+'Golden Shovel':''}</dd>`:''}</dl>
+    <div class="bottleneck">Growth is limited by: <b>${BOTTLENECK_TXT[cp.bottleneck]}</b></div>`;
+  P.appendChild(st);
+  // Log
+  const lg = document.createElement('div'); lg.className='card';
+  lg.innerHTML = `<h3><span class="material-icons">inbox</span>Inbox</h3><ul class="log">${S.log.slice(0,8).map(l=>`<li class="${l.cls}">m${l.m} · ${l.text}</li>`).join('')}</ul>`;
+  P.appendChild(lg);
+}
+function generalCard(){
+  const c = document.createElement('div'); c.className='card';
+  c.innerHTML = `<h3><span class="material-icons">work</span>Your agenda</h3><p>Tap a parcel to buy it or request a permit. Or spend your time on politics:</p>`;
+  const a = document.createElement('div'); a.className='actions';
+  a.appendChild(actBtn('restaurant','Lobby the mayor',`1 slot · €${CFG.lobbyCost}M · support +${has('lobbyist')?20:(S.lobbied?6:12)}`, ()=>doAction(lobby(),-1), S.slots<1||S.over));
+  a.appendChild(actBtn('forum','Public consultation',`2 slots · neighbours +15 · delays reviews`, ()=>doAction(consult(),-1), S.slots<2||S.over));
+  a.appendChild(actBtn('description','File a report','1 slot · compliance +22', ()=>doAction(fileReport(),-1), S.slots<1||S.over));
+  c.appendChild(a); return c;
+}
+function parcelCard(i){
+  const p = S.grid[i], r=Math.floor(i/N), c=i%N, K = KIND[p.k];
+  const card = document.createElement('div'); card.className='card';
+  const title = p.ty && p.k!=='regional' ? B[p.ty].name : K.name;
+  const icon = p.ty && p.k!=='regional' ? B[p.ty].icon : K.icon;
+  let html = `<div class="ref">Cadastral parcel ${r+1}-${c+1}</div><h3><span class="material-icons">${icon}</span>${title}</h3>`;
+  const a = document.createElement('div'); a.className='actions';
+  if(p.k==='habitat') html += '<p>Protected habitat. Home to a toad with better lawyers than you.</p>';
+  else if(p.k==='village') html += '<p>The old village: 30 residents, one bar, strong opinions. Building next to it annoys them.</p>';
+  else if(p.k==='regional') html += '<p>The regional road. Managed by another administration. Do not touch.</p>';
+  else if(p.st==='land'){
+    const price = landPrice(p);
+    html += `<p>${p.k==='muni'?'Owned by the municipality. Cheap, if the mayor agrees (support ≥ 40).':p.k==='flood'?'Cheap land in the flood zone. Building here costs 50% more.':'Owned by a local farmer'+(p.hold?' who already raised the price once.':'. May hold out for a better price.')}</p>`;
+    a.appendChild(actBtn('real_estate_agent', `Acquire · €${fmt(price)}M`, '1 agenda slot', ()=>doAction(acquire(i),i), S.slots<1||S.over));
+  } else if(p.st==='owned'){
+    const acc = hasAccess(r,c);
+    html += `<p>${acc?'You own it. Request a permit for:':'You own it, but it has no road access. Plan a road next to it first.'}</p>`;
+    BUILD_TYPES.forEach(ty=>{ const bt=B[ty];
+      a.appendChild(actBtn(bt.icon, bt.name, `${bt.desc} · permit ${permitMonths(ty)}m · build ${buildMonths(ty)}m · €${fmt(buildCost(p,ty))}M`,
+        ()=>doAction(requestPermit(i,ty),i), !acc || S.slots<1 || S.over)); });
+  } else if(p.st==='review') html += `<p><span class="material-icons" style="font-size:14px">hourglass_top</span> <b>${B[p.ty].name}</b>: permit under review. Decision in ${p.t} month${p.t>1?'s':''}. Approval odds today: ${Math.round(approvalChance()*100)}%.</p>`;
+  else if(p.st==='approved') html += `<p><b>${B[p.ty].name}</b>: permit approved. Waiting for a free contractor.</p>`;
+  else if(p.st==='building') html += `<p><b>${B[p.ty].name}</b> under construction: ${p.t} month${p.t>1?'s':''} left${p.halt?`, <b style="color:var(--bad)">halted ${p.halt} more month(s)</b>`:''}. Costs €${fmt(p.mcost)}M per month.</p>`;
+  else if(p.st==='built' && p.ty && p.ty!=='road') html += `<p>${B[p.ty].desc}. Upkeep €${B[p.ty].upkeep}M/month.</p>`;
+  else if(p.st==='built') html += '<p>A road. Parcels next to it can get permits.</p>';
+  card.innerHTML = html; if(a.children.length) card.appendChild(a);
+  const back = actBtn('close','Deselect','', ()=>{ selected=-1; refresh(); }); back.style.marginTop='8px'; card.appendChild(back);
+  return card;
+}
+function refresh(){ updateHUD(); renderPanel(); draw(); }
+
+// --- Modal notices ---
+const modal = $('modal'), notice = $('notice');
+function letter(icon, title, stamp, cls, body, buttons){
+  notice.innerHTML = `<div class="letterhead"><span class="material-icons">account_balance</span>Union · DG Harmonised Urban Futures</div>
+    ${stamp?`<div class="stamp ${cls||'info'}">${stamp}</div>`:''}<h2><span class="material-icons">${icon}</span>${title}</h2>${body}<div class="btns"></div>`;
+  notice.classList.toggle('stamped', !!stamp);
+  const box = notice.querySelector('.btns'); buttons.forEach(b=>box.appendChild(b));
+  modal.classList.remove('hidden'); notice.scrollTop = 0;
+}
+function btn(label, icon, fn, primary){ const b=document.createElement('button'); b.className='btn'+(primary?' primary':''); b.innerHTML=`<span class="material-icons">${icon}</span>${label}`; b.onclick=fn; return b; }
+function hideModal(){ modal.classList.add('hidden'); }
+function showNotices(){
+  if(S.notices.length){
+    const n = S.notices.shift(); save();
+    if(n.kind==='intro'){
+      letter('mail','Letter of appointment','APPOINTED','info',
+        `<p class="ref">Ref. HUF/MOTHER/${S.seed%10000}-B</p>
+         <p>Dear Programme Officer,</p>
+         <p>Congratulations. Under the <b>MOTHER</b> programme (Model Town for Harmonised European Resilience), the Union has allocated <b>€${S.grant}M</b> to build a model town in <b>${S.town}</b>, ${S.country}.</p>
+         <p>You have <b>${CFG.months} months</b> to reach <b>${CFG.target} registered residents</b>. Kindly note that the Union owns no land, issues no permits and has no bulldozers. Funds not spent on time will be decommitted.</p>
+         <p>Please keep the Commission informed. Regularly.</p>
+         <p class="sig">— Directorate-General for Harmonised Urban Futures</p>`,
+        [btn('Accept the appointment','draw', ()=>{ playSound('stamp'); hideModal(); showNotices(); }, true)]);
       return;
     }
-    fadeOutCurrent();
-    if(!name) return;
-    music.playing = name;
-    loadTrack(name).then(buf=>{
-      if(music.playing !== name || music.src) return;  // changed while loading
-      const src = actx.createBufferSource(), gain = actx.createGain();
-      src.buffer = buf; src.loop = true;
-      src.connect(gain); gain.connect(actx.destination);
-      const now = actx.currentTime;
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(MUSIC_VOL*music.level, now+1.2);
-      src.start(now);
-      music.src = src; music.gain = gain;
-    }).catch(()=>{ if(music.playing===name) music.playing=null; });
+    if(n.kind==='directive'){ const d=n.d, D=DIRECTIVES[d.kind];
+      letter(D.icon, `Directive: ${D.title}`, 'URGENT', 'info', `<p>${D.text(d)}</p><p><b>Deadline: end of month ${d.deadline}.</b></p><p>Success will be rewarded. Failure will be noted. Two failures and the programme is suspended.</p>`,
+        [btn('Acknowledge receipt','task_alt', ()=>{ playSound('stamp'); hideModal(); showNotices(); }, true)]);
+      return; }
+    letter(n.icon, n.title, n.stamp, n.cls, `<p>${n.body}</p>`, [btn('Noted','check', ()=>{ playSound('click'); hideModal(); showNotices(); }, true)]);
+    playSound(n.cls==='bad'?'fail':'stamp');
+    return;
   }
-  // track: 'menu' | 'main'; level: 1 = full, <1 = ducked (pause screen)
-  function setMusic(track, level=1){ music.want = track; music.level = level; syncMusic(); }
-  function updateMusicBtn(){
-    document.querySelector('#musicBtn .material-icons').textContent = music.on ? 'music_note' : 'music_off';
-    const m = document.getElementById('btnMusic');
-    if(m) m.querySelector('.label').textContent = 'Music: ' + (music.on ? 'On' : 'Off');
+  if(S.perkChoice){
+    const wrap = S.perkChoice.map(k=>{ const pk=PERKS[k]; const b=document.createElement('button'); b.className='perk';
+      b.innerHTML=`<span class="material-icons">${pk.icon}</span><span><b>${pk.name}</b><small>${pk.desc}</small></span>`;
+      b.onclick=()=>{ choosePerk(k); playSound('ok'); hideModal(); refresh(); showNotices(); }; return b; });
+    letter('workspace_premium','Choose a reward', null, null, '<p>Your compliance has been noticed. Pick one:</p>', wrap);
+    return;
   }
-  function toggleMusic(){
-    music.on = !music.on;
-    try{ localStorage.setItem('citybuilder_music', music.on ? 'on' : 'off'); }catch(e){}
-    ensureAudio(); updateMusicBtn(); syncMusic();
-  }
-  // iOS/Safari only allow audio after a user gesture: unlock on the first touch/click
-  function unlockAudio(){
-    try{ ensureAudio(); syncMusic(); }catch(e){}
-    removeEventListener('pointerdown', unlockAudio, true);
-    removeEventListener('keydown', unlockAudio, true);
-  }
-  addEventListener('pointerdown', unlockAudio, true);
-  addEventListener('keydown', unlockAudio, true);
-  // Silence everything while the app is in the background
-  document.addEventListener('visibilitychange', ()=>{
-    if(!actx) return;
-    if(document.hidden) actx.suspend(); else actx.resume();
-  });
+  if(S.over){ gameOver(); return; }
+  hideModal(); refresh();
+}
+const OVER = {
+  target:   {icon:'celebration', title:'Inauguration!', stamp:'INAUGURATED', cls:'ok', text:()=>`${S.town} has ${residents()} registered residents. The Minister cut the ribbon, gave a speech about "our" town and took all the credit. You were not invited to the photo.`},
+  bankrupt: {icon:'money_off', title:'Funds exhausted', stamp:'INSOLVENT', cls:'bad', text:()=>'The programme ran out of money. The half-built town becomes a case study in a Court of Auditors report.'},
+  audit:    {icon:'search', title:'Audit', stamp:'AUDITED', cls:'bad', text:()=>'Your compliance reached zero. The anti-fraud office opened an investigation into 3,000 missing pages. You have been transferred to the archives.'},
+  suspended:{icon:'block', title:'Programme suspended', stamp:'SUSPENDED', cls:'bad', text:()=>'Two directives failed. The Commission suspends the programme "pending a strategic review", which is expected to last a decade.'},
+  court:    {icon:'gavel', title:'Plan annulled', stamp:'ANNULLED', cls:'bad', text:()=>'The court annulled the urban plan. Everything you built is now in legal limbo. The neighbours are delighted.'},
+  timeout:  {icon:'hourglass_bottom', title:'The programme has ended', stamp:'CLOSED', cls:'bad', text:()=>`Month ${CFG.months} is over with ${residents()} of ${CFG.target} residents. The programme "will be evaluated". A successor programme with a longer acronym is already being drafted.`},
+};
+function score(){ return residents() + Math.max(0,Math.round(S.funds))*5 + (S.over&&S.over.win ? (CFG.months+1-S.month)*25 : 0) + S.directivesDone*50; }
+function gameOver(){
+  const o = OVER[S.over.why];
+  playSound(S.over.win?'win':'fail'); setMusic('menu');
+  letter(o.icon, o.title, o.stamp, o.cls, `<p>${o.text()}</p><dl class="kv"><dt>Residents</dt><dd>${residents()}</dd><dt>Month</dt><dd>${Math.min(S.month,CFG.months)}</dd><dt>Funds left</dt><dd>€${fmt(S.funds)}M</dd><dt>Directives met</dt><dd>${S.directivesDone}</dd><dt>Score</dt><dd>${score()}</dd></dl>`,
+    [btn('New programme','replay', ()=>{ startNew(); }, true), btn('Look at the map','map', ()=>{ hideModal(); refresh(); })]);
+}
 
-  function playSound(type){
-    try{
-      ensureAudio();
-      const o = actx.createOscillator();
-      const g = actx.createGain();
-      o.connect(g); g.connect(actx.destination);
-      const freqs = {build:660, fail:140, demolish:220, click:500};
-      o.frequency.value = freqs[type]||440;
-      o.type = type==='fail' ? 'square' : (type==='demolish' ? 'sawtooth' : 'sine');
-      g.gain.setValueAtTime(0.0001, actx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.2, actx.currentTime+0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime+0.18);
-      o.start(); o.stop(actx.currentTime+0.2);
-    }catch(e){}
-  }
-  function flash(el){
-    el.style.filter='brightness(0.45)';
-    setTimeout(()=>{ el.style.filter=''; }, 160);
-  }
-  function floatText(x,y,text,icon){
-    const f = document.createElement('div');
-    f.className='float-txt';
-    f.innerHTML = (icon?`<span class="material-icons">${icon}</span>`:'') + `<span>${text}</span>`;
-    f.style.left=x+'px'; f.style.top=y+'px';
-    document.body.appendChild(f);
-    setTimeout(()=>f.remove(), 900);
-  }
-  function toast(msg, icon){ floatText(window.innerWidth/2, 100, msg, icon); }
-  function hasAdjacentRoad(r,c){
-    const deltas=[[-1,0],[1,0],[0,-1],[0,1]];
-    return deltas.some(([dr,dc])=>{
-      const rr=r+dr, cc=c+dc;
-      if(rr<0||rr>=N||cc<0||cc>=N) return false;
-      return state.grid[rr*N+cc]==='road';
-    });
-  }
-
-  function loadState(){
-    try{ const raw = localStorage.getItem('citybuilder_v1'); if(raw) return JSON.parse(raw); }catch(e){}
-    return null;
-  }
-  function saveState(){
-    try{ localStorage.setItem('citybuilder_v1', JSON.stringify(state)); }catch(e){}
-  }
-
-  state = loadState() || { grid: Array.from({length:N*N}, ()=> 'grass'), coin: 20 };
-
-  const gridEl = document.getElementById('grid');
-  const originX = (N-1) * TW/2;
-  gridEl.style.width = (N*TW) + 'px';
-  gridEl.style.height = (N*TH) + 'px';
-
-  let viewRot = 0;
-  function rotateCoord(r,c,steps){
-    let rr=r, cc=c;
-    for(let i=0;i<((steps%4+4)%4);i++){ const nr=cc, nc=(N-1-rr); rr=nr; cc=nc; }
-    return [rr,cc];
-  }
-  function layoutTile(el){
-    const r=+el.dataset.r, c=+el.dataset.c;
-    const [r2,c2]=rotateCoord(r,c,viewRot);
-    el.style.left=((c2-r2)*TW/2+originX)+'px';
-    el.style.top=((c2+r2)*TH/2)+'px';
-  }
-  function updateLayout(){ tileEls.forEach(layoutTile); }
-
-  const tileEls = [];
-  for(let r=0; r<N; r++){
-    for(let c=0; c<N; c++){
-      const i = r*N + c;
-      const el = document.createElement('div');
-      el.className = 'tile';
-      el.dataset.t = state.grid[i];
-      el.dataset.r = r; el.dataset.c = c;
-      el.addEventListener('click', ()=>{
-        if(recentPinch) return;
-        const rect = el.getBoundingClientRect();
-        handleBuild(el, rect.left+rect.width/2, rect.top+rect.height/2);
-      });
-      gridEl.appendChild(el);
-      tileEls.push(el);
-    }
-  }
-  updateLayout();
-  function rebuildGrid(){
-    tileEls.forEach((el,i)=>{ el.dataset.t = state.grid[i]; });
-  }
-
-  function handleBuild(el, cx, cy){
-    const r = +el.dataset.r, c = +el.dataset.c, i = r*N+c;
-    const cost = costMap[current]||0;
-    if(current!=='grass' && current!=='road' && !hasAdjacentRoad(r,c)){
-      playSound('fail'); flash(el); floatText(cx,cy,'no road nearby','block'); return;
-    }
-    if(state.coin < cost){ playSound('fail'); flash(el); floatText(cx,cy,'no funds','money_off'); return; }
-    state.coin -= cost;
-    state.grid[i] = current;
-    el.dataset.t = current;
-    if(current==='grass'){
-      playSound('demolish'); floatText(cx,cy,'demolished','delete');
-    }else{
-      playSound('build'); floatText(cx,cy, cost ? ('-'+cost) : 'ok', 'add_circle');
-    }
-    saveState();
-    updateHUD();
-  }
-
-  // --- Zoom (pinch gesture / mouse wheel) — no gesture panning or rotation ---
-  const worldEl = document.getElementById('world');
-  const viewportEl = document.getElementById('viewport');
-  let scale=1;
-  function applyTransform(){ viewportEl.style.transform = `scale(${scale})`; }
-  const pointers = new Map();
-  let pinchStartDist=0, pinchStartScale=1, recentPinch=false;
-
-  worldEl.addEventListener('pointerdown', e=>{
-    pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
-    if(pointers.size===2){
-      const pts=[...pointers.values()];
-      pinchStartDist=Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y) || 1;
-      pinchStartScale=scale; recentPinch=true;
-    }
-  });
-  worldEl.addEventListener('pointermove', e=>{
-    if(!pointers.has(e.pointerId)) return;
-    pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
-    if(pointers.size===2){
-      const pts=[...pointers.values()];
-      const dist=Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y) || 1;
-      scale=Math.min(2.5, Math.max(0.5, pinchStartScale*(dist/pinchStartDist)));
-      applyTransform();
-    }
-  });
-  function releasePointer(e){
-    pointers.delete(e.pointerId);
-    if(pointers.size===0 && recentPinch){ setTimeout(()=>{ recentPinch=false; }, 150); }
-  }
-  worldEl.addEventListener('pointerup', releasePointer);
-  worldEl.addEventListener('pointercancel', releasePointer);
-  worldEl.addEventListener('wheel', e=>{
-    e.preventDefault();
-    scale=Math.min(2.5, Math.max(0.5, scale - e.deltaY*0.001));
-    applyTransform();
-  }, {passive:false});
-
-  document.getElementById('rotateBtn').addEventListener('click', ()=>{
-    viewRot=(viewRot+1)%4; updateLayout(); playSound('click');
-  });
-
-  const toolsEl = document.getElementById('tools');
-  types.forEach(t=>{
-    const b = document.createElement('button');
-    b.className = 'tool' + (t.id===current ? ' active' : '');
-    b.style.setProperty('--tcolor', t.color);
-    b.innerHTML = `<span class="material-icons">${t.icon}</span><span>${t.label}${t.cost?(' · '+t.cost):''}</span>`;
-    b.addEventListener('click', ()=>{
-      current = t.id;
-      [...toolsEl.children].forEach(x=>x.classList.remove('active'));
-      b.classList.add('active');
-      playSound('click');
-    });
-    toolsEl.appendChild(b);
-  });
-
-  function counts(){
-    let houses=0, shops=0;
-    state.grid.forEach(t=>{ if(t==='house') houses++; if(t==='shop') shops++; });
-    return {houses, shops};
-  }
-  // Refresh the HUD only. Income is granted exclusively by the timed tick,
-  // so player actions (build, demolish, menus) can never generate coins.
-  function updateHUD(){
-    const {houses} = counts();
-    document.getElementById('pop').textContent = houses * 4;
-    document.getElementById('coin').textContent = state.coin;
-  }
-  function tick(){
-    const {houses, shops} = counts();
-    state.coin += shops * 2 + Math.floor(houses * 0.5);
-    updateHUD();
-    saveState();
-  }
-
-  // --- Menu: start / pause / save / load / exit ---
-  let tickTimer=null;
-  function startTick(){ if(!tickTimer) tickTimer=setInterval(tick,2000); }
-  function stopTick(){ if(tickTimer){ clearInterval(tickTimer); tickTimer=null; } }
-
-  const menuEl = document.getElementById('menu');
-  const menuPanel = document.getElementById('menuPanel');
-  function showMenu(screen){ menuEl.classList.remove('hidden'); renderMenu(screen); }
-  function hideMenu(){ menuEl.classList.add('hidden'); }
-
-  function doSave(){
-    try{ localStorage.setItem('citybuilder_save', JSON.stringify(state)); toast('saved','check_circle'); }
-    catch(e){ toast('save failed','warning'); }
-  }
-  function doLoad(){
-    try{
-      const raw=localStorage.getItem('citybuilder_save');
-      if(!raw){ toast('no saved game','warning'); return; }
-      state=JSON.parse(raw); rebuildGrid(); saveState();
-      hideMenu(); startTick(); setMusic('main'); updateHUD(); toast('loaded','check_circle');
-    }catch(e){ toast('load failed','warning'); }
-  }
-
-  function renderMenu(screen){
-    if(screen==='start'){
-      menuPanel.innerHTML = `<h2><span class="material-icons">location_city</span>City Builder</h2><p>Isometric prototype</p>
-        <button class="menu-btn primary" id="btnPlay"><span class="material-icons">play_arrow</span>Play</button>
-        <button class="menu-btn" id="btnLoad"><span class="material-icons">folder_open</span>Load game</button>
-        <button class="menu-btn" id="btnMusic"><span class="material-icons">music_note</span><span class="label">Music</span></button>
-        <button class="menu-btn danger" id="btnExit"><span class="material-icons">power_settings_new</span>Exit</button>`;
-      setMusic('menu');
-      document.getElementById('btnPlay').onclick=()=>{ hideMenu(); startTick(); setMusic('main'); };
-      document.getElementById('btnLoad').onclick=doLoad;
-      document.getElementById('btnExit').onclick=()=>showMenu('exit');
-      document.getElementById('btnMusic').onclick=toggleMusic;
-      updateMusicBtn();
-    }else if(screen==='pause'){
-      menuPanel.innerHTML = `<h2><span class="material-icons">pause</span>Paused</h2>
-        <button class="menu-btn primary" id="btnResume"><span class="material-icons">play_arrow</span>Resume</button>
-        <button class="menu-btn" id="btnSave"><span class="material-icons">save</span>Save game</button>
-        <button class="menu-btn" id="btnLoad"><span class="material-icons">folder_open</span>Load game</button>
-        <button class="menu-btn" id="btnMusic"><span class="material-icons">music_note</span><span class="label">Music</span></button>
-        <button class="menu-btn danger" id="btnExit"><span class="material-icons">power_settings_new</span>Exit</button>`;
-      setMusic('main', 0.4);
-      document.getElementById('btnResume').onclick=()=>{ hideMenu(); startTick(); setMusic('main'); };
-      document.getElementById('btnSave').onclick=doSave;
-      document.getElementById('btnLoad').onclick=doLoad;
-      document.getElementById('btnExit').onclick=()=>showMenu('exit');
-      document.getElementById('btnMusic').onclick=toggleMusic;
-      updateMusicBtn();
-    }else if(screen==='exit'){
-      stopTick();
-      setMusic('menu', 0.6);
-      menuPanel.innerHTML = `<h2><span class="material-icons">power_settings_new</span>Disconnected</h2><p>Your game is saved automatically. You can close this tab.</p>
-        <button class="menu-btn primary" id="btnBack"><span class="material-icons">arrow_back</span>Back to start</button>`;
-      document.getElementById('btnBack').onclick=()=>showMenu('start');
-    }
-  }
-
-  document.getElementById('musicBtn').addEventListener('click', toggleMusic);
-  document.getElementById('menuBtn').addEventListener('click', ()=>{ stopTick(); showMenu('pause'); });
-
-  // Keep the hint below the HUD: expose the HUD height as a CSS variable
-  const hudEl = document.getElementById('hud');
-  function syncHudHeight(){ document.documentElement.style.setProperty('--hud-h', hudEl.offsetHeight+'px'); }
-  syncHudHeight();
-  if(window.ResizeObserver) new ResizeObserver(syncHudHeight).observe(hudEl);
-  addEventListener('resize', syncHudHeight);
-
-  updateHUD();
-  showMenu('start');
+// --- Start / pause menu ---
+function startMenu(){
+  setMusic('menu');
+  const saved = loadSave();
+  const items = [btn('New programme','add_circle', ()=>startNew(), true)];
+  if(saved && !saved.over) items.push(btn(`Continue · ${saved.town}, month ${saved.month}`,'play_arrow', ()=>{ S=saved; afterLoad(); }));
+  const m = btn('Music','music_note', toggleMusic); m.id='btnMusic'; m.innerHTML='<span class="material-icons">music_note</span><span class="label">Music</span>';
+  items.push(m);
+  letter('account_balance','EUROCRAT', null, null,
+    `<p>A satirical city builder. You have money from Brussels, 36 months and no power whatsoever.</p><p style="font-size:12px;color:var(--sub)">Prototype v0.2 · build a town the European way: buy the land, file the paperwork, survive the neighbours.</p>`, items);
   updateMusicBtn();
+}
+function pauseMenu(){
+  setMusic('main', 0.4);
+  const m = btn('Music','music_note', toggleMusic); m.id='btnMusic'; m.innerHTML='<span class="material-icons">music_note</span><span class="label">Music</span>';
+  letter('pause','Coffee break', null, null, `<p>${S.town}, ${S.country} · month ${Math.min(S.month,CFG.months)} of ${CFG.months}. Your game is saved automatically.</p>`,
+    [btn('Back to work','play_arrow', ()=>{ setMusic('main'); hideModal(); }, true), m,
+     btn('Abandon programme','logout', ()=>{ startMenu(); })]);
+  updateMusicBtn();
+}
+function startNew(seed){ newGame(seed); selected=-1; zoom=1; viewRot=0; save(); setMusic('main'); refresh(); showNotices(); }
+function afterLoad(){ selected=-1; setMusic('main'); refresh(); showNotices(); }
+
+// =====================================================================
+//  INPUT — tap to select, pinch / wheel to zoom (no panning, no gesture rotation)
+// =====================================================================
+const pointers = new Map(); let pinchD=0, pinchZ=1, pinched=false, downAt=null;
+cvs.addEventListener('pointerdown', e=>{
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pointers.size===1){ downAt={x:e.clientX,y:e.clientY}; pinched=false; }
+  if(pointers.size===2){ const p=[...pointers.values()]; pinchD=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y)||1; pinchZ=zoom; pinched=true; }
+});
+cvs.addEventListener('pointermove', e=>{
+  if(!pointers.has(e.pointerId)) return; pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pointers.size===2){ const p=[...pointers.values()]; const d=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y)||1; zoom=clamp(pinchZ*d/pinchD,0.7,2.5); draw(); }
+});
+function up(e){
+  const wasSingle = pointers.size===1; pointers.delete(e.pointerId);
+  if(wasSingle && !pinched && downAt && Math.hypot(e.clientX-downAt.x, e.clientY-downAt.y) < 10){
+    const rc = cvs.getBoundingClientRect(); const i = tileAt(e.clientX-rc.left, e.clientY-rc.top);
+    selected = (i===selected) ? -1 : i; playSound('click'); refresh();
+  }
+  if(!pointers.size) downAt=null;
+}
+cvs.addEventListener('pointerup', up); cvs.addEventListener('pointercancel', e=>{ pointers.delete(e.pointerId); });
+cvs.addEventListener('wheel', e=>{ e.preventDefault(); zoom=clamp(zoom - e.deltaY*0.001,0.7,2.5); draw(); }, {passive:false});
+$('rotateBtn').onclick = ()=>{ viewRot=(viewRot+1)%4; playSound('click'); draw(); };
+$('menuBtn').onclick = ()=>{ playSound('click'); pauseMenu(); };
+$('musicBtn').onclick = toggleMusic;
+addEventListener('resize', resize);
+if(window.ResizeObserver) new ResizeObserver(resize).observe(worldEl);
+
+// =====================================================================
+//  BOOT + test hook (used by tests/smoke_test.py)
+// =====================================================================
+window.__eurocrat = {
+  get S(){ return S; }, CFG, B, newGame:(seed)=>{ startNew(seed); hideModal(); return S; },
+  acquire, requestPermit, lobby, consult, fileReport, endMonth, choosePerk, caps, residents, hasAccess,
+  tileAt:(x,y)=>tileAt(x,y), screenOf:(i)=>{ const [ix,iy]=isoOf(Math.floor(i/N), i%N); return toScreen(ix,iy); },
+  refresh, showNotices, hideModal, get selected(){ return selected; },
+};
+newGame(1); resize(); refresh(); startMenu();
 })();
 </script>
 </body>
