@@ -108,7 +108,8 @@
 
   /* --- Main area: the map on a cadastral sheet + the panel --- */
   #main{flex:1; display:flex; flex-direction:column; min-height:0; background:var(--desk);}
-  #world{flex:1; position:relative; min-height:0; overflow:hidden; background-color:#cbd9ea;
+  #world.night{background-color:#46527f !important;}
+  #world{flex:1; position:relative; min-height:0; overflow:hidden; background-color:#cbd9ea; transition:background-color .25s steps(3);
          background-image:
            linear-gradient(rgba(22,63,148,.16) 2px, transparent 2px), linear-gradient(90deg, rgba(22,63,148,.16) 2px, transparent 2px),
            linear-gradient(rgba(22,63,148,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(22,63,148,.07) 1px, transparent 1px);
@@ -1601,6 +1602,16 @@ en: {
   'pc.building':'<b>{b}</b> under construction: {n} month(s) left. Costs {x} per month.', 'pc.halted':'Halted {n} more month(s).',
   'pc.privPermit':'Sold to a developer. They are getting their permit ({n} month(s)).', 'pc.privBuild':'The developer is building housing ({n} month(s) left, if all goes well).',
   'pc.privPaused':'Paused: the market is cold.', 'pc.ruin':'An abandoned development. The developer went bust; the bank owns the concrete. You can buy it back.',
+  'style.housing.slab':'Housing block', 'style.housing.tower':'Residential tower', 'style.housing.terrace':'Terraced houses', 'style.housing.perimeter':'Perimeter block', 'style.housing.eco':'Timber eco-block', 'style.housing.brutalist':'Brutalist unit',
+  'style.factory.sawtooth':'Sawtooth works', 'style.factory.logistics':'Logistics hub', 'style.factory.silos':'Agri-food plant', 'style.factory.cleantech':'Clean-tech plant',
+  'style.school.brick':'Brick school', 'style.school.modern':'Modern school', 'style.school.clocktower':'Old school',
+  'style.clinic.helipad':'Health centre', 'style.clinic.pavilion':'Health pavilion', 'style.clinic.hospital':'Old hospital',
+  'style.park.trees':'Wooded park', 'style.park.pond':'Duck pond', 'style.park.playground':'Playground', 'style.park.fountain':'Fountain square',
+  'names.housing':'Harmonised Living|Subsidiarity Towers|Residence Annex IV|Schengen Gardens|The Proportionality|Cohesion Court|Qualified Majority Mansions|Acquis Apartments|Erasmus Heights|Codecision Courtyard',
+  'names.factory':'Harmonised Widgets SA|Compliant Components|Euro-Norm Industries|Standard Plug Ltd|CE-Mark Works|Straight Banana Packers|Directive Dynamics',
+  'names.school':'Erasmus Primary|Mutual Recognition School|Bologna Process Academy|Comenius School|Lifelong Learning Institute',
+  'names.clinic':'Cross-Border Health Centre|Health Card Clinic|Precautionary Principle Hospital|Forms & Plasters Clinic',
+  'names.park':'Founding Parents Park|Natura 2000 Gardens|Green Deal Green|Single Market Park|Ode to Joy Square',
   'pc.private':'Built by a developer: no upkeep for you.', 'pc.upkeep':'Upkeep {x}/month.', 'pc.road':'A road. Every parcel around it (diagonals too) can get permits.',
   'act.acquire':'Acquire · {x}', 'act.buyBack':'Buy back · {x}', 'act.slot1':'1 agenda slot',
   'act.sell':'Sell to a developer · +{x}', 'act.sellSub':'1 slot · they build homes, at their pace', 'act.sellCold':'No developer is buying: the market is cold',
@@ -1841,6 +1852,16 @@ es: {
   'pc.building':'<b>{b}</b> en obras: faltan {n} mes(es). Cuesta {x} al mes.', 'pc.halted':'Paralizada {n} mes(es) más.',
   'pc.privPermit':'Vendida a una promotora. Está tramitando su licencia ({n} mes(es)).', 'pc.privBuild':'La promotora está construyendo viviendas (faltan {n} mes(es), si todo va bien).',
   'pc.privPaused':'Parada: el mercado está frío.', 'pc.ruin':'Una promoción abandonada. La promotora quebró y el hormigón es del banco. Puedes recomprarla.',
+  'style.housing.slab':'Bloque de viviendas', 'style.housing.tower':'Torre residencial', 'style.housing.terrace':'Casas adosadas', 'style.housing.perimeter':'Manzana cerrada', 'style.housing.eco':'Ecobloque de madera', 'style.housing.brutalist':'Unidad brutalista',
+  'style.factory.sawtooth':'Nave de dientes de sierra', 'style.factory.logistics':'Centro logístico', 'style.factory.silos':'Planta agroalimentaria', 'style.factory.cleantech':'Planta de tecnología limpia',
+  'style.school.brick':'Escuela de ladrillo', 'style.school.modern':'Colegio moderno', 'style.school.clocktower':'Escuela histórica',
+  'style.clinic.helipad':'Centro de salud', 'style.clinic.pavilion':'Ambulatorio', 'style.clinic.hospital':'Hospital histórico',
+  'style.park.trees':'Parque arbolado', 'style.park.pond':'Estanque de patos', 'style.park.playground':'Parque infantil', 'style.park.fountain':'Plaza de la fuente',
+  'names.housing':'Residencial Armonía|Torres Subsidiariedad|Residencial Anexo IV|Jardines de Schengen|Edificio Proporcionalidad|Patio Cohesión|Mansiones Mayoría Cualificada|Apartamentos Acervo|Alturas Erasmus|Patio Codecisión',
+  'names.factory':'Widgets Armonizados SA|Componentes Conformes|Industrias Euronorma|Enchufe Estándar SL|Talleres Marcado CE|Envasadora del Plátano Recto|Dinámica Directiva',
+  'names.school':'CEIP Erasmus|Colegio Reconocimiento Mutuo|Academia Proceso de Bolonia|Colegio Comenius|Instituto de Aprendizaje Permanente',
+  'names.clinic':'Centro de Salud Transfronterizo|Clínica Tarjeta Sanitaria|Hospital Principio de Precaución|Ambulatorio Formularios y Tiritas',
+  'names.park':'Parque de los Padres Fundadores|Jardines Natura 2000|Parque del Pacto Verde|Parque del Mercado Único|Plaza de la Oda a la Alegría',
   'pc.private':'Construido por una promotora: no te cuesta mantenimiento.', 'pc.upkeep':'Mantenimiento {x}/mes.', 'pc.road':'Una calle. Todas las parcelas de alrededor (también en diagonal) pueden pedir licencia.',
   'act.acquire':'Comprar · {x}', 'act.buyBack':'Recomprar · {x}', 'act.slot1':'1 hueco de agenda',
   'act.sell':'Vender a una promotora · +{x}', 'act.sellSub':'1 hueco · construye ella las viviendas, a su ritmo', 'act.sellCold':'Ninguna promotora compra: el mercado está frío',
@@ -2903,7 +2924,13 @@ const CROPS = [
   {base:C('#9a6b47'), row:C('#7a5135'), hi:C('#b3835c')},   // ploughed
   {base:C('#e0cd3c'), row:C('#b9a42b'), hi:C('#f3e273')},   // rapeseed
 ];
+// Colours that light up at night: window glass (some windows lit, chosen per sprite) and lamps (always lit)
+const GLASS = new Set(), LAMPC = new Set();
+const gl = c => { GLASS.add((c[0]<<16)|(c[1]<<8)|c[2]); return c; };
+const lamp = c => { LAMPC.add((c[0]<<16)|(c[1]<<8)|c[2]); return c; };
+let SPRITE_SEQ = 0;
 // One sprite = a small canvas plus the pixel that sits on the tile centre (ox, oy).
+// top = how many pixels it rises above (ox, oy); g = its night glow layer (or null); dk = cached night versions.
 function sprite(w,h,ox,oy,paint,outline,late){
   const cv = document.createElement('canvas'); cv.width=w; cv.height=h;
   const g = cv.getContext('2d'), img = g.createImageData(w,h), d = img.data;
@@ -2918,7 +2945,17 @@ function sprite(w,h,ox,oy,paint,outline,late){
   }
   // late: thin details painted after the outline, only into empty pixels (they sit behind what is there)
   if(late) late({w,h,ox,oy,put:(x,y,c)=>{ if(x>=0&&y>=0&&x<w&&y<h&&d[(y*w+x)*4+3]===0) put(x,y,c); }});
-  g.putImageData(img,0,0); return {c:cv, ox, oy};
+  g.putImageData(img,0,0);
+  let first = oy, glow = null; const seq = ++SPRITE_SEQ, key = o => (d[o]<<16)|(d[o+1]<<8)|d[o+2];
+  find: for(let y=0;y<h;y++) for(let x=0;x<w;x++) if(d[(y*w+x)*4+3] > 0){ first = y; break find; }
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const o=(y*w+x)*4; if(d[o+3] < 200) continue; const k = key(o);
+    const isLamp = LAMPC.has(k), isGlass = !isLamp && GLASS.has(k); if(!isLamp && !isGlass) continue;
+    if(isGlass && hsh(Math.floor(x/3), Math.floor(y/4), seq*7+3) > 0.62) continue;
+    if(!glow) glow = g.createImageData(w,h);
+    const above = isGlass && y>0 && GLASS.has(key(o-w*4)), c = isLamp ? [255,242,176] : above ? [255,204,104] : [255,234,160];
+    glow.data[o]=c[0]; glow.data[o+1]=c[1]; glow.data[o+2]=c[2]; glow.data[o+3]=255; }
+  let gc = null; if(glow){ gc = document.createElement('canvas'); gc.width=w; gc.height=h; gc.getContext('2d').putImageData(glow,0,0); }
+  return {c:cv, ox, oy, top: oy - first, g: gc, dk: []};
 }
 // Iso geometry inside a sprite. a runs to screen lower-right, b to lower-left; a tile is a,b ∈ [-0.5,0.5).
 function eachPx(e, fn){ for(let y=0;y<e.h;y++) for(let x=0;x<e.w;x++) fn(x, y, x+0.5-e.ox, y+0.5-e.oy); }
@@ -3021,8 +3058,8 @@ function roadTile(m, regional){ const w = regional ? 0.34 : 0.28, side = regiona
                                             : (inRoad(du,dv,m,w+0.025) ? PX.curb : speck(x,y,m,PX.walk,sh(PX.walk,0.93),sh(PX.walk,1.04),0.06));
     return grassPx(x,y,m+5); }); }
 // River / flood zone: a channel that joins the neighbouring flood parcels
-function riverTile(m){ return ground((u,v,x,y)=>{ const du=u-0.5, dv=v-0.5;
-  if(inRoad(du,dv,m,0.2)){ if(hsh(x>>2,y,m)>0.9) return PX.foam; return ((x+y*2)%7<3 && hsh(x,y,3)<0.6) ? PX.waterL : PX.water; }
+function riverTile(m, ph=0){ return ground((u,v,x,y)=>{ const du=u-0.5, dv=v-0.5;
+  if(inRoad(du,dv,m,0.2)){ if(hsh((x+ph*2)>>2,y,m+ph*13)>0.9) return PX.foam; return ((x+y*2+ph*2)%7<3 && hsh(x,y+ph,3)<0.6) ? PX.waterL : PX.water; }
   if(inRoad(du,dv,m,0.26)) return speck(x,y,m,PX.bank,sh(PX.bank,0.9),sh(PX.bank,1.06),0.15);
   const n=hsh(x,y,m+40); if(n>0.93) return PX.reed; if(n<0.04) return PX.waterL;
   return n<0.25 ? sh(PX.marsh,0.92) : PX.marsh; }); }
@@ -3055,78 +3092,261 @@ function treeAt(e, a, b, kind, size){ // a small tree painted directly into a sp
 function windows(s,z,len,hgt,base,{floor=8,step=6,glass=C('#38536f'),frame=null}={}){
   if(s<2||s>len-2||z<3||z>hgt-3) return base;
   const fz = z%floor, fs = s%step;
-  if(fz>=3 && fz<6 && fs>=2 && fs<5) return fz===5 ? sh(glass,1.7) : glass;
+  if(fz>=3 && fz<6 && fs>=2 && fs<5) return fz===5 ? gl(sh(glass,1.7)) : gl(glass);
   if(frame && fz>=2 && fz<7 && fs>=1 && fs<6) return frame;
   if(fz===1) return sh(base,0.86);    // floor band
   return base; }
 const SPR = new Map();
 const spr = (key, make) => { let s = SPR.get(key); if(!s){ s = make(); SPR.set(key, s); } return s; };
+const P3 = (a,b,z=0) => [(a-b)*32, (a+b)*16 - z];          // tile-relative screen offset of a ground point at height z
+const pick2 = (v, arr, k=0) => arr[Math.floor(hsh(v, k, 5)*arr.length)];
+// A vertical cylinder standing on (ca,cb): side(u,z) with u ∈ (-1,1) across its width, top(u,w) for the lid
+function cyl(e, ca, cb, r, z0, z1, side, top){
+  const cx=(ca-cb)*32, cy=(ca+cb)*16, rx=r*45.25, ry=r*22.63;
+  eachPx(e,(x,y,dx,dy)=>{ const X=dx-cx; if(Math.abs(X)>=rx) return; const ey=ry*Math.sqrt(1-(X/rx)**2), Y=dy-cy;
+    if(top && Math.abs(Y+z1) <= ey){ e.put(x,y,top(X/rx,(Y+z1)/ry)); return; }
+    if(Y >= -z1 && Y <= -z0+ey) e.put(x,y,side(X/rx, -Y)); }); }
+const dot = (e,a,b,z,c) => { const [x,y]=P3(a,b,z); e.put(Math.round(e.ox+x), Math.round(e.oy+y), c); };
+const WALLS = ['#efdfc0','#dba582','#cdd6db','#e7c7a0','#d6e0cc','#f1d6cf','#c9d3e6'].map(C);
+const PASTEL = ['#e9b8a4','#f2d48f','#b9d3c4','#a9c4e0','#efe6d8','#d9a7a7','#c7b9df','#f0c9a0'].map(C);
+const ROOFS = ['#b5523b','#8d4a3a','#5f6670','#c0442b','#6e5a4c'].map(C);
+const BANDS = ['#e8762b','#2a63c9','#1d8148','#c62f28','#8a5cc4'].map(C);
+const pv = (a,b) => (frac(b*9)<0.14 || frac(a*11)<0.12) ? C('#a9bcd8') : C('#2b4f86');   // photovoltaic panels
+
+// Building archetypes. Each parcel picks one from the run seed, plus a colourway (v = 0..5).
+// fx: animated overlays drawn on top every frame (positions relative to the tile centre, in art pixels).
+// walk: little people pacing [a0,b0 → a1,b1] in front of the building.
+const ARCH = {
+  housing: [
+    { id:'slab', make: v => thing(e=>{ const wall = pick2(v,WALLS), A=0.38, Hh=36;
+        shadow(e,-A,A,-A,A,0.35);
+        box(e,-A,A,-A,A,0,Hh,
+          (s,z)=>{ const c=sh(wall,0.95); if(z<6 && Math.abs(s-12)<2) return C('#5a3b2a'); return windows(s,z,24,Hh,c); },
+          (s,z)=>windows(s,z,24,Hh,sh(wall,0.72)),
+          (a,b)=> (Math.abs(a)>A-0.04||Math.abs(b)>A-0.04) ? sh(wall,1.05) : speck(Math.round(a*64),Math.round(b*64),v,C('#9b9c9e'),C('#8c8d8f'),C('#a9aaac'),0.15));
+        box(e,-0.18,0.02,-0.22,0.02,Hh,Hh+5,()=>sh(wall,0.85),()=>sh(wall,0.66),()=>C('#8a8b8d'));
+        box(e,0.1,0.22,0.08,0.2,Hh,Hh+4,()=>C('#7f8a94'),()=>C('#66707a'),()=>C('#9aa5af')); }),
+      walk:[[-0.38,0.45,0.38,0.45]] },
+    { id:'tower', make: v => { const Hh=60; return thing(e=>{ const wall = pick2(v,WALLS,1), A=0.25, glass=C('#3b6a86'), base=C('#7d858c');
+        shadow(e,-A,A,-A,A,0.55);
+        treeAt(e,-0.38,0.32,'round',0.7);
+        box(e,-A,A,-A,A,0,Hh,
+          (s,z)=>{ if(z<7) return (s>3&&s<13&&z<6) ? gl(C('#2f4f66')) : sh(base,0.95); if(z%7<1) return sh(wall,0.8);
+                   return windows(s,z,16,Hh,sh(wall,0.95),{floor:7,step:5,glass}); },
+          (s,z)=>{ if(z<7) return sh(base,0.72); if(z%7<1) return sh(wall,0.6);
+                   if(s>10 && z%7>=2 && z%7<6) return (z%7===2) ? sh(C('#d9dde0'),0.8) : gl(glass);      // corner balconies
+                   return windows(s,z,16,Hh,sh(wall,0.72),{floor:7,step:5,glass}); },
+          ()=>C('#9b9c9e'));
+        box(e,-0.12,0.08,-0.1,0.1,Hh,Hh+6,()=>sh(wall,0.85),()=>sh(wall,0.66),()=>C('#8a8b8d'));
+      }, true, e=>{ for(let j=0;j<9;j++) dot(e,-0.02,0,Hh+6+j,C('#5d6570')); }); },
+      fx:[{k:'blink', x:-1, y:-75, c:'#e8442e', p:1.6, o:0}], walk:[[-0.3,0.42,0.3,0.42]] },
+    { id:'terrace', ground:'grass', make: v => thing(e=>{
+        plane(e,-0.45,0.45,0.15,0.45,0,0,0,(a,b,x,y)=> b>0.41 ? (hsh(x,y,3)<0.5?PX.hedge:sh(PX.hedge,1.2))
+          : Math.abs(frac((a+0.45)/0.3)-0.5)<0.07 ? PX.pave : (hsh(x,y,v)<0.06 ? C('#f2d14b') : grassPx(x,y,v)));
+        shadow(e,-0.45,0.45,-0.3,0.15,0.2);
+        for(let k=0;k<3;k++){ const a0=-0.45+k*0.3, a1=a0+0.3, wall=pick2(v*3+k,PASTEL,k), roof=pick2(v+k*7,ROOFS,k+4), Hh = hsh(v,k,9)<0.5 ? 13 : 16;
+          box(e,a0,a1,-0.3,0.15,0,Hh,
+            (s,z)=>{ if(z<6 && Math.abs(s-3)<1.3) return C('#5a3b2a'); if(z>1 && z<5 && s>5.5 && s<8) return gl(C('#4f6278'));
+                     if(z>8 && z<12 && (Math.abs(s-3)<1.2 || Math.abs(s-6.8)<1.2)) return gl(C('#4f6278')); return sh(wall,0.95); },
+            (s,z)=> (z>8&&z<12&&Math.abs(s-7)<1.5) ? gl(C('#41546a')) : sh(wall,0.72), null);
+          gable(e,a0,a1,-0.3,0.15,Hh,8,'b',roof,sh(wall,0.95));
+          box(e,a0+0.04,a0+0.08,-0.24,-0.2,Hh+2,Hh+8,()=>C('#8d4a3a'),()=>C('#6e3a2d'),()=>C('#5a2f25')); } }),
+      fx: v=>[{k:'smoke', x:-5, y: hsh(v,0,9)<0.5 ? -31 : -34, c:'steam'}], walk:[[-0.4,0.3,0.4,0.3]] },
+    { id:'perimeter', make: v => thing(e=>{ const wall=pick2(v,WALLS,2), Hh=26, aw=pick2(v,BANDS,3);
+        const L=(s,z,len)=>{ if(z<7){ if(z>=5) return Math.floor(s/2)%2 ? aw : sh(aw,0.8);
+                               if(s%6>1 && s%6<5) return gl(C('#5f7f93')); return sh(wall,0.8); }
+                             return windows(s,z,len,Hh,sh(wall,0.95),{floor:6,step:5}); };
+        const R=(s,z,len)=> z<7 ? sh(wall,0.6) : windows(s,z,len,Hh,sh(wall,0.72),{floor:6,step:5});
+        const roof=(a,b,x,y)=> hsh(x>>1,y,v)<0.5 ? C('#7f9a52') : C('#6d8a45');
+        shadow(e,-0.42,0.42,-0.42,-0.12,0.3);
+        box(e,-0.42,0.42,-0.42,-0.12,0,Hh,(s,z)=>L(s,z,27),(s,z)=>R(s,z,9.6),roof);
+        treeAt(e,-0.18,0.2,'round',0.95);
+        shadow(e,0.12,0.42,-0.12,0.42,0.3);
+        box(e,0.12,0.42,-0.12,0.42,0,Hh,(s,z)=>L(s,z,9.6),(s,z)=>R(s,z,17),roof);
+        plane(e,0.17,0.37,0.0,0.36,Hh,0,0,(a,b)=>pv(a,b)); }),
+      walk:[[-0.42,0.46,0.08,0.46],[0.46,-0.1,0.46,0.4]] },
+    { id:'eco', make: v => thing(e=>{ const A=0.36, Hh=40, wood=pick2(v,[C('#b98552'),C('#a8744a'),C('#c79a68')]);
+        shadow(e,-A,A,-A,A,0.35);
+        const face = f => (s,z)=>{ const fz=z%8;
+          if(fz<1.2) return sh(C('#d9d6cc'),f);
+          if(fz<2.6 && z>6) return hsh(Math.floor(s),Math.floor(z),v)<0.6 ? sh(C('#4f9a3a'),f*1.1) : sh(C('#3f7f2e'),f);
+          return windows(s,z,23,Hh, Math.floor(s)%3===0 ? sh(wood,0.85*f) : sh(wood,f), {floor:8,step:6,glass:C('#2f5468')}); };
+        box(e,-A,A,-A,A,0,Hh,face(0.98),face(0.74),()=>C('#cfd2cf'));
+        plane(e,-0.3,0.3,-0.3,0.3,Hh+1,0,6,(a,b)=>pv(a,b)); }),
+      walk:[[-0.36,0.44,0.36,0.44]] },
+    { id:'brutalist', make: v => thing(e=>{ const A=0.4, Hh=44, conc=pick2(v,[C('#b9b4a8'),C('#c4beb1'),C('#aeaba3')]);
+        shadow(e,-A,A,-A,A,0.4);
+        box(e,-A+0.05,A-0.05,-A+0.05,A-0.05,0,8,(s,z)=> s%7<2 ? sh(conc,0.9) : C('#3a3c41'),(s,z)=> s%7<2 ? sh(conc,0.66) : C('#2f3135'),null);
+        const deep=(f)=>(s,z)=>{ const fz=z%7, fs=s%6;
+          if(fz>=2&&fz<5&&fs>=2&&fs<5) return fz===2 ? sh(conc,0.7*f) : (fs===2 ? sh(conc,0.76*f) : gl(C('#3a4b5a')));
+          return hsh(Math.floor(s),Math.floor(z),3)<0.12 ? sh(conc,0.88*f) : sh(conc,0.97*f); };
+        box(e,-A,A,-A,A,8,Hh,deep(1),deep(0.74),(a,b,x,y)=> speck(x,y,v,sh(conc,1.05),sh(conc,0.95),sh(conc,1.1),0.15));
+        box(e,-0.3,-0.1,-0.3,-0.1,Hh,Hh+7,()=>sh(conc,0.92),()=>sh(conc,0.7),()=>sh(conc,1.02)); }),
+      walk:[[-0.4,0.46,0.4,0.46]] },
+  ],
+  factory: [
+    { id:'sawtooth', ground:'yard', make: v => thing(e=>{ const wall=C('#a9b3bc'), A=0.44, B0=-0.4, B1=0.4, Hh=15;
+        shadow(e,-A,A,B0,B1,0.3);
+        box(e,0.18,0.3,-0.38,-0.26,0,50,(s,z)=> z>44||Math.abs(z-38)<1.5 ? C('#ececec') : sh(C('#a8553f'),0.95), (s,z)=> z>44||Math.abs(z-38)<1.5 ? C('#c9c9c9') : sh(C('#a8553f'),0.72), ()=>C('#3a2a24'));
+        box(e,-A,A,B0,B1,0,Hh,
+          (s,z)=>{ if(s>8&&s<22&&z<11) return z%2 ? C('#6b7580') : C('#7b8590'); if(z>=11&&z<13&&s%4) return gl(C('#5d7e99')); return s%3===0 ? sh(wall,0.84) : sh(wall,0.95); },
+          (s,z)=>{ if(z>=11&&z<13&&s%4) return gl(C('#4d6b84')); return s%3===0 ? sh(wall,0.6) : sh(wall,0.7); }, null);
+        for(let i=0;i<3;i++){ const a0=-A+i*(2*A/3), a1=a0+2*A/3; gable(e,a0,a1,B0,B1,Hh,7,'b',C('#7c8691'),sh(wall,0.95)); } }),
+      fx:[{k:'smoke', x:18, y:-52}] },
+    { id:'logistics', ground:'yard', make: v => thing(e=>{ const band=pick2(v,BANDS), wall=C('#c9ced4'), A0=-0.46, A1=0.46, B0=-0.42, B1=0.2, Hh=15;
+        shadow(e,A0,A1,B0,B1,0.25);
+        box(e,A0,A1,B0,B1,0,Hh,
+          (s,z)=>{ if(z>=Hh-4 && z<Hh-1) return band; const d=s%9.8;
+                   if(z<9 && d>=2 && d<7.5) return z>=8 ? C('#2f343a') : (Math.floor(z)%2 ? C('#4a5058') : C('#555c64'));
+                   return Math.floor(s)%2 ? sh(wall,0.95) : sh(wall,0.88); },
+          (s,z)=> (z>=Hh-4 && z<Hh-1) ? sh(band,0.75) : (Math.floor(s)%2 ? sh(wall,0.72) : sh(wall,0.66)),
+          (a,b,x,y)=> (frac((a+0.46)*5)<0.12 && Math.abs(b+0.11)<0.24) ? gl(C('#9fc3e0')) : speck(x,y,v,C('#d4d7da'),C('#c4c8cc'),C('#e0e2e4'),0.08));
+        [-0.3,0.0,0.3].forEach((a,k)=>{ if(hsh(v,k,4) < 0.3) return;
+          box(e,a-0.08,a+0.08,B1+0.02,B1+0.23,1,9,()=>C('#f4f4f2'),()=>C('#cfd2d4'),()=>C('#e9eaea'));
+          box(e,a-0.07,a+0.07,B1+0.23,B1+0.29,0,8,(s,z)=> z>4&&z<7 ? C('#2e4255') : sh(band,0.95),()=>sh(band,0.75),()=>sh(band,1.1)); }); }),
+      fx:[{k:'blink', x:-21, y:-20, c:'#ffb000', p:1.1, o:0.3}, {k:'blink', x:28, y:-16, c:'#ffb000', p:1.1, o:0.8}] },
+    { id:'silos', ground:'yard', make: v => thing(e=>{ const metal=pick2(v,[C('#c7ccd1'),C('#d6d0c4'),C('#b9c4c9')]), shed=pick2(v,[C('#a8553f'),C('#3f7a5a'),C('#2a63c9')],2);
+        shadow(e,-0.42,0.42,-0.42,0.42,0.3);
+        const silo=(a,b)=> cyl(e,a,b,0.12,0,44,(u,z)=>{ const f = u<-0.35 ? 1.08 : u<0.35 ? 0.92 : 0.74; return Math.floor(z)%7===0 ? sh(metal,f*0.84) : sh(metal,f); },
+          (u,w)=> u+w < -0.3 ? sh(metal,1.15) : sh(metal,1.02));
+        silo(-0.28,-0.28); silo(0,-0.28); silo(0.28,-0.28);
+        box(e,-0.3,0.3,-0.3,-0.26,44,47,()=>C('#7d858c'),()=>C('#5f6670'),()=>C('#8f97a2'));
+        box(e,-0.42,0.42,-0.06,0.4,0,11,(s,z)=> Math.floor(s)%2 ? sh(shed,0.95) : sh(shed,0.85),(s,z)=> (z>3&&z<7&&s%6>2) ? gl(C('#4d6b84')) : sh(shed,0.7),null);
+        gable(e,-0.42,0.42,-0.06,0.4,11,6,'a',C('#7c8691'),sh(shed,0.7)); }),
+      fx:[{k:'smoke', x:9, y:-52, c:'steam'}] },
+    { id:'cleantech', ground:'yard', make: v => thing(e=>{ const wall=C('#f1f3f4'), stripe=pick2(v,[C('#2a63c9'),C('#1d8148'),C('#0b1f4d')]), A0=-0.46, A1=0.3, B0=-0.4, B1=0.38, Hh=18;
+        shadow(e,A0,A1,B0,B1,0.25);
+        box(e,A0,A1,B0,B1,0,Hh,
+          (s,z)=> (z>=6&&z<9) ? stripe : (z<5 && s%10>2 && s%10<8 ? gl(C('#5a7f99')) : sh(wall,0.95)),
+          (s,z)=> (z>=6&&z<9) ? sh(stripe,0.75) : sh(wall,0.74),
+          (a,b,x,y)=> (frac((b-B0)*6)<0.62 && a>A0+0.04 && a<A1-0.2) ? (frac((a-A0)*16)<0.12 || frac((b-B0)*6)<0.08 ? C('#a9bcd8') : C('#2b4f86')) : C('#dfe3e6'));
+        box(e,-0.4,-0.3,-0.36,-0.26,Hh,Hh+4,()=>C('#bfc5ca'),()=>C('#9aa1a7'),()=>C('#d4d8db'));
+        box(e,-0.4,-0.3,-0.2,-0.1,Hh,Hh+4,()=>C('#bfc5ca'),()=>C('#9aa1a7'),()=>C('#d4d8db'));
+        cyl(e,0.4,-0.38,0.02,0,62,(u)=> u<0 ? C('#f4f6f7') : C('#c9cfd4'),()=>C('#ffffff'));
+        box(e,0.36,0.44,-0.42,-0.36,62,66,()=>C('#e9ecee'),()=>C('#c3c9ce'),()=>C('#f6f7f8')); }),
+      fx:[{k:'turbine', x:25, y:-64, L:15}] },
+  ],
+  school: [
+    { id:'brick', ground:'school', make: v => thing(e=>{ const wall=pick2(v,[C('#b65a3c'),C('#a4523a'),C('#c06a45')]), A=0.42, B0=-0.42, B1=0.02, Hh=17;
+        shadow(e,-A,A,B0,B1,0.25);
+        box(e,-A,A,B0,B1,0,Hh,
+          (s,z)=>{ if(z<7 && Math.abs(s-27)<3) return C('#3d3a5a'); if(Math.abs(s-27)<2.5 && z>12 && z<16) return (Math.abs(s-27)<1.2&&z>13&&z<15)?C('#333'):C('#f4f1e6');
+            return windows(s,z,54,Hh,sh(wall,0.95),{floor:8,step:6,frame:C('#f1ece0')}); },
+          (s,z)=>windows(s,z,28,Hh,sh(wall,0.72),{floor:8,step:6,frame:C('#cfcabd')}), null);
+        gable(e,-A,A,B0,B1,Hh,8,'a',C('#6b7178'),sh(wall,0.72));
+        const fx = Math.round(e.ox + (0.36-0.4)*32), fy = Math.round(e.oy + (0.36+0.4)*16);
+        for(let j=0;j<30;j++) e.put(fx,fy-j,C('#d9d9d9')); }),
+      fx:[{k:'flag', x:-1, y:-14, c:['#2e7d32','#f2c230']}], walk:[[-0.3,0.28,0.3,0.28],[-0.2,0.4,0.25,0.4]], kids:true },
+    { id:'modern', ground:'school', make: v => thing(e=>{ const wall=C('#f4f2ec'), cols=[C('#ffd200'),C('#e8762b'),C('#2a63c9'),C('#1d8148')], Hh=16;
+        const face=(f,len)=>(s,z)=>{ if(z<1.5) return sh(C('#9aa3ad'),f); const k=Math.floor(s/6);
+          if(z>3 && z<14 && s%6<2.2) return sh(cols[(k+v)%4],f);
+          if(z>4 && z<12 && s%6>=2.6) return gl(sh(C('#5d8aa6'),f));
+          return sh(wall,f); };
+        shadow(e,-0.44,0.44,-0.44,-0.16,0.25);
+        box(e,-0.44,0.44,-0.44,-0.16,0,Hh,face(0.97,28),face(0.74,9),(a,b,x,y)=> speck(x,y,v,C('#d9dcdf'),C('#cdd1d5'),C('#e6e8ea'),0.08));
+        shadow(e,0.16,0.44,-0.16,0.06,0.25);
+        box(e,0.16,0.44,-0.16,0.06,0,Hh,face(0.97,9),face(0.74,7),(a,b)=>pv(a,b)); }),
+      walk:[[-0.35,0.3,0.1,0.3],[-0.3,0.42,0.3,0.42]], kids:true },
+    { id:'clocktower', ground:'school', make: v => thing(e=>{ const stone=pick2(v,[C('#e3d3b0'),C('#d9c7a2'),C('#eadcc0')]), slate=pick2(v,[C('#a5492f'),C('#8d4a3a'),C('#b5523b')],2);
+        const arch=(f)=>(s,z)=>{ const fs=s%6; if(z>3&&z<12&&fs>=2&&fs<5){ if(z>=10.5) return fs>=3&&fs<4 ? gl(C('#3f5268')) : sh(stone,0.8*f); return gl(C('#3f5268')); }
+          return Math.floor(z)%4===0 ? sh(stone,0.88*f) : sh(stone,0.97*f); };
+        shadow(e,-0.44,0.44,-0.4,0.02,0.25);
+        box(e,-0.44,0.44,-0.4,0.02,0,16,arch(1),arch(0.76),null);
+        gable(e,-0.44,0.44,-0.4,0.02,16,8,'a',slate,sh(stone,0.74));
+        box(e,-0.08,0.08,-0.06,0.1,0,36,
+          (s,z)=>{ if(z<7 && Math.abs(s-2.6)<1.4) return C('#4a3428'); const dz=z-30, ds=s-2.6;
+                   if(ds*ds+dz*dz*1.2 < 5.8) return (ds*ds+dz*dz*1.2 < 3.6) ? ((Math.abs(ds)<0.5&&dz>0)||(Math.abs(dz)<0.5&&ds>0) ? C('#2b2b2b') : C('#fbf7ea')) : C('#c9a227');
+                   return Math.floor(z)%4===0 ? sh(stone,0.86) : sh(stone,0.96); },
+          (s,z)=> (z>26&&z<33&&Math.abs(s-2.6)<1.3) ? gl(C('#3f5268')) : sh(stone,0.72), null);
+        gable(e,-0.08,0.08,-0.06,0.1,36,9,'a',slate,sh(stone,0.72));
+        gable(e,-0.08,0.08,-0.06,0.1,36,9,'b',sh(slate,1.1),sh(stone,0.9)); }),
+      walk:[[-0.36,0.3,0.36,0.3]], kids:true },
+  ],
+  clinic: [
+    { id:'helipad', make: v => thing(e=>{ const wall=C('#f3f5f4'), A=0.38, Hh=24, teal=C('#26a69a');
+        shadow(e,-A,A,-A,A,0.3);
+        box(e,-A,A,-A,A,0,Hh,
+          (s,z)=>{ if(z%10<1.5) return sh(teal,0.95); if(z>3&&z%10>=3&&z%10<7&&s>3&&s<21&&s%8) return gl(C('#5d8ea8')); return sh(wall,0.95); },
+          (s,z)=>{ if(z%10<1.5) return sh(teal,0.7); if(z>3&&z%10>=3&&z%10<7&&s>3&&s<21&&s%8) return gl(C('#45708a')); return sh(wall,0.72); },
+          (a,b)=>{ const r=Math.hypot(a,b); if(Math.abs(a)>A-0.04||Math.abs(b)>A-0.04) return C('#e6e9e8'); if(r>0.2&&r<0.25) return C('#f2c230'); return C('#a3a9ad'); });
+        [[-3,-2],[-3,-1],[-3,0],[-3,1],[-3,2],[3,-2],[3,-1],[3,0],[3,1],[3,2],[-2,0],[-1,0],[0,0],[1,0],[2,0]].forEach(([i,j])=>e.put(e.ox+i,e.oy-Hh+j,C('#ffffff')));
+        faceB(e,A+0.001,-0.12,0.12,Hh-12,Hh-2,(s,z)=> (Math.abs(s-7.7)<2.2 || Math.abs(z-5)<2.2) ? C('#21a05a') : null);
+        box(e,-0.12,0.12,A,A+0.1,6,8,()=>teal,()=>sh(teal,0.75),()=>sh(teal,1.1)); }),
+      fx:[{k:'blink', x:0, y:-37, c:'#e8442e', p:1.4, o:0}, {k:'blink', x:-23, y:-25, c:'#ffd200', p:0.9, o:0.5}, {k:'blink', x:23, y:-25, c:'#ffd200', p:0.9, o:0.5}],
+      walk:[[-0.36,0.45,0.36,0.45]] },
+    { id:'pavilion', make: v => thing(e=>{ const wall=C('#eef1f0'), green=C('#21a05a');
+        shadow(e,-0.44,0.44,-0.36,0.06,0.25);
+        box(e,-0.44,0.44,-0.36,0.06,0,11,
+          (s,z)=> (z<9 && z>1) ? (Math.floor(s)%5===0 ? C('#d0d6d8') : gl(C('#7fb3c9'))) : sh(wall,0.95),
+          (s,z)=> (z>3&&z<8&&s%6>1) ? gl(C('#5f8fa6')) : sh(wall,0.72),
+          (a,b,x,y)=> (Math.abs(a-0.1)<0.12 && Math.abs(b+0.15)<0.08) ? C('#b7bec2') : speck(x,y,4,C('#dfe3e4'),C('#cfd4d6'),C('#eceff0'),0.06));
+        box(e,-0.14,0.1,0.06,0.2,8,10,()=>green,()=>sh(green,0.75),()=>sh(green,1.15));
+        box(e,0.16,0.38,0.2,0.33,1,8,(s,z)=> (z>2.5&&z<4) ? C('#e8762b') : (z>4.5&&s<2 ? C('#2e4255') : C('#f6f6f4')),
+          (s,z)=> (z>2.5&&z<4) ? sh(C('#e8762b'),0.8) : C('#d5d7d8'),()=>C('#ececea'));
+        for(let j=0;j<14;j++) dot(e,-0.38,0.32,j,C('#5d6570'));
+        const [sx,sy] = P3(-0.38,0.32,15), X=Math.round(e.ox+sx), Y=Math.round(e.oy+sy);
+        for(let i=-3;i<=3;i++) for(let j=-3;j<=3;j++){ const c = (Math.abs(i)<=1 || Math.abs(j)<=1) ? C('#21c45f') : null; if(c && Math.abs(i)+Math.abs(j)<6) e.put(X+i,Y+j,lamp(c)); } }),
+      fx:[{k:'blink', x:-1, y:-1, c:'#3d8bff', p:0.5, o:0}, {k:'blink', x:2, y:-2, c:'#ff4040', p:0.5, o:0.5}],
+      walk:[[-0.3,0.3,0.05,0.3]] },
+    { id:'hospital', make: v => thing(e=>{ const stone=pick2(v,[C('#e6dcc6'),C('#ddd5c8'),C('#efe4cf')]), roof=C('#56606b');
+        shadow(e,-0.42,0.42,-0.4,0.12,0.3);
+        box(e,-0.42,0.42,-0.4,0.12,0,22,
+          (s,z)=>windows(s,z,27,22,Math.floor(z)%7===0 ? sh(stone,0.86) : sh(stone,0.96),{floor:7,step:5,frame:C('#f7f1e3')}),
+          (s,z)=>windows(s,z,17,22,sh(stone,0.74),{floor:7,step:5}), null);
+        gable(e,-0.42,0.42,-0.4,0.12,22,7,'a',roof,sh(stone,0.74));
+        box(e,-0.12,0.12,0.12,0.22,0,14,(s,z)=> (s%2.6<1 || z>11) ? sh(stone,1.02) : C('#5a5246'),()=>sh(stone,0.72),()=>sh(stone,1.05));
+        gable(e,-0.12,0.12,0.12,0.22,14,5,'b',sh(roof,1.1),sh(stone,0.95));
+        faceB(e,0.121,-0.42,0.42,15,21,(s,z)=> (Math.abs(s-5)<1.2 && z>1 && z<6) || (Math.abs(z-3.5)<1 && Math.abs(s-5)<3) ? C('#21a05a') : null); }),
+      walk:[[-0.4,0.34,0.4,0.34]] },
+  ],
+  park: [
+    { id:'trees', outline:false, make: v => thing(e=>{
+        treeAt(e,-0.3,-0.25,'round',1.05); treeAt(e,0.28,-0.28,'pine',1); treeAt(e,-0.28,0.3,'round',0.85);
+        const bx = Math.round(e.ox + (0.25-0.15)*32), by = Math.round(e.oy + (0.25+0.15)*16);
+        for(let i=0;i<5;i++){ e.put(bx+i,by-2,C('#8a5a33')); e.put(bx+i,by-3,C('#a26d40')); } e.put(bx,by-1,C('#4a3020')); e.put(bx+4,by-1,C('#4a3020'));
+        const lx = e.ox+4, ly = e.oy+2; for(let j=0;j<10;j++) e.put(lx,ly-j,C('#3b3f45')); e.put(lx,ly-10,lamp(C('#ffe28a'))); e.put(lx-1,ly-10,lamp(C('#ffe28a'))); }, false),
+      walk:[[0.02,0.02,0.4,0.4],[-0.05,-0.05,-0.4,-0.4]] },
+    { id:'pond', outline:false, make: v => thing(e=>{
+        plane(e,-0.45,0.45,-0.45,0.45,0,0,0,(a,b,x,y)=>{ const d=((a+0.04)/0.3)**2+((b+0.04)/0.24)**2;
+          if(d<1) return d>0.78 ? PX.bank : ((x+y*2)%7<2 && hsh(x,y,2)<0.5) ? PX.waterL : PX.water;
+          if(d<1.3 && hsh(x,y,v)<0.45) return PX.reed; return null; });
+        treeAt(e,-0.36,-0.3,'round',1.15); treeAt(e,0.34,-0.34,'round',0.8);
+        const [bx,by] = P3(0.3,0.36), X=Math.round(e.ox+bx), Y=Math.round(e.oy+by);
+        for(let i=0;i<5;i++){ e.put(X+i,Y-2,C('#8a5a33')); e.put(X+i,Y-3,C('#a26d40')); } e.put(X,Y-1,C('#4a3020')); e.put(X+4,Y-1,C('#4a3020')); }, false),
+      fx:[{k:'ducks', a:-0.04, b:-0.04, ra:0.18, rb:0.13, n:3}], walk:[[-0.42,0.44,0.42,0.44]] },
+    { id:'playground', outline:false, make: v => thing(e=>{
+        plane(e,-0.42,0.06,-0.42,0.06,0,0,0,(a,b,x,y)=> speck(x,y,7,C('#e0784a'),C('#c9663c'),C('#ea8a5e'),0.1));
+        plane(e,0.12,0.42,-0.42,-0.12,0,0,0,(a,b,x,y)=> (a<0.15||a>0.39||b<-0.39||b>-0.15) ? C('#8a5a33') : speck(x,y,8,C('#ead7a0'),C('#d9c48a'),C('#f4e6b8'),0.15));
+        box(e,-0.34,-0.22,-0.34,-0.22,0,11,()=>C('#2a63c9'),()=>C('#1f4c9a'),()=>C('#ffd200'));
+        plane(e,-0.33,-0.23,-0.22,0.06,11+33.3*-0.22,0,-33.3,(a,b,x,y)=> Math.abs(a+0.28)<0.035 ? C('#ffe066') : C('#f2c230'));
+        treeAt(e,0.3,0.3,'round',0.95);
+        // swing frame: two posts and a bar along a
+        for(const a of [0.08,0.36]) for(let j=0;j<12;j++) dot(e,a,0.18,j,C('#c62f28'));
+        for(let s=0;s<=28;s++) dot(e,0.08+s/100,0.18,12,C('#c62f28')); }, false),
+      fx:[{k:'swing', pts:[[0.16,0.18],[0.28,0.18]]}], walk:[[-0.35,0.25,0.0,0.25],[-0.15,-0.38,-0.15,0.0]], kids:true },
+    { id:'fountain', ground:'plaza', outline:false, make: v => thing(e=>{
+        for(const [a,b] of [[-0.36,-0.36],[0.36,-0.36],[-0.36,0.36],[0.36,0.36]])
+          plane(e,a-0.08,a+0.08,b-0.08,b+0.08,0,0,0,(aa,bb,x,y)=> hsh(x,y,v)<0.35 ? pick2(x*7+y,[C('#e8442e'),C('#ffd200'),C('#f4f4f4'),C('#c75ab8')]) : C('#4f8a33'));
+        cyl(e,0,0,0.23,0,4,(u)=> u<-0.3 ? C('#e3ddcf') : u<0.4 ? C('#cfc8b9') : C('#b3ac9d'),(u,w)=> (u*u+w*w>0.7) ? C('#ece6d8') : ((Math.floor((u-w)*6+3))%3===0 ? PX.waterL : PX.water));
+        cyl(e,0,0,0.035,0,10,(u)=> u<0 ? C('#e3ddcf') : C('#bdb6a7'),()=>C('#f0ebe0'));
+        treeAt(e,-0.36,0.0,'round',0.75); treeAt(e,0.0,-0.38,'round',0.75); }, false),
+      fx:[{k:'fountain', x:0, y:-11}], walk:[[-0.42,0.3,0.42,0.3],[0.3,-0.42,0.3,0.42]] },
+  ],
+};
+// Unchanged natural/old features
 const BUILDINGS = {
-  housing: v => thing(e=>{ const wall = [C('#efdfc0'),C('#dba582'),C('#cdd6db')][v%3], A=0.38, Hh=36;
-    shadow(e,-A,A,-A,A,0.35);
-    box(e,-A,A,-A,A,0,Hh,
-      (s,z)=>{ const c=sh(wall,0.95); if(z<6 && Math.abs(s-24)<3) return C('#5a3b2a'); return windows(s,z,48,Hh,c); },
-      (s,z)=>windows(s,z,48,Hh,sh(wall,0.72)),
-      (a,b)=> (Math.abs(a)>A-0.04||Math.abs(b)>A-0.04) ? sh(wall,1.05) : speck(Math.round(a*64),Math.round(b*64),v,C('#9b9c9e'),C('#8c8d8f'),C('#a9aaac'),0.15));
-    box(e,-0.18,0.02,-0.22,0.02,Hh,Hh+5,(s)=>sh(wall,0.85),(s)=>sh(wall,0.66),()=>C('#8a8b8d'));
-    box(e,0.1,0.22,0.08,0.2,Hh,Hh+4,()=>C('#7f8a94'),()=>C('#66707a'),()=>C('#9aa5af'));
-  }),
-  factory: v => thing(e=>{ const wall=C('#a9b3bc'), A=0.44, B0=-0.4, B1=0.4, Hh=15;
-    shadow(e,-A,A,B0,B1,0.3);
-    box(e,0.18,0.3,-0.38,-0.26,0,50,(s,z)=> z>44||Math.abs(z-38)<1.5 ? C('#ececec') : sh(C('#a8553f'),0.95), (s,z)=> z>44||Math.abs(z-38)<1.5 ? C('#c9c9c9') : sh(C('#a8553f'),0.72), ()=>C('#3a2a24'));
-    box(e,-A,A,B0,B1,0,Hh,
-      (s,z)=>{ if(s>8&&s<22&&z<11) return z%2 ? C('#6b7580') : C('#7b8590'); if(z>=11&&z<13&&s%4) return C('#5d7e99'); return s%3===0 ? sh(wall,0.84) : sh(wall,0.95); },
-      (s,z)=>{ if(z>=11&&z<13&&s%4) return C('#4d6b84'); return s%3===0 ? sh(wall,0.6) : sh(wall,0.7); }, null);
-    for(let i=0;i<3;i++){ const a0=-A+i*(2*A/3), a1=a0+2*A/3; gable(e,a0,a1,B0,B1,Hh,7,'b',C('#7c8691'),sh(wall,0.95)); }
-    for(const [dx,dy,r] of [[2,6,3],[6,11,4],[12,15,4],[18,17,3]]){ const cx=e.ox+18+dx, cy=e.oy-52-dy;
-      for(let j=-r;j<=r;j++) for(let i=-r;i<=r;i++) if(i*i+j*j<=r*r+1) e.put(cx+i,cy+j, i+j<-1 ? [250,250,250,190] : [205,210,216,185]); }
-  }),
-  school: v => thing(e=>{ const wall=C('#b65a3c'), A=0.42, B0=-0.42, B1=0.02, Hh=17;
-    shadow(e,-A,A,B0,B1,0.25);
-    box(e,-A,A,B0,B1,0,Hh,
-      (s,z)=>{ if(z<7 && Math.abs(s-27)<3) return C('#3d3a5a'); if(Math.abs(s-27)<2.5 && z>12 && z<16) return (Math.abs(s-27)<1.2&&z>13&&z<15)?C('#333'):C('#f4f1e6');
-        return windows(s,z,54,Hh,sh(wall,0.95),{floor:8,step:6,frame:C('#f1ece0')}); },
-      (s,z)=>windows(s,z,28,Hh,sh(wall,0.72),{floor:8,step:6,frame:C('#cfcabd')}), null);
-    gable(e,-A,A,B0,B1,Hh,8,'a',C('#6b7178'),sh(wall,0.72));
-    // flagpole with a plain flag (no real-world emblems)
-    const fx = Math.round(e.ox + (0.36-0.4)*32), fy = Math.round(e.oy + (0.36+0.4)*16);
-    for(let j=0;j<30;j++) e.put(fx,fy-j,C('#d9d9d9'));
-    for(let i=1;i<11;i++){ const half=Math.round(3.5*(1-i/11)); for(let j=-half;j<=half;j++) e.put(fx+i,fy-26+j, Math.abs(j)===half&&i<9 ? C('#f2c230') : C('#2e7d32')); }
-  }),
-  clinic: v => thing(e=>{ const wall=C('#f3f5f4'), A=0.38, Hh=24, teal=C('#26a69a');
-    shadow(e,-A,A,-A,A,0.3);
-    box(e,-A,A,-A,A,0,Hh,
-      (s,z)=>{ const c=sh(wall,0.95); if(z%10<1.5) return sh(teal,0.95); if(z>3&&z%10>=3&&z%10<7&&s>3&&s<45&&s%8) return C('#5d8ea8');
-        return c; },
-      (s,z)=>{ const c=sh(wall,0.72); if(z%10<1.5) return sh(teal,0.7); if(z>3&&z%10>=3&&z%10<7&&s>3&&s<45&&s%8) return C('#45708a'); return c; },
-      (a,b)=>{ const r=Math.hypot(a*1.0,b*1.0); if(Math.abs(a)>A-0.04||Math.abs(b)>A-0.04) return C('#e6e9e8');
-        if(r>0.2&&r<0.25) return C('#f2c230');
-        return C('#a3a9ad'); });
-    [[-3,-2],[-3,-1],[-3,0],[-3,1],[-3,2],[3,-2],[3,-1],[3,0],[3,1],[3,2],[-2,0],[-1,0],[0,0],[1,0],[2,0]].forEach(([i,j])=>e.put(e.ox+i,e.oy-Hh+j,C('#ffffff')));
-    // big green cross on the left face
-    faceB(e,A+0.001,-0.12,0.12,Hh-12,Hh-2,(s,z)=> (Math.abs(s-7.7)<2.2 || Math.abs(z-5)<2.2) ? C('#21a05a') : null);
-    box(e,-0.12,0.12,A,A+0.1,6,8,()=>teal,()=>sh(teal,0.75),()=>sh(teal,1.1));
-  }),
-  park: v => thing(e=>{
-    treeAt(e,-0.3,-0.25,'round',1.05); treeAt(e,0.28,-0.28,'pine',1); treeAt(e,-0.28,0.3,'round',0.85);
-    const bx = Math.round(e.ox + (0.25-0.15)*32), by = Math.round(e.oy + (0.25+0.15)*16);
-    for(let i=0;i<5;i++){ e.put(bx+i,by-2,C('#8a5a33')); e.put(bx+i,by-3,C('#a26d40')); } e.put(bx,by-1,C('#4a3020')); e.put(bx+4,by-1,C('#4a3020'));
-    const lx = e.ox+4, ly = e.oy+2; for(let j=0;j<10;j++) e.put(lx,ly-j,C('#3b3f45')); e.put(lx,ly-10,C('#ffe28a')); e.put(lx-1,ly-10,C('#ffe28a'));
-  }, false),
   habitat: v => thing(e=>{ const spots=[[-0.3,-0.3],[0.15,-0.32],[-0.32,0.12],[0.05,-0.02],[0.3,0.05],[-0.05,0.3],[0.3,0.32]];
-    spots.forEach(([a,b],j)=>{ if(hsh(j,v,11)<0.25) return; treeAt(e,a,b, hsh(j,v,12)<0.4?'pine':'round', 0.8+hsh(j,v,13)*0.35); });
-    const tx=e.ox-14, ty=e.oy+8; [[0,0],[1,0],[2,0],[0,-1],[1,-1],[2,-1],[3,-1],[1,-2]].forEach(([i,j])=>e.put(tx+i,ty+j,C('#7a8f2e'))); e.put(tx+2,ty-2,C('#f2c230'));
-  }, false),
+    spots.forEach(([a,b],j)=>{ if(hsh(j,v,11)<0.25) return; treeAt(e,a,b, hsh(j,v,12)<0.4?'pine':'round', 0.8+hsh(j,v,13)*0.35); }); }, false),
   village: v => thing(e=>{
     if(v===0){ // the old church
-      box(e,-0.38,0.18,-0.2,0.18,0,12,(s,z)=>(z>4&&z<9&&s%9>3&&s%9<6)?C('#5b6a7a'):sh(C('#eadfca'),0.95),(s,z)=>sh(C('#eadfca'),0.72),null);
+      box(e,-0.38,0.18,-0.2,0.18,0,12,(s,z)=>(z>4&&z<9&&s%9>3&&s%9<6)?gl(C('#5b6a7a')):sh(C('#eadfca'),0.95),(s,z)=>sh(C('#eadfca'),0.72),null);
       gable(e,-0.38,0.18,-0.2,0.18,12,9,'a',C('#7d746b'),sh(C('#eadfca'),0.72));
       box(e,0.16,0.38,-0.11,0.11,0,30,(s,z)=>(z>21&&z<26&&Math.abs(s-3.5)<2)?C('#3a3a3a'):sh(C('#e3d6bd'),0.95),(s,z)=>(Math.abs(z-23)<3&&Math.abs(s-3.5)<2.5)?C('#f4efe0'):sh(C('#e3d6bd'),0.72),null);
       gable(e,0.16,0.38,-0.11,0.11,30,10,'b',C('#6e665e'),sh(C('#e3d6bd'),0.95));
       treeAt(e,-0.3,0.36,'round',0.8); return; }
     const walls=[C('#efe2c4'),C('#e8cfa6'),C('#f0e6d6')], roofs=[C('#c0442b'),C('#b5523b'),C('#cf5a35')];
     const w1=walls[v%3], w2=walls[(v+1)%3], r1=roofs[v%3], r2=roofs[(v+2)%3];
-    const door=(s,z,len,c)=> (z<5 && Math.abs(s-len/2)<1.5) ? C('#6b4430') : (z>5&&z<8&&s%8>2&&s%8<5) ? C('#4f6278') : c;
+    const door=(s,z,len,c)=> (z<5 && Math.abs(s-len/2)<1.5) ? C('#6b4430') : (z>5&&z<8&&s%8>2&&s%8<5) ? gl(C('#4f6278')) : c;
     shadow(e,-0.42,-0.02,-0.36,0.04,0.2);
     box(e,-0.42,-0.02,-0.36,0.04,0,10,(s,z)=>door(s,z,13,sh(w1,0.95)),(s,z)=>door(s,z,13,sh(w1,0.72)),null);
     gable(e,-0.42,-0.02,-0.36,0.04,10,8,'a',r1,sh(w1,0.72));
@@ -3136,22 +3356,23 @@ const BUILDINGS = {
     gable(e,0.04,0.4,-0.04,0.38,9,7,'b',r2,sh(w2,0.95));
   }),
 };
-// Construction site: concrete core + scaffolding, a tower crane behind
-const siteSprite = hh => thing(e=>{
+const archOf = (i, ty) => { const L = ARCH[ty]; return L[Math.floor(hsh(i, S.seed & 0xffff, 913) * L.length)]; };
+const colourOf = i => Math.floor(hsh(i, S.seed & 0xffff, 414) * 6);
+
+// Construction site: concrete core + scaffolding, a tower crane behind (cc = crane colour). The hook and load are animated.
+const CRANES = [['#f2b705','#b98a00'],['#d64545','#9c2f2f'],['#f2f2ee','#b9bcbf']];
+const siteSprite = (hh, cc=0) => thing(e=>{
   const A=0.3, Gc=C('#b9b4aa');
   box(e,-A,A,-A,A,0,hh,(s,z)=>z%8<1.5?sh(Gc,0.8):sh(Gc,0.95),(s,z)=>z%8<1.5?sh(Gc,0.6):sh(Gc,0.72),()=>sh(Gc,1.05));
   const P=C('#d99a3a'), pl=C('#9b7446');
   box(e,-0.38,0.38,-0.38,0.38,0,hh+3,(s,z)=> s%8<1 ? P : (Math.floor(z)%6===0 ? pl : (Math.floor(z)%6===3 && s%2===0 ? sh(P,0.9) : null)),
       (s,z)=> s%8<1 ? sh(P,0.75) : (Math.floor(z)%6===0 ? sh(pl,0.75) : null), null);
 }, true, e=>{ // tower crane behind the works
-  const Y=C('#f2b705'), Yd=C('#b98a00');
+  const Y=C(CRANES[cc][0]), Yd=C(CRANES[cc][1]);
   box(e,0.36,0.44,-0.46,-0.38,0,62,(s,z)=>(Math.floor(z+s)%4<2)?Y:Yd,(s,z)=>(Math.floor(z-s)%4<2)?sh(Y,0.8):null,null);
   box(e,-0.5,0.47,-0.45,-0.4,58,61,(s,z)=>(Math.floor(s)%3===0||z<1)?Y:(z>=2?Y:null),(s,z)=>sh(Y,0.75),(a,b)=>Y);
   box(e,0.47,0.62,-0.46,-0.39,55,61,()=>C('#7d8590'),()=>C('#5f6670'),()=>C('#8f97a2'));
-  box(e,0.3,0.36,-0.47,-0.39,52,58,()=>C('#f6f1e2'),()=>C('#cfc8b5'),()=>C('#e6dfcc'));
-  const hx=Math.round(e.ox+(-0.25+0.42)*32), hy=Math.round(e.oy+(-0.25-0.42)*16-58);
-  for(let y=hy; y<e.oy-hh-6; y++) e.put(hx,y,C('#3a3a3a'));
-  e.put(hx-1,e.oy-hh-6,C('#d64545')); e.put(hx,e.oy-hh-6,C('#d64545')); e.put(hx+1,e.oy-hh-6,C('#d64545'));
+  box(e,0.3,0.36,-0.47,-0.39,52,58,()=>C('#f6f1e2'),()=>C('#cfc8b5'),()=>gl(C('#e6dfcc')));
 });
 const cones = () => thing(e=>{ [[-0.3,0.25],[0,0.3],[0.28,0.2],[-0.1,-0.25]].forEach(([a,b])=>{
   const x=Math.round(e.ox+(a-b)*32), y=Math.round(e.oy+(a+b)*16);
@@ -3176,7 +3397,7 @@ const fenceSprite = () => thing(e=>{ const T=(s)=> Math.floor(s/3)%2 ? C('#f4f4f
 const billboardSprite = () => thing(e=>{ const x0=e.ox-12, y0=e.oy-30;
   for(let j=0;j<18;j++){ e.put(x0+3,y0+10+j,C('#3a3a3a')); e.put(x0+20,y0+10+j,C('#3a3a3a')); }
   for(let j=0;j<13;j++) for(let i=0;i<24;i++){ let c = C('#1c1c24');
-    if(j===0||j===12||i===0||i===23) c = C('#d4af37'); else if(j>=3&&j<=5&&i>3&&i<20&&(i%3)) c = C('#e6c34a'); else if(j>=8&&j<=9&&i>5&&i<18&&i%2) c = C('#9a9aa8'); e.put(x0+i,y0+j,c); }
+    if(j===0||j===12||i===0||i===23) c = C('#d4af37'); else if(j>=3&&j<=5&&i>3&&i<20&&(i%3)) c = lamp(C('#e6c34a')); else if(j>=8&&j<=9&&i>5&&i<18&&i%2) c = C('#9a9aa8'); e.put(x0+i,y0+j,c); }
 });
 // Abandoned development: bare concrete frame, rusty rebar, weeds
 const ruinSprite = () => thing(e=>{ const G=C('#a3a09a');
@@ -3185,19 +3406,34 @@ const ruinSprite = () => thing(e=>{ const G=C('#a3a09a');
   box(e,-0.34,0.34,-0.34,0.34,24,26,()=>sh(G,0.9),()=>sh(G,0.68),()=>sh(G,1.05));
 }, true, e=>{ for(const [a,b] of [[-0.3,-0.3],[0.3,-0.3],[-0.3,0.3],[0.3,0.3]]){ const x=Math.round(e.ox+(a-b)*32), y=Math.round(e.oy+(a+b)*16);
   for(let j=0;j<5;j++) e.put(x+(j%2),y-27-j,C('#8b4a2b')); e.put(x-2,y,C('#5e8f31')); e.put(x+2,y-1,C('#6aa846')); } });
+// Municipal land: a bare pole; the pennant waves (animated overlay)
 const flagSprite = () => thing(e=>{ const x=e.ox, y=e.oy;
   for(let j=0;j<16;j++) e.put(x,y-j,C('#5d4030'));
-  for(let i=1;i<9;i++){ const half=Math.round(3*(1-i/9)); for(let j=-half;j<=half;j++) e.put(x+i,y-13+j, Math.abs(j)===half ? C('#ffffff') : C('#1d3c78')); }
   e.put(x-1,y,C('#5d4030')); e.put(x+1,y,C('#5d4030')); }, false);
+// Cars: a small iso box; axis 'A' drives along screen ↘↖, 'B' along ↙↗
+const CAR_COLS = ['#c62f28','#2a63c9','#f2f2ee','#1d8148','#e6b400','#3a3d44','#8a5cc4','#e8762b'];
+const carSprite = (axis, kind) => spr('car'+axis+kind, ()=> sprite(30,24,15,17, e=>{
+  const bus = kind==='bus', col = bus ? C('#f2c230') : C(CAR_COLS[kind]);
+  const L = bus ? 0.19 : 0.1, Wd = bus ? 0.065 : 0.055;
+  const [a0,a1,b0,b1] = axis==='A' ? [-L,L,-Wd,Wd] : [-Wd,Wd,-L,L];
+  plane(e,a0+0.02,a1+0.03,b0-0.01,b1+0.02,0,0,0,()=>[20,25,30,90]);
+  box(e,a0,a1,b0,b1,0,3,(s,z)=> z<1 ? C('#24262b') : sh(col,0.92),(s,z)=> z<1 ? C('#1b1d21') : sh(col,0.7),()=>sh(col,1.08));
+  if(bus) box(e,a0,a1,b0,b1,3,7,(s,z)=> (z>0.5&&z<2.5&&s%3>0.7) ? C('#2e4255') : sh(col,0.95),(s,z)=> (z>0.5&&z<2.5) ? C('#2e4255') : sh(col,0.75),()=>C('#e9e6dc'));
+  else { const [c0,c1,d0,d1] = axis==='A' ? [-0.06,0.04,-Wd+0.008,Wd-0.008] : [-Wd+0.008,Wd-0.008,-0.06,0.04];
+    box(e,c0,c1,d0,d1,3,5,()=>C('#3b5670'),()=>C('#2b4256'),()=>sh(col,1.18)); }
+}, false));
 
 // ---------- composing the map ----------
+// draw() rebuilds the static layers when the game state changes; compose() paints one frame
+// (ground layer + water + things + animated overlays) and runs ~15 times a second while the map is visible.
 let AW = 0, AOX = 0, AH = 0; const AOY = 112;
 const art = document.createElement('canvas');
 const gx = art.getContext('2d');
+const groundCv = document.createElement('canvas'), gctx = groundCv.getContext('2d');
 // Change the map side (a new level): resize the art canvas, reset the camera
 function setMapSize(n){
   N = n; AW = N*TW + 32; AOX = AW/2; AH = AOY + (N-1)*TH + TH/2 + 20;
-  art.width = AW; art.height = AH; MAPCX = 0; MAPCY = (N-1)*TH/2 - 12;
+  art.width = AW; art.height = AH; groundCv.width = AW; groundCv.height = AH; MAPCX = 0; MAPCY = (N-1)*TH/2 - 12;
   if(W) resize();
 }
 setMapSize(N);
@@ -3219,13 +3455,12 @@ function wedgeMask(r,c){ const [r2,c2]=rotateCoord(r,c,viewRot);
   if(R(r2+1,c2)&&R(r2,c2+1)&&!R(r2+1,c2+1)) m|=4;
   if(R(r2,c2-1)&&R(r2+1,c2)&&!R(r2+1,c2-1)) m|=8;
   return m; }
-function blit(s, ix, iy){ gx.drawImage(s.c, AOX + ix - s.ox, AOY + iy - s.oy); }
 function groundKey(i){
   const p = S.grid[i], r=Math.floor(i/N), c=i%N;
   if(p.ty==='road' && (p.st==='built' || p.k==='regional')){
     const m = connMask(r,c,isRoadAt, (dr,dc)=> p.k==='regional' && dc===0, true);
     return ['road'+m+(p.k==='regional'?'R':''), ()=>roadTile(m, p.k==='regional')]; }
-  if(p.st==='built' && p.ty){ const g = {housing:'plaza', clinic:'plaza', factory:'yard', school:'school', park:'park'}[p.ty]; const v=variant(i,3);
+  if(p.st==='built' && p.ty){ const A = archOf(i, p.ty), g = A.ground || {housing:'plaza', clinic:'plaza', factory:'yard', school:'school', park:'park'}[p.ty], v=variant(i,3);
     return [g+v, ()=>GROUNDS[g](v)]; }
   if(p.st==='building' || p.st==='approved' || p.st==='private' || p.st==='ruin'){ const v=variant(i,3); return ['earth'+v, ()=>GROUNDS.earth(v)]; }
   if((p.st==='owned' || p.st==='review') && p.urban){ const v=variant(i,3); return ['serviced'+v, ()=>GROUNDS.serviced(v)]; }
@@ -3235,34 +3470,226 @@ function groundKey(i){
   const v = variant(i,3); const g = {muni:'muni', habitat:'habitat', village:'village', regional:'grass'}[p.k] || 'grass';
   return [g+v, ()=>GROUNDS[g](v)];
 }
+const gblit = (s, ix, iy) => gctx.drawImage(s.c, AOX + ix - s.ox, AOY + iy - s.oy);
+let WATER = [], LAMPS = [], PLAN = [], TOPS = new Map();
 function drawTile(i){
   const p = S.grid[i], r=Math.floor(i/N), c=i%N, [x,y] = isoOf(r,c), [r2,c2] = rotateCoord(r,c,viewRot);
-  const [k, make] = groundKey(i); blit(spr('g:'+k, make), x, y);
-  const wm = wedgeMask(r,c); if(wm) blit(spr('wedge'+wm, ()=>wedgeTile(wm)), x, y);
-  if(r2===N-1) blit(spr('skirtL', ()=>skirt('L')), x, y);
-  if(c2===N-1) blit(spr('skirtR', ()=>skirt('R')), x, y);
-  if(p.st==='owned' || p.st==='review' || p.st==='approved') blit(spr('ringOwned', ()=>ring(C('#1d3c78'),0.05,true)), x, y);
-  if(i===selected) blit(spr('ringSel', ()=>ring(C('#ffd23f'),0.06,false)), x, y);
+  const [k, make] = groundKey(i); gblit(spr('g:'+k, make), x, y);
+  const wm = wedgeMask(r,c); if(wm) gblit(spr('wedge'+wm, ()=>wedgeTile(wm)), x, y);
+  if(r2===N-1) gblit(spr('skirtL', ()=>skirt('L')), x, y);
+  if(c2===N-1) gblit(spr('skirtR', ()=>skirt('R')), x, y);
+  const over = [];
+  if(p.st==='owned' || p.st==='review' || p.st==='approved') over.push(spr('ringOwned', ()=>ring(C('#1d3c78'),0.05,true)));
+  if(i===selected) over.push(spr('ringSel', ()=>ring(C('#ffd23f'),0.06,false)));
+  over.forEach(s=>gblit(s, x, y));
+  if(k.startsWith('river')) WATER.push({x, y, m:k.slice(5)|0, over});
 }
-function drawThing(i){
-  const p = S.grid[i], r=Math.floor(i/N), c=i%N, [x,y] = isoOf(r,c);
-  if(p.k==='habitat'){ const v=variant(i,4); blit(spr('habitat'+v, ()=>BUILDINGS.habitat(v)), x, y); return; }
+// Everything that stands on parcel i: its sprite, animated effects, traffic, people, animals
+function planThing(i){
+  const p = S.grid[i], [r,c] = rc(i), [x,y] = isoOf(r,c), [r2,c2] = rotateCoord(r,c,viewRot);
+  const E = {i, x, y, s:null, fx:[], walk:null, kids:false, cars:null, lamp:null, sheep:0, toad:false, crane:null};
+  if(p.k==='habitat'){ const v=variant(i,4); E.s = spr('habitat'+v, ()=>BUILDINGS.habitat(v)); E.toad = hsh(i, S.seed&0xffff, 5) < 0.6; return E; }
   if(p.k==='village'){ const first = S.grid.findIndex(q=>q.k==='village'); const v = i===first ? 0 : 1+variant(i,3);
-    blit(spr('village'+v, ()=>BUILDINGS.village(v)), x, y); return; }
-  if(p.st==='built' && p.ty && p.ty!=='road'){ const v = p.ty==='housing' ? variant(i,3) : 0;
-    blit(spr(p.ty+v, ()=>BUILDINGS[p.ty](v)), x, y); return; }
-  if(p.k==='muni' && p.st==='land') blit(spr('flag', flagSprite), x, y);
-  if(p.st==='review') blit(spr('notice', noticeSprite), x, y);
-  if(p.st==='ruin'){ blit(spr('ruin', ruinSprite), x, y); return; }
+    E.s = spr('village'+v, ()=>BUILDINGS.village(v)); E.walk = [[-0.4,0.44,0.1,0.44]]; return E; }
+  if(p.ty==='road' && (p.st==='built' || p.k==='regional')){
+    const reg = p.k==='regional', m = connMask(r,c,isRoadAt,(dr,dc)=> reg && dc===0, true);
+    const A = (m&2) && (m&8), Bx = (m&1) && (m&4);
+    if(A !== Bx){ const axis = A ? 'A' : 'B', fill = clamp(residents()/Math.max(1,CFG.target), 0, 1);
+      E.cars = {axis, k: A ? c2 : r2, line: A ? r2 : c2, reg, dens: reg ? 0.42 : 0.1 + 0.42*fill};
+      if(!reg && (r2+c2)%2===0){ E.lamp = A ? P3(0,-0.33) : P3(-0.33,0); LAMPS.push([x+E.lamp[0], y+E.lamp[1]]); } }
+    return E; }
+  if(p.st==='built' && p.ty){ const A = archOf(i, p.ty), v = colourOf(i);
+    E.s = spr(p.ty+':'+A.id+':'+v, ()=>A.make(v)); E.fx = typeof A.fx==='function' ? A.fx(v) : (A.fx || []); E.walk = A.walk || null; E.kids = !!A.kids; return E; }
+  if(p.k==='farm' && p.st==='land' && variant(i,4)===1 && hsh(i, S.seed&0xffff, 21) < 0.7){ E.sheep = 2 + Math.floor(hsh(i,S.seed&0xffff,22)*3); return E; }
+  if(p.k==='muni' && p.st==='land'){ E.s = spr('flag', flagSprite); E.fx = [{k:'flag', x:0, y:-13, c:['#1d3c78','#ffffff']}]; }
+  if(p.st==='review') E.s = spr('notice', noticeSprite);
+  if(p.st==='ruin'){ E.s = spr('ruin', ruinSprite); return E; }
   if(p.st==='private'){
-    if(p.dev.phase==='permit'){ blit(spr('billboard', billboardSprite), x, y); return; }
-    const hh = 6 + Math.round(clamp(1 - p.dev.t/5, 0, 1)*5)*5; blit(spr('site'+hh, ()=>siteSprite(hh)), x, y); return; }
-  if(p.st==='approved') blit(spr('fence', fenceSprite), x, y);
+    if(p.dev.phase==='permit'){ E.s = spr('billboard', billboardSprite); return E; }
+    const hh = 6 + Math.round(clamp(1 - p.dev.t/5, 0, 1)*5)*5, cc = variant(i+7,3); E.s = spr('site'+hh+'_'+cc, ()=>siteSprite(hh,cc)); E.crane = hh; return E; }
+  if(p.st==='approved') E.s = spr('fence', fenceSprite);
   if(p.st==='building'){
-    if(p.ty==='road'){ blit(spr('cones', cones), x, y); return; }
-    const prog = 1 - p.t/buildMonths(p.ty), hh = 6 + Math.round(prog*5)*5;
-    blit(spr('site'+hh, ()=>siteSprite(hh)), x, y); }
+    if(p.ty==='road'){ E.s = spr('cones', cones); return E; }
+    const prog = 1 - p.t/buildMonths(p.ty), hh = 6 + Math.round(prog*5)*5, cc = variant(i+7,3);
+    E.s = spr('site'+hh+'_'+cc, ()=>siteSprite(hh,cc)); E.crane = hh; }
+  return E;
 }
+
+// ---------- animation clock, night and completions ----------
+const MOTION = !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+const NIGHT = ['#ffffff','#c5cce6','#8f99c9','#5d67a6'], GLOWA = [0, 0.4, 0.8, 1], NIGHT_MS = 2600, RISE_MS = 950;
+let nightAt = -1e9;
+function startNight(){ if(MOTION){ nightAt = performance.now(); kick(); } }
+function nightStep(now){ const a = now - nightAt; if(a < 0 || a > NIGHT_MS) return 0;
+  const p = a/NIGHT_MS, v = p < 0.22 ? p/0.22 : p < 0.6 ? 1 : 1 - (p-0.6)/0.4; return Math.min(3, Math.floor(v*3.999)); }
+// Night versions of a sprite: multiplied by a blue tint in 3 stepped levels (cached)
+function dark(s, step){ if(!step) return s.c; if(s.dk[step]) return s.dk[step];
+  const cv = document.createElement('canvas'); cv.width = s.c.width; cv.height = s.c.height; const g = cv.getContext('2d');
+  g.drawImage(s.c,0,0); g.globalCompositeOperation='multiply'; g.fillStyle=NIGHT[step]; g.fillRect(0,0,cv.width,cv.height);
+  g.globalCompositeOperation='destination-in'; g.drawImage(s.c,0,0); return s.dk[step] = cv; }
+const NC = new Map();
+function nc(hex, step){ if(!step) return hex; const k = hex+step; let v = NC.get(k); if(v) return v;
+  const a = C(hex), b = C(NIGHT[step]); v = `rgb(${a[0]*b[0]/255|0},${a[1]*b[1]/255|0},${a[2]*b[2]/255|0})`; NC.set(k, v); return v; }
+function bl(s, ix, iy, step){ const x = AOX + ix - s.ox, y = AOY + iy - s.oy;
+  gx.drawImage(step ? dark(s, step) : s.c, x, y);
+  if(step && s.g){ gx.globalAlpha = GLOWA[step]; gx.drawImage(s.g, x, y); gx.globalAlpha = 1; } }
+const R = (x,y,w,h,col) => { gx.fillStyle = col; gx.fillRect(Math.round(x), Math.round(y), w, h); };
+function disc(x,y,r,col){ gx.fillStyle = col; const rr = Math.ceil(r);
+  for(let j=-rr;j<=rr;j++){ const w = Math.round(Math.sqrt(Math.max(0, r*r - j*j))); if(w || Math.abs(j) < r) gx.fillRect(Math.round(x)-w, Math.round(y)+j, w*2+1, 1); } }
+// Buildings finished since the last draw rise from the ground (at dawn, if the month-end night is playing)
+const born = new Map(); let lastSt = null, lastKey = '';
+function trackCompletions(now){
+  const key = S.seed+':'+(S.level||0)+':'+N, st = S.grid.map(p=>p.st+(p.ty||'')), dawn = nightAt + NIGHT_MS*0.55;
+  if(lastSt && lastKey === key && lastSt.length === st.length)
+    st.forEach((s,i)=>{ const p = S.grid[i]; if(MOTION && p.st==='built' && p.ty && p.ty!=='road' && lastSt[i] !== s && !lastSt[i].startsWith('built'))
+      born.set(i, dawn > now ? dawn : now); });
+  else born.clear();
+  lastKey = key; lastSt = st;
+}
+
+// ---------- animated overlays (all positions in art pixels) ----------
+const FX = {
+  smoke(f, E, T, step){ const steam = f.c==='steam', n = steam ? 4 : 6, X0 = AOX+E.x+f.x, Y0 = AOY+E.y+f.y;
+    for(let k=n-1;k>=0;k--){ const a = frac(T/(steam?2.4:3.4) + k/n + E.i*0.13), r = (steam?0.9:1.6) + a*(steam?1.4:3) - (a>0.8 ? (a-0.8)*10 : 0);
+      if(r < 0.6) continue; const x = X0 + a*(steam?5:13) + Math.sin(a*7+k)*1.2, y = Y0 - a*(steam?11:24);
+      disc(x, y+0.6, r, nc(steam ? '#c9d2da' : '#aab3bc', step)); disc(x-0.4, y, r, nc(a < 0.4 ? '#ffffff' : '#e6eaee', step)); } },
+  flag(f, E, T, step){ const X = Math.round(AOX+E.x+f.x), Y = Math.round(AOY+E.y+f.y);
+    for(let i=1;i<10;i++){ const half = Math.round(3*(1-i/10)), yo = Math.round(Math.sin(i*0.75 - T*7 + E.i)*(i/9)*1.5);
+      for(let j=-half;j<=half;j++) R(X+i, Y+j+yo, 1, 1, nc(Math.abs(j)===half && i<8 ? f.c[1] : f.c[0], step)); } },
+  blink(f, E, T, step){ if(frac(T/f.p + f.o) >= 0.5) return; const X = AOX+E.x+f.x, Y = AOY+E.y+f.y;
+    if(step){ gx.globalAlpha = 0.35; R(X-2,Y-2,5,5,f.c); gx.globalAlpha = 1; } R(X,Y,2,2,f.c); },
+  turbine(f, E, T, step){ const X = AOX+E.x+f.x, Y = AOY+E.y+f.y, th = T*2.1 + E.i;
+    for(let k=0;k<3;k++){ const an = th + k*2.0944, ca = Math.cos(an), sa = Math.sin(an);
+      for(let s=2;s<=f.L;s++) R(X + ca*s, Y + sa*s*0.92, 1, 1, nc(s < f.L*0.35 ? '#ffffff' : '#e4e8ec', step)); }
+    R(X-1,Y-1,3,3,nc('#ffffff',step)); R(X,Y,1,1,nc('#9aa3ad',step)); },
+  ducks(f, E, T, step){ for(let k=0;k<f.n;k++){ const th = T*0.35*(k%2?-1:1) + k*2.1, [px,py] = P3(f.a + f.ra*Math.cos(th), f.b + f.rb*Math.sin(th));
+      const X = Math.round(AOX+E.x+px), Y = Math.round(AOY+E.y+py), dir = Math.sin(th)*(k%2?-1:1) > 0 ? 1 : -1;
+      R(X-1,Y-1,3,1,nc('#f6f4ee',step)); R(X-1,Y,3,1,nc('#d9d4c6',step)); R(X+dir*2,Y-2,1,1,nc(k===0?'#2f7d3a':'#8a6a4a',step)); R(X+dir*3,Y-2,1,1,nc('#f2a33a',step)); } },
+  fountain(f, E, T, step){ const X = AOX+E.x+f.x, Y = AOY+E.y+f.y;
+    for(let k=0;k<12;k++){ const a = frac(T*1.4 + k/12), side = (k%2 ? 1 : -1)*(1 + (k%3));
+      R(X + side*a*2.2, Y - Math.sin(a*Math.PI)*(7 + (k%3)) + a*3, 1, 1, nc(k%3 ? '#bfe6f7' : '#ffffff', step)); }
+    R(X,Y-9,1,2,nc('#ffffff',step)); },
+  swing(f, E, T, step){ f.pts.forEach(([a,b],k)=>{ const [bx,by] = P3(a,b,12), an = Math.sin(T*2.6 + k*1.7)*0.65;
+      const X0 = AOX+E.x+bx, Y0 = AOY+E.y+by, sx = X0 - 0.894*Math.sin(an)*7, sy = Y0 + Math.cos(an)*7 + 0.447*Math.sin(an)*7;
+      for(let s=1;s<7;s++){ const t = s/7; R(X0 + (sx-X0)*t, Y0 + (sy-Y0)*t, 1, 1, nc('#6b6b6b',step)); }
+      R(sx-1, sy, 3, 1, nc('#8a5a33',step)); }); },
+};
+// The crane hook goes up and down with a load; a red light blinks at the jib tip; welding sparks on the scaffolding
+function drawCrane(E, T, step){
+  const hx = AOX+E.x+5, top = AOY+E.y-69, ph = 0.5 + 0.5*Math.sin(T*0.55 + E.i), hy = AOY+E.y - (E.crane+6) - ph*16;
+  for(let y=top; y<hy; y++) R(hx, y, 1, 1, nc('#3a3a3a', step));
+  R(hx-2, hy, 5, 1, nc('#3a3a3a', step)); const sw = Math.round(Math.sin(T*1.3 + E.i));
+  R(hx-2+sw, hy+1, 5, 3, nc('#b0743c', step)); R(hx-2+sw, hy+1, 5, 1, nc('#c98b4f', step));
+  if(frac(T/1.5 + E.i*0.3) < 0.5){ if(step){ gx.globalAlpha = 0.4; R(AOX+E.x-4, AOY+E.y-80, 5, 5, '#ff3b30'); gx.globalAlpha = 1; } R(AOX+E.x-3, AOY+E.y-79, 2, 2, '#ff3b30'); }
+  const n = Math.floor(T*9), h = hsh(n, E.i, 5);
+  if(h < 0.4){ const sx = AOX+E.x - 10 + Math.floor(hsh(n,E.i,6)*20), sy = AOY+E.y - 3 - Math.floor(hsh(n,E.i,7)*Math.max(4,E.crane));
+    if(step){ gx.globalAlpha = 0.45; R(sx-2,sy-2,5,5,'#ffcf5a'); gx.globalAlpha = 1; }
+    R(sx,sy,1,1,'#fff6c0'); R(sx+1,sy,1,1,'#ffb03a'); R(sx-1,sy+1,1,1,'#ffb03a'); }
+}
+// Traffic: continuous along straight lines (car ids are shared by the tiles of a line); right-hand lanes
+function drawCars(E, T, step){ const Q = E.cars;
+  for(const d of [1,-1]){ const sp = Q.reg ? 0.5 : 0.34, u = T*sp + (d>0 ? 0.37 : 0.71) + Q.line*0.13;
+    const s = d>0 ? frac(u) : 1 - frac(u), id = d>0 ? Q.k - Math.floor(u) : Q.k + Math.floor(u), lineKey = Q.line*4 + (Q.axis==='A'?0:2) + (d>0?0:1);
+    if(hsh(id, lineKey, S.seed&0xffff) >= Q.dens) continue;
+    const along = s - 0.5, lane = (Q.reg ? 0.14 : 0.12)*d, a = Q.axis==='A' ? along : -lane, b = Q.axis==='A' ? lane : along;
+    const kh = hsh(id, lineKey, 9), kind = (Q.reg && kh < 0.12) ? 'bus' : Math.floor(kh*CAR_COLS.length*0.999);
+    const [px,py] = P3(a,b); bl(carSprite(Q.axis, kind), E.x+Math.round(px), E.y+Math.round(py), step);
+    if(step){ const fa = Q.axis==='A' ? 0.11*d : 0, fb = Q.axis==='A' ? 0 : 0.11*d, [hx,hy] = P3(a+fa, b+fb, 2);
+      gx.globalAlpha = 0.5; R(AOX+E.x+hx-1, AOY+E.y+hy-1, 3, 3, '#ffe9a0'); gx.globalAlpha = 1; R(AOX+E.x+hx, AOY+E.y+hy, 1, 1, '#fff7d0'); } }
+}
+// Street lamps on every other road tile: a post by day, a lit head at night
+function drawLamp(E, step){ const X = Math.round(AOX+E.x+E.lamp[0]), Y = Math.round(AOY+E.y+E.lamp[1]);
+  R(X, Y-10, 1, 10, nc('#3b3f45', step)); R(X-1, Y-11, 3, 1, nc('#3b3f45', step));
+  R(X-1, Y-10, 3, 1, step ? '#fff0b0' : '#cfd6dd'); }
+// People: shirt, skin and hair from the parcel hash; they go home at night
+const SHIRTS = ['#c62f28','#2a63c9','#1d8148','#e6b400','#8a5cc4','#e8762b','#f2f2ee','#3a3d44'], SKINS = ['#f1c9a5','#d9a27a','#a8714a','#7a4e2d','#f6d7bd'], HAIR = ['#2b2017','#5a3b22','#c9a26b','#7a7a7a','#1b1b1b'];
+function drawWalkers(E, T, step){ if(step >= 2) return;
+  E.walk.forEach((w,k)=>{ const sp = 0.06 + hsh(E.i,k,3)*0.05, u = frac(T*sp + hsh(E.i,k,4)), tri = u < 0.5 ? u*2 : 2 - u*2;
+    const [px,py] = P3(w[0] + (w[2]-w[0])*tri, w[1] + (w[3]-w[1])*tri), X = Math.round(AOX+E.x+px), Y = Math.round(AOY+E.y+py);
+    const kid = E.kids && k > 0, h = kid ? 5 : 7, leg = Math.floor(T*6 + k) % 2, pk = (n,arr)=> arr[Math.floor(hsh(E.i,k,n)*arr.length)];
+    gx.globalAlpha = 0.25; R(X-1, Y, 3, 1, '#1a2a10'); gx.globalAlpha = 1;
+    R(X-1, Y-1, 1, 1, nc('#2b2f3a', step)); R(X + (leg ? 0 : 1) - (leg ? 0 : 1), Y-1-leg, 1, 1, nc('#2b2f3a', step)); R(X, Y-2, 1, 1, nc('#2b2f3a', step));
+    R(X-1, Y-h+2, 2, h-4, nc(pk(6, SHIRTS), step)); R(X-1, Y-h, 2, 2, nc(pk(7, SKINS), step)); R(X-1, Y-h, 2, 1, nc(pk(8, HAIR), step)); });
+}
+// Sheep grazing on green fields (the Commission once asked for their sunlight study)
+function drawSheep(E, T, step){
+  for(let k=0;k<E.sheep;k++){ const a = -0.26 + hsh(E.i,k,31)*0.52 + 0.04*Math.sin(T*0.23 + k*1.7), b = -0.26 + hsh(E.i,k,32)*0.52 + 0.04*Math.cos(T*0.19 + k*2.3);
+    const [px,py] = P3(a,b), X = Math.round(AOX+E.x+px), Y = Math.round(AOY+E.y+py), f = hsh(E.i,k,33) < 0.5 ? -1 : 1, graze = Math.floor(T*0.6 + k*1.3) % 3 === 0;
+    gx.globalAlpha = 0.22; R(X-2, Y, 6, 1, '#1a2a10'); gx.globalAlpha = 1;
+    R(X-2, Y-4, 5, 3, nc('#f1eee5', step)); R(X-1, Y-5, 3, 1, nc('#ffffff', step)); R(X-1, Y-1, 1, 1, nc('#3b3b3b', step)); R(X+1, Y-1, 1, 1, nc('#3b3b3b', step));
+    const hx = f > 0 ? X+3 : X-4; R(hx, graze ? Y-2 : Y-5, 2, 2, nc('#3b3b3b', step)); }
+}
+// The protected toad hops between three spots
+function drawToad(E, T, step){ const cyc = T/3.2 + hsh(E.i,1,2)*3, n = Math.floor(cyc), f = frac(cyc), spots = [[-14,8],[-9,10],[-17,11]];
+  const [sx,sy] = spots[n%3], hop = f < 0.12 ? -2 : 0, X = AOX+E.x+sx, Y = AOY+E.y+sy+hop;
+  [[0,0],[1,0],[2,0],[0,-1],[1,-1],[2,-1],[3,-1],[1,-2]].forEach(([i,j])=>R(X+i, Y+j, 1, 1, nc('#7a8f2e', step))); R(X+2, Y-2, 1, 1, '#f2c230'); }
+// A flock of birds crosses the sky now and then
+function drawBirds(T, step){ const P = 17, n = Math.floor(T/P), f = frac(T/P);
+  if(hsh(n, 3, S.seed&0xffff) > 0.7 || f > 0.6) return; const dir = hsh(n,4,1) < 0.5 ? 1 : -1, x0 = dir > 0 ? -30 + f/0.6*(AW+60) : AW+30 - f/0.6*(AW+60);
+  const y0 = 30 + hsh(n,5,1)*AH*0.35 + Math.sin(T*0.8)*4, flap = Math.floor(T*7) % 2;
+  [[0,0],[-5,-3],[-5,3],[-10,-6],[-10,6]].forEach(([dx,dy],k)=>{ const X = Math.round(x0 + dx*dir), Y = Math.round(y0 + dy + Math.sin(T*3+k)*0.6);
+    const c = nc('#2b3240', step); R(X, Y, 1, 1, c); if(flap){ R(X-1, Y-1, 1, 1, c); R(X+1, Y-1, 1, 1, c); } else { R(X-1, Y, 1, 1, c); R(X+1, Y, 1, 1, c); } }); }
+// A finished building rises from the ground, revealed bottom-up, in a puff of dust
+function drawRise(E, age, step){ const s = E.s, f = 1 - Math.pow(1 - clamp(age/700, 0, 1), 3), fr = s.oy - s.top;
+  const cut = Math.round(fr + (1-f)*(s.oy + 8 - fr)), X = AOX + E.x - s.ox, Y = AOY + E.y - s.oy, src = step ? dark(s, step) : s.c;
+  if(cut < s.c.height) gx.drawImage(src, 0, cut, s.c.width, s.c.height-cut, X, Y+cut, s.c.width, s.c.height-cut);
+  const d = age/RISE_MS; if(d >= 1) return; gx.globalAlpha = (1-d)*0.8;
+  for(let k=0;k<12;k++){ const an = k/12*Math.PI*2, rr = 6 + d*22; disc(AOX+E.x + Math.cos(an)*rr, AOY+E.y + Math.sin(an)*rr*0.5 - d*4, 1.5 + d*2.5, nc('#e3d8c0', step)); }
+  gx.globalAlpha = 1; }
+
+let drawOrder = [], animTimer = 0, groundStamp = 0;
+const darkGround = [];
+// draw() recomposes the static layers after a state change; compose() paints a frame; present() puts it on screen
+function draw(){
+  if(!S || !W || S.grid.length !== N*N) return;
+  const now = performance.now(); trackCompletions(now);
+  gctx.setTransform(1,0,0,1,0,0); gctx.clearRect(0,0,AW,AH); gctx.imageSmoothingEnabled = false; darkGround.length = 0;
+  const order = [];
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++){ const [r2,c2]=rotateCoord(r,c,viewRot); order.push([r2+c2, c2, idx(r,c)]); }
+  order.sort((a,b)=>a[0]-b[0] || a[1]-b[1]);
+  WATER = []; LAMPS = []; TOPS = new Map();
+  order.forEach(o=>drawTile(o[2]));
+  PLAN = order.map(o=>planThing(o[2]));
+  PLAN.forEach(E=>TOPS.set(E.i, E.s ? E.s.top : 14));
+  drawOrder = order; compose(now); present(); kick();
+}
+function groundFor(step){ if(!step) return groundCv; if(darkGround[step]) return darkGround[step];
+  const cv = document.createElement('canvas'); cv.width = AW; cv.height = AH; const g = cv.getContext('2d');
+  g.drawImage(groundCv,0,0); g.globalCompositeOperation='multiply'; g.fillStyle=NIGHT[step]; g.fillRect(0,0,AW,AH);
+  g.globalCompositeOperation='destination-in'; g.drawImage(groundCv,0,0); return darkGround[step] = cv; }
+function compose(now){
+  if(!S || !W || S.grid.length !== N*N || !PLAN.length) return;
+  const T = MOTION ? now/1000 : 0, step = MOTION ? nightStep(now) : 0;
+  gx.setTransform(1,0,0,1,0,0); gx.clearRect(0,0,AW,AH); gx.imageSmoothingEnabled = false;
+  gx.drawImage(groundFor(step), 0, 0);
+  const wf = Math.floor(T*3.5) % 4;
+  WATER.forEach(w=>{ bl(spr('river'+w.m+'_'+wf, ()=>riverTile(w.m, wf)), w.x, w.y, step); w.over.forEach(s=>bl(s, w.x, w.y, step)); });
+  if(step){ gx.fillStyle = '#ffd77a';            // pools of lamp light: flat iso ellipses, a brighter core
+    for(const [rx,ry,al] of [[11,5,0.07],[7,3,0.09]]){ gx.globalAlpha = al*step;
+      LAMPS.forEach(([x,y])=>{ for(let j=-ry;j<=ry;j++){ const w = Math.round(rx*Math.sqrt(1-(j/(ry+0.5))**2)); gx.fillRect(Math.round(AOX+x)-w, Math.round(AOY+y+2)+j, w*2+1, 1); } }); }
+    gx.globalAlpha = 1; }
+  for(const E of PLAN){
+    if(E.lamp) drawLamp(E, step);
+    if(E.cars) drawCars(E, T, step);
+    let rising = false;
+    if(E.s){ const b0 = born.get(E.i);
+      if(b0 !== undefined && now - b0 < RISE_MS){ rising = true; if(now < b0){ const cc = variant(E.i+7,3); bl(spr('site31_'+cc, ()=>siteSprite(31,cc)), E.x, E.y, step); }
+        else drawRise(E, now - b0, step); }
+      else { if(b0 !== undefined) born.delete(E.i); bl(E.s, E.x, E.y, step); } }
+    if(E.crane) drawCrane(E, T, step);
+    if(!rising) E.fx.forEach(f=>FX[f.k](f, E, T, step));
+    if(E.walk && !rising) drawWalkers(E, T, step);
+    if(E.sheep) drawSheep(E, T, step);
+    if(E.toad) drawToad(E, T, step);
+  }
+  if(MOTION) drawBirds(T, step);
+  worldEl.classList.toggle('night', step >= 2);
+}
+// The animation loop: ~15 frames a second while the page is visible
+function frame(){ animTimer = 0; if(document.hidden || !S) return; compose(performance.now()); presentNow();
+  if(MOTION) animTimer = setTimeout(()=>{ animTimer = requestAnimationFrame(frame); }, 66); }
+function kick(){ if(!animTimer && MOTION && !document.hidden) animTimer = requestAnimationFrame(frame); }
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) kick(); });
 // Every map sprite on one sheet (for review and for the Godot port). Returns {png, atlas}.
 function spriteSheet(){
   const items = [];
@@ -3273,11 +3700,13 @@ function spriteSheet(){
   addS('road5R', roadTile(5,true)); addS('road10R', roadTile(10,true));
   for(let m=0; m<16; m++) addS('river'+m, riverTile(m));
   addS('skirtL', skirt('L')); addS('skirtR', skirt('R'));
-  for(let v=0; v<3; v++) addS('housing'+v, BUILDINGS.housing(v));
-  ['factory','school','clinic','park'].forEach(t=>addS(t, BUILDINGS[t](0)));
+  Object.entries(ARCH).forEach(([ty,L])=>L.forEach(A=>addS(ty+':'+A.id, A.make(0))));
+  ['A','B'].forEach(ax=>{ [0,1,2,3,4,5,6,7,'bus'].forEach(k=>addS('car'+ax+k, carSprite(ax,k))); });
+  for(let f=0; f<4; f++) addS('river5_'+f, riverTile(5,f));
+  for(let cc=1; cc<3; cc++) addS('site21_'+cc, siteSprite(21,cc));
   for(let v=0; v<4; v++) addS('village'+v, BUILDINGS.village(v));
   for(let v=0; v<2; v++) addS('habitat'+v, BUILDINGS.habitat(v));
-  for(let hh=6; hh<=31; hh+=5) addS('site'+hh, siteSprite(hh));
+  for(let hh=6; hh<=31; hh+=5) addS('site'+hh+'_0', siteSprite(hh,0));
   addS('cones', cones()); addS('notice', noticeSprite()); addS('fence', fenceSprite()); addS('flag', flagSprite());
   addS('serviced', GROUNDS.serviced(0)); addS('billboard', billboardSprite()); addS('ruin', ruinSprite());
   [16,32,64,128,17,68,34,136].forEach(m=>addS('road'+m, roadTile(m,false))); [1,2,4,8].forEach(m=>addS('wedge'+m, wedgeTile(m)));
@@ -3288,7 +3717,6 @@ function spriteSheet(){
     g.drawImage(s.c, x, y); atlas[k] = {x, y, w:s.c.width, h:s.c.height, ox:s.ox, oy:s.oy}; });
   return {png: cv.toDataURL('image/png'), atlas};
 }
-const HEIGHT = {housing:46, factory:56, school:34, clinic:30, park:24, road:6};
 function badge(x,y,text,col){ ctx.font='700 8px Pixel, sans-serif'; const w=Math.ceil(ctx.measureText(text).width)+6, x0=Math.round(x-w/2), y0=Math.round(y)-5;
   ctx.fillStyle='#0b1f4d'; ctx.fillRect(x0-1,y0-1,w+2,11); ctx.fillRect(x0,y0+10,w+1,1);
   ctx.fillStyle=col; ctx.fillRect(x0,y0,w,9); ctx.fillStyle='rgba(255,255,255,.28)'; ctx.fillRect(x0,y0,w,1);
@@ -3316,18 +3744,6 @@ function drawLabels(i){
   const mk = p.flag && MARK[p.flag.k]; if(mk) badge(x+14,y-40,mk[0],mk[1]);
   if(p.st==='owned' && !hasAccess(r,c)) badge(x,y-14,'?','#7a8599');
 }
-let drawOrder = [];
-// draw() recomposes the pixel-art map; present() only puts it on screen (cheap: used while panning/zooming)
-function draw(){
-  if(!S || !W || S.grid.length !== N*N) return;
-  gx.setTransform(1,0,0,1,0,0); gx.clearRect(0,0,AW,AH); gx.imageSmoothingEnabled = false;
-  const order = [];
-  for(let r=0;r<N;r++) for(let c=0;c<N;c++){ const [r2,c2]=rotateCoord(r,c,viewRot); order.push([r2+c2, c2, idx(r,c)]); }
-  order.sort((a,b)=>a[0]-b[0] || a[1]-b[1]);
-  order.forEach(o=>drawTile(o[2]));
-  order.forEach(o=>drawThing(o[2]));
-  drawOrder = order; present();
-}
 let presentQueued = false;
 function present(){
   if(presentQueued) return; presentQueued = true;
@@ -3345,8 +3761,8 @@ function presentNow(){
   drawComboLinks();
   order.forEach(o=>drawLabels(o[2]));
   if(selected>=0){ const p=S.grid[selected], [x,y]=isoOf(Math.floor(selected/N), selected%N);
-    const top = y - (p.st==='built' && p.ty ? HEIGHT[p.ty] : p.k==='village' ? 34 : p.k==='habitat' ? 26 : p.st==='building' || p.st==='private' ? 70 : p.st==='ruin' ? 40 : 14) - 6;
-    const bob = Math.round(top) - 1;   // stepped pixel arrow: navy outline, yellow fill
+    const top = y - (TOPS.get(selected) || 14) - 4;
+    const bob = Math.round(top) - 1 + (MOTION ? Math.round(Math.sin(performance.now()/170)) : 0);   // stepped pixel arrow: navy outline, yellow fill
     [[-5,-8,11],[-4,-7,9],[-3,-6,7],[-2,-5,5],[-1,-4,3],[0,-3,1]].forEach(([dx,dy,w])=>{ ctx.fillStyle='#0b1f4d'; ctx.fillRect(x+dx-1,bob+dy-1,w+2,2); });
     [[-4,-7,9],[-3,-6,7],[-2,-5,5],[-1,-4,3]].forEach(([dx,dy,w])=>{ ctx.fillStyle='#ffd200'; ctx.fillRect(x+dx,bob+dy,w,1); });
     ctx.fillStyle='#fff3a6'; ctx.fillRect(x-4,bob-7,9,1); }
@@ -3635,7 +4051,7 @@ function parcelCard(i){
   else if(p.st==='building') html += `<p>${t('pc.building',{b:t('b.'+p.ty), n:p.t, x:money(p.mcost)})}${p.halt?' <b style="color:var(--bad)">'+t('pc.halted',{n:p.halt})+'</b>':''}</p>`;
   else if(p.st==='private') html += `<p>${t(p.dev.phase==='permit'?'pc.privPermit':'pc.privBuild',{n:p.dev.t})}${S.market<CFG.devMinMarket?' <b style="color:var(--warn)">'+t('pc.privPaused')+'</b>':''}</p>`;
   else if(p.st==='ruin'){ html += `<p>${t('pc.ruin')}</p>`; a.appendChild(actBtn('real_estate_agent', t('act.buyBack',{x:money(r1(p.price*1.5))}), t('act.slot1'), ()=>doAction(acquire(i),i), off)); }
-  else if(p.st==='built' && isB && p.ty!=='road'){ html += `<p>${t('bd.'+p.ty)}. ${p.priv ? t('pc.private') : t('pc.upkeep',{x:money(B[p.ty].upkeep)})}</p>`;
+  else if(p.st==='built' && isB && p.ty!=='road'){ html += `<p class="style">${styleName(i)}</p><p>${t('bd.'+p.ty)}. ${p.priv ? t('pc.private') : t('pc.upkeep',{x:money(B[p.ty].upkeep)})}</p>`;
     if(on('combos')){ const mine = activeCombos().filter(x=>x.i===i || x.j===i);
       html += `<div class="combos-here"><b>${t('ui.combosHere')}</b>${mine.length ? comboChips(mine.map(x=>COMBO_BY_ID[x.id]), true) : `<p>${t('combo.none')}</p>`}</div>`; } }
   else if(p.st==='built') html += `<p>${t('pc.road')}</p>`;
@@ -3692,6 +4108,9 @@ function renderGuide(){
   el.querySelector('.x').onclick = ()=>{ S.guideOff = true; save(); playSound('click'); refresh(); };
   if(cur.s.tab) el.onclick = e=>{ if(!e.target.closest('.x')) openSheet(cur.s.tab); }; else el.onclick = null;
 }
+// Every building gets a style (its archetype) and a name, both fixed by the run's seed
+function styleName(i){ const ty = S.grid[i].ty, A = archOf(i, ty), names = t('names.'+ty).split('|');
+  return `${t('style.'+ty+'.'+A.id)} · «${names[Math.floor(hsh(i, S.seed & 0xffff, 404)*names.length)]}»`; }
 function refresh(){ applyStatic(); updateHUD(); renderSheet(); renderGuide(); draw(); }
 let pulseUntil = 0;
 function pulse(i){ S.focus = i; pulseUntil = performance.now()+2600; draw(); }
@@ -4093,7 +4512,7 @@ document.querySelectorAll('.tab[data-tab]').forEach(b=> b.onclick = ()=>{ playSo
 $('endTurn').onclick = ()=>{
   if(S.over){ showNext(); return; }
   if(S.cards.length || S.perkChoice){ showNext(); return; }
-  playSound('turn'); endMonth(); selected=-1; if(sheet==='parcel') sheet=null; refresh(); flushFx(); showNext(); };
+  playSound('turn'); startNight(); endMonth(); selected=-1; if(sheet==='parcel') sheet=null; refresh(); flushFx(); showNext(); };
 document.querySelectorAll('.meter').forEach(el=> el.addEventListener('click', ev=>{ ev.stopPropagation(); playSound('click'); showMeterPop(el.dataset.m); }));
 document.addEventListener('pointerdown', e=>{ if(!e.target.closest('#pop') && !e.target.closest('.meter')) hidePop(); });
 addEventListener('resize', resize);
@@ -4111,6 +4530,8 @@ window.__eurocrat = {
   resolveCard:(k)=>{ const c=S.cards[0]; if(!c) return null; if(c.type==='event'){ const ch=k||choicesFor(c)[0].k; S.cards.shift(); const r=resolveEvent(c,ch); if(r) S.cards.unshift({type:'result', id:c.id, res:r, v:c.v}); return r; } S.cards.shift(); return true; },
   tileAt:(x,y)=>tileAt(x,y), screenOf:(i)=>{ const [ix,iy]=isoOf(...rc(i)); return toScreen(ix,iy); },
   refresh, showNext, hideModal, get selected(){ return selected; }, spriteSheet, portrait,
+  startNight, ARCH, archOf, styleName, get born(){ return born.size; },
+  frameMs:(n=30)=>{ const t0=performance.now(); for(let k=0;k<n;k++){ compose(t0+k*66); presentNow(); } return (performance.now()-t0)/n; },
 };
 newGame(1, 0); resize(); refresh(); startMenu();
 Object.keys(CHARS).forEach(makePixelPortrait);
