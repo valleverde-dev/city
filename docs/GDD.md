@@ -164,6 +164,21 @@ From *Syndicate* neon to **Constructor-style** colourful isometric with a bureau
 - Type: **Jersey 10** (titles, figures, buttons), **Pixelify Sans** (UI and body text), **Silkscreen** (stamps, reference numbers). All SIL OFL, subset and embedded.
 - Icons: 66 hand-drawn **12×12 one-colour pixel icons**, tinted with the text colour (no emoji, no icon font). Character portraits are rasterised to 32×32 and outlined.
 
+### Music
+
+The soundtrack plays the bureaucracy for laughs, like everything else, and grows with the campaign. All tracks are original arrangements; the Ode to Joy is Beethoven's public-domain melody, never an official anthem arrangement.
+
+| Screen | Track | Style |
+|---|---|---|
+| Title / menus | *Ode to Joy (Brussels Eurodance Mix)* | Cheap 90s Eurodance |
+| Level I · Pilot Project | *Village Fete Waltz* | Musette waltz: accordion, glockenspiel, oom-pah tuba; the Ode in 3/4 |
+| Level II · Expansion Phase | *Let's Build Together* | 80s Eurovision synth-pop, original melody |
+| Level III · Partial Plan | *Regulatory Framework* | Tense office ambient: clock, typewriters, stamps, the Ode in minor |
+| Level IV · Model Town | *Harmonised Trance Anthem* | Euro-trance: supersaws, choir breakdown, the drop |
+| Inauguration (win) | *Douze Points for Harmonisation* | Eurovision schlager with the key change |
+
+Later: short stingers for stamps, approvals, failed directives and audits; a tension layer for the last months of a level.
+
 ## 13. Language
 
 English and Spanish, switchable at any time (HUD button or menus); the choice is remembered. Every string lives in one dictionary (`I18N` in `index.html`); logs and cards store keys, so switching language re-renders everything.
