@@ -3532,12 +3532,13 @@ function dark(s, step){ if(!step) return s.c; if(s.dk[step]) return s.dk[step];
 const NC = new Map();
 function nc(hex, step){ if(!step) return hex; const k = hex+step; let v = NC.get(k); if(v) return v;
   const a = C(hex), b = C(NIGHT[step]); v = `rgb(${a[0]*b[0]/255|0},${a[1]*b[1]/255|0},${a[2]*b[2]/255|0})`; NC.set(k, v); return v; }
-function bl(s, ix, iy, step){ const x = AOX + ix - s.ox, y = AOY + iy - s.oy;
-  gx.drawImage(step ? dark(s, step) : s.c, x, y);
-  if(step && s.g){ gx.globalAlpha = GLOWA[step]; gx.drawImage(s.g, x, y); gx.globalAlpha = 1; } }
-const R = (x,y,w,h,col) => { gx.fillStyle = col; gx.fillRect(Math.round(x), Math.round(y), w, h); };
-function disc(x,y,r,col){ gx.fillStyle = col; const rr = Math.ceil(r);
-  for(let j=-rr;j<=rr;j++){ const w = Math.round(Math.sqrt(Math.max(0, r*r - j*j))); if(w || Math.abs(j) < r) gx.fillRect(Math.round(x)-w, Math.round(y)+j, w*2+1, 1); } }
+let GX = gx, OX0 = 0, OY0 = 0;
+function bl(s, ix, iy, step){ const x = OX0 + ix - s.ox, y = OY0 + iy - s.oy;
+  GX.drawImage(step ? dark(s, step) : s.c, x, y);
+  if(step && s.g){ GX.globalAlpha = GLOWA[step]; GX.drawImage(s.g, x, y); GX.globalAlpha = 1; } }
+const R = (x,y,w,h,col) => { GX.fillStyle = col; GX.fillRect(Math.round(x), Math.round(y), w, h); };
+function disc(x,y,r,col){ GX.fillStyle = col; const rr = Math.ceil(r);
+  for(let j=-rr;j<=rr;j++){ const w = Math.round(Math.sqrt(Math.max(0, r*r - j*j))); if(w || Math.abs(j) < r) GX.fillRect(Math.round(x)-w, Math.round(y)+j, w*2+1, 1); } }
 // Buildings finished since the last draw rise from the ground (at dawn, if the month-end night is playing)
 const born = new Map(); let lastSt = null, lastKey = '';
 function trackCompletions(now){
@@ -3551,41 +3552,41 @@ function trackCompletions(now){
 
 // ---------- animated overlays (all positions in art pixels) ----------
 const FX = {
-  smoke(f, E, T, step){ const steam = f.c==='steam', n = steam ? 4 : 6, X0 = AOX+E.x+f.x, Y0 = AOY+E.y+f.y;
+  smoke(f, E, T, step){ const steam = f.c==='steam', n = steam ? 4 : 6, X0 = OX0+E.x+f.x, Y0 = OY0+E.y+f.y;
     for(let k=n-1;k>=0;k--){ const a = frac(T/(steam?2.4:3.4) + k/n + E.i*0.13), r = (steam?0.9:1.6) + a*(steam?1.4:3) - (a>0.8 ? (a-0.8)*10 : 0);
       if(r < 0.6) continue; const x = X0 + a*(steam?5:13) + Math.sin(a*7+k)*1.2, y = Y0 - a*(steam?11:24);
       disc(x, y+0.6, r, nc(steam ? '#c9d2da' : '#aab3bc', step)); disc(x-0.4, y, r, nc(a < 0.4 ? '#ffffff' : '#e6eaee', step)); } },
-  flag(f, E, T, step){ const X = Math.round(AOX+E.x+f.x), Y = Math.round(AOY+E.y+f.y);
+  flag(f, E, T, step){ const X = Math.round(OX0+E.x+f.x), Y = Math.round(OY0+E.y+f.y);
     for(let i=1;i<10;i++){ const half = Math.round(3*(1-i/10)), yo = Math.round(Math.sin(i*0.75 - T*7 + E.i)*(i/9)*1.5);
       for(let j=-half;j<=half;j++) R(X+i, Y+j+yo, 1, 1, nc(Math.abs(j)===half && i<8 ? f.c[1] : f.c[0], step)); } },
-  blink(f, E, T, step){ if(frac(T/f.p + f.o) >= 0.5) return; const X = AOX+E.x+f.x, Y = AOY+E.y+f.y;
-    if(step){ gx.globalAlpha = 0.35; R(X-2,Y-2,5,5,f.c); gx.globalAlpha = 1; } R(X,Y,2,2,f.c); },
-  turbine(f, E, T, step){ const X = AOX+E.x+f.x, Y = AOY+E.y+f.y, th = T*2.1 + E.i;
+  blink(f, E, T, step){ if(frac(T/f.p + f.o) >= 0.5) return; const X = OX0+E.x+f.x, Y = OY0+E.y+f.y;
+    if(step){ GX.globalAlpha = 0.35; R(X-2,Y-2,5,5,f.c); GX.globalAlpha = 1; } R(X,Y,2,2,f.c); },
+  turbine(f, E, T, step){ const X = OX0+E.x+f.x, Y = OY0+E.y+f.y, th = T*2.1 + E.i;
     for(let k=0;k<3;k++){ const an = th + k*2.0944, ca = Math.cos(an), sa = Math.sin(an);
       for(let s=2;s<=f.L;s++) R(X + ca*s, Y + sa*s*0.92, 1, 1, nc(s < f.L*0.35 ? '#ffffff' : '#e4e8ec', step)); }
     R(X-1,Y-1,3,3,nc('#ffffff',step)); R(X,Y,1,1,nc('#9aa3ad',step)); },
   ducks(f, E, T, step){ for(let k=0;k<f.n;k++){ const th = T*0.35*(k%2?-1:1) + k*2.1, [px,py] = P3(f.a + f.ra*Math.cos(th), f.b + f.rb*Math.sin(th));
-      const X = Math.round(AOX+E.x+px), Y = Math.round(AOY+E.y+py), dir = Math.sin(th)*(k%2?-1:1) > 0 ? 1 : -1;
+      const X = Math.round(OX0+E.x+px), Y = Math.round(OY0+E.y+py), dir = Math.sin(th)*(k%2?-1:1) > 0 ? 1 : -1;
       R(X-1,Y-1,3,1,nc('#f6f4ee',step)); R(X-1,Y,3,1,nc('#d9d4c6',step)); R(X+dir*2,Y-2,1,1,nc(k===0?'#2f7d3a':'#8a6a4a',step)); R(X+dir*3,Y-2,1,1,nc('#f2a33a',step)); } },
-  fountain(f, E, T, step){ const X = AOX+E.x+f.x, Y = AOY+E.y+f.y;
+  fountain(f, E, T, step){ const X = OX0+E.x+f.x, Y = OY0+E.y+f.y;
     for(let k=0;k<12;k++){ const a = frac(T*1.4 + k/12), side = (k%2 ? 1 : -1)*(1 + (k%3));
       R(X + side*a*2.2, Y - Math.sin(a*Math.PI)*(7 + (k%3)) + a*3, 1, 1, nc(k%3 ? '#bfe6f7' : '#ffffff', step)); }
     R(X,Y-9,1,2,nc('#ffffff',step)); },
   swing(f, E, T, step){ f.pts.forEach(([a,b],k)=>{ const [bx,by] = P3(a,b,12), an = Math.sin(T*2.6 + k*1.7)*0.65;
-      const X0 = AOX+E.x+bx, Y0 = AOY+E.y+by, sx = X0 - 0.894*Math.sin(an)*7, sy = Y0 + Math.cos(an)*7 + 0.447*Math.sin(an)*7;
+      const X0 = OX0+E.x+bx, Y0 = OY0+E.y+by, sx = X0 - 0.894*Math.sin(an)*7, sy = Y0 + Math.cos(an)*7 + 0.447*Math.sin(an)*7;
       for(let s=1;s<7;s++){ const t = s/7; R(X0 + (sx-X0)*t, Y0 + (sy-Y0)*t, 1, 1, nc('#6b6b6b',step)); }
       R(sx-1, sy, 3, 1, nc('#8a5a33',step)); }); },
 };
 // The crane hook goes up and down with a load; a red light blinks at the jib tip; welding sparks on the scaffolding
 function drawCrane(E, T, step){
-  const hx = AOX+E.x+5, top = AOY+E.y-69, ph = 0.5 + 0.5*Math.sin(T*0.55 + E.i), hy = AOY+E.y - (E.crane+6) - ph*16;
+  const hx = OX0+E.x+5, top = OY0+E.y-69, ph = 0.5 + 0.5*Math.sin(T*0.55 + E.i), hy = OY0+E.y - (E.crane+6) - ph*16;
   for(let y=top; y<hy; y++) R(hx, y, 1, 1, nc('#3a3a3a', step));
   R(hx-2, hy, 5, 1, nc('#3a3a3a', step)); const sw = Math.round(Math.sin(T*1.3 + E.i));
   R(hx-2+sw, hy+1, 5, 3, nc('#b0743c', step)); R(hx-2+sw, hy+1, 5, 1, nc('#c98b4f', step));
-  if(frac(T/1.5 + E.i*0.3) < 0.5){ if(step){ gx.globalAlpha = 0.4; R(AOX+E.x-4, AOY+E.y-80, 5, 5, '#ff3b30'); gx.globalAlpha = 1; } R(AOX+E.x-3, AOY+E.y-79, 2, 2, '#ff3b30'); }
+  if(frac(T/1.5 + E.i*0.3) < 0.5){ if(step){ GX.globalAlpha = 0.4; R(OX0+E.x-4, OY0+E.y-80, 5, 5, '#ff3b30'); GX.globalAlpha = 1; } R(OX0+E.x-3, OY0+E.y-79, 2, 2, '#ff3b30'); }
   const n = Math.floor(T*9), h = hsh(n, E.i, 5);
-  if(h < 0.4){ const sx = AOX+E.x - 10 + Math.floor(hsh(n,E.i,6)*20), sy = AOY+E.y - 3 - Math.floor(hsh(n,E.i,7)*Math.max(4,E.crane));
-    if(step){ gx.globalAlpha = 0.45; R(sx-2,sy-2,5,5,'#ffcf5a'); gx.globalAlpha = 1; }
+  if(h < 0.4){ const sx = OX0+E.x - 10 + Math.floor(hsh(n,E.i,6)*20), sy = OY0+E.y - 3 - Math.floor(hsh(n,E.i,7)*Math.max(4,E.crane));
+    if(step){ GX.globalAlpha = 0.45; R(sx-2,sy-2,5,5,'#ffcf5a'); GX.globalAlpha = 1; }
     R(sx,sy,1,1,'#fff6c0'); R(sx+1,sy,1,1,'#ffb03a'); R(sx-1,sy+1,1,1,'#ffb03a'); }
 }
 // Traffic: continuous along straight lines (car ids are shared by the tiles of a line); right-hand lanes
@@ -3597,47 +3598,47 @@ function drawCars(E, T, step){ const Q = E.cars;
     const kh = hsh(id, lineKey, 9), kind = (Q.reg && kh < 0.12) ? 'bus' : Math.floor(kh*CAR_COLS.length*0.999);
     const [px,py] = P3(a,b); bl(carSprite(Q.axis, kind), E.x+Math.round(px), E.y+Math.round(py), step);
     if(step){ const fa = Q.axis==='A' ? 0.11*d : 0, fb = Q.axis==='A' ? 0 : 0.11*d, [hx,hy] = P3(a+fa, b+fb, 2);
-      gx.globalAlpha = 0.5; R(AOX+E.x+hx-1, AOY+E.y+hy-1, 3, 3, '#ffe9a0'); gx.globalAlpha = 1; R(AOX+E.x+hx, AOY+E.y+hy, 1, 1, '#fff7d0'); } }
+      GX.globalAlpha = 0.5; R(OX0+E.x+hx-1, OY0+E.y+hy-1, 3, 3, '#ffe9a0'); GX.globalAlpha = 1; R(OX0+E.x+hx, OY0+E.y+hy, 1, 1, '#fff7d0'); } }
 }
 // Street lamps on every other road tile: a post by day, a lit head at night
-function drawLamp(E, step){ const X = Math.round(AOX+E.x+E.lamp[0]), Y = Math.round(AOY+E.y+E.lamp[1]);
+function drawLamp(E, step){ const X = Math.round(OX0+E.x+E.lamp[0]), Y = Math.round(OY0+E.y+E.lamp[1]);
   R(X, Y-10, 1, 10, nc('#3b3f45', step)); R(X-1, Y-11, 3, 1, nc('#3b3f45', step));
   R(X-1, Y-10, 3, 1, step ? '#fff0b0' : '#cfd6dd'); }
 // People: shirt, skin and hair from the parcel hash; they go home at night
 const SHIRTS = ['#c62f28','#2a63c9','#1d8148','#e6b400','#8a5cc4','#e8762b','#f2f2ee','#3a3d44'], SKINS = ['#f1c9a5','#d9a27a','#a8714a','#7a4e2d','#f6d7bd'], HAIR = ['#2b2017','#5a3b22','#c9a26b','#7a7a7a','#1b1b1b'];
 function drawWalkers(E, T, step){ if(step >= 2) return;
   E.walk.forEach((w,k)=>{ const sp = 0.06 + hsh(E.i,k,3)*0.05, u = frac(T*sp + hsh(E.i,k,4)), tri = u < 0.5 ? u*2 : 2 - u*2;
-    const [px,py] = P3(w[0] + (w[2]-w[0])*tri, w[1] + (w[3]-w[1])*tri), X = Math.round(AOX+E.x+px), Y = Math.round(AOY+E.y+py);
+    const [px,py] = P3(w[0] + (w[2]-w[0])*tri, w[1] + (w[3]-w[1])*tri), X = Math.round(OX0+E.x+px), Y = Math.round(OY0+E.y+py);
     const kid = E.kids && k > 0, h = kid ? 5 : 7, leg = Math.floor(T*6 + k) % 2, pk = (n,arr)=> arr[Math.floor(hsh(E.i,k,n)*arr.length)];
-    gx.globalAlpha = 0.25; R(X-1, Y, 3, 1, '#1a2a10'); gx.globalAlpha = 1;
+    GX.globalAlpha = 0.25; R(X-1, Y, 3, 1, '#1a2a10'); GX.globalAlpha = 1;
     R(X-1, Y-1, 1, 1, nc('#2b2f3a', step)); R(X + (leg ? 0 : 1) - (leg ? 0 : 1), Y-1-leg, 1, 1, nc('#2b2f3a', step)); R(X, Y-2, 1, 1, nc('#2b2f3a', step));
     R(X-1, Y-h+2, 2, h-4, nc(pk(6, SHIRTS), step)); R(X-1, Y-h, 2, 2, nc(pk(7, SKINS), step)); R(X-1, Y-h, 2, 1, nc(pk(8, HAIR), step)); });
 }
 // Sheep grazing on green fields (the Commission once asked for their sunlight study)
 function drawSheep(E, T, step){
   for(let k=0;k<E.sheep;k++){ const a = -0.26 + hsh(E.i,k,31)*0.52 + 0.04*Math.sin(T*0.23 + k*1.7), b = -0.26 + hsh(E.i,k,32)*0.52 + 0.04*Math.cos(T*0.19 + k*2.3);
-    const [px,py] = P3(a,b), X = Math.round(AOX+E.x+px), Y = Math.round(AOY+E.y+py), f = hsh(E.i,k,33) < 0.5 ? -1 : 1, graze = Math.floor(T*0.6 + k*1.3) % 3 === 0;
-    gx.globalAlpha = 0.22; R(X-2, Y, 6, 1, '#1a2a10'); gx.globalAlpha = 1;
+    const [px,py] = P3(a,b), X = Math.round(OX0+E.x+px), Y = Math.round(OY0+E.y+py), f = hsh(E.i,k,33) < 0.5 ? -1 : 1, graze = Math.floor(T*0.6 + k*1.3) % 3 === 0;
+    GX.globalAlpha = 0.22; R(X-2, Y, 6, 1, '#1a2a10'); GX.globalAlpha = 1;
     R(X-2, Y-4, 5, 3, nc('#f1eee5', step)); R(X-1, Y-5, 3, 1, nc('#ffffff', step)); R(X-1, Y-1, 1, 1, nc('#3b3b3b', step)); R(X+1, Y-1, 1, 1, nc('#3b3b3b', step));
     const hx = f > 0 ? X+3 : X-4; R(hx, graze ? Y-2 : Y-5, 2, 2, nc('#3b3b3b', step)); }
 }
 // The protected toad hops between three spots
 function drawToad(E, T, step){ const cyc = T/3.2 + hsh(E.i,1,2)*3, n = Math.floor(cyc), f = frac(cyc), spots = [[-14,8],[-9,10],[-17,11]];
-  const [sx,sy] = spots[n%3], hop = f < 0.12 ? -2 : 0, X = AOX+E.x+sx, Y = AOY+E.y+sy+hop;
+  const [sx,sy] = spots[n%3], hop = f < 0.12 ? -2 : 0, X = OX0+E.x+sx, Y = OY0+E.y+sy+hop;
   [[0,0],[1,0],[2,0],[0,-1],[1,-1],[2,-1],[3,-1],[1,-2]].forEach(([i,j])=>R(X+i, Y+j, 1, 1, nc('#7a8f2e', step))); R(X+2, Y-2, 1, 1, '#f2c230'); }
 // A flock of birds crosses the sky now and then
-function drawBirds(T, step){ const P = 17, n = Math.floor(T/P), f = frac(T/P);
-  if(hsh(n, 3, S.seed&0xffff) > 0.7 || f > 0.6) return; const dir = hsh(n,4,1) < 0.5 ? 1 : -1, x0 = dir > 0 ? -30 + f/0.6*(AW+60) : AW+30 - f/0.6*(AW+60);
-  const y0 = 30 + hsh(n,5,1)*AH*0.35 + Math.sin(T*0.8)*4, flap = Math.floor(T*7) % 2;
+function drawBirds(T, step, w=AW, hh=AH, seed=S.seed){ const P = 17, n = Math.floor(T/P), f = frac(T/P);
+  if(hsh(n, 3, seed&0xffff) > 0.7 || f > 0.6) return; const dir = hsh(n,4,1) < 0.5 ? 1 : -1, x0 = dir > 0 ? -30 + f/0.6*(w+60) : w+30 - f/0.6*(w+60);
+  const y0 = 30 + hsh(n,5,1)*hh*0.35 + Math.sin(T*0.8)*4, flap = Math.floor(T*7) % 2;
   [[0,0],[-5,-3],[-5,3],[-10,-6],[-10,6]].forEach(([dx,dy],k)=>{ const X = Math.round(x0 + dx*dir), Y = Math.round(y0 + dy + Math.sin(T*3+k)*0.6);
     const c = nc('#2b3240', step); R(X, Y, 1, 1, c); if(flap){ R(X-1, Y-1, 1, 1, c); R(X+1, Y-1, 1, 1, c); } else { R(X-1, Y, 1, 1, c); R(X+1, Y, 1, 1, c); } }); }
 // A finished building rises from the ground, revealed bottom-up, in a puff of dust
 function drawRise(E, age, step){ const s = E.s, f = 1 - Math.pow(1 - clamp(age/700, 0, 1), 3), fr = s.oy - s.top;
-  const cut = Math.round(fr + (1-f)*(s.oy + 8 - fr)), X = AOX + E.x - s.ox, Y = AOY + E.y - s.oy, src = step ? dark(s, step) : s.c;
-  if(cut < s.c.height) gx.drawImage(src, 0, cut, s.c.width, s.c.height-cut, X, Y+cut, s.c.width, s.c.height-cut);
-  const d = age/RISE_MS; if(d >= 1) return; gx.globalAlpha = (1-d)*0.8;
-  for(let k=0;k<12;k++){ const an = k/12*Math.PI*2, rr = 6 + d*22; disc(AOX+E.x + Math.cos(an)*rr, AOY+E.y + Math.sin(an)*rr*0.5 - d*4, 1.5 + d*2.5, nc('#e3d8c0', step)); }
-  gx.globalAlpha = 1; }
+  const cut = Math.round(fr + (1-f)*(s.oy + 8 - fr)), X = OX0 + E.x - s.ox, Y = OY0 + E.y - s.oy, src = step ? dark(s, step) : s.c;
+  if(cut < s.c.height) GX.drawImage(src, 0, cut, s.c.width, s.c.height-cut, X, Y+cut, s.c.width, s.c.height-cut);
+  const d = age/RISE_MS; if(d >= 1) return; GX.globalAlpha = (1-d)*0.8;
+  for(let k=0;k<12;k++){ const an = k/12*Math.PI*2, rr = 6 + d*22; disc(OX0+E.x + Math.cos(an)*rr, OY0+E.y + Math.sin(an)*rr*0.5 - d*4, 1.5 + d*2.5, nc('#e3d8c0', step)); }
+  GX.globalAlpha = 1; }
 
 let drawOrder = [], animTimer = 0, groundStamp = 0;
 const darkGround = [];
@@ -3659,18 +3660,9 @@ function groundFor(step){ if(!step) return groundCv; if(darkGround[step]) return
   const cv = document.createElement('canvas'); cv.width = AW; cv.height = AH; const g = cv.getContext('2d');
   g.drawImage(groundCv,0,0); g.globalCompositeOperation='multiply'; g.fillStyle=NIGHT[step]; g.fillRect(0,0,AW,AH);
   g.globalCompositeOperation='destination-in'; g.drawImage(groundCv,0,0); return darkGround[step] = cv; }
-function compose(now){
-  if(!S || !W || S.grid.length !== N*N || !PLAN.length) return;
-  const T = MOTION ? now/1000 : 0, step = MOTION ? nightStep(now) : 0;
-  gx.setTransform(1,0,0,1,0,0); gx.clearRect(0,0,AW,AH); gx.imageSmoothingEnabled = false;
-  gx.drawImage(groundFor(step), 0, 0);
-  const wf = Math.floor(T*3.5) % 4;
-  WATER.forEach(w=>{ bl(spr('river'+w.m+'_'+wf, ()=>riverTile(w.m, wf)), w.x, w.y, step); w.over.forEach(s=>bl(s, w.x, w.y, step)); });
-  if(step){ gx.fillStyle = '#ffd77a';            // pools of lamp light: flat iso ellipses, a brighter core
-    for(const [rx,ry,al] of [[11,5,0.07],[7,3,0.09]]){ gx.globalAlpha = al*step;
-      LAMPS.forEach(([x,y])=>{ for(let j=-ry;j<=ry;j++){ const w = Math.round(rx*Math.sqrt(1-(j/(ry+0.5))**2)); gx.fillRect(Math.round(AOX+x)-w, Math.round(AOY+y+2)+j, w*2+1, 1); } }); }
-    gx.globalAlpha = 1; }
-  for(const E of PLAN){
+// One parcel's frame: lamp, traffic, sprite (rising if just finished), crane, effects, people, animals
+function drawEntry(E, T, step, now){
+  if(E.cycle){ drawCycleSite(E, T, step); return; }
     if(E.lamp) drawLamp(E, step);
     if(E.cars) drawCars(E, T, step);
     let rising = false;
@@ -3683,12 +3675,26 @@ function compose(now){
     if(E.walk && !rising) drawWalkers(E, T, step);
     if(E.sheep) drawSheep(E, T, step);
     if(E.toad) drawToad(E, T, step);
-  }
+}
+function compose(now){
+  if(!S || !W || S.grid.length !== N*N || !PLAN.length) return;
+  const T = MOTION ? now/1000 : 0, step = MOTION ? nightStep(now) : 0;
+  GX = gx; OX0 = AOX; OY0 = AOY;
+  gx.setTransform(1,0,0,1,0,0); gx.clearRect(0,0,AW,AH); gx.imageSmoothingEnabled = false;
+  gx.drawImage(groundFor(step), 0, 0);
+  const wf = Math.floor(T*3.5) % 4;
+  WATER.forEach(w=>{ bl(spr('river'+w.m+'_'+wf, ()=>riverTile(w.m, wf)), w.x, w.y, step); w.over.forEach(s=>bl(s, w.x, w.y, step)); });
+  if(step){ gx.fillStyle = '#ffd77a';            // pools of lamp light: flat iso ellipses, a brighter core
+    for(const [rx,ry,al] of [[11,5,0.07],[7,3,0.09]]){ gx.globalAlpha = al*step;
+      LAMPS.forEach(([x,y])=>{ for(let j=-ry;j<=ry;j++){ const w = Math.round(rx*Math.sqrt(1-(j/(ry+0.5))**2)); gx.fillRect(Math.round(AOX+x)-w, Math.round(AOY+y+2)+j, w*2+1, 1); } }); }
+    gx.globalAlpha = 1; }
+  for(const E of PLAN) drawEntry(E, T, step, now);
   if(MOTION) drawBirds(T, step);
   worldEl.classList.toggle('night', step >= 2);
 }
 // The animation loop: ~15 frames a second while the page is visible
-function frame(){ animTimer = 0; if(document.hidden || !S) return; compose(performance.now()); presentNow();
+function frame(){ animTimer = 0; if(document.hidden || !S) return; const now = performance.now();
+  if(coverOpen()) dioFrame(now); else { compose(now); presentNow(); }
   if(MOTION) animTimer = setTimeout(()=>{ animTimer = requestAnimationFrame(frame); }, 66); }
 function kick(){ if(!animTimer && MOTION && !document.hidden) animTimer = requestAnimationFrame(frame); }
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) kick(); });
@@ -4306,21 +4312,26 @@ function cloudCanvas(seed){
     const o=(y*w+x)*4; d[o]=c[0]; d[o+1]=c[1]; d[o+2]=c[2]; d[o+3]=255; }
   g.putImageData(img,0,0); return cv;
 }
-// The diorama: a hand-placed model town, half finished, half a building site.
-let dioCanvas = null;
+// The diorama: a hand-placed model town, half finished, half a building site. Its buildings get random styles on
+// every visit; it is alive like the map (traffic, people, sheep, smoke…) and its building sites keep finishing
+// themselves — until the Commission requests changes and they go back to being building sites.
+let dioCanvas = null, DIO = null;
 function coverDiorama(){
   if(dioCanvas) return dioCanvas;
+  const seed = (Math.random()*1e9)|0;
   const M = ['TvcRhCT', 'vpvRhCb', 'wvpRskF', 'RRRRRRR', 'wwnRhhf', 'wwmRpxf', '~~~~~~~'], n = M.length;
   const at = (r,c) => (r>=0 && c>=0 && r<n && c<n) ? M[r][c] : null;
-  const OX = n*TW/2 + 16, OY = 112, cv = document.createElement('canvas');
-  cv.width = n*TW + 32; cv.height = OY + (n-1)*TH + TH/2 + 40;
-  const g = cv.getContext('2d'); g.imageSmoothingEnabled = false;
-  const put = (spr, r, c) => g.drawImage(spr.c, OX + (c-r)*TW/2 - spr.ox, OY + (c+r)*TH/2 - spr.oy);
+  const OX = n*TW/2 + 16, OY = 112, Wd = n*TW + 32, Hd = OY + (n-1)*TH + TH/2 + 40;
+  const ground = document.createElement('canvas'); ground.width = Wd; ground.height = Hd;
+  const gg = ground.getContext('2d'); gg.imageSmoothingEnabled = false;
+  const full = document.createElement('canvas'); full.width = Wd; full.height = Hd;
+  const fg = full.getContext('2d'); fg.imageSmoothingEnabled = false;
+  const pos = (r,c) => [(c-r)*TW/2, (c+r)*TH/2];
+  const put = (g, s, r, c) => { const [x,y] = pos(r,c); g.drawImage(s.c, OX + x - s.ox, OY + y - s.oy); };
   const mask = (r,c,ch) => { let m = 0; [[-1,0,1],[0,1,2],[1,0,4],[0,-1,8]].forEach(([dr,dc,bit])=>{ const q = at(r+dr,c+dc);
     if(q===ch || (q===null && (ch==='~' || (ch==='R' && (r===3 || c===3))))) m |= bit; }); return m; };
   const order = []; for(let r=0;r<n;r++) for(let c=0;c<n;c++) order.push([r+c, c, r]);
   order.sort((a,b)=>a[0]-b[0] || a[1]-b[1]);
-  let k = 0;
   const groundOf = (ch, r, c) => { const v = (r*7+c*3)%3;
     switch(ch){
       case 'R': return roadTile(mask(r,c,'R'), false);
@@ -4335,30 +4346,65 @@ function coverDiorama(){
       case 'n': return GROUNDS.serviced(v);
       case 'm': return GROUNDS.muni(v);
       default: return GROUNDS.earth(v); } };
-  order.forEach(([,c,r])=>{ const ch = M[r][c]; put(groundOf(ch,r,c), r, c);
-    if(r===n-1) put(skirt('L'), r, c); if(c===n-1) put(skirt('R'), r, c); });
-  order.forEach(([,c,r])=>{ const ch = M[r][c];
-    switch(ch){
-      case 'v': put(BUILDINGS.village(1 + (k++ % 3)), r, c); break;
-      case 'c': put(BUILDINGS.village(0), r, c); break;
-      case 'T': put(BUILDINGS.habitat(r+c), r, c); break;
-      case 'p': put(BUILDINGS.park(0), r, c); break;
-      case 'h': put(BUILDINGS.housing((r+c)%3), r, c); break;
-      case 's': put(BUILDINGS.school(0), r, c); break;
-      case 'k': put(BUILDINGS.clinic(0), r, c); break;
-      case 'f': put(BUILDINGS.factory(0), r, c); break;
-      case 'C': put(siteSprite(r ? 11 : 26), r, c); break;
-      case 'b': put(billboardSprite(), r, c); break;
-      case 'F': put(fenceSprite(), r, c); break;
-      case 'n': put(noticeSprite(), r, c); break;
-      case 'm': put(flagSprite(), r, c); break;
-      case 'x': put(ruinSprite(), r, c); break; } });
-  // crop to the painted pixels (plus a 2px margin) so the scene can be shown as large as possible
-  const px = g.getImageData(0,0,cv.width,cv.height).data; let x0=cv.width, y0=cv.height, x1=0, y1=0;
-  for(let y=0;y<cv.height;y++) for(let x=0;x<cv.width;x++) if(px[(y*cv.width+x)*4+3]){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
-  const out = document.createElement('canvas'); out.width = x1-x0+5; out.height = y1-y0+5;
-  out.getContext("2d").drawImage(cv, 2-x0, 2-y0);
+  const water = [];
+  order.forEach(([,c,r])=>{ const ch = M[r][c], gs = groundOf(ch,r,c); put(gg, gs, r, c);
+    if(ch==='~') water.push({r, c, m: mask(r,c,'~')});
+    if(r===n-1) put(gg, skirt('L'), r, c); if(c===n-1) put(gg, skirt('R'), r, c); });
+  fg.drawImage(ground, 0, 0);
+  const TYPE = {h:'housing', p:'park', s:'school', k:'clinic', f:'factory'};
+  const plan = []; let k = 0;
+  order.forEach(([,c,r])=>{ const ch = M[r][c], [x,y] = pos(r,c), i = r*n + c;
+    const E = {i: i + 1000, x, y, s:null, fx:[], walk:null, kids:false, cars:null, lamp:null, sheep:0, toad:false, crane:null};
+    if(TYPE[ch]){ const L = ARCH[TYPE[ch]], A = L[Math.floor(hsh(i, seed&0xffff, 31)*L.length)], v = Math.floor(hsh(i, seed&0xffff, 32)*6);
+      E.s = spr(TYPE[ch]+':'+A.id+':'+v, ()=>A.make(v)); E.fx = typeof A.fx==='function' ? A.fx(v) : (A.fx || []); E.walk = A.walk || null; E.kids = !!A.kids; }
+    else switch(ch){
+      case 'v': E.s = BUILDINGS.village(1 + (k++ % 3)); E.walk = [[-0.4,0.44,0.1,0.44]]; break;
+      case 'c': E.s = BUILDINGS.village(0); break;
+      case 'T': E.s = BUILDINGS.habitat(r+c); E.toad = r===0 && c===0; break;
+      case 'C': { const hh = r ? 11 : 26; E.site = spr('site'+hh+'_0', ()=>siteSprite(hh,0)); E.s = E.site; E.hh = hh; E.cycle = true; break; }
+      case 'b': E.s = billboardSprite(); break;
+      case 'F': E.s = fenceSprite(); break;
+      case 'n': E.s = noticeSprite(); break;
+      case 'm': E.s = flagSprite(); E.fx = [{k:'flag', x:0, y:-13, c:['#1d3c78','#ffffff']}]; break;
+      case 'x': E.s = ruinSprite(); break;
+      case 'w': if((r+c*2)%4===1) E.sheep = 3; break;
+      case 'R': { const m = mask(r,c,'R'), A = (m&2) && (m&8), B = (m&1) && (m&4);
+        if(A !== B){ E.cars = {axis: A ? 'A' : 'B', k: A ? c : r, line: A ? r : c, reg:false, dens:0.45}; if((r+c)%2===0) E.lamp = A ? P3(0,-0.33) : P3(-0.33,0); }
+        break; } }
+    if(E.s) put(fg, E.s, r, c);
+    plan.push(E); });
+  // crop to the painted pixels (plus a margin; more on top for smoke and cranes) so the scene can be shown as large as possible
+  const px = fg.getImageData(0,0,Wd,Hd).data; let x0=Wd, y0=Hd, x1=0, y1=0;
+  for(let y=0;y<Hd;y++) for(let x=0;x<Wd;x++) if(px[(y*Wd+x)*4+3]){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
+  x0 = Math.max(0, x0-2); y0 = Math.max(0, y0-14);
+  const out = document.createElement('canvas'); out.width = x1-x0+3; out.height = y1-y0+3;
+  DIO = {out, ground, plan, water, ox: OX, oy: OY, x0, y0, seed, pos};
+  dioFrame(performance.now());
   return dioCanvas = out;
+}
+function dioFrame(now){
+  const D = DIO; if(!D) return; const g = D.out.getContext('2d'), T = MOTION ? now/1000 : 0;
+  g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,D.out.width,D.out.height); g.imageSmoothingEnabled = false;
+  g.drawImage(D.ground, -D.x0, -D.y0);
+  GX = g; OX0 = D.ox - D.x0; OY0 = D.oy - D.y0;
+  const wf = Math.floor(T*3.5) % 4;
+  D.water.forEach(w=>{ const [x,y] = D.pos(w.r, w.c); bl(spr('river'+w.m+'_'+wf, ()=>riverTile(w.m, wf)), x, y, 0); });
+  for(const E of D.plan) drawEntry(E, T, 0, now);
+  if(MOTION) drawBirds(T + 9, 0, D.out.width, D.out.height, D.seed);
+  GX = gx;
+}
+// A building site that finishes itself, shows off its building, then goes back to being a site ("changes requested")
+function drawCycleSite(E, T, step){
+  const P = 17, u = (T + E.i*3.7)/P, n = Math.floor(u), f = frac(u)*P;
+  if(f < 9 || !MOTION){ bl(E.site, E.x, E.y, step); E.crane = E.hh; drawCrane(E, T, step); E.crane = null; return; }
+  const ty = ['housing','housing','school','clinic','factory','park'][Math.floor(hsh(n, E.i, 8)*6)], L = ARCH[ty];
+  const A = L[Math.floor(hsh(n, E.i, 9)*L.length)], v = Math.floor(hsh(n, E.i, 10)*6), s = spr(ty+':'+A.id+':'+v, ()=>A.make(v)), age = (f-9)*1000;
+  const B = {...E, s};
+  if(age < RISE_MS) drawRise(B, age, step);
+  else { bl(s, E.x, E.y, step); (typeof A.fx==='function' ? A.fx(v) : (A.fx || [])).forEach(fx=>FX[fx.k](fx, B, T, step)); if(A.walk) drawWalkers({...B, walk:A.walk, kids:!!A.kids}, T, step); }
+  if(f > P - 0.8){ const d = (f - (P-0.8))/0.8; GX.globalAlpha = 0.85*(1-d*0.6);   // demolition dust
+    for(let q=0;q<14;q++){ const an = q/14*Math.PI*2, rr = 4 + d*18; disc(OX0+E.x + Math.cos(an)*rr, OY0+E.y - 10 + Math.sin(an)*rr*0.6 - d*6, 3 + d*3, '#e3d8c0'); }
+    GX.globalAlpha = 1; }
 }
 // Fit the scene to the screen: sky, rays behind the logo, the diorama at a whole-pixel scale
 function layoutCover(){
@@ -4422,7 +4468,7 @@ function startMenu(){
     c.className = 'cv-cloud'; c.style.top = (top*100)+'%'; c.style.width = c.width*4+'px'; c.style.height = c.height*4+'px';
     c.style.animationDuration = dur+'s'; c.style.animationDelay = (-dur*((j*0.37)%1))+'s'; clouds.appendChild(c); });
   cover.querySelector('.cv-dio').appendChild(coverDiorama());
-  cover.hidden = false; cover.querySelector('.cv-body').scrollTop = 0;
+  cover.hidden = false; kick(); cover.querySelector('.cv-body').scrollTop = 0;
   requestAnimationFrame(layoutCover); if(document.fonts && document.fonts.ready) document.fonts.ready.then(layoutCover);
   if(first) setTimeout(()=>{ if(coverOpen()) playSound('stamp'); }, 950);
   updateMusicBtn(); rerender = startMenu;
