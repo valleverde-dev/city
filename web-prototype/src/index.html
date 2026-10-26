@@ -3356,6 +3356,8 @@ const BUILDINGS = {
     gable(e,0.04,0.4,-0.04,0.38,9,7,'b',r2,sh(w2,0.95));
   }),
 };
+// Older callers (the title-screen diorama) ask for BUILDINGS.<type>(v): v picks a style and a colourway
+['housing','factory','school','clinic','park'].forEach(ty=>{ BUILDINGS[ty] = v => { const L = ARCH[ty]; return spr(ty+':'+L[(v|0) % L.length].id+':'+((v|0) % 6), ()=>L[(v|0) % L.length].make((v|0) % 6)); }; });
 const archOf = (i, ty) => { const L = ARCH[ty]; return L[Math.floor(hsh(i, S.seed & 0xffff, 913) * L.length)]; };
 const colourOf = i => Math.floor(hsh(i, S.seed & 0xffff, 414) * 6);
 
