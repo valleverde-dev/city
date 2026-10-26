@@ -2706,7 +2706,10 @@ const music = {
     return a.canPlayType && a.canPlayType('audio/ogg; codecs="vorbis"') ? 'ogg' : 'm4a'; })(),
   level: 1,
 };
-const TRACKS = { menu:'eurocrat_menu', main:'eurocrat_main', win:'eurocrat_win' };
+const TRACKS = { menu:'eurocrat_menu', win:'eurocrat_win',
+  level1:'eurocrat_level1', level2:'eurocrat_level2', level3:'eurocrat_level3', level4:'eurocrat_level4' };
+// Each campaign level has its own theme: village waltz → Eurovision pop → office ambient → Euro-trance
+const gameTrack = () => 'level' + (((S && S.level) | 0) + 1);
 const MUSIC_VOL = 0.45;
 function loadTrack(name){
   if(music.buffers[name]) return Promise.resolve(music.buffers[name]);
@@ -2755,7 +2758,7 @@ function syncMusic(){
     music.src = src; music.gain = gain;
   }).catch(()=>{ if(music.playing===name) music.playing=null; });
 }
-// track: 'menu' | 'main' | 'win'; level: 1 = full, <1 = ducked (pause screen)
+// track: 'menu' | 'level1'…'level4' | 'win'; level: 1 = full, <1 = ducked (pause screen)
 function setMusic(track, level=1){ music.want = track; music.level = level; syncMusic(); }
 function updateMusicBtn(){
   document.getElementById('musicBtn').innerHTML = ic(music.on ? 'music_note' : 'music_off');
@@ -4005,9 +4008,9 @@ function startMenu(){
 }
 addEventListener('resize', ()=>{ if(coverOpen()) layoutCover(); });
 function pauseMenu(){
-  setMusic('main', 0.4);
+  setMusic(gameTrack(), 0.4);
   letter({icon:'pause', title:t('pause.t'), body:`<p>${t('pause.x',{town:S.town, country:country(), m:Math.min(S.month,CFG.months), n:CFG.months})}</p><p class="keys">${t('lvl.keys')}</p>`,
-    buttons:[btn(t('pause.back'),'play_arrow', ()=>{ setMusic('main'); hideModal(); }, true), musicButton(), ...langButtons(),
+    buttons:[btn(t('pause.back'),'play_arrow', ()=>{ setMusic(gameTrack()); hideModal(); }, true), musicButton(), ...langButtons(),
       btn(t('lvl.retry'),'replay', ()=>startLevel(S.level)), btn(t('menu.main'),'logout', ()=>{ startMenu(); })]});
   updateMusicBtn(); rerender = pauseMenu;
 }
@@ -4017,9 +4020,9 @@ function setLang(l){
 }
 function frameView(){ resize(); zoom = defaultZoom();
   const v = S.grid.findIndex(p=>p.k==='village'); if(N>=16 && v>=0) centreOn(v); else { MAPCX = 0; MAPCY = (N-1)*TH/2 - 12; clampCam(); } }
-function startNew(seed, level){ hideCover(); newGame(seed, level===undefined ? campaign().max : level); selected=-1; sheet=null; viewRot=0; frameView(); save(); setMusic('main'); refresh(); showNext(); }
+function startNew(seed, level){ hideCover(); newGame(seed, level===undefined ? campaign().max : level); selected=-1; sheet=null; viewRot=0; frameView(); save(); setMusic(gameTrack()); refresh(); showNext(); }
 function startLevel(k){ startNew(undefined, k); }
-function afterLoad(){ hideCover(); selected=-1; sheet=null; setMapSize(LEVELS[S.level||0].n); frameView(); setMusic('main'); refresh(); showNext(); }
+function afterLoad(){ hideCover(); selected=-1; sheet=null; setMapSize(LEVELS[S.level||0].n); frameView(); setMusic(gameTrack()); refresh(); showNext(); }
 
 // =====================================================================
 //  INPUT — tap to select · drag (one finger / mouse) to move · pinch / wheel / +− to zoom
