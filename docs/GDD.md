@@ -16,7 +16,7 @@ References: *Constructor* (1997) for the humour, characters and dirty tricks; *I
 
 - **Hyper-realistic premise, comic execution.** Every mechanic mirrors something that actually happens (land holdouts, zoning, permits, objections, archaeological finds, protected species, elections, use-it-or-lose-it funding, audits).
 - **Laugh at everyone.** The Commission (acronyms, KPIs, forms), the national government, the mayor, the developer, the NIMBY neighbour — and the player. The satire should make people think, not preach.
-- **Fictional institutions only.** No real EU names, flags or emblems (legal + store-review risk). We parody: *The Union*, *DG HUF — Directorate-General for Harmonised Urban Futures*, the *MOTHER* programme (*Model Town for Harmonised European Resilience*), fictional member states (Valdoria, Brennmark, Esterra…).
+- **Fictional institutions only.** No real EU names or institutional logos. **Exception: the flag of Europe** (blue, ring of 12 gold stars) appears as scenery — flag avenues and plazas on the title screen. The EU emblem rules let anyone use it, commercially too, as long as it implies no link with or endorsement by the EU and is not registered as a trademark; so it never goes in the game's logo, app icon, store name or anything that reads as official. We parody: *The Union*, *DG HUF — Directorate-General for Harmonised Urban Futures*, the *MOTHER* programme (*Model Town for Harmonised European Resilience*), fictional member states (Valdoria, Brennmark, Esterra…).
 
 ## 3. The player
 

@@ -253,34 +253,20 @@
   .perk b{display:block; font:400 22px/1 var(--f-display); color:var(--navy);} .perk small{color:var(--sub); font-size:13px; line-height:1.35; display:block; margin-top:2px;}
 
   /* --- Title screen: a full-screen scene, not a dialog --- */
-  #cover{position:fixed; inset:0; z-index:25; display:grid; grid-template-rows:auto 1fr auto; background:var(--navy); color:#fff; overflow:hidden;
+  #cover{position:fixed; inset:0; z-index:25; display:grid; grid-template-rows:1fr auto; background:var(--navy); color:#fff; overflow:hidden;
          -webkit-user-select:none; user-select:none;}
-  #coverSky{position:absolute; left:0; top:0; image-rendering:pixelated; z-index:0; pointer-events:none;}
+  #coverSky, #coverFlags{position:absolute; left:0; top:0; image-rendering:pixelated; z-index:0; pointer-events:none;}
   .cv-clouds{position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden;}
   .cv-cloud{position:absolute; left:0; image-rendering:pixelated; animation:cv-drift linear infinite; will-change:transform;}
   @keyframes cv-drift{from{transform:translateX(-25vw);} to{transform:translateX(110vw);}}
-  .cv-official{position:relative; z-index:2; display:flex; align-items:center; justify-content:center; gap:6px; background:#e9edf4; color:#38445f;
-               font-size:12px; padding:5px 10px; border-bottom:2px solid var(--navy); white-space:nowrap; overflow:hidden;}
-  .cv-official u{color:var(--blue); text-decoration:underline; text-underline-offset:2px;}
   .cv-body{position:relative; z-index:1; display:grid; grid-template-columns:minmax(0,1fr) 400px; gap:28px; align-items:center;
            padding:18px 40px 22px; overflow-y:auto; min-height:0;}
   .cv-stage{position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:0; height:100%;}
-  .cv-kicker{display:inline-flex; align-items:center; gap:8px; font:400 11px/1 var(--f-tag); letter-spacing:.14em; text-transform:uppercase; color:var(--cream);
-             background:rgba(6,18,50,.55); padding:5px 10px 5px 6px; border:2px solid rgba(255,210,0,.55);}
-  .cv-kicker .emblem{width:22px; height:22px;}
-  .cv-brand{position:relative; text-align:center; margin-top:14px;}
+  .cv-brand{position:relative; text-align:center; margin-top:6px;}
   .cv-logo{margin:0; font:400 clamp(72px, 10.5vw, 148px)/0.78 var(--f-display); letter-spacing:.035em; color:#fff; white-space:nowrap;
            text-shadow:-.03em 0 0 var(--navy), .03em 0 0 var(--navy), 0 -.03em 0 var(--navy), 0 .03em 0 var(--navy),
              .03em .06em 0 var(--navy), .06em .09em 0 #061232, .09em .12em 0 #061232, .12em .15em 0 rgba(6,18,50,.45);}
   .cv-logo span{color:var(--yellow);}
-  .cv-stamp{position:absolute; right:-.4em; bottom:-1.45em; font:400 clamp(11px,1.25vw,15px)/1 var(--f-tag); letter-spacing:.1em; text-transform:uppercase; color:#c62f28;
-            background:rgba(251,248,238,.94); border:3px solid #c62f28; outline:2px solid rgba(251,248,238,.94); padding:6px 9px 5px;
-            transform:rotate(-8deg); box-shadow:3px 3px 0 rgba(6,18,50,.5); white-space:nowrap;
-            animation:cv-stamp .5s steps(5) .75s both;}
-  .cv-stamp:before{content:""; position:absolute; inset:2px; border:1px solid rgba(198,47,40,.55); pointer-events:none;}
-  #cover.quiet .cv-stamp{animation:none;}
-  @keyframes cv-stamp{0%{opacity:0; transform:rotate(-8deg) scale(2.6);} 70%{opacity:1; transform:rotate(-8deg) scale(.9);} 100%{opacity:1; transform:rotate(-8deg) scale(1);}}
-  .cv-tagline{max-width:470px; margin:44px auto 0; text-align:center; font-size:16px; line-height:1.45; color:#fff; text-shadow:-1px 0 0 var(--navy), 1px 0 0 var(--navy), 0 -1px 0 var(--navy), 0 1px 0 var(--navy), 2px 2px 0 var(--navy);}
   .cv-dio{position:relative; margin-top:10px; flex:1 1 auto; min-height:0; width:100%; display:flex; align-items:center; justify-content:center;}
   .cv-dio canvas{display:block; image-rendering:pixelated; animation:cv-bob 3.2s steps(2) infinite alternate;}
   @keyframes cv-bob{from{transform:translateY(0);} to{transform:translateY(-4px);}}
@@ -335,17 +321,14 @@
   .cv-track span{font-size:14px; color:#e9edf8; padding:0 6px;}
   .cv-track i{font-style:normal; color:var(--yellow); padding:0 10px;}
   @keyframes cv-ticker{from{transform:translateX(0);} to{transform:translateX(-50%);}}
-  @media (prefers-reduced-motion: reduce){ .cv-cloud, .cv-dio canvas, .cv-track > div, .cv-led b, .cv-stamp{animation:none !important;} }
+  @media (prefers-reduced-motion: reduce){ .cv-cloud, .cv-dio canvas, .cv-track > div, .cv-led b{animation:none !important;} }
 
   /* narrow screens: stack the scene over the counter */
   @media (max-width: 880px){
     .cv-body{display:flex; flex-direction:column; gap:10px; padding:12px 12px 14px;}
     .cv-stage{flex:1 0 auto; height:auto; justify-content:flex-start;}
-    .cv-kicker{font-size:9.5px; padding:4px 8px 4px 5px;} .cv-kicker .emblem{width:18px; height:18px;}
     .cv-brand{margin-top:10px;}
     .cv-logo{font-size:clamp(58px, 18vw, 120px);}
-    .cv-stamp{bottom:-1.5em; right:-.2em; font-size:10px; padding:5px 7px 4px;}
-    .cv-tagline{font-size:13.5px; line-height:1.35; margin-top:27px; max-width:340px;}
     .cv-dio{margin-top:4px; flex:1 1 0; min-height:120px;}
     .cv-panel{flex:0 0 auto; width:100%; max-width:520px; align-self:center; box-shadow:5px 5px 0 rgba(6,18,50,.55);}
     .cv-in{padding:12px 12px 10px;} .cv-play{margin-bottom:12px; padding:8px 10px 9px;} .cv-play b{font-size:30px;}
@@ -353,9 +336,8 @@
     .cv-opts{margin-top:10px;} .cv-foot{font-size:10.5px; padding:0 12px 9px;}
     .cv-desk{padding:6px 8px 6px 10px;} .cv-desk .lbl small{display:none;} .cv-led b{font-size:24px;}
     #cover .lvl small{font-size:11.5px;} .cv-h{margin-bottom:6px;}
-    .cv-official{font-size:11px;}
   }
-  @media (max-width: 380px){ .cv-play b{font-size:28px;} #cover .lvl b{font-size:17px;} .cv-official span{display:none;} }
+  @media (max-width: 380px){ .cv-play b{font-size:28px;} #cover .lvl b{font-size:17px;} }
 
   /* =====================================================================
      v0.4 READABILITY PASS — pixel fonts stay for titles, figures, buttons and stamps;
@@ -1552,7 +1534,7 @@ en: {
   'menu.new':'New programme', 'menu.continue':'Continue · {town}, month {m}',
   'menu.pitch':'A satirical city builder. You have money from Brussels, impossible deadlines and no power whatsoever.',
   'menu.version':'Prototype v0.5 · buy the land, get it rezoned, file the paperwork, survive the neighbours — and decide every crisis.',
-  'cover.kicker':'The Union · DG HUF presents', 'cover.stamp':'Approved in principle', 'cover.desk':'One-stop shop', 'cover.window':'Desk 1 · Programmes',
+  'cover.desk':'One-stop shop', 'cover.window':'Desk 1 · Programmes',
   'cover.serving':'Now serving', 'cover.continue':'Continue', 'cover.contSub':'Level {l} · {town} · month {m}', 'cover.newSub':'Level {l} · {name}',
   'cover.cases':'Case files', 'cover.pending':'Pending', 'cover.approved':'Approved', 'cover.open':'Open', 'cover.bulletin':'Union Bulletin',
   'cover.foot':'Prototype v0.5 · Not an official website of the Union. Probably.',
@@ -1802,7 +1784,7 @@ es: {
   'menu.new':'Nuevo programa', 'menu.continue':'Continuar · {town}, mes {m}',
   'menu.pitch':'Un city builder satírico. Tienes dinero de Bruselas, plazos imposibles y ningún poder.',
   'menu.version':'Prototipo v0.5 · compra el suelo, consigue que lo recalifiquen, presenta los papeles, sobrevive a los vecinos… y decide en cada crisis.',
-  'cover.kicker':'La Unión · DG FUA presenta', 'cover.stamp':'Aprobado en principio', 'cover.desk':'Ventanilla única', 'cover.window':'Mostrador 1 · Programas',
+  'cover.desk':'Ventanilla única', 'cover.window':'Mostrador 1 · Programas',
   'cover.serving':'Turno', 'cover.continue':'Continuar', 'cover.contSub':'Nivel {l} · {town} · mes {m}', 'cover.newSub':'Nivel {l} · {name}',
   'cover.cases':'Expedientes', 'cover.pending':'En trámite', 'cover.approved':'Aprobado', 'cover.open':'Abierto', 'cover.bulletin':'Boletín de la Unión',
   'cover.foot':'Prototipo v0.5 · No es un sitio web oficial de la Unión. Probablemente.',
@@ -3551,7 +3533,19 @@ function trackCompletions(now){
 }
 
 // ---------- animated overlays (all positions in art pixels) ----------
+// The flag of Europe: blue cloth, a ring of twelve gold stars, waving column by column.
+const EU_BLUE = '#003399', EU_GOLD = '#ffcc00';
+function euFlag(X, Y, w, h, T, ph, step, poleH){
+  const big = h >= 14, amp = h >= 9 ? 1.5 : 1;
+  if(poleH){ R(X, Y, 1, poleH, nc('#d9dce2', step)); R(X+1, Y, 1, poleH, nc('#9aa0aa', step)); R(X, Y-1, 2, 1, nc('#f2c230', step)); }
+  const cx = (w-1)/2, cy = (h-1)/2, r = Math.min(w, h)*(big ? 0.34 : 0.33), stars = new Set();
+  for(let k=0;k<12;k++){ const a = k*Math.PI/6, sx = Math.round(cx + r*Math.cos(a)*1.05), sy = Math.round(cy + r*Math.sin(a));
+    stars.add(sx+','+sy); if(big){ stars.add((sx-1)+','+sy); stars.add((sx+1)+','+sy); stars.add(sx+','+(sy-1)); } }
+  for(let i=0;i<w;i++){ const ph2 = i*0.55 - T*6 + ph, yo = Math.round(Math.sin(ph2)*amp*(i/Math.max(1,w-1))), sl = Math.cos(ph2);
+    const blue = sl > 0.55 ? '#1a4bb0' : sl < -0.55 ? '#002a80' : EU_BLUE;
+    for(let j=0;j<h;j++) R(X+2+i, Y+1+j+yo, 1, 1, nc(stars.has(i+','+j) ? EU_GOLD : blue, step)); } }
 const FX = {
+  eu(f, E, T, step){ (f.at || [[0,0]]).forEach(([dx,dy],q)=> euFlag(Math.round(OX0+E.x+dx), Math.round(OY0+E.y+dy-(f.pole||16)), f.w||9, f.h||6, T, E.i*1.7+q*0.9, step, f.pole||16)); },
   smoke(f, E, T, step){ const steam = f.c==='steam', n = steam ? 4 : 6, X0 = OX0+E.x+f.x, Y0 = OY0+E.y+f.y;
     for(let k=n-1;k>=0;k--){ const a = frac(T/(steam?2.4:3.4) + k/n + E.i*0.13), r = (steam?0.9:1.6) + a*(steam?1.4:3) - (a>0.8 ? (a-0.8)*10 : 0);
       if(r < 0.6) continue; const x = X0 + a*(steam?5:13) + Math.sin(a*7+k)*1.2, y = Y0 - a*(steam?11:24);
@@ -3694,7 +3688,7 @@ function compose(now){
 }
 // The animation loop: ~15 frames a second while the page is visible
 function frame(){ animTimer = 0; if(document.hidden || !S) return; const now = performance.now();
-  if(coverOpen()) dioFrame(now); else { compose(now); presentNow(); }
+  if(coverOpen()){ dioFrame(now); avenueFrame(now); } else { compose(now); presentNow(); }
   if(MOTION) animTimer = setTimeout(()=>{ animTimer = requestAnimationFrame(frame); }, 66); }
 function kick(){ if(!animTimer && MOTION && !document.hidden) animTimer = requestAnimationFrame(frame); }
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) kick(); });
@@ -4268,6 +4262,7 @@ const cover = $('cover');
 const coverOpen = () => !cover.hidden;
 function hideCover(){ cover.hidden = true; }
 // The sky: dithered institutional blue, faint rays behind the logo, blue hills with distant cranes. One art pixel = PS css px.
+let SKY = null;   // the sky's pixel grid and hill line, shared with the flag avenue
 function paintSky(cv, Wc, Hc, cx, cy, hz){
   const PS = 4, w = Math.ceil(Wc/PS), h = Math.ceil(Hc/PS); cv.width = w; cv.height = h;
   cv.style.width = w*PS+'px'; cv.style.height = h*PS+'px';
@@ -4276,6 +4271,7 @@ function paintSky(cv, Wc, Hc, cx, cy, hz){
   const hy = Math.round(h*hz), rx = cx/PS, ry = cy/PS;
   const far = x => hy - 7 - 4*Math.sin(x*0.045+1.3) - 3*Math.sin(x*0.13) - (hsh(x>>2,3,5)<0.3 ? 1 : 0);
   const near = x => hy + 5 + 4*Math.sin(x*0.03+2.1) + 2*Math.sin(x*0.09+0.4);
+  SKY = {PS, w, h, near};
   const farC = C('#4d78c9'), farD = C('#4570c0'), nearC = C('#24489a'), nearD = C('#1f4190'), low = C('#173576'), low2 = C('#122b62');
   for(let y=0;y<h;y++) for(let x=0;x<w;x++){
     let c;
@@ -4319,7 +4315,7 @@ let dioCanvas = null, DIO = null;
 function coverDiorama(){
   if(dioCanvas) return dioCanvas;
   const seed = (Math.random()*1e9)|0;
-  const M = ['TvcRhCT', 'vpvRhCb', 'wvpRskF', 'RRRRRRR', 'wwnRhhf', 'wwmRpxf', '~~~~~~~'], n = M.length;
+  const M = ['TvcRhCT', 'vpvRhCb', 'wvERskF', 'RRRRRRR', 'wwnRhhf', 'wwERpxf', '~~~~~~~'], n = M.length;
   const at = (r,c) => (r>=0 && c>=0 && r<n && c<n) ? M[r][c] : null;
   const OX = n*TW/2 + 16, OY = 112, Wd = n*TW + 32, Hd = OY + (n-1)*TH + TH/2 + 40;
   const ground = document.createElement('canvas'); ground.width = Wd; ground.height = Hd;
@@ -4345,6 +4341,7 @@ function coverDiorama(){
       case 'f': return GROUNDS.yard(v);
       case 'n': return GROUNDS.serviced(v);
       case 'm': return GROUNDS.muni(v);
+      case 'E': return GROUNDS.plaza(v);
       default: return GROUNDS.earth(v); } };
   const water = [];
   order.forEach(([,c,r])=>{ const ch = M[r][c], gs = groundOf(ch,r,c); put(gg, gs, r, c);
@@ -4366,6 +4363,7 @@ function coverDiorama(){
       case 'F': E.s = fenceSprite(); break;
       case 'n': E.s = noticeSprite(); break;
       case 'm': E.s = flagSprite(); E.fx = [{k:'flag', x:0, y:-13, c:['#1d3c78','#ffffff']}]; break;
+      case 'E': E.fx = [{k:'eu', at:[[-18,6],[-7,1],[4,-4],[15,-9]], w:9, h:6, pole:17}]; break;
       case 'x': E.s = ruinSprite(); break;
       case 'w': if((r+c*2)%4===1) E.sheep = 3; break;
       case 'R': { const m = mask(r,c,'R'), A = (m&2) && (m&8), B = (m&1) && (m&4);
@@ -4407,6 +4405,19 @@ function drawCycleSite(E, T, step){
     GX.globalAlpha = 1; }
 }
 // Fit the scene to the screen: sky, rays behind the logo, the diorama at a whole-pixel scale
+// An avenue of flagpoles along the hills behind the town, every flag of Europe waving out of step with the next
+function avenueFrame(now){
+  const cv = $('coverFlags'); if(!cv || !SKY) return;
+  if(cv.width !== SKY.w || cv.height !== SKY.h){ cv.width = SKY.w; cv.height = SKY.h; cv.style.width = SKY.w*SKY.PS+'px'; cv.style.height = SKY.h*SKY.PS+'px'; }
+  const g = cv.getContext('2d'), T = MOTION ? now/1000 : 0; g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,cv.width,cv.height);
+  const keep = [GX, OX0, OY0]; GX = g; OX0 = 0; OY0 = 0;
+  for(let x = 5, q = 0; x < SKY.w - 4; x += 23, q++){ const base = Math.floor(SKY.near(x)) + 2, poleH = 27 + (q%3)*2;
+    euFlag(x, base - poleH, 15, 10, T, q*1.3, 0, poleH); }
+  // a nearer row of bigger flags in the free band under the town (only when there is room for it)
+  if(SKY.fg){ const {top, base} = SKY.fg, poleH = base - top;
+    if(poleH >= 30) for(let x = 9, q = 0; x < SKY.w - 8; x += 44, q++){ const ph = poleH - (q%2)*4; euFlag(x, base - ph, 27, 18, T, q*2.1 + 0.6, 0, ph); } }
+  [GX, OX0, OY0] = keep;
+}
 function layoutCover(){
   if(!coverOpen()) return;
   const sky = $('coverSky'), stage = cover.querySelector('.cv-stage'), dio = cover.querySelector('.cv-dio canvas'), box = cover.querySelector('.cv-dio');
@@ -4421,19 +4432,19 @@ function layoutCover(){
   const dr = dio.getBoundingClientRect();
   const hz = clamp((dr.top + dr.height*0.42 - cr.top)/cr.height, 0.45, 0.85);
   paintSky(sky, cr.width, cr.height, lr.left + lr.width/2 - cr.left, lr.top + lr.height/2 - cr.top, hz);
+  const tk = cover.querySelector('.cv-ticker').getBoundingClientRect();
+  SKY.fg = {top: Math.ceil((dr.bottom - cr.top)/SKY.PS) + 3, base: Math.floor((tk.top - cr.top)/SKY.PS) - 1};
+  avenueFrame(performance.now());
 }
 function startMenu(){
   setMusic('menu');
-  const saved = loadSave(), camp = campaign(), first = !coverOpen();
+  const saved = loadSave(), camp = campaign();
   modal.classList.add('hidden'); modal.classList.remove('title'); notice.className = 'notice';
   const news = [1,2,3,4,5,6,7,8].map(i=>`<span>${t('cover.n'+i)}</span><i>■</i>`).join('');
-  cover.innerHTML = `<canvas id="coverSky" aria-hidden="true"></canvas><div class="cv-clouds" aria-hidden="true"></div>
-    <div class="cv-official">${ic('account_balance','s12')}<span>${t('ui.official')}</span><u>${t('ui.howKnow')}</u></div>
+  cover.innerHTML = `<canvas id="coverSky" aria-hidden="true"></canvas><div class="cv-clouds" aria-hidden="true"></div><canvas id="coverFlags" aria-hidden="true"></canvas>
     <div class="cv-body">
       <div class="cv-stage">
-        <div class="cv-kicker"><i class="emblem" aria-hidden="true"></i>${t('cover.kicker')}</div>
-        <div class="cv-brand"><h1 class="cv-logo">EURO<span>CRAT</span></h1><div class="cv-stamp">${t('cover.stamp')}</div></div>
-        <p class="cv-tagline">${t('menu.pitch')}</p>
+        <div class="cv-brand"><h1 class="cv-logo">EURO<span>CRAT</span></h1></div>
         <div class="cv-dio"></div>
       </div>
       <div class="cv-panel">
@@ -4444,7 +4455,6 @@ function startMenu(){
       </div>
     </div>
     <div class="cv-ticker"><div class="lbl">${ic('campaign')}${t('cover.bulletin')}</div><div class="cv-track"><div>${news}${news}</div></div></div>`;
-  cover.classList.toggle('quiet', !first);
   // primary action: continue the saved level, or open the next case file
   const go = document.createElement('button'); go.className = 'cv-play';
   const cont = saved && !saved.over, nextLv = Math.min(camp.max, LEVELS.length-1);
@@ -4470,7 +4480,6 @@ function startMenu(){
   cover.querySelector('.cv-dio').appendChild(coverDiorama());
   cover.hidden = false; kick(); cover.querySelector('.cv-body').scrollTop = 0;
   requestAnimationFrame(layoutCover); if(document.fonts && document.fonts.ready) document.fonts.ready.then(layoutCover);
-  if(first) setTimeout(()=>{ if(coverOpen()) playSound('stamp'); }, 950);
   updateMusicBtn(); rerender = startMenu;
 }
 addEventListener('resize', ()=>{ if(coverOpen()) layoutCover(); });
