@@ -61,6 +61,9 @@ with sync_playwright() as p:
     # --- Start menu: language and the level list
     check(page.locator(".lvl").count() == 4, "the start menu lists the 4 levels")
     check(page.locator(".lvl:disabled").count() == 3, "only level I is unlocked at first")
+    check(page.is_visible("#cover .cv-logo") and page.is_visible("#cover .cv-ticker") and S("g.lang") == "en", "the title screen is a full-screen scene with logo, menu and bulletin")
+    cb = page.locator("#cover").bounding_box(); vw = page.viewport_size
+    check(cb["width"] == vw["width"] and cb["height"] == vw["height"], "the title screen covers the whole viewport")
     page.click("text=Español")
     check(page.is_visible("text=Proyecto piloto") and S("g.lang") == "es", "switching to Spanish translates the menu")
     page.reload()
@@ -255,8 +258,10 @@ with sync_playwright() as p:
     S("(S.slots=3, 0)"); S("g.lobby()"); clear_cards(); S("g.endMonth()"); clear_cards(); S("(g.refresh(), 0)")
     town = S("S.town")
     page.reload()
-    check(page.is_visible(f"text=Continue · level II · {town}"), "the start menu offers to continue the saved level")
-    page.click(f"text=Continue · level II · {town}"); page.wait_for_timeout(100); drain()
+    play = page.locator("#cover .cv-play")
+    check(page.is_visible("#cover") and "Continue" in play.inner_text() and f"Level II · {town}" in play.inner_text(), "the start menu offers to continue the saved level")
+    play.click(); page.wait_for_timeout(100); drain()
+    check(page.locator("#cover").is_hidden(), "the cover closes when a level starts")
     check(S("S.town") == town and S("S.level") == 1 and S("Math.sqrt(S.grid.length)") == 4, "continue restores the level and its map")
     m0 = S("S.month"); page.click("#endTurn"); drain()
     check(S("S.month") == m0 + 1, "the End month button advances to the next month")

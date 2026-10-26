@@ -13,9 +13,10 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 - **Guide:** a level card with the goal and what is new, then the mayor (or Brussels) walks you through each step and highlights where to tap.
 - **Progression:** completing a level unlocks the next and lets you carry 1 of 3 perks; the combo catalogue persists.
 - **New interface:** full-screen map; bottom tab bar (Agenda · Town · End month · Inbox · Combos); sheets on demand; a bell for problems; directive pill on the map; compact meters on phones.
+- **New title screen:** a full-screen scene instead of a dialog — a hand-composed pixel diorama of the model town (built from the game's own sprites) under a dithered sky with drifting clouds, a stamped *Approved in principle* logo, the menu as a "one-stop shop" counter (now-serving display, levels as case files with Open / Pending / Approved stamps, compact language and music controls) and a scrolling *Union Bulletin* of satirical headlines. Enter starts; the cover blocks map input.
 - **Moving the map:** drag with one finger or the mouse, pinch / wheel / +− to zoom, WASD / arrows on PC, keyboard shortcuts (R, C, Space, Esc).
 - **Difficulty curve** (test bot, no carried perks): I 100% · II ~84% · III ~38% · IV ~35%.
-- **Tests:** 86-check smoke test (a full level I played through the UI, level progression, panning, sheets, both languages, phone and iPad layouts).
+- **Tests:** 89-check smoke test (a full level I played through the UI, level progression, panning, sheets, both languages, phone and iPad layouts).
 
 ## Previous — v0.4.0
 

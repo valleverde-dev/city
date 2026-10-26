@@ -251,22 +251,110 @@
   .perk > .ico:after{content:""; position:absolute; inset:9px; background:var(--navy); -webkit-mask:var(--m) center/100% 100% no-repeat; mask:var(--m) center/100% 100% no-repeat;}
   .perk b{display:block; font:400 22px/1 var(--f-display); color:var(--navy);} .perk small{color:var(--sub); font-size:13px; line-height:1.35; display:block; margin-top:2px;}
 
-  /* --- Title screen --- */
-  #modal.title{background:rgba(11,31,77,.35);}
-  .notice.title{max-width:520px; text-align:center; background:var(--white);}
-  .notice.title .official{display:flex; align-items:center; justify-content:center; gap:6px; background:#e9edf4; color:#38445f; font-size:12px; padding:5px 10px; border-bottom:2px solid var(--line);}
-  .notice.title .official u{color:var(--blue); text-decoration:underline; text-underline-offset:2px;}
-  .notice.title .hero{background:var(--blue); padding:22px 16px 18px; border-bottom:4px solid var(--yellow); position:relative; overflow:hidden;}
-  .notice.title .hero:before{content:""; position:absolute; inset:0; opacity:.13;
-     background-image:linear-gradient(#fff 2px, transparent 2px), linear-gradient(90deg, #fff 2px, transparent 2px); background-size:32px 32px;}
-  .notice.title .hero .emblem{width:80px; height:80px; position:relative; display:block; margin:0 auto 10px;}
-  .notice.title .logo{position:relative; font:400 76px/0.8 var(--f-display); letter-spacing:.06em; color:#fff; text-shadow:4px 4px 0 var(--navy), 0 0 0 var(--yellow); margin:0;}
-  .notice.title .logo span{color:var(--yellow);}
-  .notice.title .tagline{position:relative; color:var(--cream); font-size:14px; margin:12px auto 0; max-width:380px; line-height:1.4;}
-  .notice.title .sheet{background:none; padding:16px 22px 12px;}
-  .notice.title .btns{margin-top:0;}
-  .notice.title .row{display:flex; gap:10px;} .notice.title .row .btn{flex:1;}
-  .notice.title .foot{font-size:12px; line-height:1.4; color:var(--sub); padding:2px 22px 16px; max-width:440px; margin:0 auto;}
+  /* --- Title screen: a full-screen scene, not a dialog --- */
+  #cover{position:fixed; inset:0; z-index:25; display:grid; grid-template-rows:auto 1fr auto; background:var(--navy); color:#fff; overflow:hidden;
+         -webkit-user-select:none; user-select:none;}
+  #coverSky{position:absolute; left:0; top:0; image-rendering:pixelated; z-index:0; pointer-events:none;}
+  .cv-clouds{position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden;}
+  .cv-cloud{position:absolute; left:0; image-rendering:pixelated; animation:cv-drift linear infinite; will-change:transform;}
+  @keyframes cv-drift{from{transform:translateX(-25vw);} to{transform:translateX(110vw);}}
+  .cv-official{position:relative; z-index:2; display:flex; align-items:center; justify-content:center; gap:6px; background:#e9edf4; color:#38445f;
+               font-size:12px; padding:5px 10px; border-bottom:2px solid var(--navy); white-space:nowrap; overflow:hidden;}
+  .cv-official u{color:var(--blue); text-decoration:underline; text-underline-offset:2px;}
+  .cv-body{position:relative; z-index:1; display:grid; grid-template-columns:minmax(0,1fr) 400px; gap:28px; align-items:center;
+           padding:18px 40px 22px; overflow-y:auto; min-height:0;}
+  .cv-stage{position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:0; height:100%;}
+  .cv-kicker{display:inline-flex; align-items:center; gap:8px; font:400 11px/1 var(--f-tag); letter-spacing:.14em; text-transform:uppercase; color:var(--cream);
+             background:rgba(6,18,50,.55); padding:5px 10px 5px 6px; border:2px solid rgba(255,210,0,.55);}
+  .cv-kicker .emblem{width:22px; height:22px;}
+  .cv-brand{position:relative; text-align:center; margin-top:14px;}
+  .cv-logo{margin:0; font:400 clamp(72px, 10.5vw, 148px)/0.78 var(--f-display); letter-spacing:.035em; color:#fff; white-space:nowrap;
+           text-shadow:-.03em 0 0 var(--navy), .03em 0 0 var(--navy), 0 -.03em 0 var(--navy), 0 .03em 0 var(--navy),
+             .03em .06em 0 var(--navy), .06em .09em 0 #061232, .09em .12em 0 #061232, .12em .15em 0 rgba(6,18,50,.45);}
+  .cv-logo span{color:var(--yellow);}
+  .cv-stamp{position:absolute; right:-.4em; bottom:-1.45em; font:400 clamp(11px,1.25vw,15px)/1 var(--f-tag); letter-spacing:.1em; text-transform:uppercase; color:#c62f28;
+            background:rgba(251,248,238,.94); border:3px solid #c62f28; outline:2px solid rgba(251,248,238,.94); padding:6px 9px 5px;
+            transform:rotate(-8deg); box-shadow:3px 3px 0 rgba(6,18,50,.5); white-space:nowrap;
+            animation:cv-stamp .5s steps(5) .75s both;}
+  .cv-stamp:before{content:""; position:absolute; inset:2px; border:1px solid rgba(198,47,40,.55); pointer-events:none;}
+  #cover.quiet .cv-stamp{animation:none;}
+  @keyframes cv-stamp{0%{opacity:0; transform:rotate(-8deg) scale(2.6);} 70%{opacity:1; transform:rotate(-8deg) scale(.9);} 100%{opacity:1; transform:rotate(-8deg) scale(1);}}
+  .cv-tagline{max-width:470px; margin:44px auto 0; text-align:center; font-size:16px; line-height:1.45; color:#fff; text-shadow:-1px 0 0 var(--navy), 1px 0 0 var(--navy), 0 -1px 0 var(--navy), 0 1px 0 var(--navy), 2px 2px 0 var(--navy);}
+  .cv-dio{position:relative; margin-top:10px; flex:1 1 auto; min-height:0; width:100%; display:flex; align-items:center; justify-content:center;}
+  .cv-dio canvas{display:block; image-rendering:pixelated; animation:cv-bob 3.2s steps(2) infinite alternate;}
+  @keyframes cv-bob{from{transform:translateY(0);} to{transform:translateY(-4px);}}
+
+  /* the menu: the counter of a one-stop shop */
+  .cv-panel{position:relative; background:var(--paper); color:var(--ink); border:3px solid var(--navy); box-shadow:8px 8px 0 rgba(6,18,50,.55); align-self:center;}
+  .cv-desk{display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--navy); padding:8px 10px 8px 12px; border-bottom:4px solid var(--yellow);}
+  .cv-desk .lbl{font:400 12px/1.1 var(--f-tag); letter-spacing:.12em; text-transform:uppercase; color:var(--yellow);}
+  .cv-desk .lbl small{display:block; color:#9fb3da; font-size:9px; letter-spacing:.1em; margin-top:3px;}
+  .cv-led{display:flex; align-items:center; gap:8px; background:#120707; border:2px solid #061232; box-shadow:inset 0 0 0 2px #2a1010; padding:3px 8px 2px;}
+  .cv-led small{font:400 8px/1.05 var(--f-tag); color:#c7837a; letter-spacing:.08em; text-transform:uppercase; max-width:52px; text-align:right;}
+  .cv-led b{font:400 28px/1 var(--f-display); color:#ff5a3c; letter-spacing:.06em; text-shadow:0 0 6px rgba(255,80,50,.75); animation:cv-led 1.6s steps(1) infinite;}
+  @keyframes cv-led{0%,88%{opacity:1;} 89%,100%{opacity:.55;}}
+  .cv-in{padding:14px 14px 12px;}
+  .cv-play{display:flex; align-items:center; gap:12px; width:100%; text-align:left; cursor:pointer; color:var(--navy);
+           background:var(--yellow); border:3px solid var(--navy); padding:10px 12px 11px;
+           box-shadow:inset 3px 3px 0 #fff27a, inset -3px -3px 0 var(--yellow2), 0 5px 0 var(--navy); margin-bottom:16px;}
+  .cv-play:hover{background:#ffdb2e;} .cv-play:active{transform:translateY(4px); box-shadow:inset 3px 3px 0 #fff27a, inset -3px -3px 0 var(--yellow2), 0 1px 0 var(--navy);}
+  .cv-play .ico{width:30px; height:30px; flex:0 0 auto;}
+  .cv-play b{display:block; font:400 34px/.9 var(--f-display); letter-spacing:.03em;}
+  .cv-play small{display:block; font-size:13.5px; line-height:1.25; margin-top:3px; color:#3a3200;}
+  .cv-h{display:flex; align-items:center; gap:8px; font:400 10px/1 var(--f-tag); letter-spacing:.14em; text-transform:uppercase; color:var(--sub); margin:0 0 8px;}
+  .cv-h:after{content:""; flex:1; border-top:2px dotted var(--line);}
+  #cover .levels{grid-template-columns:1fr 1fr; gap:8px;}
+  #cover .lvl{position:relative; flex-direction:column; align-items:flex-start; gap:1px; padding:7px 10px 9px; min-height:82px; overflow:hidden;
+              background:var(--white); border:2px solid var(--navy); box-shadow:0 3px 0 var(--navy);}
+  #cover .lvl:active:not(:disabled){transform:translateY(2px); box-shadow:0 1px 0 var(--navy);}
+  #cover .lvl .num{width:auto; text-align:left; font-size:28px; color:var(--blue);}
+  #cover .lvl b{font-size:20px;} #cover .lvl small{font-size:12px; line-height:1.25; margin-top:1px;}
+  #cover .lvl.cur{background:var(--cream); box-shadow:0 3px 0 var(--navy), inset 4px 0 0 var(--yellow2);}
+  #cover .lvl:disabled{opacity:1; background:repeating-linear-gradient(135deg, #f1f3f8 0 6px, #e8ecf3 6px 12px); border-color:#8d99b3; box-shadow:0 3px 0 #8d99b3;}
+  #cover .lvl:disabled .num, #cover .lvl:disabled b{color:#8d99b3;} #cover .lvl:disabled small{color:#7a849b;}
+  .cv-tag{position:absolute; top:7px; right:6px; font:400 9px/1 var(--f-tag); letter-spacing:.08em; text-transform:uppercase; padding:3px 4px 2px;
+          border:2px solid currentColor; transform:rotate(7deg); background:rgba(255,255,255,.7);}
+  .cv-tag.pend{color:#8d6a1a;} .cv-tag.ok{color:var(--ok);} .cv-tag.cur{color:var(--blue);}
+  .cv-opts{display:flex; gap:8px; margin-top:14px;}
+  .cv-seg{display:flex; flex:1; border:2px solid var(--navy); box-shadow:0 3px 0 var(--navy); background:var(--white);}
+  .cv-seg button{flex:1; border:0; background:none; font:400 19px/1 var(--f-display); letter-spacing:.03em; color:var(--navy); padding:8px 4px 7px; cursor:pointer;}
+  .cv-seg button + button{border-left:2px solid var(--navy);}
+  .cv-seg button.on{background:var(--navy); color:var(--yellow);}
+  #cover #btnMusic{width:auto; margin:0; padding:7px 10px; font-size:19px; gap:6px; white-space:nowrap;}
+  #cover #btnMusic .label{display:none;}
+  .cv-foot{font-size:11.5px; line-height:1.4; color:var(--sub); padding:0 14px 12px;}
+
+  /* the Union Bulletin: a news ticker */
+  .cv-ticker{position:relative; z-index:2; display:flex; align-items:stretch; height:34px; background:var(--navy); border-top:3px solid var(--yellow); overflow:hidden;}
+  .cv-ticker .lbl{flex:0 0 auto; display:flex; align-items:center; gap:6px; background:var(--yellow); color:var(--navy); font:400 11px/1 var(--f-tag);
+                  letter-spacing:.1em; text-transform:uppercase; padding:0 12px; box-shadow:3px 0 0 #061232; position:relative; z-index:1;}
+  .cv-ticker .lbl .ico{width:14px; height:14px;}
+  .cv-track{flex:1; overflow:hidden; display:flex; align-items:center;}
+  .cv-track > div{display:flex; white-space:nowrap; animation:cv-ticker 90s linear infinite; will-change:transform;}
+  .cv-track span{font-size:14px; color:#e9edf8; padding:0 6px;}
+  .cv-track i{font-style:normal; color:var(--yellow); padding:0 10px;}
+  @keyframes cv-ticker{from{transform:translateX(0);} to{transform:translateX(-50%);}}
+  @media (prefers-reduced-motion: reduce){ .cv-cloud, .cv-dio canvas, .cv-track > div, .cv-led b, .cv-stamp{animation:none !important;} }
+
+  /* narrow screens: stack the scene over the counter */
+  @media (max-width: 880px){
+    .cv-body{display:flex; flex-direction:column; gap:10px; padding:12px 12px 14px;}
+    .cv-stage{flex:1 0 auto; height:auto; justify-content:flex-start;}
+    .cv-kicker{font-size:9.5px; padding:4px 8px 4px 5px;} .cv-kicker .emblem{width:18px; height:18px;}
+    .cv-brand{margin-top:10px;}
+    .cv-logo{font-size:clamp(58px, 18vw, 120px);}
+    .cv-stamp{bottom:-1.5em; right:-.2em; font-size:10px; padding:5px 7px 4px;}
+    .cv-tagline{font-size:13.5px; line-height:1.35; margin-top:27px; max-width:340px;}
+    .cv-dio{margin-top:4px; flex:1 1 0; min-height:120px;}
+    .cv-panel{flex:0 0 auto; width:100%; max-width:520px; align-self:center; box-shadow:5px 5px 0 rgba(6,18,50,.55);}
+    .cv-in{padding:12px 12px 10px;} .cv-play{margin-bottom:12px; padding:8px 10px 9px;} .cv-play b{font-size:30px;}
+    #cover .lvl{min-height:0; padding:6px 9px 8px;} #cover .lvl .num{font-size:24px;} #cover .lvl b{font-size:18px;}
+    .cv-opts{margin-top:10px;} .cv-foot{font-size:10.5px; padding:0 12px 9px;}
+    .cv-desk{padding:6px 8px 6px 10px;} .cv-desk .lbl small{display:none;} .cv-led b{font-size:24px;}
+    #cover .lvl small{font-size:11.5px;} .cv-h{margin-bottom:6px;}
+    .cv-official{font-size:11px;}
+  }
+  @media (max-width: 380px){ .cv-play b{font-size:28px;} #cover .lvl b{font-size:17px;} .cv-official span{display:none;} }
 
   /* =====================================================================
      v0.4 READABILITY PASS — pixel fonts stay for titles, figures, buttons and stamps;
@@ -455,6 +543,7 @@
 </div>
 <div id="pop" class="hidden"></div>
 <div id="modal" class="hidden"><div class="notice" id="notice"></div></div>
+<div id="cover" hidden></div>
 
 <script>
 (function(){
@@ -1462,6 +1551,14 @@ en: {
   'menu.new':'New programme', 'menu.continue':'Continue · {town}, month {m}',
   'menu.pitch':'A satirical city builder. You have money from Brussels, impossible deadlines and no power whatsoever.',
   'menu.version':'Prototype v0.5 · buy the land, get it rezoned, file the paperwork, survive the neighbours — and decide every crisis.',
+  'cover.kicker':'The Union · DG HUF presents', 'cover.stamp':'Approved in principle', 'cover.desk':'One-stop shop', 'cover.window':'Desk 1 · Programmes',
+  'cover.serving':'Now serving', 'cover.continue':'Continue', 'cover.contSub':'Level {l} · {town} · month {m}', 'cover.newSub':'Level {l} · {name}',
+  'cover.cases':'Case files', 'cover.pending':'Pending', 'cover.approved':'Approved', 'cover.open':'Open', 'cover.bulletin':'Union Bulletin',
+  'cover.foot':'Prototype v0.5 · Not an official website of the Union. Probably.',
+  'cover.n1':'Toad declared protected species; bypass postponed until 2031', 'cover.n2':'Committee for Simplification adds 14 new forms',
+  'cover.n3':'Mayor inaugurates the same roundabout for the third time', 'cover.n4':'Funds to speed up funding delayed',
+  'cover.n5':'Citizens consulted on whether to hold a consultation', 'cover.n6':'Neighbours object to the objection period',
+  'cover.n7':'Pilot project declared a success before it starts', 'cover.n8':'New directive harmonises the length of directives',
   'pause.t':'Coffee break', 'pause.x':'{town}, {country} · month {m} of {n}. Your game is saved automatically.',
   'pause.back':'Back to work', 'pause.abandon':'Abandon programme',
   'intro.t':'Letter of appointment', 'intro.ok':'Accept the appointment',
@@ -1694,6 +1791,14 @@ es: {
   'menu.new':'Nuevo programa', 'menu.continue':'Continuar · {town}, mes {m}',
   'menu.pitch':'Un city builder satírico. Tienes dinero de Bruselas, plazos imposibles y ningún poder.',
   'menu.version':'Prototipo v0.5 · compra el suelo, consigue que lo recalifiquen, presenta los papeles, sobrevive a los vecinos… y decide en cada crisis.',
+  'cover.kicker':'La Unión · DG FUA presenta', 'cover.stamp':'Aprobado en principio', 'cover.desk':'Ventanilla única', 'cover.window':'Mostrador 1 · Programas',
+  'cover.serving':'Turno', 'cover.continue':'Continuar', 'cover.contSub':'Nivel {l} · {town} · mes {m}', 'cover.newSub':'Nivel {l} · {name}',
+  'cover.cases':'Expedientes', 'cover.pending':'En trámite', 'cover.approved':'Aprobado', 'cover.open':'Abierto', 'cover.bulletin':'Boletín de la Unión',
+  'cover.foot':'Prototipo v0.5 · No es un sitio web oficial de la Unión. Probablemente.',
+  'cover.n1':'Declaran especie protegida al sapo; la variante se aplaza a 2031', 'cover.n2':'El Comité de Simplificación añade 14 formularios nuevos',
+  'cover.n3':'El alcalde inaugura la misma rotonda por tercera vez', 'cover.n4':'Se retrasan los fondos para agilizar los fondos',
+  'cover.n5':'Consultan a la ciudadanía si hay que hacer una consulta', 'cover.n6':'Los vecinos recurren el plazo de alegaciones',
+  'cover.n7':'Declaran un éxito el proyecto piloto antes de empezar', 'cover.n8':'Una nueva directiva armoniza la longitud de las directivas',
   'pause.t':'Pausa para el café', 'pause.x':'{town}, {country} · mes {m} de {n}. La partida se guarda sola.',
   'pause.back':'Volver al trabajo', 'pause.abandon':'Abandonar el programa',
   'intro.t':'Carta de nombramiento', 'intro.ok':'Aceptar el nombramiento',
@@ -3728,27 +3833,177 @@ function gameOver(){
 // --- Start / pause menu (with language switch) ---
 function langButtons(){ return ['en','es'].map(l=>{ const b = btn(t('lang.'+l), 'translate', ()=>{ setLang(l); }, false); if(l===LANG) b.classList.add('on'); return b; }); }
 function musicButton(){ const m = btn('', 'music_note', toggleMusic); m.id='btnMusic'; m.innerHTML=ic(music.on?'music_note':'music_off')+'<span class="label"></span>'; return m; }
+// --- Title screen: a full-screen scene. Sky and diorama use the game's own pixel painters. ---
+const cover = $('cover');
+const coverOpen = () => !cover.hidden;
+function hideCover(){ cover.hidden = true; }
+// The sky: dithered institutional blue, faint rays behind the logo, blue hills with distant cranes. One art pixel = PS css px.
+function paintSky(cv, Wc, Hc, cx, cy, hz){
+  const PS = 4, w = Math.ceil(Wc/PS), h = Math.ceil(Hc/PS); cv.width = w; cv.height = h;
+  cv.style.width = w*PS+'px'; cv.style.height = h*PS+'px';
+  const g = cv.getContext('2d'), img = g.createImageData(w,h), d = img.data;
+  const pal = ['#0b1f4d','#0f2c70','#163f94','#1d4cab','#2a63c9','#3f77d4','#5d8fdf','#86ade9'].map(C);
+  const hy = Math.round(h*hz), rx = cx/PS, ry = cy/PS;
+  const far = x => hy - 7 - 4*Math.sin(x*0.045+1.3) - 3*Math.sin(x*0.13) - (hsh(x>>2,3,5)<0.3 ? 1 : 0);
+  const near = x => hy + 5 + 4*Math.sin(x*0.03+2.1) + 2*Math.sin(x*0.09+0.4);
+  const farC = C('#4d78c9'), farD = C('#4570c0'), nearC = C('#24489a'), nearD = C('#1f4190'), low = C('#173576'), low2 = C('#122b62');
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+    let c;
+    const nY = near(x), fY = far(x);
+    if(y >= nY){ const k = (y-nY)/Math.max(1,h-nY); c = k > 0.25 + dith(x,y)*0.5 ? low2 : (y-nY < 2 ? nearC : (dith(x,y) < 0.5 ? nearD : low)); }
+    else if(y >= fY){ c = (y-fY < 1) ? sh(farC,1.08) : (dith(x,y) < 0.3 ? farD : farC); }
+    else {
+      const tt = clamp(y/Math.max(1,fY), 0, 0.999)*(pal.length-1), i = Math.floor(tt), f = tt-i;
+      c = f > dith(x,y) ? pal[Math.min(i+1,pal.length-1)] : pal[i];
+      const ang = Math.atan2(y-ry, x-rx), ray = Math.floor((ang+Math.PI)/(2*Math.PI)*28) % 2;
+      if(ray && y < fY-2) c = sh(c, 1.07);
+    }
+    const o = (y*w+x)*4; d[o]=c[0]; d[o+1]=c[1]; d[o+2]=c[2]; d[o+3]=255;
+  }
+  // trees on the near hills, and two tower cranes on the far ones (somebody else's model town)
+  const put = (x,y,c)=>{ if(x<0||y<0||x>=w||y>=h) return; const o=(y*w+x)*4; d[o]=c[0]; d[o+1]=c[1]; d[o+2]=c[2]; };
+  for(let x=2;x<w;x+=5+Math.floor(hsh(x,9,9)*6)){ const y0 = Math.floor(near(x)); const th = 2+Math.floor(hsh(x,4,4)*3);
+    for(let j=1;j<=th;j++) for(let i=-1;i<=1;i++) if(!(j===th && i)) put(x+i,y0-j,nearD); }
+  [[0.18,0.9],[0.83,1.1]].forEach(([fx,sz])=>{ const x0 = Math.round(w*fx), y0 = Math.floor(far(x0)), H2 = Math.round(16*sz);
+    for(let j=0;j<H2;j++) put(x0,y0-j,farD);
+    for(let i=-Math.round(9*sz);i<=Math.round(5*sz);i++) put(x0+i,y0-H2,farD);
+    for(let j=0;j<5;j++) put(x0+Math.round(4*sz),y0-H2+j,farD); });
+  g.putImageData(img,0,0);
+}
+// A small cloud sprite (white on top, pale blue underneath)
+function cloudCanvas(seed){
+  const w = 34+Math.floor(hsh(seed,1,2)*20), h = 12, cv = document.createElement('canvas'); cv.width=w; cv.height=h;
+  const g = cv.getContext('2d'), img = g.createImageData(w,h), d = img.data;
+  const blobs = [[0.25,0.7,0.24],[0.5,0.45,0.32],[0.75,0.68,0.24],[0.4,0.75,0.26],[0.62,0.78,0.22]];
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+    const inside = blobs.some(([bx,by,r])=>{ const dx=(x+0.5)/w-bx, dy=((y+0.5)/h-by)*h/w; return dx*dx+dy*dy < r*r*0.62; }) && y < h-1;
+    if(!inside) continue;
+    const c = y > h*0.62 ? C('#c9daf4') : (y > h*0.5 && dith(x,y) < 0.5) ? C('#dfe9f9') : C('#ffffff');
+    const o=(y*w+x)*4; d[o]=c[0]; d[o+1]=c[1]; d[o+2]=c[2]; d[o+3]=255; }
+  g.putImageData(img,0,0); return cv;
+}
+// The diorama: a hand-placed model town, half finished, half a building site.
+let dioCanvas = null;
+function coverDiorama(){
+  if(dioCanvas) return dioCanvas;
+  const M = ['TvcRhCT', 'vpvRhCb', 'wvpRskF', 'RRRRRRR', 'wwnRhhf', 'wwmRpxf', '~~~~~~~'], n = M.length;
+  const at = (r,c) => (r>=0 && c>=0 && r<n && c<n) ? M[r][c] : null;
+  const OX = n*TW/2 + 16, OY = 112, cv = document.createElement('canvas');
+  cv.width = n*TW + 32; cv.height = OY + (n-1)*TH + TH/2 + 40;
+  const g = cv.getContext('2d'); g.imageSmoothingEnabled = false;
+  const put = (spr, r, c) => g.drawImage(spr.c, OX + (c-r)*TW/2 - spr.ox, OY + (c+r)*TH/2 - spr.oy);
+  const mask = (r,c,ch) => { let m = 0; [[-1,0,1],[0,1,2],[1,0,4],[0,-1,8]].forEach(([dr,dc,bit])=>{ const q = at(r+dr,c+dc);
+    if(q===ch || (q===null && (ch==='~' || (ch==='R' && (r===3 || c===3))))) m |= bit; }); return m; };
+  const order = []; for(let r=0;r<n;r++) for(let c=0;c<n;c++) order.push([r+c, c, r]);
+  order.sort((a,b)=>a[0]-b[0] || a[1]-b[1]);
+  let k = 0;
+  const groundOf = (ch, r, c) => { const v = (r*7+c*3)%3;
+    switch(ch){
+      case 'R': return roadTile(mask(r,c,'R'), false);
+      case '~': return riverTile(mask(r,c,'~'));
+      case 'w': return GROUNDS.farm((r+c*2)%4, (r+c)%2);
+      case 'v': case 'c': return GROUNDS.village(v);
+      case 'T': return GROUNDS.habitat(v);
+      case 'p': return GROUNDS.park(v);
+      case 'h': case 'k': return GROUNDS.plaza(v);
+      case 's': return GROUNDS.school(v);
+      case 'f': return GROUNDS.yard(v);
+      case 'n': return GROUNDS.serviced(v);
+      case 'm': return GROUNDS.muni(v);
+      default: return GROUNDS.earth(v); } };
+  order.forEach(([,c,r])=>{ const ch = M[r][c]; put(groundOf(ch,r,c), r, c);
+    if(r===n-1) put(skirt('L'), r, c); if(c===n-1) put(skirt('R'), r, c); });
+  order.forEach(([,c,r])=>{ const ch = M[r][c];
+    switch(ch){
+      case 'v': put(BUILDINGS.village(1 + (k++ % 3)), r, c); break;
+      case 'c': put(BUILDINGS.village(0), r, c); break;
+      case 'T': put(BUILDINGS.habitat(r+c), r, c); break;
+      case 'p': put(BUILDINGS.park(0), r, c); break;
+      case 'h': put(BUILDINGS.housing((r+c)%3), r, c); break;
+      case 's': put(BUILDINGS.school(0), r, c); break;
+      case 'k': put(BUILDINGS.clinic(0), r, c); break;
+      case 'f': put(BUILDINGS.factory(0), r, c); break;
+      case 'C': put(siteSprite(r ? 11 : 26), r, c); break;
+      case 'b': put(billboardSprite(), r, c); break;
+      case 'F': put(fenceSprite(), r, c); break;
+      case 'n': put(noticeSprite(), r, c); break;
+      case 'm': put(flagSprite(), r, c); break;
+      case 'x': put(ruinSprite(), r, c); break; } });
+  // crop to the painted pixels (plus a 2px margin) so the scene can be shown as large as possible
+  const px = g.getImageData(0,0,cv.width,cv.height).data; let x0=cv.width, y0=cv.height, x1=0, y1=0;
+  for(let y=0;y<cv.height;y++) for(let x=0;x<cv.width;x++) if(px[(y*cv.width+x)*4+3]){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
+  const out = document.createElement('canvas'); out.width = x1-x0+5; out.height = y1-y0+5;
+  out.getContext("2d").drawImage(cv, 2-x0, 2-y0);
+  return dioCanvas = out;
+}
+// Fit the scene to the screen: sky, rays behind the logo, the diorama at a whole-pixel scale
+function layoutCover(){
+  if(!coverOpen()) return;
+  const sky = $('coverSky'), stage = cover.querySelector('.cv-stage'), dio = cover.querySelector('.cv-dio canvas'), box = cover.querySelector('.cv-dio');
+  if(!sky || !stage || !dio) return;
+  const cr = cover.getBoundingClientRect(), lr = cover.querySelector('.cv-logo').getBoundingClientRect();
+  const dprC = window.devicePixelRatio || 1;
+  dio.style.width = '1px'; dio.style.height = '1px';
+  const br = box.getBoundingClientRect(), availW = Math.max(120, br.width), availH = Math.max(100, br.height);
+  // whole device pixels when the art is big; half steps below 3× (invisible on dense screens) so phones get a decent size
+  const fitK = Math.min(availW*dprC/dio.width, availH*dprC/dio.height), k = fitK >= 3 ? Math.floor(fitK) : Math.max(1, Math.floor(fitK*2)/2);
+  dio.style.width = dio.width*k/dprC + 'px'; dio.style.height = dio.height*k/dprC + 'px';
+  const dr = dio.getBoundingClientRect();
+  const hz = clamp((dr.top + dr.height*0.42 - cr.top)/cr.height, 0.45, 0.85);
+  paintSky(sky, cr.width, cr.height, lr.left + lr.width/2 - cr.left, lr.top + lr.height/2 - cr.top, hz);
+}
 function startMenu(){
   setMusic('menu');
-  const saved = loadSave();
-  notice.className = 'notice title'; modal.classList.add('title'); modal.classList.remove('dock');
-  notice.innerHTML = `<div class="official">${ic('account_balance','s12')}<span>${t('ui.official')}</span><u>${t('ui.howKnow')}</u></div>
-    <div class="hero"><i class="emblem" aria-hidden="true"></i><h1 class="logo">EURO<span>CRAT</span></h1><p class="tagline">${t('menu.pitch')}</p></div>
-    <div class="sheet"><div class="btns"></div></div><div class="foot">${t('menu.version')}</div>`;
-  const box = notice.querySelector('.btns'), camp = campaign();
-  if(saved && !saved.over) box.appendChild(btn(t('menu.continueLvl',{l:ROMAN[saved.level||0], town:saved.town, m:saved.month}),'play_arrow', ()=>{ S=saved; afterLoad(); }, true));
-  const lv = document.createElement('div'); lv.className = 'levels';
+  const saved = loadSave(), camp = campaign(), first = !coverOpen();
+  modal.classList.add('hidden'); modal.classList.remove('title'); notice.className = 'notice';
+  const news = [1,2,3,4,5,6,7,8].map(i=>`<span>${t('cover.n'+i)}</span><i>■</i>`).join('');
+  cover.innerHTML = `<canvas id="coverSky" aria-hidden="true"></canvas><div class="cv-clouds" aria-hidden="true"></div>
+    <div class="cv-official">${ic('account_balance','s12')}<span>${t('ui.official')}</span><u>${t('ui.howKnow')}</u></div>
+    <div class="cv-body">
+      <div class="cv-stage">
+        <div class="cv-kicker"><i class="emblem" aria-hidden="true"></i>${t('cover.kicker')}</div>
+        <div class="cv-brand"><h1 class="cv-logo">EURO<span>CRAT</span></h1><div class="cv-stamp">${t('cover.stamp')}</div></div>
+        <p class="cv-tagline">${t('menu.pitch')}</p>
+        <div class="cv-dio"></div>
+      </div>
+      <div class="cv-panel">
+        <div class="cv-desk"><div class="lbl">${t('cover.desk')}<small>${t('cover.window')}</small></div>
+          <div class="cv-led"><small>${t('cover.serving')}</small><b>A${String(camp.max+1).padStart(2,'0')}</b></div></div>
+        <div class="cv-in"><div class="cv-go"></div><div class="cv-h">${t('cover.cases')}</div><div class="levels"></div><div class="cv-opts"></div></div>
+        <div class="cv-foot">${t('cover.foot')}</div>
+      </div>
+    </div>
+    <div class="cv-ticker"><div class="lbl">${ic('campaign')}${t('cover.bulletin')}</div><div class="cv-track"><div>${news}${news}</div></div></div>`;
+  cover.classList.toggle('quiet', !first);
+  // primary action: continue the saved level, or open the next case file
+  const go = document.createElement('button'); go.className = 'cv-play';
+  const cont = saved && !saved.over, nextLv = Math.min(camp.max, LEVELS.length-1);
+  go.innerHTML = cont ? `${ic('play_arrow')}<span><b>${t('cover.continue')}</b><small>${t('cover.contSub',{l:ROMAN[saved.level||0], town:saved.town, m:saved.month})}</small></span>`
+                      : `${ic('play_arrow')}<span><b>${t('menu.new')}</b><small>${t('cover.newSub',{l:ROMAN[nextLv], name:t('lvl.'+(nextLv+1)+'.name')})}</small></span>`;
+  go.onclick = ()=>{ playSound('click'); if(cont){ S = saved; afterLoad(); } else startLevel(nextLv); };
+  cover.querySelector('.cv-go').appendChild(go);
+  const lv = cover.querySelector('.levels');
   LEVELS.forEach((L,k)=>{ const b = document.createElement('button'); const locked = k > camp.max, done = k < camp.max || (k===LEVELS.length-1 && camp.done);
-    b.className = 'lvl'+(done?' done':''); b.disabled = locked;
-    b.innerHTML = `<span class="num">${ROMAN[k]}</span><span><b>${t('lvl.'+(k+1)+'.name')}</b><small>${locked ? t('lvl.locked') : t('lvl.goalMenu',{s:L.n, n:L.target, m:L.months})}</small></span>${ic(locked?'block':done?'check':'play_arrow')}`;
+    b.className = 'lvl'+(done?' done':'')+(!locked && !done ? ' cur' : ''); b.disabled = locked;
+    const tag = locked ? ['pend','cover.pending'] : done ? ['ok','cover.approved'] : ['cur','cover.open'];
+    b.innerHTML = `<span class="cv-tag ${tag[0]}">${t(tag[1])}</span><span class="num">${ROMAN[k]}</span><b>${t('lvl.'+(k+1)+'.name')}</b><small>${t('lvl.goalMenu',{s:L.n, n:L.target, m:L.months})}</small>`;
     b.onclick = ()=>{ playSound('click'); startLevel(k); }; lv.appendChild(b); });
-  box.appendChild(lv);
-  const row = document.createElement('div'); row.className = 'row'; langButtons().forEach(b=>row.appendChild(b));
-  box.appendChild(row); box.appendChild(musicButton());
-  modal.classList.remove('hidden'); notice.scrollTop = 0;
-  notice.style.animation = 'none'; void notice.offsetWidth; notice.style.animation = '';
+  const opts = cover.querySelector('.cv-opts'), seg = document.createElement('div'); seg.className = 'cv-seg';
+  ['en','es'].forEach(l=>{ const b = document.createElement('button'); b.textContent = t('lang.'+l); b.lang = l; if(l===LANG) b.classList.add('on');
+    b.onclick = ()=>setLang(l); seg.appendChild(b); });
+  opts.appendChild(seg); opts.appendChild(musicButton());
+  // clouds: made once per visit, spread across the sky with negative delays
+  const clouds = cover.querySelector('.cv-clouds');
+  [[0.08,140,0],[0.2,190,1],[0.13,110,2],[0.3,230,3],[0.05,170,4]].forEach(([top,dur,sd],j)=>{ const c = cloudCanvas(sd);
+    c.className = 'cv-cloud'; c.style.top = (top*100)+'%'; c.style.width = c.width*4+'px'; c.style.height = c.height*4+'px';
+    c.style.animationDuration = dur+'s'; c.style.animationDelay = (-dur*((j*0.37)%1))+'s'; clouds.appendChild(c); });
+  cover.querySelector('.cv-dio').appendChild(coverDiorama());
+  cover.hidden = false; cover.querySelector('.cv-body').scrollTop = 0;
+  requestAnimationFrame(layoutCover); if(document.fonts && document.fonts.ready) document.fonts.ready.then(layoutCover);
+  if(first) setTimeout(()=>{ if(coverOpen()) playSound('stamp'); }, 950);
   updateMusicBtn(); rerender = startMenu;
 }
+addEventListener('resize', ()=>{ if(coverOpen()) layoutCover(); });
 function pauseMenu(){
   setMusic('main', 0.4);
   letter({icon:'pause', title:t('pause.t'), body:`<p>${t('pause.x',{town:S.town, country:country(), m:Math.min(S.month,CFG.months), n:CFG.months})}</p><p class="keys">${t('lvl.keys')}</p>`,
@@ -3758,13 +4013,13 @@ function pauseMenu(){
 }
 function setLang(l){
   LANG = l; try{ localStorage.setItem('eurocrat_lang', l); }catch(e){}
-  playSound('click'); refresh(); if(rerender && !modal.classList.contains('hidden')) rerender();
+  playSound('click'); refresh(); if(rerender && (!modal.classList.contains('hidden') || coverOpen())) rerender();
 }
 function frameView(){ resize(); zoom = defaultZoom();
   const v = S.grid.findIndex(p=>p.k==='village'); if(N>=16 && v>=0) centreOn(v); else { MAPCX = 0; MAPCY = (N-1)*TH/2 - 12; clampCam(); } }
-function startNew(seed, level){ newGame(seed, level===undefined ? campaign().max : level); selected=-1; sheet=null; viewRot=0; frameView(); save(); setMusic('main'); refresh(); showNext(); }
+function startNew(seed, level){ hideCover(); newGame(seed, level===undefined ? campaign().max : level); selected=-1; sheet=null; viewRot=0; frameView(); save(); setMusic('main'); refresh(); showNext(); }
 function startLevel(k){ startNew(undefined, k); }
-function afterLoad(){ selected=-1; sheet=null; setMapSize(LEVELS[S.level||0].n); frameView(); setMusic('main'); refresh(); showNext(); }
+function afterLoad(){ hideCover(); selected=-1; sheet=null; setMapSize(LEVELS[S.level||0].n); frameView(); setMusic('main'); refresh(); showNext(); }
 
 // =====================================================================
 //  INPUT — tap to select · drag (one finger / mouse) to move · pinch / wheel / +− to zoom
@@ -3810,6 +4065,7 @@ function keyStep(){ let dx=0, dy=0; held.forEach(k=>{ const v = PAN_KEYS[k]; if(
 addEventListener('keydown', e=>{
   if(e.target.closest && e.target.closest('input,textarea')) return;
   const k = e.key.toLowerCase(), modalOpen = !modal.classList.contains('hidden');
+  if(coverOpen()){ if((k==='enter' || k===' ') && !(e.target.closest && e.target.closest('button'))){ e.preventDefault(); cover.querySelector('.cv-play').click(); } return; }
   if(k==='escape'){ if(sheet) closeSheet(); else if(!modalOpen && S && !S.over) pauseMenu(); return; }
   if(modalOpen) return;
   if(PAN_KEYS[k]){ e.preventDefault(); held.add(k); if(!keyLoop) keyLoop = requestAnimationFrame(keyStep); return; }
