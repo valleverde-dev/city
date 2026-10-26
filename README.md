@@ -9,19 +9,15 @@ Web prototype playable on iPad, iPhone and desktop; a Godot port is planned for 
 - Game design: [docs/GDD.md](docs/GDD.md)
 - Plan and status: [ROADMAP.md](ROADMAP.md)
 
-## How to play (v0.4)
+## How to play (v0.5)
 
-- Each turn is **one month**; you get **3 agenda slots** per month. Press **End month** when you're done.
-- **Tap a parcel** to see what you can (not) do. A road or a finished building on any of the 8 neighbouring parcels (diagonals too) gives access.
-- Buildings next to each other form **combos** (some good, some bad). Discover them by building; the build menu hints "combo?" and the catalogue keeps what you found.
-- Farmland is **rustic**: only roads and parks. Submit an **urban plan** to rezone what you own — then build homes, factories, schools and health centres, or **sell plots to developers** (they pay you and build housing at their own pace).
-- Buildings go through *permit review → contractor queue → construction*. Permits can be rejected.
-- People only move in if there are **homes, jobs, school places and health care**.
-- Every crisis is a **card**: a character tells you what happened and you choose how to respond.
-- **What needs attention** (top of the panel) lists your problems; tap one to find it on the map. Tap a meter to see why it moved.
-- Spend 20% of the grant by month 12 and 50% by month 24, or half the shortfall is taken back. Out of money? The bank lends — with interest, and only up to a limit.
-- **Win:** 850 registered residents before month 36. **Lose:** debt over the bank's limit, audit, annulled plan, two failed directives, or time out.
-- **Language:** English / Español (button in the top bar or the menus).
+- The campaign has **four levels**: a 2×2 pilot, a 4×4 neighbourhood, an 8×8 partial plan and the 16×16 Model Town. Each one adds new rules; the level card and the mayor's guide tell you what to do.
+- Each turn is **one month**. Tap a parcel to buy it or build on it; press **End month** to let time pass.
+- People only move in if there is what they need (homes; from level II jobs; from level III school and health care).
+- Buildings next to each other form **combos**, good and bad. From level III, crises arrive as **cards** and Brussels sends **directives**.
+- Completing a level unlocks the next one and lets you **carry a perk**.
+- **Controls:** drag to move the map, pinch / wheel / +− to zoom. PC: WASD / arrows, + −, R rotate, C centre, Space end month, Esc close / pause.
+- **Language:** English / Español (top bar or menus).
 
 ## Structure
 

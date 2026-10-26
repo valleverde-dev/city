@@ -159,9 +159,7 @@
   .act.primary small{color:#5b4a00;}
   .act.primary:hover:not(:disabled){background:#ffdc3a;}
   .act.money > .ico{background:var(--ok);}
-  #endTurn{width:100%; justify-content:flex-start; padding:8px 10px 8px 8px; margin-bottom:15px; font:400 28px/0.95 var(--f-display); letter-spacing:.02em;}
-  #endTurn > .ico{width:40px; height:40px; flex-basis:40px; padding:10px;} #endTurn > .ico:after{inset:10px;}
-  #endTurn small{font:400 12px/1.2 var(--f-ui); margin-top:3px;}
+
   .problems{list-style:none; margin:0; padding:0;}
   .problems li{display:flex; gap:9px; align-items:flex-start; font-size:13px; padding:7px 2px; border-top:2px dotted var(--line); cursor:pointer; line-height:1.3;}
   .problems li:first-child{border-top:none; padding-top:2px;}
@@ -295,7 +293,7 @@
   .log{font-size:13.5px; color:#3a4560;}
   .bottleneck{font-size:14px;}
   .kv{font-size:14px;}
-  #endTurn small{font-size:13.5px;}
+
   #pop{font-size:14px;} #pop p{color:#3a4560;}
   .notice p{font-size:16px; line-height:1.55;}
   .quote{font-size:16.5px; line-height:1.55;}
@@ -324,6 +322,88 @@
   #modal.dock .notice{max-height:90vh;}
   @media (min-width:900px) and (min-aspect-ratio:1/1){ #modal.dock{align-items:center; justify-content:center; padding-right:16px;} }
   .notice{max-width:500px;}
+
+  /* =====================================================================
+     v0.5 LAYOUT — full-screen map, bottom tab bar, sheets on demand
+     ===================================================================== */
+  #main{position:relative;}
+  #panel{display:none;}
+  #tabs{display:flex; align-items:stretch; gap:4px; background:var(--blue); border-top:4px solid var(--yellow); padding:5px 6px 6px; position:relative; z-index:6;}
+  .tab{flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:5px 2px 4px;
+       background:var(--blue2); color:#fff; border:2px solid var(--navy); box-shadow:inset 2px 2px 0 rgba(255,255,255,.22), inset -2px -2px 0 rgba(0,0,0,.25);
+       cursor:pointer; font:700 12.5px/1.1 var(--f-ui); position:relative;}
+  .tab .ico{width:20px; height:20px;}
+  #tabs{flex:0 0 auto;} .tab{height:62px;}
+  .tab span{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;}
+  .tab.on{background:var(--navy); box-shadow:inset 2px 2px 0 rgba(0,0,0,.4); color:var(--yellow);}
+  .tab:active{transform:translateY(2px);}
+  .tab.end{flex-direction:row; flex-wrap:wrap; column-gap:8px; row-gap:0; align-content:center;}
+  .tab.end small{flex-basis:100%; text-align:center;}
+  .tab.end .ico{width:24px; height:24px;}
+  .tab.end{flex:1.6 1 0; background:var(--yellow); color:var(--navy); box-shadow:inset -3px -3px 0 var(--yellow2), 0 2px 0 var(--navy);}
+  .tab.end .lbl{font:400 22px/0.95 var(--f-display); letter-spacing:.02em; white-space:nowrap;}
+  .tab.end small{font:600 11.5px/1.1 var(--f-ui); color:#5b4a00; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;}
+  .tab.end:disabled{opacity:.5;}
+  .tab.end.nudge{animation:nudge 1s ease-in-out infinite;}
+  @keyframes nudge{50%{box-shadow:inset -3px -3px 0 var(--yellow2), 0 0 0 4px #fff, 0 2px 0 var(--navy);}}
+  .badge{position:absolute; top:-6px; right:-6px; min-width:20px; height:20px; padding:0 5px; background:var(--bad); color:#fff; border:2px solid var(--navy);
+         font:700 12px/16px var(--f-ui); text-align:center; font-style:normal;}
+  #bellBtn{position:relative;} #bellBtn.alert{background:var(--bad);}
+  #mapBtns{position:absolute; right:10px; bottom:10px; z-index:3; display:flex; flex-direction:column; gap:8px;}
+  .mapbtn{width:44px; height:44px; background:var(--white); color:var(--blue); border:2px solid var(--navy); box-shadow:inset -3px -3px 0 var(--sky2), var(--raise);
+          cursor:pointer; display:flex; align-items:center; justify-content:center; font:400 28px/1 var(--f-display);}
+  .mapbtn:active{transform:translateY(3px); box-shadow:inset 3px 3px 0 var(--sky2);}
+  #rotateBtn{position:static;}
+  #dirPill{position:absolute; left:10px; top:10px; z-index:3; display:flex; align-items:center; gap:8px; max-width:calc(100% - 20px);
+           background:var(--cream); color:var(--navy); border:2px solid var(--navy); box-shadow:3px 3px 0 rgba(11,31,77,.3); padding:6px 10px; cursor:pointer;
+           font:700 14px/1.2 var(--f-ui); text-align:left;}
+  #dirPill b{font:400 20px/1 var(--f-display); white-space:nowrap;} #dirPill.late{background:var(--badbg); color:var(--bad);}
+  #dirPill span{white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  #hint{top:auto; bottom:12px; left:12px; transform:none; max-width:calc(100% - 90px); text-align:left; font-size:13px;}
+  #guide{position:absolute; left:10px; bottom:10px; right:66px; max-width:520px; z-index:4; display:flex; gap:10px; align-items:flex-start;
+         background:var(--white); border:2px solid var(--navy); box-shadow:4px 4px 0 rgba(11,31,77,.35); padding:9px 34px 9px 9px; animation:slam .35s;}
+  #guide .pxp{width:48px; height:48px; flex:0 0 48px; border:2px solid var(--navy); image-rendering:pixelated;}
+  #guide .step{font:700 11.5px/1.4 var(--f-ui); letter-spacing:.06em; text-transform:uppercase; color:var(--blue);}
+  #guide p{margin:2px 0 0; font-size:15.5px; line-height:1.4; color:var(--ink);}
+  #guide .x{position:absolute; right:4px; top:4px; width:26px; height:26px; border:0; background:transparent; cursor:pointer; color:var(--sub);}
+  #guide.done{background:var(--okbg);}
+  #sheet{position:absolute; left:0; right:0; bottom:0; z-index:5; max-height:62%; display:flex; flex-direction:column;
+         background:var(--desk); border-top:3px solid var(--navy); box-shadow:0 -6px 0 rgba(11,31,77,.18); animation:sheetUp .22s ease-out;}
+  @keyframes sheetUp{from{transform:translateY(40px); opacity:0;}}
+  .sheet-head{display:flex; align-items:center; gap:8px; padding:8px 8px 8px 14px; background:var(--white); border-bottom:2px solid var(--navy);}
+  .sheet-head h3{margin:0; flex:1; font:400 26px/1 var(--f-display); color:var(--navy); display:flex; align-items:center; gap:8px; min-width:0;}
+  #sheetClose{width:40px; height:40px; border:2px solid var(--navy); background:var(--white); box-shadow:inset -2px -2px 0 var(--sky2); color:var(--navy); cursor:pointer; display:flex; align-items:center; justify-content:center;}
+  #sheetBody{overflow-y:auto; padding:12px; -webkit-overflow-scrolling:touch; touch-action:pan-y;}
+  #sheetBody .card:last-child{margin-bottom:0;}
+  @media (min-width:900px){
+    #sheet{left:14px; right:auto; bottom:14px; top:auto; width:430px; max-height:calc(100% - 28px); border:3px solid var(--navy); box-shadow:6px 6px 0 rgba(11,31,77,.3);}
+    #guide{right:auto; width:480px;}
+  }
+  .sheet-open #guide, .sheet-open #hint{display:none;}
+  .stat .of{white-space:nowrap;}
+  .lvl-tag{display:inline-block; background:var(--yellow); color:var(--navy); font:400 15px/1 var(--f-display); padding:2px 6px 1px; margin-right:6px; border:2px solid var(--navy);}
+  .levels{display:grid; gap:8px;}
+  .lvl{display:flex; align-items:center; gap:12px; text-align:left; padding:9px 10px; border:2px solid var(--navy); background:var(--white); cursor:pointer;
+       box-shadow:inset -2px -3px 0 var(--sky), var(--raise); margin-bottom:3px;}
+  .lvl .num{font:400 34px/1 var(--f-display); color:var(--navy); width:42px; text-align:center;}
+  .lvl b{display:block; font:400 22px/1 var(--f-display); color:var(--navy);} .lvl small{display:block; font-size:13.5px; color:#3a4560; margin-top:2px;}
+  .lvl:disabled{opacity:.5; cursor:not-allowed; box-shadow:none;} .lvl.done{background:var(--okbg);}
+  .rules{margin:6px 0 4px; padding:0; list-style:none; display:grid; gap:6px;}
+  .rules li{display:flex; gap:8px; align-items:flex-start; font-size:15px; line-height:1.4; background:var(--white); border:2px solid var(--sky2); padding:6px 8px;}
+  .rules li .ico{color:var(--blue); margin-top:1px;}
+  .goal{font:400 24px/1.1 var(--f-display); color:var(--navy); background:var(--cream); border:2px solid var(--navy); padding:8px 10px; margin:8px 0;}
+  .keys{font-size:13px; color:#3a4560; margin-top:6px;}
+  .keys kbd{font:700 12px/1 var(--f-ui); background:var(--white); border:2px solid var(--navy); padding:1px 5px; margin:0 1px;}
+  @media (max-width:600px){
+    .tab{font-size:11px;} .tab .ico{width:18px; height:18px;} .tab.end .lbl{font-size:19px;}
+    #guide{right:62px;} #guide p{font-size:14.5px;} #guide .pxp{width:40px; height:40px; flex-basis:40px;}
+    .mapbtn{width:40px; height:40px;} #mapBtns{gap:6px;}
+    #dirPill{font-size:13px;}
+    .tab.end .ico{display:none;} .tab.end .lbl{font-size:19px;}
+    #meters{flex-wrap:nowrap; gap:10px; padding:6px 10px 7px;}
+    .meter{flex:1 1 0; min-width:0;} .meter .lbl{display:none;} .meter b{font-size:18px;} .meter .delta{font-size:13px; margin-left:2px;}
+    .meter .top .ico{width:16px; height:16px;}
+  }
 </style>
 </head>
 <body>
@@ -338,6 +418,7 @@
       <span class="stat" id="st-slots"><span class="slots" id="slots"></span></span>
     </div>
     <div class="hud-actions">
+      <button class="hud-btn" id="bellBtn" aria-label="Problems"><i class="ico i-report"></i><span class="badge" id="bellN" hidden>0</span></button>
       <button class="hud-btn" id="langBtn" aria-label="Language">ES</button>
       <button class="hud-btn" id="musicBtn" aria-label="Music"><i class="ico i-music_note"></i></button>
       <button class="hud-btn" id="menuBtn" aria-label="Menu"><i class="ico i-menu"></i></button>
@@ -353,10 +434,24 @@
     <div id="world">
       <canvas id="map"></canvas>
       <div id="hint"></div>
-      <button id="rotateBtn" aria-label="Rotate view"><i class="ico i-rotate_right"></i></button>
+      <button id="dirPill" hidden></button>
+      <div id="mapBtns">
+        <button class="mapbtn" id="zoomInBtn" aria-label="Zoom in">+</button>
+        <button class="mapbtn" id="zoomOutBtn" aria-label="Zoom out">−</button>
+        <button class="mapbtn" id="centreBtn" aria-label="Centre"><i class="ico i-place"></i></button>
+        <button class="mapbtn" id="rotateBtn" aria-label="Rotate view"><i class="ico i-rotate_right"></i></button>
+      </div>
+      <div id="guide" hidden></div>
     </div>
-    <div id="panel"></div>
+    <div id="sheet" hidden><div class="sheet-head"><h3 id="sheetTitle"></h3><button id="sheetClose" aria-label="Close"><i class="ico i-close"></i></button></div><div id="sheetBody"></div></div>
   </div>
+  <nav id="tabs">
+    <button class="tab" data-tab="agenda"><i class="ico i-work"></i><span></span></button>
+    <button class="tab" data-tab="city"><i class="ico i-insights"></i><span></span></button>
+    <button class="tab end" id="endTurn"><i class="ico i-skip_next"></i><span class="lbl"></span><small></small></button>
+    <button class="tab" data-tab="inbox"><i class="ico i-inbox"></i><span></span><em class="badge" id="inboxN" hidden></em></button>
+    <button class="tab" data-tab="combos"><i class="ico i-workspace_premium"></i><span></span></button>
+  </nav>
 </div>
 <div id="pop" class="hidden"></div>
 <div id="modal" class="hidden"><div class="notice" id="notice"></div></div>
@@ -1302,7 +1397,45 @@ function money(x){
 }
 const I18N = {
 en: {
-  'k.serviced':'Urban plot',
+  'tab.agenda':'Agenda', 'tab.city':'Town', 'tab.inbox':'Inbox', 'tab.combos':'Combos',
+  'ui.hintPan':'Tap a parcel · drag to move · pinch or wheel to zoom', 'ui.level':'Level',
+  'ui.endMonthShort':'End month', 'ui.endMonthSub':'{m}/{n} · −{c}', 'ui.monthsLeft':'{n}m', 'ui.centre':'Centre the map (C)', 'ui.rotate':'Rotate (R)',
+  'ui.agendaHint2':'Your time this month. Politics is also work:', 'ui.step':'Step {n} of {t}',
+  'menu.continueLvl':'Continue · level {l} · {town}, month {m}', 'menu.main':'Main menu',
+  'lvl.goalShort':'Goal: {n} residents by month {m}', 'lvl.goal':'Goal: {n} registered residents in {m} months · map {s}×{s}',
+  'lvl.goalMenu':'{s}×{s} · {n} residents in {m} months', 'lvl.newRules':'What is new in this level:', 'lvl.carried':'Perks you bring from earlier levels: {p}.',
+  'lvl.keys':'Drag to move the map (or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / arrows) · pinch, wheel or <kbd>+</kbd><kbd>−</kbd> to zoom · <kbd>R</kbd> rotate · <kbd>Space</kbd> end month',
+  'lvl.go':'Get to work', 'lvl.locked':'Locked: complete the previous level', 'lvl.retry':'Retry the level', 'lvl.carry':'Choose a perk to take with you to the next level:',
+  'lvl.done.t':'Level {n} complete!', 'lvl.done.x':'{town} has {n} registered residents. Brussels is pleased and approves the next phase: {next}. I will of course take the credit.',
+  'lvl.1.name':'Pilot Project', 'lvl.1.x':'Welcome to {town}! Before Brussels trusts us with a whole town, they want a pilot: four parcels, one housing block, a few families. Easy. Probably.',
+  'lvl.1.rules':'Buy a parcel: tap it on the map.|Build on it: a housing block brings homes.|Press <b>End month</b>: works take a few months, then families move in on their own.',
+  'lvl.2.name':'Expansion Phase', 'lvl.2.x':'The pilot worked! Now a real neighbourhood. But now there are rules, and I make some of them.',
+  'lvl.2.rules':'Buildings need <b>access</b>: a road or a finished building next to them (diagonals count).|Permits are reviewed and can be <b>rejected</b>. My support (the Mayor meter) raises your odds.|People need <b>jobs</b>: no factory, no residents.|Buildings next to each other form <b>combos</b>, good and bad.|Farmers may <b>hold out</b> for a better price.',
+  'lvl.3.name':'Partial Plan', 'lvl.3.x':'Dear Programme Officer: the Commission has approved phase three. From now on, the full regulatory framework applies. You have been warned.',
+  'lvl.3.rules':'Farmland is <b>rustic</b>: submit an <b>urban plan</b> before building homes on it.|Every crisis is a <b>card</b>: you choose how to respond.|Brussels sends <b>directives</b>: fail two and the programme is suspended.|<b>Neighbours</b> can sue, and <b>compliance</b> drops if you do not report.|Residents also need <b>school places and health care</b>.|From here on, you can <b>lose</b>.',
+  'lvl.4.name':'Model Town', 'lvl.4.x':'This is it: the Model Town for Harmonised European Resilience. A whole valley, a large grant and every rule in the book.',
+  'lvl.4.rules':'<b>Use it or lose it</b>: spend 20% of the grant by month 12 and 50% by month 24.|Sell urban plots to <b>developers</b>: they pay you and build housing, at their own pace.|The <b>property market</b> rises and crashes.|A map four times bigger: drag to move around.',
+  'over.retry.t':'Time is up', 'over.retry.s':'PILOT', 'over.retry.x':'Month {m} is over with {n} of {target} residents. No harm done: it is a pilot. Try again, and this time with feeling.',
+  'over.campaign':'You completed the whole campaign. The Union thanks you with a commemorative mug (shipping not included).', 'over.again':'Play this level again',
+  'pc.farmUrban':'Building land owned by a local farmer.', 'pc.ownedSimple':'Yours. What do you want to build?', 'pc.timingSimple':'ready in {b} months · {x}',
+  'err.notYet':'Not available in this level',
+  'g1.buy':'Tap a parcel with crops and buy it.', 'g1.permit':'Now tap your parcel and order a <b>Housing block</b>.',
+  'g1.end':'Press <b>End month</b> (bottom) to let time pass.', 'g1.wait':'Works take a few months. Keep ending months.',
+  'g1.grow':'Families move in by themselves every month. Reach {n} residents before month {m}!',
+  'g2.access':'Buy a parcel next to the road: buildings need access.', 'g2.jobs':'Nobody moves in without jobs: order a <b>Factory</b>.',
+  'g2.combo':'Put buildings next to each other: they form combos. Careful, a factory next to homes is a bad one.',
+  'g2.mayor':'If the mayor cools down, permits get rejected. Take him to lunch from the <b>Agenda</b>.',
+  'g3.rustic':'This farmland is rustic. Buy some parcels and submit an <b>urban plan</b> from the Agenda.',
+  'g3.report':'Brussels wants reports: if compliance reaches 0 you are audited. File one from the <b>Agenda</b>.',
+  'g3.services':'Residents now need a <b>School</b> and a <b>Health centre</b> too.',
+  'g3.cards':'Crises arrive as cards. There is rarely a good option, only a less bad one.',
+  'g4.sell':'Tap an urban plot you own and <b>sell it to a developer</b>: money in, homes built by them.',
+  'g4.spend':'Watch the <b>Spent</b> meter: Brussels takes back what you do not spend in time.',
+  'pc.reviewSimple':'<b>{b}</b>: paperwork under way. Works start in {n} month(s).',
+  'err.fundsBuild':'Not enough money to pay for the works',
+  'err.committed':'That money is already promised to your works',
+  'ui.endMonthTiny':'End month',
+  'k.serviced':'Urban plot', 'k.farmU':'Farm plot',
   'combo.greenViews':'Green Views', 'combod.greenViews':'+20 homes and people move in faster: everyone wants a balcony over the park.',
   'combo.walkToSchool':'Walk to School', 'combod.walkToSchool':'+60 school places. No school run, no traffic jam.',
   'combo.healthHub':'Doctor on the Corner', 'combod.healthHub':'+120 patients. The waiting room is next door.',
@@ -1327,8 +1460,8 @@ en: {
   'stamp.combo':'COMBO!', 'stamp.comboBad':'OOPS',
   'lang.en':'English', 'lang.es':'Español', 'on':'On', 'off':'Off', 'menu.music':'Music: {s}',
   'menu.new':'New programme', 'menu.continue':'Continue · {town}, month {m}',
-  'menu.pitch':'A satirical city builder. You have money from Brussels, 36 months and no power whatsoever.',
-  'menu.version':'Prototype v0.4 · buy the land, get it rezoned, file the paperwork, survive the neighbours — and decide every crisis.',
+  'menu.pitch':'A satirical city builder. You have money from Brussels, impossible deadlines and no power whatsoever.',
+  'menu.version':'Prototype v0.5 · buy the land, get it rezoned, file the paperwork, survive the neighbours — and decide every crisis.',
   'pause.t':'Coffee break', 'pause.x':'{town}, {country} · month {m} of {n}. Your game is saved automatically.',
   'pause.back':'Back to work', 'pause.abandon':'Abandon programme',
   'intro.t':'Letter of appointment', 'intro.ok':'Accept the appointment',
@@ -1496,7 +1629,45 @@ en: {
   'over.timeout.t':'The programme has ended', 'over.timeout.s':'CLOSED', 'over.timeout.x':'Month {m} is over with {n} of {target} residents. The programme "will be evaluated". A successor with a longer acronym is already being drafted.',
 },
 es: {
-  'k.serviced':'Solar urbano',
+  'tab.agenda':'Agenda', 'tab.city':'Municipio', 'tab.inbox':'Bandeja', 'tab.combos':'Combos',
+  'ui.hintPan':'Toca una parcela · arrastra para moverte · pellizca o usa la rueda para el zoom', 'ui.level':'Nivel',
+  'ui.endMonthShort':'Terminar mes', 'ui.endMonthSub':'{m}/{n} · −{c}', 'ui.monthsLeft':'{n}m', 'ui.centre':'Centrar el mapa (C)', 'ui.rotate':'Girar (R)',
+  'ui.agendaHint2':'Tu tiempo este mes. La política también es trabajo:', 'ui.step':'Paso {n} de {t}',
+  'menu.continueLvl':'Continuar · nivel {l} · {town}, mes {m}', 'menu.main':'Menú principal',
+  'lvl.goalShort':'Objetivo: {n} vecinos antes del mes {m}', 'lvl.goal':'Objetivo: {n} vecinos empadronados en {m} meses · mapa de {s}×{s}',
+  'lvl.goalMenu':'{s}×{s} · {n} vecinos en {m} meses', 'lvl.newRules':'Lo nuevo en este nivel:', 'lvl.carried':'Ventajas que traes de niveles anteriores: {p}.',
+  'lvl.keys':'Arrastra para mover el mapa (o <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / flechas) · pellizca, rueda o <kbd>+</kbd><kbd>−</kbd> para el zoom · <kbd>R</kbd> girar · <kbd>Espacio</kbd> terminar mes',
+  'lvl.go':'A trabajar', 'lvl.locked':'Bloqueado: completa el nivel anterior', 'lvl.retry':'Reintentar el nivel', 'lvl.carry':'Elige una ventaja para llevarte al siguiente nivel:',
+  'lvl.done.t':'¡Nivel {n} completado!', 'lvl.done.x':'{town} tiene {n} vecinos empadronados. Bruselas está contenta y aprueba la siguiente fase: {next}. El mérito, por supuesto, me lo llevo yo.',
+  'lvl.1.name':'Proyecto piloto', 'lvl.1.x':'¡Bienvenido a {town}! Antes de confiarnos un pueblo entero, Bruselas quiere un piloto: cuatro parcelas, un bloque de viviendas y unas cuantas familias. Fácil. Probablemente.',
+  'lvl.1.rules':'Compra una parcela: tócala en el mapa.|Construye en ella: un bloque de viviendas trae casas.|Pulsa <b>Terminar mes</b>: las obras tardan unos meses y luego las familias llegan solas.',
+  'lvl.2.name':'Fase de ampliación', 'lvl.2.x':'¡El piloto ha funcionado! Ahora toca un barrio de verdad. Pero ya hay normas, y algunas las pongo yo.',
+  'lvl.2.rules':'Los edificios necesitan <b>acceso</b>: una calle o un edificio terminado al lado (las diagonales cuentan).|Las licencias se revisan y pueden <b>denegarse</b>. Mi apoyo (el indicador Alcalde) sube tus probabilidades.|La gente necesita <b>empleo</b>: sin fábrica no viene nadie.|Los edificios juntos forman <b>combos</b>, buenos y malos.|Los agricultores pueden <b>pedir más</b> por su tierra.',
+  'lvl.3.name':'Plan parcial', 'lvl.3.x':'Estimado responsable de programa: la Comisión ha aprobado la tercera fase. A partir de ahora se aplica el marco normativo completo. Queda usted avisado.',
+  'lvl.3.rules':'La tierra de cultivo es <b>rústica</b>: presenta un <b>plan urbanístico</b> antes de construir viviendas.|Cada crisis es una <b>carta</b>: tú decides cómo responder.|Bruselas envía <b>directivas</b>: si fallas dos, se suspende el programa.|Los <b>vecinos</b> pueden denunciar y el <b>cumplimiento</b> baja si no envías informes.|Los vecinos también necesitan <b>colegio y centro de salud</b>.|A partir de aquí, se puede <b>perder</b>.',
+  'lvl.4.name':'Ciudad modelo', 'lvl.4.x':'Ha llegado el momento: la Ciudad Modelo para la Resiliencia Europea Armonizada. Un valle entero, una gran subvención y todas las normas del reglamento.',
+  'lvl.4.rules':'<b>Úsalo o piérdelo</b>: gasta el 20% de la subvención antes del mes 12 y el 50% antes del 24.|Vende solares urbanos a <b>promotoras</b>: te pagan y construyen viviendas, a su ritmo.|El <b>mercado inmobiliario</b> sube y se hunde.|Un mapa cuatro veces más grande: arrastra para moverte.',
+  'over.retry.t':'Se acabó el plazo', 'over.retry.s':'PILOTO', 'over.retry.x':'Termina el mes {m} con {n} de {target} vecinos. No pasa nada: es un piloto. Vuelve a intentarlo, y esta vez con ganas.',
+  'over.campaign':'Has completado toda la campaña. La Unión te lo agradece con una taza conmemorativa (gastos de envío no incluidos).', 'over.again':'Volver a jugar este nivel',
+  'pc.farmUrban':'Suelo edificable de un agricultor del pueblo.', 'pc.ownedSimple':'Es tuya. ¿Qué quieres construir?', 'pc.timingSimple':'lista en {b} meses · {x}',
+  'err.notYet':'No disponible en este nivel',
+  'g1.buy':'Toca una parcela con cultivos y cómprala.', 'g1.permit':'Ahora toca tu parcela y encarga un <b>Bloque de viviendas</b>.',
+  'g1.end':'Pulsa <b>Terminar mes</b> (abajo) para que pase el tiempo.', 'g1.wait':'Las obras tardan unos meses. Sigue terminando meses.',
+  'g1.grow':'Las familias llegan solas cada mes. ¡Alcanza {n} vecinos antes del mes {m}!',
+  'g2.access':'Compra una parcela junto a la carretera: los edificios necesitan acceso.', 'g2.jobs':'Sin empleo no viene nadie: encarga una <b>Fábrica</b>.',
+  'g2.combo':'Pon edificios juntos: forman combos. Ojo, una fábrica junto a viviendas es un combo malo.',
+  'g2.mayor':'Si el alcalde se enfría, deniega licencias. Invítalo a comer desde la <b>Agenda</b>.',
+  'g3.rustic':'Esta tierra es rústica. Compra parcelas y presenta un <b>plan urbanístico</b> desde la Agenda.',
+  'g3.report':'Bruselas quiere informes: si el cumplimiento llega a 0, auditoría. Envía uno desde la <b>Agenda</b>.',
+  'g3.services':'Ahora los vecinos también necesitan un <b>Colegio</b> y un <b>Centro de salud</b>.',
+  'g3.cards':'Las crisis llegan como cartas. Rara vez hay una opción buena, solo una menos mala.',
+  'g4.sell':'Toca un solar urbano tuyo y <b>véndeselo a una promotora</b>: entra dinero y ellos construyen.',
+  'g4.spend':'Vigila el indicador <b>Gastado</b>: Bruselas se lleva lo que no gastes a tiempo.',
+  'pc.reviewSimple':'<b>{b}</b>: papeleo en marcha. Las obras empiezan en {n} mes(es).',
+  'err.fundsBuild':'No hay dinero para pagar la obra',
+  'err.committed':'Ese dinero ya está comprometido en tus obras',
+  'ui.endMonthTiny':'Fin de mes',
+  'k.serviced':'Solar urbano', 'k.farmU':'Finca de cultivo',
   'combo.greenViews':'Vistas verdes', 'combod.greenViews':'+20 viviendas y la gente llega más rápido: todos quieren un balcón al parque.',
   'combo.walkToSchool':'Al cole andando', 'combod.walkToSchool':'+60 plazas escolares. Sin coche, sin atasco a las nueve.',
   'combo.healthHub':'Médico en la esquina', 'combod.healthHub':'+120 pacientes. La sala de espera está al lado.',
@@ -1521,8 +1692,8 @@ es: {
   'stamp.combo':'¡COMBO!', 'stamp.comboBad':'VAYA',
   'lang.en':'English', 'lang.es':'Español', 'on':'Sí', 'off':'No', 'menu.music':'Música: {s}',
   'menu.new':'Nuevo programa', 'menu.continue':'Continuar · {town}, mes {m}',
-  'menu.pitch':'Un city builder satírico. Tienes dinero de Bruselas, 36 meses y ningún poder.',
-  'menu.version':'Prototipo v0.4 · compra el suelo, consigue que lo recalifiquen, presenta los papeles, sobrevive a los vecinos… y decide en cada crisis.',
+  'menu.pitch':'Un city builder satírico. Tienes dinero de Bruselas, plazos imposibles y ningún poder.',
+  'menu.version':'Prototipo v0.5 · compra el suelo, consigue que lo recalifiquen, presenta los papeles, sobrevive a los vecinos… y decide en cada crisis.',
   'pause.t':'Pausa para el café', 'pause.x':'{town}, {country} · mes {m} de {n}. La partida se guarda sola.',
   'pause.back':'Volver al trabajo', 'pause.abandon':'Abandonar el programa',
   'intro.t':'Carta de nombramiento', 'intro.ok':'Aceptar el nombramiento',
@@ -1694,11 +1865,31 @@ es: {
 // =====================================================================
 //  CONFIG — tuning knobs (see docs/GDD.md)
 // =====================================================================
-const N = 12, TW = 64, TH = 32;
+let N = 12;                       // map side: changes with the level (2, 4, 8, 16)
+const TW = 64, TH = 32;
+// =====================================================================
+//  LEVELS — the campaign. Each level doubles the map side and switches on new rules (f),
+//  so the player learns the bureaucracy one layer at a time.
+//    access: buildings need a road/built neighbour · permits: reviews can be rejected · local: the mayor matters
+//    jobs: residents need jobs · combos · holdout: farmers raise prices · rustic: farmland needs an urban plan
+//    events: crisis cards · directives · neigh/comp: neighbours and compliance meters · services: school + health
+//    lose: you can actually lose · milestones: use-it-or-lose-it · market: developers, property market
+// =====================================================================
+const BASE_F = {access:1, permits:1, local:1, jobs:1, combos:1, holdout:1};
+const FULL_F = {...BASE_F, rustic:1, events:1, directives:1, neigh:1, comp:1, services:1, lose:1};
+const LEVELS = [
+  {n:2,  months:8,  grant:12,  target:100,  slots:2, f:{}},
+  {n:4,  months:14, grant:40,  target:250,  slots:3, f:{...BASE_F}},
+  {n:8,  months:24, grant:90,  target:420,  slots:3, f:{...FULL_F}},
+  {n:16, months:36, grant:200, target:1100, slots:3, f:{...FULL_F, milestones:1, market:1}},
+];
+const LV = () => LEVELS[(S && S.level) || 0];
+const on = flag => !!LV().f[flag];
+const METER_FLAG = {local:'local', neigh:'neigh', comp:'comp'};
+const MILESTONES = { 12: 0.20, 24: 0.50 };   // share of the grant that must be spent by then (level IV)
 const CFG = {
-  months: 36, grant: 130, target: 850, slots: 3, contractors: 3,
-  village: 30, permitFee: 0.2, lobbyCost: 0.3, consultCost: 0.2, planCost: 0.5, planMonths: 2,
-  milestones: { 12: 0.20, 24: 0.50 },     // share of the grant that must be spent by then
+  contractors: 3,
+  permitFee: 0.2, lobbyCost: 0.3, consultCost: 0.2, planCost: 0.5, planMonths: 2,
   decommitShare: 0.5,                      // share of the shortfall that is taken back
   complianceDecay: 5, localDecay: 1, noisePerSite: 1,
   jobsPerResident: 1/1.6, baseSchool: 150, baseHealth: 250, baseJobs: 40,
@@ -1707,6 +1898,13 @@ const CFG = {
   taxShare: 0.5, taxPerFactory: 0.25, taxPerResident: 0.0008,
   loanStep: 5, debtCap: 35, interest: 0.02,
 };
+Object.defineProperties(CFG, {
+  months:{get:()=>LV().months}, grant:{get:()=>LV().grant}, target:{get:()=>LV().target}, slots:{get:()=>LV().slots},
+  milestones:{get:()=> on('milestones') ? MILESTONES : {}},
+});
+// Campaign progress: highest level unlocked + the perk carried out of each completed level
+function campaign(){ try{ const c = JSON.parse(localStorage.getItem('eurocrat_campaign')||'null'); if(c && Array.isArray(c.perks)) return c; }catch(e){} return {max:0, perks:[]}; }
+function saveCampaign(c){ try{ localStorage.setItem('eurocrat_campaign', JSON.stringify(c)); }catch(e){} }
 const B = {
   road:    {icon:'add_road',       cost:0.6, build:1, permit:1, upkeep:0.01},
   housing: {icon:'apartment',      cost:7,   build:3, permit:2, upkeep:0.06, homes:150, urban:true},
@@ -1762,39 +1960,56 @@ const pname = i => { const [r,c]=rc(i); return `${r+1}-${c+1}`; };
 // =====================================================================
 //  NEW GAME — random site, country and town
 // =====================================================================
-function newGame(seed){
+function newGame(seed, level){
   if(seed === undefined) seed = (Math.random()*2147483647)|0;
+  level = clamp(level|0, 0, LEVELS.length-1);
+  setMapSize(LEVELS[level].n);
   S = {
-    v:3, seed, rng:seed|0, month:1, funds:CFG.grant, grant:CFG.grant, spent:0, debt:0, rate:CFG.interest,
+    v:5, level, seed, rng:seed|0, month:1, funds:CFG.grant, grant:CFG.grant, spent:0, debt:0, rate:CFG.interest,
     slots:CFG.slots, slotPenalty:0, local:55, neigh:55, comp:60, inflation:1, market:1, strikes:0, perks:[],
     grid:[], newcomers:0, qseq:0, directive:null, directivesDone:0, plan:null,
     reports:0, consults:0, lobbied:0, strike:0, electionDone:false, crashDone:false, refunds:[],
     shovel:false, log:[], cards:[], perkChoice:null, over:null, bottleneck:'homes',
-    country:0, town:'', trail:[], prev:null, lastTax:0, fx:[], focus:-1,
+    country:0, town:'', trail:[], prev:null, lastTax:0, fx:[], focus:-1, base:0, stats:{lobby:0, plan:0}, guide:0, guideOff:false,
   };
+  S.funds = S.grant = CFG.grant; S.slots = CFG.slots;
+  // Perks carried over from the levels already completed
+  campaign().perks.slice(0, level).forEach(k=>{ if(k==='shovel') S.shovel = true; else if(k && !S.perks.includes(k)) S.perks.push(k); });
+  if(has('cousin')) S.slots++;
   S.country = Math.floor(rnd()*N_COUNTRIES);
   S.town = (()=>{ const a=pick(TOWN_A), b=pick(TOWN_B); return a.endsWith('-') ? a+b : a+' '+b; })();
-  for(let i=0;i<N*N;i++) S.grid.push({k:'farm', st:'land', ty:null, t:0, halt:0, price:r1(1.0+rnd()*1.4), hold:false, mcost:0, urban:false, flag:null});
+  // Without the 'rustic' rule all farmland is already building land
+  const urban0 = !on('rustic');
+  for(let i=0;i<N*N;i++) S.grid.push({k:'farm', st:'land', ty:null, t:0, halt:0, price:r1(1.0+rnd()*1.4), hold:false, mcost:0, urban:urban0, flag:null});
   const set = (r,c,k,extra)=>{ if(!inside(r,c)) return false; const p=S.grid[idx(r,c)];
     if(p.k!=='farm') return false; Object.assign(p,{k},extra||{}); return true; };
-  // Regional road along the west edge
-  for(let r=0;r<N;r++) Object.assign(S.grid[idx(r,0)], {k:'regional', st:'built', ty:'road', price:0});
-  // Old village next to the road
-  const vr = ri(1, N-4);
-  for(let r=vr;r<vr+3;r++) set(r,1,'village',{st:'built', price:0});
-  if(rnd()<0.6) set(vr+1,2,'village',{st:'built', price:0});
-  // A small river with a flood zone
-  let fr = ri(2, N-3);
-  for(let c=ri(4,7); c<N; c++){ set(fr,c,'flood',{price:0.6}); if(rnd()<0.4) fr = clamp(fr+(rnd()<0.5?-1:1),1,N-2); }
-  // Protected habitats
-  for(let h=0;h<3;h++){ let r=ri(1,N-2), c=ri(4,N-1);
-    for(let s=0;s<4;s++){ set(r,c,'habitat',{price:0}); const d=pick(NB); r=clamp(r+d[0],0,N-1); c=clamp(c+d[1],2,N-1); } }
-  // Municipal land (already urban: the town's reserve) in two clusters
-  for(let m=0;m<2;m++){ let r=ri(0,N-1), c=ri(2,N-1), n=0, guard=0;
-    while(n<6 && guard++<50){ if(set(r,c,'muni',{price:0.6, urban:true})) n++; const d=pick(NB); r=clamp(r+d[0],0,N-1); c=clamp(c+d[1],2,N-1); } }
+  if(N >= 4){
+    // Regional road along the west edge
+    for(let r=0;r<N;r++) Object.assign(S.grid[idx(r,0)], {k:'regional', st:'built', ty:'road', price:0});
+    // Old village next to the road (bigger on bigger maps)
+    const vlen = N===4 ? 1 : N===8 ? 3 : 4, vr = ri(0, N-vlen-1);
+    for(let r=vr;r<vr+vlen;r++) set(r,1,'village',{st:'built', price:0});
+    if(N>=8 && rnd()<0.6) set(vr+1,2,'village',{st:'built', price:0});
+    if(N>=16){ set(vr+1,3,'village',{st:'built', price:0}); set(vr+2,2,'village',{st:'built', price:0}); }
+  }
+  if(N >= 8){
+    // A small river with a flood zone
+    let fr = ri(2, N-3);
+    for(let c=ri(Math.floor(N/2)-1, Math.floor(N/2)+2); c<N; c++){ set(fr,c,'flood',{price:0.6, urban:false}); if(rnd()<0.4) fr = clamp(fr+(rnd()<0.5?-1:1),1,N-2); }
+    // Protected habitats
+    const nh = N===8 ? 1 : 5, hs = N===8 ? 3 : 4;
+    for(let h=0;h<nh;h++){ let r=ri(1,N-2), c=ri(4,N-1);
+      for(let s=0;s<hs;s++){ set(r,c,'habitat',{price:0, urban:false}); const d=pick(NB); r=clamp(r+d[0],0,N-1); c=clamp(c+d[1],2,N-1); } }
+    // Municipal land (already urban: the town's reserve)
+    const nm = N===8 ? 1 : 3;
+    for(let m=0;m<nm;m++){ let r=ri(0,N-1), c=ri(2,N-1), n=0, guard=0;
+      while(n<5 && guard++<50){ if(set(r,c,'muni',{price:0.6, urban:true})) n++; const d=pick(NB); r=clamp(r+d[0],0,N-1); c=clamp(c+d[1],2,N-1); } }
+  }
+  S.base = S.grid.filter(p=>p.k==='village').length * 10;   // each village parcel: 10 old residents
   S.prev = snapshot();
   log('log.opened', {town:S.town}, 'good');
-  S.cards.push({type:'intro'});
+  if(level===0) S.cards.push({type:'intro'});
+  S.cards.push({type:'level'});
   return S;
 }
 function snapshot(){ return {local:S.local, neigh:S.neigh, comp:S.comp, funds:S.funds, res:residents()}; }
@@ -1802,11 +2017,11 @@ function snapshot(){ return {local:S.local, neigh:S.neigh, comp:S.comp, funds:S.
 // =====================================================================
 //  RULES
 // =====================================================================
-function log(k, p, cls){ S.log.unshift({m:S.month, k, p:p||{}, c:cls||''}); S.log.length = Math.min(S.log.length, 50); }
+function log(k, p, cls){ S.log.unshift({m:S.month, k, p:p||{}, c:cls||''}); S.log.length = Math.min(S.log.length, 50); S.logN = (S.logN||0)+1; }
 function spend(x){ S.funds -= x; S.spent += x; }
 // Change a meter and remember why (shown when the player taps the meter)
 function bump(m, d, why){
-  if(!d) return 0;
+  if(!d || (METER_FLAG[m] && !on(METER_FLAG[m]))) return 0;   // meters that are not in play this level stay still
   const lo = (m==='local' && has('fixer')) ? 30 : 0, before = S[m];
   S[m] = clamp(S[m]+d, lo, 100);
   const real = S[m]-before;
@@ -1822,6 +2037,7 @@ function isRoad(p, planned){
 // building or the old village: built-up land comes with its own streets. Works in progress do not.
 function givesAccess(p){ return isRoad(p, true) || (p.st==='built' && p.k!=='habitat') || p.k==='village'; }
 function hasAccess(r,c){
+  if(!on('access')) return true;
   return NB8.some(([dr,dc])=> inside(r+dr,c+dc) && givesAccess(S.grid[idx(r+dr,c+dc)]));
 }
 function nextToVillage(r,c){ return NB8.some(([dr,dc])=> inside(r+dr,c+dc) && S.grid[idx(r+dr,c+dc)].k==='village'); }
@@ -1829,22 +2045,25 @@ function landPrice(p){ return r1(p.price * (has('notary') ? 0.7 : 1)); }
 function plotValue(p){ return r1(p.price * CFG.urbanUplift * S.market); }
 function buildCost(p, ty){ return r1(B[ty].cost * S.inflation * (p.k==='flood' ? 1.5 : 1)); }
 function permitMonths(ty){
+  if(!on('permits')) return 1;
   return Math.max(1, B[ty].permit + (S.neigh<40?1:0) + (S.neigh<25?1:0) - (has('fasttrack')?1:0));
 }
 function buildMonths(ty){ return Math.max(1, B[ty].build - (has('prefab')?1:0)); }
 function contractors(){ return CFG.contractors + (has('contractor')?1:0); }
 function slotsPerMonth(){ return CFG.slots + (has('cousin')?1:0); }
 function approvalChance(){
+  if(!on('permits')) return 1;
   return clamp(0.58 + (S.local-50)/150 + (S.neigh-50)/200 + (S.comp-50)/300, 0.15, 0.97);
 }
 function count(ty, st='built'){ return S.grid.filter(p=>p.ty===ty && p.st===st && p.k!=='regional').length; }
 function activeSites(){ return S.grid.filter(p=>p.st==='building').length; }
 function caps(){
   const f = comboFx();
+  const OFF = 1e9;   // a need that is not in play this level never limits growth
   const homes = Math.max(0, count('housing')*B.housing.homes + f.homes);
-  const jobs = Math.floor(Math.max(0, count('factory')*B.factory.jobs + f.jobs) / CFG.jobsPerResident) + CFG.baseJobs;
-  const school = Math.max(0, CFG.baseSchool + count('school')*B.school.school + f.school);
-  const health = Math.max(0, CFG.baseHealth + count('clinic')*B.clinic.health + f.health);
+  const jobs = on('jobs') ? Math.floor(Math.max(0, count('factory')*B.factory.jobs + f.jobs) / CFG.jobsPerResident) + CFG.baseJobs : OFF;
+  const school = on('services') ? Math.max(0, CFG.baseSchool + count('school')*B.school.school + f.school) : OFF;
+  const health = on('services') ? Math.max(0, CFG.baseHealth + count('clinic')*B.clinic.health + f.health) : OFF;
   const all = {homes, jobs, school, health};
   let k = 'homes'; for(const key in all) if(all[key] < all[k]) k = key;
   return {...all, cap: all[k], bottleneck: k};
@@ -1879,7 +2098,7 @@ function matchCombos(ta, tb){ const out = [];
   COMBOS.forEach(c=>{ if((ta.includes(c.a) && tb.includes(c.b)) || (ta.includes(c.b) && tb.includes(c.a))) out.push(c); });
   return out; }
 function activeCombos(){
-  const list = [];
+  const list = []; if(!on('combos')) return list;
   for(let i=0;i<N*N;i++){ const ti = tokens(S.grid[i]); if(!ti.length) continue; const [r,c] = rc(i);
     for(const [dr,dc] of NB8){ const r2=r+dr, c2=c+dc; if(!inside(r2,c2)) continue; const j = idx(r2,c2); if(j<=i) continue;
       const tj = tokens(S.grid[j]); if(!tj.length) continue;
@@ -1891,6 +2110,7 @@ function comboFx(){ const f = {homes:0, jobs:0, school:0, health:0, neigh:0, loc
   activeCombos().forEach(x=>{ const e = COMBO_BY_ID[x.id].fx; for(const k in e) f[k] += e[k]; }); return f; }
 // Which combos would appear if 'ty' were built on parcel i (used for the preview)
 function comboPreview(i, ty){
+  if(!on('combos')) return [];
   const [r,c] = rc(i), me = [ty];
   const seen = new Map();
   NB8.forEach(([dr,dc])=>{ if(!inside(r+dr,c+dc)) return; matchCombos(me, tokens(S.grid[idx(r+dr,c+dc)])).forEach(cb=>seen.set(cb.id, cb)); });
@@ -1899,7 +2119,7 @@ function comboPreview(i, ty){
 // The catalogue of discovered combos survives between runs (it is knowledge, not power)
 function discovered(){ try{ return JSON.parse(localStorage.getItem('eurocrat_combos')||'[]'); }catch(e){ return []; } }
 function discover(id){ const d = discovered(); if(d.includes(id)) return false; d.push(id); try{ localStorage.setItem('eurocrat_combos', JSON.stringify(d)); }catch(e){} return true; }
-function residents(){ return S.newcomers + CFG.village; }
+function residents(){ return S.newcomers + (S.base||0); }
 function taxIncome(){ return Math.round((CFG.taxShare*(count('factory')*CFG.taxPerFactory + S.newcomers*CFG.taxPerResident) + comboFx().tax)*100)/100; }
 function monthlyCosts(){
   let c = S.debt*S.rate;
@@ -1907,6 +2127,10 @@ function monthlyCosts(){
     if(p.st==='built' && p.ty && p.k!=='regional' && !p.priv) c += B[p.ty].upkeep; });
   return c;
 }
+// Money already promised to works in progress (permits under review, queued and running sites)
+function committed(){ let c = 0; S.grid.forEach(p=>{ if(p.st==='review' || p.st==='approved') c += buildCost(p, p.ty); else if(p.st==='building') c += p.mcost*p.t; }); return c; }
+// In the learning levels you can only spend what is not already promised; later the bank covers you (at a price)
+function avail(){ return on('lose') ? S.funds : S.funds - committed(); }
 function nextMilestone(){ const m = Object.keys(CFG.milestones).map(Number).find(m=>m>=S.month); return m ? {m, need:r1(S.grant*CFG.milestones[m])} : null; }
 
 // --- Player actions. Each returns {ok, msg:{k,p}, bad?} and never grants anything for free. ---
@@ -1918,11 +2142,11 @@ function acquire(i){
   if(p.st==='ruin'){ const price=r1(p.price*1.5); if(S.funds<price) return fail('err.funds');
     S.slots--; spend(price); Object.assign(p,{st:'owned', ty:null, dev:null}); log('log.buyback',{at:pname(i), x:money(price)}); return {ok:true, msg:{k:'fx.money', p:{x:money(-price)}}}; }
   if(p.st!=='land' || !['farm','muni','flood'].includes(p.k)) return fail('err.notForSale');
-  if(p.k==='muni' && S.local < 40) return fail('err.mayorNo');
+  if(p.k==='muni' && on('local') && S.local < 40) return fail('err.mayorNo');
   const price = landPrice(p);
-  if(S.funds < price) return fail('err.funds');
+  if(avail() < price) return fail(on('lose') ? 'err.funds' : 'err.committed');
   S.slots--;
-  if(p.k==='farm' && !p.hold && rnd() < 0.28){
+  if(on('holdout') && p.k==='farm' && !p.hold && rnd() < 0.28){
     p.hold = true; p.price = r1(p.price*1.8); p.flag = {k:'holdout', until:S.month+1};
     log('log.holdout', {at:pname(i), x:money(landPrice(p))}, 'bad');
     return {ok:false, bad:true, msg:{k:'fx.holdout'}, sfx:'farmer'};
@@ -1938,6 +2162,8 @@ function requestPermit(i, ty){
   if(!hasAccess(r,c)) return fail('err.noAccess');
   if(B[ty].urban && !p.urban) return fail('err.rustic');
   if(S.funds < CFG.permitFee) return fail('err.funds');
+  // In the learning levels (no bank drama yet) you cannot order works you cannot pay for
+  if(!on('lose') && avail() < CFG.permitFee + buildCost(p, ty)) return fail('err.fundsBuild');
   S.slots--; spend(CFG.permitFee);
   p.st = 'review'; p.ty = ty; p.t = permitMonths(ty); p.flag = null;
   if(ty==='factory') bump('neigh', -3, 'why.factory');
@@ -1947,6 +2173,7 @@ function requestPermit(i, ty){
 }
 function sellPlot(i){
   const p = S.grid[i], [r,c] = rc(i);
+  if(!on('market')) return fail('err.notYet');
   if(!canAct()) return fail('err.slots');
   if(p.st!=='owned' || !p.urban) return fail('err.sellUrban');
   if(!hasAccess(r,c)) return fail('err.noAccess');
@@ -1964,7 +2191,7 @@ function submitPlan(){
   if(!list.length) return fail('err.planNothing');
   if(S.funds < CFG.planCost) return fail('err.funds');
   S.slots -= 2; spend(CFG.planCost);
-  S.plan = {t: CFG.planMonths + (S.neigh<30?1:0), list};
+  S.plan = {t: CFG.planMonths + (S.neigh<30?1:0), list}; S.stats.plan++;
   log('log.planSubmitted', {n:list.length, m:S.plan.t});
   return {ok:true, msg:{k:'fx.filed'}, sfx:'stamp'};
 }
@@ -1972,7 +2199,7 @@ function lobby(){
   if(!canAct()) return fail('err.slots');
   if(S.funds < CFG.lobbyCost) return fail('err.funds');
   S.slots--; spend(CFG.lobbyCost);
-  const g = has('lobbyist') ? 20 : (S.lobbied ? 6 : 12); S.lobbied++;
+  const g = has('lobbyist') ? 20 : (S.lobbied ? 6 : 12); S.lobbied++; S.stats.lobby++;
   bump('local', g, 'why.lobby');
   log('log.lobby', {n:g}, 'good');
   return {ok:true, msg:{k:'fx.local', p:{n:g}}, cls:'good'};
@@ -2154,7 +2381,7 @@ const EVENTS = {
       {k:'consultants', fx:()=>[['money',-0.6],['comp',+5]], can:()=>S.funds>=0.6, run:()=>{ spend(0.6); bump('comp',5,'ev:template'); }},
     ]},
   devOffer: {char:'developer', sfx:'cash', icon:'handshake', w:3,
-    ok:()=>S.market>=CFG.devMinMarket && urbanIdle().length>0,
+    ok:()=>on('market') && S.market>=CFG.devMinMarket && urbanIdle().length>0,
     setup:()=>{ const i = pick(urbanIdle()); return {i, x:money(r1(plotValue(S.grid[i])*1.3))}; },
     choices:[
       {k:'sell',    fx:v=>[['money',+r1(plotValue(S.grid[v.i])*1.3)],['lose']], run:v=>{ const p=S.grid[v.i], x=r1(plotValue(p)*1.3);
@@ -2162,7 +2389,7 @@ const EVENTS = {
       {k:'decline', fx:()=>[], run:()=>{}},
     ]},
   crash: {char:'banker', sfx:'crash', icon:'trending_down', w:1,
-    ok:()=>S.month>=10 && !S.crashDone, setup:()=>{ S.crashDone = true; S.market = Math.max(0.6, r1(S.market-0.35)); return {priv:S.grid.some(p=>p.st==='private')}; },
+    ok:()=>on('market') && S.month>=10 && !S.crashDone, setup:()=>{ S.crashDone = true; S.market = Math.max(0.6, r1(S.market-0.35)); return {priv:S.grid.some(p=>p.st==='private')}; },
     choices:[
       {k:'bailout', when:v=>v.priv, fx:()=>[['money',-3]], can:()=>S.funds>=3, run:()=>{ spend(3); S.grid.forEach(p=>{ if(p.st==='private') p.dev.bailed = 6; }); }},
       {k:'letfall', when:v=>v.priv, fx:()=>[['risk',100],['lose']], run:()=>{ const pv = S.grid.map((p,i)=>i).filter(i=>S.grid[i].st==='private');
@@ -2190,6 +2417,7 @@ function toHabitat(i, owned){
   Object.assign(p,{k:'habitat', st:'land', ty:null, urban:false, flag:{k:'toad', until:S.month+2}});
 }
 function rollEvent(){
+  if(!on('events')) return;
   if(S.month < 2 || rnd() > 0.6) return;
   const pool = Object.keys(EVENTS).filter(id=>EVENTS[id].ok()); if(!pool.length) return;
   let tot = pool.reduce((a,id)=>a+EVENTS[id].w,0), x = rnd()*tot, id = pool[0];
@@ -2314,10 +2542,11 @@ function endMonth(){
       log('log.directiveFailed', {d:d.kind}, 'bad');
     }
   }
-  if(!S.directive && !S.over && (S.month===2 || (S.month>2 && (S.month-2)%5===0))) issueDirective();
+  if(on('directives') && !S.directive && !S.over && (S.month===2 || (S.month>2 && (S.month-2)%5===0))) issueDirective();
   // 12. Random event (a card with choices)
   if(!S.over) rollEvent();
   // 13. Money trouble: the regional bank lends a bridge loan instead of game over
+  if(S.funds < 0 && !S.over && !on('lose')) S.funds = 0;   // learning levels: the Union quietly covers small gaps
   if(S.funds < 0 && !S.over){
     const loan = Math.ceil((-S.funds+1)/CFG.loanStep)*CFG.loanStep;
     S.debt = r1(S.debt + loan); S.funds += loan;
@@ -2329,12 +2558,14 @@ function endMonth(){
   S.grid.forEach(p=>{ if(p.flag && p.flag.until < S.month) p.flag = null; });
   // 15. Win / lose
   if(!S.over){
+    const L = on('lose');
     if(residents() >= CFG.target) S.over = {win:true, why:'target'};
-    else if(S.debt > CFG.debtCap) S.over = {win:false, why:'bankrupt'};
-    else if(S.comp <= 0) S.over = {win:false, why:'audit'};
-    else if(S.strikes >= 2) S.over = {win:false, why:'suspended'};
-    else if(S.month > CFG.months) S.over = {win:false, why:'timeout'};
+    else if(L && S.debt > CFG.debtCap) S.over = {win:false, why:'bankrupt'};
+    else if(L && on('comp') && S.comp <= 0) S.over = {win:false, why:'audit'};
+    else if(L && S.strikes >= 2) S.over = {win:false, why:'suspended'};
+    else if(S.month > CFG.months) S.over = {win:false, why: L ? 'timeout' : 'retry'};
   }
+  if(S.over && S.over.win) levelWon();
   if(S.over) S.perkChoice = null;
   save();
   return {ok:true};
@@ -2343,9 +2574,15 @@ function endMonth(){
 // =====================================================================
 //  PERSISTENCE
 // =====================================================================
-const SAVE_KEY = 'eurocrat_v3';
+const SAVE_KEY = 'eurocrat_v5';
 function save(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){} }
-function loadSave(){ try{ const raw=localStorage.getItem(SAVE_KEY); if(raw){ const s=JSON.parse(raw); if(s && s.v===3) return s; } }catch(e){} return null; }
+function loadSave(){ try{ const raw=localStorage.getItem(SAVE_KEY); if(raw){ const s=JSON.parse(raw); if(s && s.v===5) return s; } }catch(e){} return null; }
+// Winning a level unlocks the next one; the perk you carry is chosen on the level-complete card
+function levelWon(){ const c = campaign(); c.max = Math.max(c.max, Math.min(S.level+1, LEVELS.length-1)); if(S.level+1 >= LEVELS.length) c.done = true; saveCampaign(c);
+  if(S.level+1 < LEVELS.length){ const taken = c.perks.slice(0, S.level+1);
+    const pool = Object.keys(PERKS).filter(k=>!taken.includes(k) && !S.perks.includes(k));
+    S.carryChoice = []; while(S.carryChoice.length<3 && pool.length) S.carryChoice.push(pool.splice(Math.floor(rnd()*pool.length),1)[0]); } }
+function carryPerk(k){ const c = campaign(); c.perks[S.level] = k; c.perks.length = S.level+1; saveCampaign(c); }
 
 // =====================================================================
 //  AUDIO — music (soundtrack) + synthesized sound effects
@@ -2493,7 +2730,30 @@ function rotateCoord(r,c,steps){ let rr=r, cc=c; for(let i=0;i<((steps%4+4)%4);i
 // Snap the zoom so one art pixel covers a whole number of device pixels: crisp, even pixels.
 function scale(){ const k = dpr*fit*zoom; const q = k>=1.5 ? Math.floor(k+0.4) : k; return q/dpr; }
 function isoOf(r,c){ const [r2,c2] = rotateCoord(r,c,viewRot); return [(c2-r2)*TW/2, (c2+r2)*TH/2]; }
-const MAPCX = 0, MAPCY = (N-1)*TH/2 - 12;
+// Camera: the iso point shown at the centre of the screen. Dragging / WASD move it; it is clamped to the map.
+let MAPCX = 0, MAPCY = (N-1)*TH/2 - 12;
+function clampCam(){
+  const mw = N*TW/2, top = -TH/2 - 40, bot = (N-1)*TH + TH/2 + 10;
+  MAPCX = clamp(MAPCX, -mw, mw); MAPCY = clamp(MAPCY, top, bot);
+}
+function centreOn(i){ const [x,y] = isoOf(...rc(i)); MAPCX = x; MAPCY = y; clampCam(); }
+function zoomLimits(){ return [0.8, Math.max(1.2, 4.5/Math.max(fit, 0.01))]; }
+function defaultZoom(){ return clamp(Math.max(1, 46/(TW*fit)), ...zoomLimits()); }     // tiles at least ~46px wide
+// Zoom keeping the point under (sx,sy) in place (wheel, pinch, keys)
+function zoomAt(z, sx=W/2, sy=H/2){
+  const s0 = scale(), ix = (sx-W/2)/s0 + MAPCX, iy = (sy-H/2)/s0 + MAPCY;
+  zoom = clamp(z, ...zoomLimits());
+  const s1 = scale(); MAPCX = ix - (sx-W/2)/s1; MAPCY = iy - (sy-H/2)/s1; clampCam(); present();
+}
+// Move the camera so parcel i is not hidden behind the open sheet
+function keepVisible(i){
+  const sh = $('sheet'); if(sh.hidden) return;
+  const wr = worldEl.getBoundingClientRect(), sr = sh.getBoundingClientRect(), [sx, sy] = toScreen(...isoOf(...rc(i)));
+  const px = wr.left + sx, py = wr.top + sy, wide = sr.width < wr.width*0.8;
+  if(!wide && py > sr.top - 40){ const freeMid = wr.top + (sr.top - wr.top)/2; panBy(0, freeMid - py); }
+  if(wide && px < sr.right + 40){ const freeMid = sr.right + (wr.right - sr.right)/2; panBy(freeMid - px, 0); }
+}
+function panBy(dx, dy){ const s = scale(); MAPCX -= dx/s; MAPCY -= dy/s; clampCam(); present(); }
 function toScreen(ix,iy){ const s=scale(); return [W/2 + (ix-MAPCX)*s, H/2 + (iy-MAPCY)*s]; }
 function tileAt(sx,sy){
   const s=scale(), ix=(sx-W/2)/s+MAPCX, iy=(sy-H/2)/s+MAPCY;
@@ -2508,8 +2768,8 @@ function resize(){
   W = rc.width; H = rc.height;
   cvs.width = Math.max(1,Math.round(W*dpr)); cvs.height = Math.max(1,Math.round(H*dpr));
   cvs.style.width = W+'px'; cvs.style.height = H+'px';
-  fit = Math.min((W-24)/(N*TW), (H-60)/(N*TH+60));
-  draw();
+  fit = Math.min((W-24)/(N*TW), (H-60)/(N*TH+60), 3.5);
+  clampCam(); draw();
 }
 
 // ---------- pixel toolkit ----------
@@ -2823,9 +3083,16 @@ const flagSprite = () => thing(e=>{ const x=e.ox, y=e.oy;
   e.put(x-1,y,C('#5d4030')); e.put(x+1,y,C('#5d4030')); }, false);
 
 // ---------- composing the map ----------
-const AW = N*TW + 32, AOX = AW/2, AOY = 112, AH = AOY + (N-1)*TH + TH/2 + 20;
-const art = document.createElement('canvas'); art.width = AW; art.height = AH;
+let AW = 0, AOX = 0, AH = 0; const AOY = 112;
+const art = document.createElement('canvas');
 const gx = art.getContext('2d');
+// Change the map side (a new level): resize the art canvas, reset the camera
+function setMapSize(n){
+  N = n; AW = N*TW + 32; AOX = AW/2; AH = AOY + (N-1)*TH + TH/2 + 20;
+  art.width = AW; art.height = AH; MAPCX = 0; MAPCY = (N-1)*TH/2 - 12;
+  if(W) resize();
+}
+setMapSize(N);
 const variant = (i, n) => Math.floor(hsh(i, S.seed & 0xffff, 77) * n);
 const isRoadAt = (r,c) => inside(r,c) && (()=>{ const q=S.grid[idx(r,c)]; return q.ty==='road' && (q.st==='built' || q.k==='regional'); })();
 // Which screen directions (NE/SE/SW/NW bits) connect to a matching neighbour, in the current rotation
@@ -2941,14 +3208,26 @@ function drawLabels(i){
   const mk = p.flag && MARK[p.flag.k]; if(mk) badge(x+14,y-40,mk[0],mk[1]);
   if(p.st==='owned' && !hasAccess(r,c)) badge(x,y-14,'?','#7a8599');
 }
+let drawOrder = [];
+// draw() recomposes the pixel-art map; present() only puts it on screen (cheap: used while panning/zooming)
 function draw(){
-  if(!S || !W) return;
+  if(!S || !W || S.grid.length !== N*N) return;
   gx.setTransform(1,0,0,1,0,0); gx.clearRect(0,0,AW,AH); gx.imageSmoothingEnabled = false;
   const order = [];
   for(let r=0;r<N;r++) for(let c=0;c<N;c++){ const [r2,c2]=rotateCoord(r,c,viewRot); order.push([r2+c2, c2, idx(r,c)]); }
   order.sort((a,b)=>a[0]-b[0] || a[1]-b[1]);
   order.forEach(o=>drawTile(o[2]));
   order.forEach(o=>drawThing(o[2]));
+  drawOrder = order; present();
+}
+let presentQueued = false;
+function present(){
+  if(presentQueued) return; presentQueued = true;
+  (window.requestAnimationFrame || (f=>setTimeout(f,16)))(()=>{ presentQueued = false; presentNow(); });
+}
+function presentNow(){
+  if(!S || !W || S.grid.length !== N*N) return;
+  const order = drawOrder;
   // Blow the art canvas up with nearest-neighbour scaling, aligned to whole device pixels
   const s = scale(), k = dpr*s;
   ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,cvs.width,cvs.height); ctx.imageSmoothingEnabled = false;
@@ -2969,7 +3248,15 @@ function draw(){
     for(const k of [ph, (ph+0.5)%1]){ const s2=0.75+k*0.9; ctx.globalAlpha = 1-k; ctx.strokeStyle='#e8442e'; ctx.lineWidth=2.2;
       ctx.beginPath(); ctx.moveTo(x,y-TH/2*s2); ctx.lineTo(x+TW/2*s2,y); ctx.lineTo(x,y+TH/2*s2); ctx.lineTo(x-TW/2*s2,y); ctx.closePath(); ctx.stroke(); }
     ctx.globalAlpha = 1;
-    if(!pulseTimer) pulseTimer = setTimeout(()=>{ pulseTimer = 0; draw(); }, 40); }
+    if(!pulseTimer) pulseTimer = setTimeout(()=>{ pulseTimer = 0; present(); }, 40); }
+  if(guideAt>=0 && guideAt!==selected && modal.classList.contains('hidden')){
+    const [x,y]=isoOf(...rc(guideAt)), ph=(performance.now()%1300)/1300, b = Math.round(Math.sin(ph*Math.PI*2)*3);
+    ctx.strokeStyle='#ffd200'; ctx.lineWidth=2.4; ctx.globalAlpha = 0.6+0.4*Math.sin(ph*Math.PI*2);
+    ctx.beginPath(); ctx.moveTo(x,y-TH/2); ctx.lineTo(x+TW/2,y); ctx.lineTo(x,y+TH/2); ctx.lineTo(x-TW/2,y); ctx.closePath(); ctx.stroke(); ctx.globalAlpha = 1;
+    const top = y - 26 + b;
+    [[-5,-8,11],[-4,-7,9],[-3,-6,7],[-2,-5,5],[-1,-4,3],[0,-3,1]].forEach(([dx,dy,w])=>{ ctx.fillStyle='#0b1f4d'; ctx.fillRect(x+dx-1,top+dy-1,w+2,2); });
+    [[-4,-7,9],[-3,-6,7],[-2,-5,5],[-1,-4,3]].forEach(([dx,dy,w])=>{ ctx.fillStyle='#ffd200'; ctx.fillRect(x+dx,top+dy,w,1); });
+    if(!pulseTimer) pulseTimer = setTimeout(()=>{ pulseTimer = 0; present(); }, 50); }
 }
 let pulseTimer = 0;
 
@@ -3037,13 +3324,18 @@ function floatAt(i, text, cls, icon, delay=0){
 function flushFx(){ (S.fx||[]).forEach((f,j)=>floatAt(f.i, t(f.k, P(f.p)), f.cls, f.cls==='bad'?'error':'check_circle', j*140)); S.fx = []; }
 
 // --- Static texts (re-applied when the language changes) ---
+const ROMAN = ['I','II','III','IV','V','VI'];
+let sheet = null;          // which sheet is open: null | 'parcel' | 'agenda' | 'city' | 'inbox' | 'problems' | 'combos'
 function applyStatic(){
   document.documentElement.lang = LANG;
   $('langBtn').textContent = LANG==='es' ? 'EN' : 'ES';
   $('langBtn').setAttribute('aria-label', t('ui.lang'));
-  $('hint').textContent = t('ui.hint');
+  $('bellBtn').setAttribute('aria-label', t('ui.problems'));
+  $('hint').textContent = t('ui.hintPan');
   [['m-local','meter.local'],['m-neigh','meter.neigh'],['m-comp','meter.comp']].forEach(([id,k])=>$(id).querySelector('.lbl').textContent = t(k));
   $('st-month').title = t('ui.month'); $('st-funds').title = t('ui.funds'); $('st-res').title = t('ui.residents'); $('st-slots').title = t('ui.slots'); $('st-debt').title = t('ui.debt');
+  document.querySelectorAll('.tab[data-tab]').forEach(b=>{ b.querySelector('span').textContent = t('tab.'+b.dataset.tab); });
+  $('centreBtn').title = t('ui.centre'); $('rotateBtn').title = t('ui.rotate');
 }
 function setMeter(id, v, prev, warnBelow=40, badBelow=25){
   const el = $(id); el.querySelector('b').textContent = Math.round(v);
@@ -3054,12 +3346,15 @@ function setMeter(id, v, prev, warnBelow=40, badBelow=25){
   el.classList.toggle('alarm', d <= -8);
 }
 function updateHUD(){
-  $('townName').textContent = `${t('ui.dgShort')} · ${S.town}`;
+  $('townName').textContent = `${t('ui.level')} ${ROMAN[S.level]} · ${S.town}`;
   $('month').textContent = Math.min(S.month, CFG.months); $('months').textContent = CFG.months;
   $('funds').textContent = money(S.funds); $('residents').textContent = residents(); $('target').textContent = CFG.target;
   $('st-debt').hidden = !(S.debt>0); $('debt').textContent = money(-S.debt);
   const sl = $('slots'); sl.innerHTML = '';
   for(let k=0;k<Math.max(slotsPerMonth(), S.slots);k++){ const d=document.createElement('span'); d.className='slot'+(k<S.slots?' on':''); sl.appendChild(d); }
+  // Only the meters whose rule is in play this level
+  const show = {'m-local':on('local'), 'm-neigh':on('neigh'), 'm-comp':on('comp'), 'm-spent':on('milestones')};
+  Object.entries(show).forEach(([id,v])=>{ $(id).hidden = !v; }); $('meters').hidden = !Object.values(show).some(Boolean);
   const pv = S.prev || snapshot();
   setMeter('m-local', S.local, pv.local); setMeter('m-neigh', S.neigh, pv.neigh, 35, 15); setMeter('m-comp', S.comp, pv.comp, 35, 15);
   const nm = nextMilestone(), sp = $('m-spent'), pct = S.spent / S.grant * 100;
@@ -3067,7 +3362,25 @@ function updateHUD(){
   sp.querySelector('b').textContent = Math.round(pct)+'%';
   const bar = sp.querySelector('.bar i'); bar.style.width = clamp(pct,0,100)+'%';
   bar.className = nm && S.spent < nm.need && nm.m-S.month<=3 ? 'low' : '';
+  // Bell: number of things that need attention
+  const pb = problems().filter(x=>x.sev!=='info'), bad = pb.some(x=>x.sev==='bad');
+  $('bellN').hidden = !pb.length; $('bellN').textContent = pb.length; $('bellBtn').classList.toggle('alert', bad);
+  // Bottom bar
+  const end = $('endTurn'); end.querySelector('.lbl').textContent = t(innerWidth < 600 ? 'ui.endMonthTiny' : 'ui.endMonthShort');
+  end.querySelector('small').textContent = t('ui.endMonthSub', {m:Math.min(S.month, CFG.months), n:CFG.months, c:money(monthlyCosts()-taxIncome())});
+  end.disabled = !!S.over;
+  document.querySelectorAll('.tab[data-tab]').forEach(b=>{ const tab = b.dataset.tab;
+    b.hidden = (tab==='agenda' && !agendaAvailable()) || (tab==='combos' && !on('combos'));
+    b.classList.toggle('on', sheet===tab); });
+  const unread = (S.logN||0) - (S.logSeen||0); $('inboxN').hidden = unread<=0; $('inboxN').textContent = unread>9 ? '9+' : unread;
+  // Directive pill on the map
+  const dp = $('dirPill');
+  if(S.directive){ const d = S.directive, left = d.deadline - S.month + 1;
+    dp.hidden = false; dp.classList.toggle('late', left<=1);
+    dp.innerHTML = `${ic(DIRECTIVE_ICON[d.kind])}<span>${t('dir.'+d.kind+'.t')}</span><b>${t('ui.monthsLeft',{n:left})}</b>`; }
+  else dp.hidden = true;
 }
+function agendaAvailable(){ return on('local') || on('rustic') || on('comp') || on('neigh') || S.debt>0; }
 // Tap a meter: what it does, and why it moved
 function showMeterPop(m){
   const pop = $('pop'), el = document.querySelector(`.meter[data-m="${m}"]`);
@@ -3095,7 +3408,7 @@ function doAction(res, i){
   floatAt(i, t(res.msg.k, P(res.msg.p)), res.ok ? (res.cls||'') : 'bad', res.ok ? 'check_circle' : 'block');
   save(); refresh();
 }
-// --- What's wrong right now (shown at the top of the panel; tap to locate) ---
+// --- What's wrong right now (the bell; tap an item to locate it) ---
 function problems(){
   const L = [], add = (sev, icon, k, p, i=-1) => L.push({sev, icon, k, p, i});
   let rustic = 0;
@@ -3107,107 +3420,118 @@ function problems(){
     if(p.st==='private' && p.flag && p.flag.k==='paused') add('warn','pause_circle','pb.paused',{at:pname(i)},i);
     if(p.st==='ruin') add('bad','domain_disabled','pb.ruin',{at:pname(i)},i);
   });
-  if(rustic && !S.plan) add('info','map','pb.needPlan',{n:rustic});
+  if(on('rustic') && rustic && !S.plan) add('info','map','pb.needPlan',{n:rustic});
   const q = S.grid.filter(p=>p.st==='approved').length;
   if(q && activeSites() >= contractors()) add('warn','engineering','pb.queue',{n:q, c:contractors()});
   if(S.funds - monthlyCosts() + taxIncome() < 0) add('bad','money_off','pb.cash',{x:money(monthlyCosts())});
-  if(S.comp < 30) add('bad','fact_check','pb.comp',{n:Math.round(S.comp)});
-  if(S.neigh < 15) add('bad','gavel','pb.neighCourt',{});
-  else if(S.neigh < 35) add('warn','diversity_3','pb.neigh',{});
-  if(S.local < 40) add('warn','how_to_vote','pb.local',{});
+  if(on('comp') && S.comp < 30) add('bad','fact_check','pb.comp',{n:Math.round(S.comp)});
+  if(on('neigh') && S.neigh < 15) add('bad','gavel','pb.neighCourt',{});
+  else if(on('neigh') && S.neigh < 35) add('warn','diversity_3','pb.neigh',{});
+  if(on('local') && S.local < 40) add('warn','how_to_vote','pb.local',{});
   const nm = nextMilestone(); if(nm && nm.m-S.month<=4 && S.spent<nm.need) add('warn','savings','pb.milestone',{m:nm.m, x:money(nm.need-S.spent)});
   if(S.directive && S.directive.deadline - S.month <= 1 && !directiveProgress(S.directive)) add('bad','assignment_late','pb.directive',{d:S.directive.kind});
   if(S.debt>0) add('warn','account_balance_wallet','pb.debt',{x:money(S.debt), r:(S.rate*100).toFixed(1), cap:money(CFG.debtCap)});
-  if(S.market < CFG.devMinMarket) add('info','trending_down','pb.market',{});
+  if(on('market') && S.market < CFG.devMinMarket) add('info','trending_down','pb.market',{});
   add('info','insights','pb.growth',{w:t('bn.'+caps().bottleneck)});
   const order = {bad:0, warn:1, info:2}; return L.sort((a,b)=>order[a.sev]-order[b.sev]);
 }
-function renderPanel(){
-  const Pn = $('panel'); Pn.innerHTML = '';
-  const cost = monthlyCosts(), tax = taxIncome();
-  const end = actBtn('skip_next', t('ui.endMonth', {m:Math.min(S.month,CFG.months)}), t('ui.forecast', {c:money(cost), t:money(tax)}),
-    ()=>{ if(S.cards.length || S.perkChoice){ showNext(); return; }
-          playSound('turn'); endMonth(); selected=-1; refresh(); flushFx(); setTimeout(showNext, (S.fx||[]).length ? 0 : 0); }, !!S.over, 'primary');
-  end.id = 'endTurn'; Pn.appendChild(end);
-  // Problems
-  const pb = problems(), card = document.createElement('div');
-  card.className = 'card'+(pb.some(x=>x.sev==='bad')?' alert':'');
-  card.innerHTML = `<h3>${ic('report')}${t('ui.problems')}</h3>`;
-  const ul = document.createElement('ul'); ul.className='problems';
-  pb.slice(0,7).forEach(x=>{ const li=document.createElement('li'); li.className=x.sev;
-    li.innerHTML = `${ic(x.icon)}<span>${t(x.k, P(x.p))}<small>${t(x.k+'.h', P(x.p))}</small></span>`;
-    if(x.i>=0) li.onclick = ()=>{ selected = x.i; pulse(x.i); playSound('click'); refresh(); };
-    ul.appendChild(li); });
-  card.appendChild(ul); Pn.appendChild(card);
-  // Directive
-  if(S.directive){ const d=S.directive, left = d.deadline - S.month + 1, c = document.createElement('div'); c.className='card directive';
-    c.innerHTML = `<div class="ref">${t('ui.directiveRef', {ref:d.ref})}</div><h3>${ic(DIRECTIVE_ICON[d.kind])}${t('dir.'+d.kind+'.t')}</h3><p>${t('dir.'+d.kind+'.x', {n:d.param})}</p>
-      <div class="due" style="color:${left<=1?'var(--bad)':'var(--ink)'}">${t('ui.due', {m:d.deadline, n:left})}</div>`;
-    Pn.appendChild(c); }
-  Pn.appendChild(selected >= 0 ? parcelCard(selected) : agendaCard());
-  // Town
-  const cp = caps(), st = document.createElement('div'); st.className='card';
-  st.innerHTML = `<h3>${ic('insights')}${t('ui.town')}</h3>
-    <dl class="kv"><dt>${t('ui.homes')}</dt><dd>${cp.homes}</dd><dt>${t('ui.jobs')}</dt><dd>${t('ui.jobsN',{n:cp.jobs})}</dd><dt>${t('ui.schoolPl')}</dt><dd>${cp.school}</dd><dt>${t('ui.health')}</dt><dd>${cp.health}</dd>
-    <dt>${t('ui.construction')}</dt><dd>${t('ui.sites',{a:activeSites(), c:contractors()})}</dd>
-    <dt>${t('ui.odds')}</dt><dd>${Math.round(approvalChance()*100)}%</dd>
-    <dt>${t('ui.market')}</dt><dd>${Math.round(S.market*100)}%</dd>
-    <dt>${t('ui.taxes')}</dt><dd>${money(tax)}/${t('ui.mo')}</dd>
-    ${S.perks.length||S.shovel?`<dt>${t('ui.perks')}</dt><dd>${S.perks.map(k=>t('perk.'+k)).concat(S.shovel?[t('perk.shovel')]:[]).join(', ')}</dd>`:''}</dl>
+// --- Sheets: one thing at a time, on demand ---
+function openSheet(name){ hidePop(); sheet = name; if(name==='inbox') S.logSeen = S.logN||0; refresh(); }
+function closeSheet(){ sheet = null; selected = -1; refresh(); }
+function renderSheet(){
+  const el = $('sheet'), body = $('sheetBody'), title = $('sheetTitle');
+  if(sheet==='parcel' && selected<0) sheet = null;
+  if(sheet==='agenda' && !agendaAvailable()) sheet = null;
+  document.body.classList.toggle('sheet-open', !!sheet);
+  if(!sheet){ el.hidden = true; return; }
+  el.hidden = false; body.innerHTML = '';
+  if(sheet==='parcel'){ const [pi, pt] = parcelTitle(selected); title.innerHTML = `${ic(pi)}${pt}`; body.appendChild(parcelCard(selected)); }
+  if(sheet==='agenda'){ title.innerHTML = `${ic('work')}${t('ui.agenda')}`;
+    if(S.directive){ const d=S.directive, left = d.deadline - S.month + 1, c = document.createElement('div'); c.className='card directive';
+      c.innerHTML = `<div class="ref">${t('ui.directiveRef', {ref:d.ref})}</div><h3>${ic(DIRECTIVE_ICON[d.kind])}${t('dir.'+d.kind+'.t')}</h3><p>${t('dir.'+d.kind+'.x', {n:d.param})}</p>
+        <div class="due" style="color:${left<=1?'var(--bad)':'var(--ink)'}">${t('ui.due', {m:d.deadline, n:left})}</div>`;
+      body.appendChild(c); }
+    body.appendChild(agendaCard()); }
+  if(sheet==='city'){ title.innerHTML = `${ic('insights')}${t('ui.town')}`; body.appendChild(cityCard()); }
+  if(sheet==='inbox'){ title.innerHTML = `${ic('inbox')}${t('ui.inbox')}`;
+    const lg = document.createElement('div'); lg.className='card';
+    lg.innerHTML = `<ul class="log">${S.log.slice(0,30).map(l=>`<li class="${l.c}"><span class="m">M${l.m}</span>${t(l.k, P(l.p))}</li>`).join('')}</ul>`;
+    body.appendChild(lg); }
+  if(sheet==='problems'){ title.innerHTML = `${ic('report')}${t('ui.problems')}`;
+    const pb = problems(), card = document.createElement('div'); card.className = 'card'+(pb.some(x=>x.sev==='bad')?' alert':'');
+    const ul = document.createElement('ul'); ul.className='problems';
+    pb.forEach(x=>{ const li=document.createElement('li'); li.className=x.sev;
+      li.innerHTML = `${ic(x.icon)}<span>${t(x.k, P(x.p))}<small>${t(x.k+'.h', P(x.p))}</small></span>`;
+      if(x.i>=0) li.onclick = ()=>{ selected = x.i; sheet = 'parcel'; centreOn(x.i); pulse(x.i); playSound('click'); refresh(); };
+      ul.appendChild(li); });
+    card.appendChild(ul); body.appendChild(card); }
+  if(sheet==='combos'){ title.innerHTML = `${ic('workspace_premium')}${t('combo.cat')}`; body.appendChild(catalogueEl()); }
+}
+function cityCard(){
+  const cp = caps(), tax = taxIncome(), st = document.createElement('div'); st.className='card';
+  const row = (k, v) => `<dt>${t(k)}</dt><dd>${v}</dd>`;
+  st.innerHTML = `<div class="goal">${t('lvl.goalShort',{n:CFG.target, m:CFG.months})}</div><dl class="kv">
+    ${row('ui.residents', residents()+' / '+CFG.target)}${row('ui.homes', cp.homes)}
+    ${on('jobs') ? row('ui.jobs', t('ui.jobsN',{n:cp.jobs})) : ''}
+    ${on('services') ? row('ui.schoolPl', cp.school) + row('ui.health', cp.health) : ''}
+    ${row('ui.construction', t('ui.sites',{a:activeSites(), c:contractors()}))}
+    ${on('permits') ? row('ui.odds', Math.round(approvalChance()*100)+'%') : ''}
+    ${on('market') ? row('ui.market', Math.round(S.market*100)+'%') : ''}
+    ${row('ui.taxes', money(tax)+'/'+t('ui.mo'))}
+    ${S.perks.length||S.shovel ? row('ui.perks', S.perks.map(k=>t('perk.'+k)).concat(S.shovel?[t('perk.shovel')]:[]).join(', ')) : ''}</dl>
     <div class="bottleneck">${t('ui.limitedBy')} <b>${t('bn.'+cp.bottleneck)}</b></div>`;
-  Pn.appendChild(st);
-  // Inbox
-  const lg = document.createElement('div'); lg.className='card';
-  lg.innerHTML = `<h3>${ic('inbox')}${t('ui.inbox')}</h3><ul class="log">${S.log.slice(0,10).map(l=>`<li class="${l.c}"><span class="m">M${l.m}</span>${t(l.k, P(l.p))}</li>`).join('')}</ul>`;
-  Pn.appendChild(lg);
+  return st;
 }
 function agendaCard(){
   const c = document.createElement('div'); c.className='card';
-  c.innerHTML = `<h3>${ic('work')}${t('ui.agenda')}</h3><p>${t('ui.agendaHint')}</p>`;
+  c.innerHTML = `<p>${t('ui.agendaHint2')}</p>`;
   const a = document.createElement('div'); a.className='actions'; const off = !!S.over;
-  a.appendChild(actBtn('map', t('act.plan'), S.plan ? t('act.planBusy',{n:S.plan.t}) : t('act.planSub',{x:money(CFG.planCost)}), ()=>doAction(submitPlan(),-1), off||!!S.plan||S.slots<2));
-  a.appendChild(actBtn('restaurant', t('act.lobby'), t('act.lobbySub',{x:money(CFG.lobbyCost), n:has('lobbyist')?20:(S.lobbied?6:12)}), ()=>doAction(lobby(),-1), off||S.slots<1));
-  a.appendChild(actBtn('forum', t('act.consult'), t('act.consultSub'), ()=>doAction(consult(),-1), off||S.slots<2));
-  a.appendChild(actBtn('description', t('act.report'), t('act.reportSub'), ()=>doAction(fileReport(),-1), off||S.slots<1));
+  if(on('rustic')) a.appendChild(actBtn('map', t('act.plan'), S.plan ? t('act.planBusy',{n:S.plan.t}) : t('act.planSub',{x:money(CFG.planCost)}), ()=>doAction(submitPlan(),-1), off||!!S.plan||S.slots<2));
+  if(on('local')) a.appendChild(actBtn('restaurant', t('act.lobby'), t('act.lobbySub',{x:money(CFG.lobbyCost), n:has('lobbyist')?20:(S.lobbied?6:12)}), ()=>doAction(lobby(),-1), off||S.slots<1));
+  if(on('neigh')) a.appendChild(actBtn('forum', t('act.consult'), t('act.consultSub'), ()=>doAction(consult(),-1), off||S.slots<2));
+  if(on('comp')) a.appendChild(actBtn('description', t('act.report'), t('act.reportSub'), ()=>doAction(fileReport(),-1), off||S.slots<1));
   if(S.debt>0) a.appendChild(actBtn('account_balance_wallet', t('act.repay',{x:money(Math.min(CFG.loanStep,S.debt))}), t('act.repaySub'), ()=>doAction(repay(),-1), off||S.funds<Math.min(CFG.loanStep,S.debt), 'money'));
-  a.appendChild(actBtn('workspace_premium', t('combo.cat'), t('combo.catSub',{n:discovered().length, t:COMBOS.length}), ()=>{ playSound('click'); catalogueCard(); }, false, 'cat'));
   c.appendChild(a); return c;
+}
+function parcelTitle(i){
+  const p = S.grid[i], isB = p.ty && p.k!=='regional';
+  const title = isB ? t('b.'+p.ty) : (p.k==='farm' && !on('rustic')) ? t('k.farmU') : (p.urban && p.st==='owned' && p.k!=='muni') ? t('k.serviced') : t('k.'+p.k);
+  return [isB ? B[p.ty].icon : KIND[p.k], title];
 }
 function parcelCard(i){
   const p = S.grid[i], [r,c] = rc(i);
   const card = document.createElement('div'); card.className='card';
   const isB = p.ty && p.k!=='regional';
-  const title = isB ? t('b.'+p.ty) : (p.urban && p.st==='owned' && p.k!=='muni') ? t('k.serviced') : t('k.'+p.k);
-  const icon = isB ? B[p.ty].icon : KIND[p.k];
-  let html = `<div class="ref">${t('ui.parcel',{at:pname(i)})}${p.urban && !isB ? ' · '+t('ui.urban') : ''}</div><h3>${ic(icon)}${title}</h3>`;
+  let html = `<div class="ref">${t('ui.parcel',{at:pname(i)})}${p.urban && !isB && on('rustic') ? ' · '+t('ui.urban') : ''}</div>`;
   const a = document.createElement('div'); a.className='actions'; const off = !!S.over || S.slots<1;
   if(p.k==='habitat') html += `<p>${t('pc.habitat')}</p>`;
   else if(p.k==='village') html += `<p>${t('pc.village')}</p>`;
   else if(p.k==='regional') html += `<p>${t('pc.regional')}</p>`;
   else if(p.st==='land'){
-    html += `<p>${t(p.k==='muni'?'pc.muni':p.k==='flood'?'pc.flood':(p.hold?'pc.farmHeld':'pc.farm'))}</p>`;
+    html += `<p>${t(p.k==='muni'?'pc.muni':p.k==='flood'?'pc.flood':!on('rustic')?'pc.farmUrban':(p.hold?'pc.farmHeld':'pc.farm'))}</p>`;
     a.appendChild(actBtn('real_estate_agent', t('act.acquire',{x:money(landPrice(p))}), t('act.slot1'), ()=>doAction(acquire(i),i), off));
   } else if(p.st==='owned'){
     const acc = hasAccess(r,c);
-    html += `<p>${!acc ? t('pc.noAccess') : p.urban ? t('pc.ownedUrban') : t('pc.ownedRustic')}</p>`;
-    BUILD_TYPES.forEach(ty=>{ const bt=B[ty], blocked = !acc || (bt.urban && !p.urban);
+    html += `<p>${!acc ? t('pc.noAccess') : !on('rustic') ? t('pc.ownedSimple') : p.urban ? t('pc.ownedUrban') : t('pc.ownedRustic')}</p>`;
+    const types = BUILD_TYPES.filter(ty => (ty!=='road' || on('access')) && (ty!=='factory' || on('jobs')) && ((ty!=='school' && ty!=='clinic') || on('services')));
+    types.forEach(ty=>{ const bt=B[ty], blocked = !acc || (bt.urban && !p.urban);
       const why = !acc ? t('err.noAccess') : (bt.urban && !p.urban) ? t('pc.needsUrban') : '';
-      a.appendChild(actBtn(bt.icon, t('b.'+ty), `<span class="meta">${t('pc.timing',{p:permitMonths(ty), b:buildMonths(ty), x:money(buildCost(p,ty))})}</span>`
+      a.appendChild(actBtn(bt.icon, t('b.'+ty), `<span class="meta">${on('permits') ? t('pc.timing',{p:permitMonths(ty), b:buildMonths(ty), x:money(buildCost(p,ty))}) : t('pc.timingSimple',{b:buildMonths(ty)+1, x:money(buildCost(p,ty))})}</span>`
         + `<span class="desc">${t('bd.'+ty)}</span>` + (why ? `<span class="why">${why}</span>` : '') + comboChips(comboPreview(i, ty)),
         ()=>doAction(requestPermit(i,ty),i), blocked || off, 'build')); });
-    if(p.urban) a.appendChild(actBtn('sell', t('act.sell',{x:money(plotValue(p))}), S.market<CFG.devMinMarket ? t('act.sellCold') : t('act.sellSub'), ()=>doAction(sellPlot(i),i), !acc || off || S.market<CFG.devMinMarket, 'money'));
+    if(p.urban && on('market')) a.appendChild(actBtn('sell', t('act.sell',{x:money(plotValue(p))}), S.market<CFG.devMinMarket ? t('act.sellCold') : t('act.sellSub'), ()=>doAction(sellPlot(i),i), !acc || off || S.market<CFG.devMinMarket, 'money'));
   }
+  else if(p.st==='review' && !on('permits')) html += `<p>${t('pc.reviewSimple',{b:t('b.'+p.ty), n:p.t})}</p>`;
   else if(p.st==='review') html += `<p>${t('pc.review',{b:t('b.'+p.ty), n:p.t, o:Math.round(approvalChance()*100)})}</p>`;
   else if(p.st==='approved') html += `<p>${t('pc.approved',{b:t('b.'+p.ty)})}</p>`;
   else if(p.st==='building') html += `<p>${t('pc.building',{b:t('b.'+p.ty), n:p.t, x:money(p.mcost)})}${p.halt?' <b style="color:var(--bad)">'+t('pc.halted',{n:p.halt})+'</b>':''}</p>`;
   else if(p.st==='private') html += `<p>${t(p.dev.phase==='permit'?'pc.privPermit':'pc.privBuild',{n:p.dev.t})}${S.market<CFG.devMinMarket?' <b style="color:var(--warn)">'+t('pc.privPaused')+'</b>':''}</p>`;
   else if(p.st==='ruin'){ html += `<p>${t('pc.ruin')}</p>`; a.appendChild(actBtn('real_estate_agent', t('act.buyBack',{x:money(r1(p.price*1.5))}), t('act.slot1'), ()=>doAction(acquire(i),i), off)); }
   else if(p.st==='built' && isB && p.ty!=='road'){ html += `<p>${t('bd.'+p.ty)}. ${p.priv ? t('pc.private') : t('pc.upkeep',{x:money(B[p.ty].upkeep)})}</p>`;
-    const mine = activeCombos().filter(x=>x.i===i || x.j===i);
-    html += `<div class="combos-here"><b>${t('ui.combosHere')}</b>${mine.length ? comboChips(mine.map(x=>COMBO_BY_ID[x.id]), true) : `<p>${t('combo.none')}</p>`}</div>`; }
+    if(on('combos')){ const mine = activeCombos().filter(x=>x.i===i || x.j===i);
+      html += `<div class="combos-here"><b>${t('ui.combosHere')}</b>${mine.length ? comboChips(mine.map(x=>COMBO_BY_ID[x.id]), true) : `<p>${t('combo.none')}</p>`}</div>`; } }
   else if(p.st==='built') html += `<p>${t('pc.road')}</p>`;
   card.innerHTML = html; if(a.children.length) card.appendChild(a);
-  const back = actBtn('close', t('ui.deselect'), '', ()=>{ selected=-1; refresh(); }); back.style.marginTop='8px'; card.appendChild(back);
   return card;
 }
 // Combo chips: named once discovered; before that only a mysterious "combo?" (good and bad look the same)
@@ -3218,18 +3542,52 @@ function comboChips(list, showAll){
     ? `<span class="chip ${cb.good?'good':'bad'}">${ic(cb.good?'workspace_premium':'warning')}${t('combo.'+cb.id)}</span>`
     : `<span class="chip mystery">${ic('workspace_premium')}${t('combo.possible')}</span>`).join('')}</span>`;
 }
-function catalogueCard(){
-  const known = discovered();
+function catalogueEl(){
+  const known = discovered(), wrap = document.createElement('div'); wrap.className = 'card';
   const items = COMBOS.map(cb=>{ const k = known.includes(cb.id);
     return `<li class="${k?(cb.good?'good':'bad'):'unknown'}">${ic(k?(cb.good?'workspace_premium':'warning'):'info')}<span><b>${k?t('combo.'+cb.id):t('combo.unknown')}</b>
       <small>${k ? t('combod.'+cb.id) + ' · ' + t('combo.pieces',{a:t('piece.'+cb.a), b:t('piece.'+cb.b)}) : t('combo.unknownHint')}</small></span></li>`; }).join('');
-  letter({icon:'workspace_premium', title:t('combo.cat'), body:`<p>${t('combo.catx',{n:known.length, t:COMBOS.length})}</p><ul class="catalogue">${items}</ul>`,
-    buttons:[btn(t('ui.close'),'close', ()=>{ playSound('click'); if(S && (S.cards.length||S.perkChoice||S.over)) showNext(); else hideModal(); }, true)]});
-  rerender = catalogueCard;
+  wrap.innerHTML = `<p>${t('combo.catx',{n:known.length, t:COMBOS.length})}</p><ul class="catalogue">${items}</ul>`;
+  return wrap;
 }
-function refresh(){ applyStatic(); updateHUD(); renderPanel(); draw(); }
+function catalogueCard(){ openSheet('combos'); }
+// --- The mayor's guide: a few steps per level, the current one shown on the map ---
+const GUIDES = [
+  [ {k:'g1.buy',     done:()=>S.grid.some(p=>p.k==='farm' && p.st!=='land'), at:()=>S.grid.findIndex(p=>p.k==='farm' && p.st==='land')},
+    {k:'g1.permit',  done:()=>S.grid.some(p=>p.ty==='housing'), at:()=>S.grid.findIndex(p=>p.st==='owned')},
+    {k:'g1.end',     done:()=>S.month>=2, end:true},
+    {k:'g1.wait',    done:()=>count('housing')>=1, end:true},
+    {k:'g1.grow',    done:()=>false, end:true} ],
+  [ {k:'g2.access',  done:()=>S.grid.some(p=>p.k==='farm' && p.st!=='land'), at:()=>S.grid.findIndex((p,i)=>p.k==='farm' && p.st==='land' && hasAccess(...rc(i)))},
+    {k:'g2.jobs',    done:()=>S.grid.some(p=>p.ty==='factory'), at:()=>S.grid.findIndex(p=>p.st==='owned')},
+    {k:'g2.combo',   done:()=>activeCombos().length>0},
+    {k:'g2.mayor',   done:()=>S.stats.lobby>0, tab:'agenda'} ],
+  [ {k:'g3.rustic',  done:()=>S.stats.plan>0, tab:'agenda'},
+    {k:'g3.report',  done:()=>S.reports>0, tab:'agenda'},
+    {k:'g3.services',done:()=>S.grid.some(p=>p.ty==='school' || p.ty==='clinic')},
+    {k:'g3.cards',   done:()=>S.month>=6} ],
+  [ {k:'g4.sell',    done:()=>S.grid.some(p=>p.st==='private' || p.priv)},
+    {k:'g4.spend',   done:()=>S.month>=8} ],
+];
+let guideAt = -1;
+function guideStep(){ const g = GUIDES[S.level] || []; const k = g.findIndex(s=>!s.done()); return k<0 ? null : {s:g[k], n:k+1, total:g.length}; }
+function renderGuide(){
+  const el = $('guide'), cur = (S.guideOff || S.over) ? null : guideStep();
+  guideAt = -1; $('endTurn').classList.remove('nudge');
+  if(!cur){ el.hidden = true; $('hint').hidden = false; return; }
+  $('hint').hidden = true; el.hidden = false;
+  if(cur.s.at){ const i = cur.s.at(); if(i>=0) guideAt = i; }
+  if(cur.s.end && !S.cards.length) $('endTurn').classList.add('nudge');
+  const who = S.level>=2 ? 'brussels' : 'mayor';
+  el.innerHTML = `${pxPortrait(who)}<div><div class="step">${t('ui.step',{n:cur.n, t:cur.total})}</div><p>${t(cur.s.k, {n:CFG.target, m:CFG.months})}</p></div>
+    <button class="x" aria-label="${t('ui.close')}">${ic('close')}</button>`;
+  el.querySelector('.x').onclick = ()=>{ S.guideOff = true; save(); playSound('click'); refresh(); };
+  if(cur.s.tab) el.onclick = e=>{ if(!e.target.closest('.x')) openSheet(cur.s.tab); }; else el.onclick = null;
+}
+function refresh(){ applyStatic(); updateHUD(); renderSheet(); renderGuide(); draw(); }
 let pulseUntil = 0;
 function pulse(i){ S.focus = i; pulseUntil = performance.now()+2600; draw(); }
+
 
 // =====================================================================
 //  CARDS & NOTICES (modal). One renderer per card type; re-rendered on language change.
@@ -3322,6 +3680,15 @@ const CARD = {
     letter({icon:E.icon, title:t('ev.'+c.id+'.t'), speaker:E.char, dock:true,
       body:`${where}<div class="quote">${t('ev.'+c.id+'.x', {...P(v), x:v.x, at:v.i>=0?pname(v.i):''})}</div><p class="hint">${t('ui.choose')}</p>`, buttons});
     if(!c.played){ c.played = true; playSound(E.sfx); } },
+  level: c => { const L = LV(), n = S.level;
+    const rules = (t('lvl.'+(n+1)+'.rules')).split('|').map(x=>`<li>${ic('check')}<span>${x}</span></li>`).join('');
+    const carried = S.perks.length || S.shovel ? `<p class="hint">${t('lvl.carried', {p:S.perks.map(k=>t('perk.'+k)).concat(S.shovel?[t('perk.shovel')]:[]).join(', ')})}</p>` : '';
+    letter({icon:'map', title:`<span class="lvl-tag">${t('ui.level')} ${ROMAN[n]}</span>${t('lvl.'+(n+1)+'.name')}`, speaker: n>=2 ? 'brussels' : 'mayor',
+      body:`<div class="quote">${t('lvl.'+(n+1)+'.x', {town:S.town})}</div>
+        <div class="goal">${t('lvl.goal', {n:L.target, m:L.months, s:L.n})}</div>
+        <p class="hint">${t('lvl.newRules')}</p><ul class="rules">${rules}</ul>${carried}
+        ${n===0 ? `<p class="keys">${t('lvl.keys')}</p>` : ''}`,
+      buttons:[btn(t('lvl.go'),'play_arrow', ()=>nextCard('stamp'), true)]}); },
   combo: c => { const cb = COMBO_BY_ID[c.id]; pulse(c.i);
     letter({icon: cb.good?'workspace_premium':'warning', title: t(cb.good?'combo.new.t':'combo.newBad.t'), stamp: t(cb.good?'stamp.combo':'stamp.comboBad'), cls: cb.good?'ok':'bad',
       speaker: cb.good ? 'mayor' : 'neighbour',
@@ -3340,13 +3707,22 @@ function perkCard(){
 }
 function score(){ return residents() + Math.max(0,Math.round(S.funds))*5 - Math.round(S.debt)*5 + (S.over&&S.over.win ? (CFG.months+1-S.month)*25 : 0) + S.directivesDone*50; }
 function gameOver(){
-  const w = S.over.why, win = S.over.win;
+  const w = S.over.why, win = S.over.win, last = S.level+1 >= LEVELS.length;
   if(!S.over.played){ S.over.played = true; playSound(win?'win':'fail'); setMusic(win ? 'win' : 'menu', win ? 1 : 0.6); }
-  letter({icon: win?'celebration':'report', title:t('over.'+w+'.t'), stamp:t('over.'+w+'.s'), cls:win?'ok':'bad', speaker: win?'mayor':'brussels',
-    body:`<div class="quote">${t('over.'+w+'.x',{town:S.town, n:residents(), target:CFG.target, m:CFG.months})}</div>
-      <dl class="kv"><dt>${t('ui.residents')}</dt><dd>${residents()}</dd><dt>${t('ui.month')}</dt><dd>${Math.min(S.month,CFG.months)}</dd><dt>${t('ui.funds')}</dt><dd>${money(S.funds)}</dd>
-      ${S.debt?`<dt>${t('ui.debt')}</dt><dd>${money(S.debt)}</dd>`:''}<dt>${t('ui.directivesMet')}</dt><dd>${S.directivesDone}</dd><dt>${t('ui.score')}</dt><dd>${score()}</dd></dl>`,
-    buttons:[btn(t('menu.new'),'replay', ()=>startNew(), true), btn(t('ui.lookMap'),'map', ()=>{ hideModal(); refresh(); })]});
+  const stats = `<dl class="kv"><dt>${t('ui.residents')}</dt><dd>${residents()} / ${CFG.target}</dd><dt>${t('ui.month')}</dt><dd>${Math.min(S.month,CFG.months)} / ${CFG.months}</dd><dt>${t('ui.funds')}</dt><dd>${money(S.funds)}</dd>
+      ${S.debt?`<dt>${t('ui.debt')}</dt><dd>${money(S.debt)}</dd>`:''}${on('directives')?`<dt>${t('ui.directivesMet')}</dt><dd>${S.directivesDone}</dd>`:''}<dt>${t('ui.score')}</dt><dd>${score()}</dd></dl>`;
+  if(win && !last){
+    // Level complete: pick the perk you carry into the next level
+    const perks = (S.carryChoice||[]).map(k=>{ const b=document.createElement('button'); b.className='perk';
+      b.innerHTML=`${ic(PERKS[k])}<span><b>${t('perk.'+k)}</b><small>${t('perkd.'+k)}</small></span>`;
+      b.onclick=()=>{ carryPerk(k); playSound('ok'); startLevel(S.level+1); }; return b; });
+    letter({icon:'celebration', title:t('lvl.done.t', {n:ROMAN[S.level]}), stamp:t('stamp.approved'), cls:'ok', speaker:'mayor',
+      body:`<div class="quote">${t('lvl.done.x', {town:S.town, n:residents(), next:t('lvl.'+(S.level+2)+'.name')})}</div>${stats}<p class="hint">${t('lvl.carry')}</p>`,
+      buttons:[...perks, btn(t('menu.main'),'logout', ()=>startMenu())]});
+    return; }
+  const body = `<div class="quote">${t('over.'+w+'.x',{town:S.town, n:residents(), target:CFG.target, m:CFG.months})}</div>${win ? `<p class="hint">${t('over.campaign')}</p>` : ''}${stats}`;
+  letter({icon: win?'celebration':'report', title:t('over.'+w+'.t'), stamp:t('over.'+w+'.s'), cls:win?'ok':'bad', speaker: win?'mayor':(S.level<2?'mayor':'brussels'),
+    body, buttons:[btn(t(win?'over.again':'lvl.retry'),'replay', ()=>startLevel(S.level), true), btn(t('menu.main'),'logout', ()=>startMenu()), btn(t('ui.lookMap'),'map', ()=>{ hideModal(); refresh(); })]});
 }
 
 // --- Start / pause menu (with language switch) ---
@@ -3359,9 +3735,14 @@ function startMenu(){
   notice.innerHTML = `<div class="official">${ic('account_balance','s12')}<span>${t('ui.official')}</span><u>${t('ui.howKnow')}</u></div>
     <div class="hero"><i class="emblem" aria-hidden="true"></i><h1 class="logo">EURO<span>CRAT</span></h1><p class="tagline">${t('menu.pitch')}</p></div>
     <div class="sheet"><div class="btns"></div></div><div class="foot">${t('menu.version')}</div>`;
-  const box = notice.querySelector('.btns');
-  box.appendChild(btn(t('menu.new'),'add_circle', ()=>startNew(), true));
-  if(saved && !saved.over) box.appendChild(btn(t('menu.continue',{town:saved.town, m:saved.month}),'play_arrow', ()=>{ S=saved; afterLoad(); }));
+  const box = notice.querySelector('.btns'), camp = campaign();
+  if(saved && !saved.over) box.appendChild(btn(t('menu.continueLvl',{l:ROMAN[saved.level||0], town:saved.town, m:saved.month}),'play_arrow', ()=>{ S=saved; afterLoad(); }, true));
+  const lv = document.createElement('div'); lv.className = 'levels';
+  LEVELS.forEach((L,k)=>{ const b = document.createElement('button'); const locked = k > camp.max, done = k < camp.max || (k===LEVELS.length-1 && camp.done);
+    b.className = 'lvl'+(done?' done':''); b.disabled = locked;
+    b.innerHTML = `<span class="num">${ROMAN[k]}</span><span><b>${t('lvl.'+(k+1)+'.name')}</b><small>${locked ? t('lvl.locked') : t('lvl.goalMenu',{s:L.n, n:L.target, m:L.months})}</small></span>${ic(locked?'block':done?'check':'play_arrow')}`;
+    b.onclick = ()=>{ playSound('click'); startLevel(k); }; lv.appendChild(b); });
+  box.appendChild(lv);
   const row = document.createElement('div'); row.className = 'row'; langButtons().forEach(b=>row.appendChild(b));
   box.appendChild(row); box.appendChild(musicButton());
   modal.classList.remove('hidden'); notice.scrollTop = 0;
@@ -3370,55 +3751,101 @@ function startMenu(){
 }
 function pauseMenu(){
   setMusic('main', 0.4);
-  letter({icon:'pause', title:t('pause.t'), body:`<p>${t('pause.x',{town:S.town, country:country(), m:Math.min(S.month,CFG.months), n:CFG.months})}</p>`,
-    buttons:[btn(t('pause.back'),'play_arrow', ()=>{ setMusic('main'); hideModal(); }, true), musicButton(), ...langButtons(), btn(t('pause.abandon'),'logout', ()=>{ startMenu(); })]});
+  letter({icon:'pause', title:t('pause.t'), body:`<p>${t('pause.x',{town:S.town, country:country(), m:Math.min(S.month,CFG.months), n:CFG.months})}</p><p class="keys">${t('lvl.keys')}</p>`,
+    buttons:[btn(t('pause.back'),'play_arrow', ()=>{ setMusic('main'); hideModal(); }, true), musicButton(), ...langButtons(),
+      btn(t('lvl.retry'),'replay', ()=>startLevel(S.level)), btn(t('menu.main'),'logout', ()=>{ startMenu(); })]});
   updateMusicBtn(); rerender = pauseMenu;
 }
 function setLang(l){
   LANG = l; try{ localStorage.setItem('eurocrat_lang', l); }catch(e){}
   playSound('click'); refresh(); if(rerender && !modal.classList.contains('hidden')) rerender();
 }
-function startNew(seed){ newGame(seed); selected=-1; zoom=1; viewRot=0; save(); setMusic('main'); refresh(); showNext(); }
-function afterLoad(){ selected=-1; setMusic('main'); refresh(); showNext(); }
+function frameView(){ resize(); zoom = defaultZoom();
+  const v = S.grid.findIndex(p=>p.k==='village'); if(N>=16 && v>=0) centreOn(v); else { MAPCX = 0; MAPCY = (N-1)*TH/2 - 12; clampCam(); } }
+function startNew(seed, level){ newGame(seed, level===undefined ? campaign().max : level); selected=-1; sheet=null; viewRot=0; frameView(); save(); setMusic('main'); refresh(); showNext(); }
+function startLevel(k){ startNew(undefined, k); }
+function afterLoad(){ selected=-1; sheet=null; setMapSize(LEVELS[S.level||0].n); frameView(); setMusic('main'); refresh(); showNext(); }
 
 // =====================================================================
-//  INPUT — tap to select, pinch / wheel to zoom (no panning, no gesture rotation)
+//  INPUT — tap to select · drag (one finger / mouse) to move · pinch / wheel / +− to zoom
+//  Keyboard: WASD or arrows move, + − zoom, R rotates, C centres, Space ends the month, Esc closes / pauses
 // =====================================================================
-const pointers = new Map(); let pinchD=0, pinchZ=1, pinched=false, downAt=null;
+const pointers = new Map(); let pinchD=0, pinchZ=1, pinchMid=null, dragged=false, downAt=null, lastAt=null;
 cvs.addEventListener('pointerdown', e=>{
-  hidePop();
+  hidePop(); try{ cvs.setPointerCapture(e.pointerId); }catch(_){}
   pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-  if(pointers.size===1){ downAt={x:e.clientX,y:e.clientY}; pinched=false; }
-  if(pointers.size===2){ const p=[...pointers.values()]; pinchD=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y)||1; pinchZ=zoom; pinched=true; }
+  if(pointers.size===1){ downAt={x:e.clientX,y:e.clientY}; lastAt={...downAt}; dragged=false; }
+  if(pointers.size===2){ const p=[...pointers.values()]; pinchD=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y)||1; pinchZ=zoom; dragged=true;
+    pinchMid={x:(p[0].x+p[1].x)/2, y:(p[0].y+p[1].y)/2}; }
 });
 cvs.addEventListener('pointermove', e=>{
   if(!pointers.has(e.pointerId)) return; pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-  if(pointers.size===2){ const p=[...pointers.values()]; const d=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y)||1; zoom=clamp(pinchZ*d/pinchD,0.7,2.5); draw(); }
+  const r = cvs.getBoundingClientRect();
+  if(pointers.size===2){ const p=[...pointers.values()], d=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y)||1, mid={x:(p[0].x+p[1].x)/2, y:(p[0].y+p[1].y)/2};
+    panBy(mid.x-pinchMid.x, mid.y-pinchMid.y); pinchMid = mid; zoomAt(pinchZ*d/pinchD, mid.x-r.left, mid.y-r.top); return; }
+  if(pointers.size===1 && downAt){
+    if(!dragged && Math.hypot(e.clientX-downAt.x, e.clientY-downAt.y) > 9){ dragged = true; $('hint').classList.add('used'); }
+    if(dragged){ panBy(e.clientX-lastAt.x, e.clientY-lastAt.y); }
+    lastAt = {x:e.clientX, y:e.clientY}; }
 });
 function up(e){
   const wasSingle = pointers.size===1; pointers.delete(e.pointerId);
-  if(wasSingle && !pinched && downAt && Math.hypot(e.clientX-downAt.x, e.clientY-downAt.y) < 10){
+  if(wasSingle && !dragged && downAt){
     const r = cvs.getBoundingClientRect(); const i = tileAt(e.clientX-r.left, e.clientY-r.top);
-    selected = (i===selected) ? -1 : i; playSound('click'); refresh();
+    if(i<0 || i===selected){ selected = -1; if(sheet==='parcel') sheet = null; }
+    else { selected = i; sheet = 'parcel'; }
+    playSound('click'); refresh(); if(selected>=0) keepVisible(selected);
   }
-  if(!pointers.size) downAt=null;
+  if(!pointers.size){ downAt=null; }
 }
-cvs.addEventListener('pointerup', up); cvs.addEventListener('pointercancel', e=>{ pointers.delete(e.pointerId); });
-cvs.addEventListener('wheel', e=>{ e.preventDefault(); zoom=clamp(zoom - e.deltaY*0.001,0.7,2.5); draw(); }, {passive:false});
+cvs.addEventListener('pointerup', up); cvs.addEventListener('pointercancel', e=>{ pointers.delete(e.pointerId); if(!pointers.size) downAt=null; });
+cvs.addEventListener('wheel', e=>{ e.preventDefault(); const r = cvs.getBoundingClientRect();
+  if(e.ctrlKey || Math.abs(e.deltaY) >= Math.abs(e.deltaX)*1.5 && !e.shiftKey) zoomAt(zoom*Math.exp(-e.deltaY*0.0015), e.clientX-r.left, e.clientY-r.top);
+  else panBy(-e.deltaX, -e.deltaY); }, {passive:false});
+// Keyboard: smooth movement while keys are held
+const held = new Set(); let keyLoop = 0;
+const PAN_KEYS = {w:[0,1], arrowup:[0,1], s:[0,-1], arrowdown:[0,-1], a:[1,0], arrowleft:[1,0], d:[-1,0], arrowright:[-1,0]};
+function keyStep(){ let dx=0, dy=0; held.forEach(k=>{ const v = PAN_KEYS[k]; if(v){ dx+=v[0]; dy+=v[1]; } });
+  if(dx||dy){ panBy(dx*12, dy*12); keyLoop = requestAnimationFrame(keyStep); } else keyLoop = 0; }
+addEventListener('keydown', e=>{
+  if(e.target.closest && e.target.closest('input,textarea')) return;
+  const k = e.key.toLowerCase(), modalOpen = !modal.classList.contains('hidden');
+  if(k==='escape'){ if(sheet) closeSheet(); else if(!modalOpen && S && !S.over) pauseMenu(); return; }
+  if(modalOpen) return;
+  if(PAN_KEYS[k]){ e.preventDefault(); held.add(k); if(!keyLoop) keyLoop = requestAnimationFrame(keyStep); return; }
+  if(k==='+' || k==='=') zoomAt(zoom*1.25); else if(k==='-' || k==='_') zoomAt(zoom/1.25);
+  else if(k==='r'){ viewRot=(viewRot+1)%4; playSound('click'); draw(); }
+  else if(k==='c') frameView(), present();
+  else if(k===' ' && !e.repeat){ e.preventDefault(); $('endTurn').click(); }
+});
+addEventListener('keyup', e=>{ held.delete(e.key.toLowerCase()); });
+addEventListener('blur', ()=>held.clear());
 $('rotateBtn').onclick = ()=>{ viewRot=(viewRot+1)%4; playSound('click'); draw(); };
+$('zoomInBtn').onclick = ()=>{ playSound('click'); zoomAt(zoom*1.3); };
+$('zoomOutBtn').onclick = ()=>{ playSound('click'); zoomAt(zoom/1.3); };
+$('centreBtn').onclick = ()=>{ playSound('click'); if(selected>=0) centreOn(selected); else frameView(); present(); };
 $('menuBtn').onclick = ()=>{ playSound('click'); pauseMenu(); };
 $('musicBtn').onclick = toggleMusic;
 $('langBtn').onclick = ()=> setLang(LANG==='es' ? 'en' : 'es');
+$('bellBtn').onclick = ()=>{ playSound('click'); sheet==='problems' ? closeSheet() : openSheet('problems'); };
+$('sheetClose').onclick = ()=>{ playSound('click'); closeSheet(); };
+$('dirPill').onclick = ()=>{ playSound('click'); openSheet('agenda'); };
+document.querySelectorAll('.tab[data-tab]').forEach(b=> b.onclick = ()=>{ playSound('click'); const tb = b.dataset.tab; if(sheet===tb) closeSheet(); else { selected=-1; openSheet(tb); } });
+$('endTurn').onclick = ()=>{
+  if(S.over){ showNext(); return; }
+  if(S.cards.length || S.perkChoice){ showNext(); return; }
+  playSound('turn'); endMonth(); selected=-1; if(sheet==='parcel') sheet=null; refresh(); flushFx(); showNext(); };
 document.querySelectorAll('.meter').forEach(el=> el.addEventListener('click', ev=>{ ev.stopPropagation(); playSound('click'); showMeterPop(el.dataset.m); }));
 document.addEventListener('pointerdown', e=>{ if(!e.target.closest('#pop') && !e.target.closest('.meter')) hidePop(); });
 addEventListener('resize', resize);
 if(window.ResizeObserver) new ResizeObserver(resize).observe(worldEl);
-
 // =====================================================================
 //  BOOT + test hook (used by tests/smoke_test.py and tests/balance.py)
 // =====================================================================
 window.__eurocrat = {
-  get S(){ return S; }, CFG, B, EVENTS, newGame:(seed)=>{ startNew(seed); S.cards=[]; hideModal(); return S; },
+  get S(){ return S; }, CFG, B, EVENTS, LEVELS, newGame:(seed, level=3)=>{ startNew(seed, level); S.cards=[]; hideModal(); return S; },
+  startLevel, campaign, carryPerk, openSheet, closeSheet, get sheet(){ return sheet; }, guideStep, get zoom(){ return zoom; }, get cam(){ return [MAPCX, MAPCY]; },
+  panBy, zoomAt, centreOn, on,
   acquire, requestPermit, sellPlot, submitPlan, lobby, consult, fileReport, repay, endMonth, choosePerk, caps, residents, hasAccess,
   choicesFor, resolveEvent, problems, activeCombos, comboPreview, comboFx, discovered, COMBOS, catalogueCard, t, setLang, get lang(){ return LANG; },
   // resolve the first pending card: event cards with the given (or first) choice, other cards just acknowledged
@@ -3426,7 +3853,7 @@ window.__eurocrat = {
   tileAt:(x,y)=>tileAt(x,y), screenOf:(i)=>{ const [ix,iy]=isoOf(...rc(i)); return toScreen(ix,iy); },
   refresh, showNext, hideModal, get selected(){ return selected; }, spriteSheet, portrait,
 };
-newGame(1); resize(); refresh(); startMenu();
+newGame(1, 0); resize(); refresh(); startMenu();
 Object.keys(CHARS).forEach(makePixelPortrait);
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>draw());
 })();

@@ -6,7 +6,18 @@ Living project document · update it as the prototype evolves. The game design l
 
 **Eurocrat** (working title): a satirical, turn-based roguelike city builder. You are a Brussels programme officer who must deliver a model European town with plenty of money and no power — buy the land, file the permits, survive the neighbours, spend the funds before they expire. Tone and references: *Constructor* (1997), with a hyper-realistic, comic look at how building actually works in contemporary Europe. The plan: validate the loop in the web/iPad prototype, then port to Godot to ship on the App Store and Steam.
 
-## Current status — v0.4.0 (Oct 26, 2026)
+## Current status — v0.5.0 (Oct 26, 2026)
+
+Playtest feedback: "I don't know what to do", "too much information", "too hard". v0.5 answers all three:
+- **Campaign of 4 levels** with maps of 2×2, 4×4, 8×8 and 16×16. Each level switches on new rules (and only shows the UI for the rules in play). Levels I–II cannot be lost.
+- **Guide:** a level card with the goal and what is new, then the mayor (or Brussels) walks you through each step and highlights where to tap.
+- **Progression:** completing a level unlocks the next and lets you carry 1 of 3 perks; the combo catalogue persists.
+- **New interface:** full-screen map; bottom tab bar (Agenda · Town · End month · Inbox · Combos); sheets on demand; a bell for problems; directive pill on the map; compact meters on phones.
+- **Moving the map:** drag with one finger or the mouse, pinch / wheel / +− to zoom, WASD / arrows on PC, keyboard shortcuts (R, C, Space, Esc).
+- **Difficulty curve** (test bot, no carried perks): I 100% · II ~84% · III ~38% · IV ~35%.
+- **Tests:** 86-check smoke test (a full level I played through the UI, level progression, panning, sheets, both languages, phone and iPad layouts).
+
+## Previous — v0.4.0
 
 - **Adjacency combos** (Kairosoft-style): 9 good and 4 bad combos between neighbouring buildings (8-way), discovered by building, with a catalogue that persists between runs, a "combo?" hint in the build menu, a discovery card and green/red links on the map.
 - **Access through buildings:** a finished building (or the old village) gives access to its 8 neighbours, like a road.
@@ -34,13 +45,13 @@ Living project document · update it as the prototype evolves. The game design l
 
 ## Next steps
 
-1. Playtest v0.3 on the iPad; tune costs, timings, event odds and directive targets.
-2. Tutorial / first-run guidance (the first month is confusing without it).
+1. Playtest v0.5 with new players; tune the level targets and the guide texts.
+2. More 16×16 levels in different member states, each with its own bureaucratic quirk.
 2b. Turn player actions into cards too (favours, consultants, dirty tricks)?
 3. *Constructor*-style characters: named residents, complaints, a mayor with a face.
 4. Member states with their own rule quirks; more buildings (logistics hub, data centre, social housing).
 5. Decide on meta-progression between runs.
-6. Port v0.4 to Godot when the loop is validated.
+6. Port v0.5 to Godot when the loop is validated.
 
 ## Assets
 
@@ -93,7 +104,7 @@ Living project document · update it as the prototype evolves. The game design l
 
 ## Suggested phases
 
-1. **Web prototype:** ✅ v0.1 (basic loop) · ✅ v0.2 (Eurocrat roguelike loop) · ✅ v0.3 (cards, land economy, EN/ES) · ✅ v0.4 (combos, readability).
+1. **Web prototype:** ✅ v0.1 (basic loop) · ✅ v0.2 (Eurocrat roguelike loop) · ✅ v0.3 (cards, land economy, EN/ES) · ✅ v0.4 (combos, readability) · ✅ v0.5 (campaign of 4 levels, guide, sheets UI, panning).
 2. **Mechanics design (current):** ✅ v0.3 cards, characters, land economy, i18n · next: playtest, tutorial.
 3. **Asset production:** consolidate the style guide, music, possible 3D assets.
 4. **Godot port:** migrate logic and UI, with the GitHub repository already active.
