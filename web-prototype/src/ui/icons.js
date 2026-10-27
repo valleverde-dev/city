@@ -862,11 +862,38 @@ export const ICON_ALIAS = {
 };
 export function bitmapPath(rows, ch='#'){ let d=''; rows.forEach((r,y)=>{ let x=0; while(x<r.length){ if(r[x]===ch){ const s=x; while(x<r.length && r[x]===ch) x++; d+=`M${s} ${y}h${x-s}v1h${s-x}z`; } else x++; } }); return d; }
 export const svgURL = s => `url("data:image/svg+xml,${encodeURIComponent(s)}")`;
+// The Union's (fictional) emblem: one big white star on European blue. Deliberately not the flag of Europe
+// (no ring of twelve gold stars), so letterheads and the header never pass for the real thing.
+export const EMBLEM_ROWS = [
+  'NNNNNNNNNNNNNNNNNNNNN',
+  'NLLLLLLLLLLLLLLLLLLLN',
+  'NLBBBBBBBBBBBBBBBBBDN',
+  'NLBBBBBBBBWBBBBBBBBDN',
+  'NLBBBBBBBBWBBBBBBBBDN',
+  'NLBBBBBBBWWWBBBBBBBDN',
+  'NLBBBBBBBWWWBBBBBBBDN',
+  'NLBBBBBBBWWWBBBBBBBDN',
+  'NLBWWWWWWWWWWWWWWWBDN',
+  'NLBWWWWWWWWWWWWWWWBDN',
+  'NLBBWWWWWWWWWWWWWBBDN',
+  'NLBBBBWWWWWWWWWBBBBDN',
+  'NLBBBBBWWWWWWWBBBBBDN',
+  'NLBBBBBWWWWWWWBBBBBDN',
+  'NLBBBBWWWWWWWWWBBBBDN',
+  'NLBBBBWWWWBWWWWBBBBDN',
+  'NLBBBBWWBBBBBWWBBBBDN',
+  'NLBBBBWBBBBBBBWBBBBDN',
+  'NLBBBBBBBBBBBBBBBBBDN',
+  'NDDDDDDDDDDDDDDDDDDDN',
+  'NNNNNNNNNNNNNNNNNNNNN'];
+export const EMBLEM_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21 21" shape-rendering="crispEdges">`+
+  [['N','#0b1f4d'],['B','#003399'],['L','#1a4bb0'],['D','#002a80'],['W','#ffffff']].map(([c,f])=>`<path fill="${f}" d="${bitmapPath(EMBLEM_ROWS,c)}"/>`).join('')+'</svg>';
 (function injectIconCSS(){
   const by = {}; for(const [k,v] of Object.entries(ICON_ALIAS)) (by[v] = by[v] || []).push(k);
   const css = Object.entries(PIXEL_ICONS).map(([name, rows])=>{
     const sel = [name, ...(by[name]||[])].map(n=>'.i-'+n).join(',');
     return `${sel}{--m:${svgURL(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" shape-rendering="crispEdges"><path d="${bitmapPath(rows)}"/></svg>`)}}`; });
+  css.push(`.emblem{--m:${svgURL(EMBLEM_SVG)}}`);
   const st = document.createElement('style'); st.textContent = css.join('\n'); document.head.appendChild(st);
 })();
 export function ic(name, cls){ const n = (ICON_ALIAS[name] || PIXEL_ICONS[name]) ? name : 'info';

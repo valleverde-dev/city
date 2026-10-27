@@ -24,7 +24,7 @@ export let rerender = null;
 export function setRerender(f){ rerender = f; }
 export function letter({icon, title, stamp, cls, body, buttons, dock, speaker}){
   notice.className = 'notice'; modal.classList.remove('title');
-  notice.innerHTML = `<div class="letterhead"><div class="org">${t('ui.union')}<i>${t('ui.dg')}</i></div>
+  notice.innerHTML = `<div class="letterhead"><i class="emblem" aria-hidden="true"></i><div class="org">${t('ui.union')}<i>${t('ui.dg')}</i></div>
       ${S ? `<div class="date">${t('ui.dateline', {m:Math.min(S.month, CFG.months)})}</div>` : ''}</div>
     <div class="sheet">${stamp?`<div class="stamp ${cls||'info'}">${stamp}</div>`:''}
     ${speaker?`<div class="speaker">${pxPortrait(speaker)}<div><b>${CHARS[speaker].name}</b><small>${t('char.'+speaker,{town:S.town})}</small></div></div>`:''}
