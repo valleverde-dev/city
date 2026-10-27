@@ -13,7 +13,7 @@
   color-scheme: light;
 }
 *{box-sizing:border-box;}
-.emblem{display:inline-block; flex:0 0 auto; width:42px; height:42px; background:var(--m) center/100% 100% no-repeat; image-rendering:pixelated;}
+.emblem{display:inline-block; flex:0 0 auto; width:48px; height:32px; background:var(--m) center/100% 100% no-repeat; box-shadow:0 0 0 2px var(--navy);}
 [hidden]{display:none !important;}
 html,body{height:100%;}
 body{

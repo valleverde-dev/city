@@ -862,32 +862,11 @@ export const ICON_ALIAS = {
 };
 export function bitmapPath(rows, ch='#'){ let d=''; rows.forEach((r,y)=>{ let x=0; while(x<r.length){ if(r[x]===ch){ const s=x; while(x<r.length && r[x]===ch) x++; d+=`M${s} ${y}h${x-s}v1h${s-x}z`; } else x++; } }); return d; }
 export const svgURL = s => `url("data:image/svg+xml,${encodeURIComponent(s)}")`;
-// The Union's (fictional) emblem: one big white star on European blue. Deliberately not the flag of Europe
-// (no ring of twelve gold stars), so letterheads and the header never pass for the real thing.
-export const EMBLEM_ROWS = [
-  'NNNNNNNNNNNNNNNNNNNNN',
-  'NLLLLLLLLLLLLLLLLLLLN',
-  'NLBBBBBBBBBBBBBBBBBDN',
-  'NLBBBBBBBBWBBBBBBBBDN',
-  'NLBBBBBBBBWBBBBBBBBDN',
-  'NLBBBBBBBWWWBBBBBBBDN',
-  'NLBBBBBBBWWWBBBBBBBDN',
-  'NLBBBBBBBWWWBBBBBBBDN',
-  'NLBWWWWWWWWWWWWWWWBDN',
-  'NLBWWWWWWWWWWWWWWWBDN',
-  'NLBBWWWWWWWWWWWWWBBDN',
-  'NLBBBBWWWWWWWWWBBBBDN',
-  'NLBBBBBWWWWWWWBBBBBDN',
-  'NLBBBBBWWWWWWWBBBBBDN',
-  'NLBBBBWWWWWWWWWBBBBDN',
-  'NLBBBBWWWWBWWWWBBBBDN',
-  'NLBBBBWWBBBBBWWBBBBDN',
-  'NLBBBBWBBBBBBBWBBBBDN',
-  'NLBBBBBBBBBBBBBBBBBDN',
-  'NDDDDDDDDDDDDDDDDDDDN',
-  'NNNNNNNNNNNNNNNNNNNNN'];
-export const EMBLEM_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21 21" shape-rendering="crispEdges">`+
-  [['N','#0b1f4d'],['B','#003399'],['L','#1a4bb0'],['D','#002a80'],['W','#ffffff']].map(([c,f])=>`<path fill="${f}" d="${bitmapPath(EMBLEM_ROWS,c)}"/>`).join('')+'</svg>';
+// The Union's (fictional) emblem: a flag in the proportions of Vietnam's — 3:2, one five-point star in the centre,
+// outer radius 3/10 of the height — but a white star on European blue. Deliberately not the flag of Europe (no ring of
+// twelve gold stars), so the header and the letterheads never pass for the real thing. Vector, so the star stays exact.
+export const EMBLEM_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 20"><rect width="30" height="20" fill="#003399" shape-rendering="crispEdges"/>`+
+  `<polygon fill="#ffffff" points="15.000,4.000 16.347,8.146 20.706,8.146 17.180,10.708 18.527,14.854 15.000,12.292 11.473,14.854 12.820,10.708 9.294,8.146 13.653,8.146"/></svg>`;
 (function injectIconCSS(){
   const by = {}; for(const [k,v] of Object.entries(ICON_ALIAS)) (by[v] = by[v] || []).push(k);
   const css = Object.entries(PIXEL_ICONS).map(([name, rows])=>{

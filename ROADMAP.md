@@ -18,7 +18,7 @@ No gameplay changes: v0.5.1 makes the prototype ready to grow and to be ported.
 ## Since v0.5.1 — title screen
 
 - **Classic title screen**, from the design wireframe: the logo, a vertical menu — *New game* (the case files) · *Continue* · *Settings* (language, music) · *Credits* — and the version and copyright in the bottom corners, over the animated diorama and an avenue of waving flags of Europe. Keyboard: arrows / W-S, Enter, Esc. Replaces the "one-stop shop" panel and the news ticker.
-- **New Union emblem:** one big white star on European blue replaces the portico in the header and on the letterheads. The portico's small icon became a ballot box (municipal land) and ruins (archaeology). The flag of Europe stays scenery only.
+- **New Union emblem:** a flag like Vietnam's in shape and proportions, but a white star on European blue, replaces the portico in the header and on the letterheads. The portico's small icon became a ballot box (municipal land) and ruins (archaeology). The flag of Europe stays scenery only.
 - The version shown comes from `core/config.js` (`VERSION`); the build fails if it differs from `package.json`.
 - Smoke test: 96 checks (menu, its views, keyboard navigation, Continue pre-selected with a save).
 
