@@ -104,8 +104,8 @@ test('meeting the target consolidates the settlement into the world: half the mo
   assert.equal(S.over, null);
   assert.equal(S.region.blocks.length, 1);
   const B = S.region.blocks[0], built = S.grid.map(p => p.st === 'built' ? p.ty : null);
-  // what was built is now part of the world map, at the same place
-  for (let i = 0; i < 4; i++) if (built[i]) assert.equal(S.world.cells[(B.y + Math.floor(i / 2)) * S.world.n + B.x + i % 2], built[i]);
+  // what was built is now part of the map, at the same place
+  for (let i = 0; i < 4; i++) if (built[i]) assert.equal(core.wcode(B.y + Math.floor(i / 2), B.x + i % 2), built[i]);
   assert.ok(S.region.cands.length >= 1 && S.region.cands.length <= 4);
   assert.ok(S.cards.some(c => c.type === 'consolidated'));
   assert.ok(Array.isArray(S.perkChoice) && S.perkChoice.length === 3);
@@ -129,30 +129,60 @@ test('meeting the target consolidates the settlement into the world: half the mo
   assert.equal(S.perks.length + (S.shovel ? 1 : 0), 1);
 });
 
-test('the plots on offer are free land of the world, next to the region', () => {
+test('the plots on offer are new land next to the region, never overlapping', () => {
   for (let k = 1; k < 7; k++) {
     g.newGame(20 + k, k);
     consolidateNow();
-    const S = core.S, Wn = S.world.n;
-    if (S.over) { assert.equal(S.over.why, 'complete'); continue; }
-    assert.ok(S.region.cands.length >= 1, `no plots ${k}`);
-    S.region.cands.forEach((P, j) => {
+    const S = core.S, cs = S.region.cands;
+    assert.ok(cs.length >= 1 && cs.length <= 4, `plots ${k}`);
+    cs.forEach((P, j) => {
       const v = core.attachPreview(j);
       assert.equal(P.n, S.region.next.n);
-      assert.ok(P.x >= 0 && P.y >= 0 && P.x + P.n <= Wn && P.y + P.n <= Wn, `outside the world ${k}/${j}`);
-      assert.ok(S.region.blocks.every(b => !(b.x < P.x + P.n && P.x < b.x + b.n && b.y < P.y + P.n && P.y < b.y + b.n)), `overlap ${k}/${j}`);
+      assert.equal(P.cells.length, P.n * P.n);
+      for (let y = P.y; y < P.y + P.n; y++) for (let x = P.x; x < P.x + P.n; x++) assert.equal(core.wcode(y, x), null, `land already there ${k}/${j}`);
+      assert.ok(cs.every((Q, q) => q === j || !(Q.x < P.x + P.n && P.x < Q.x + Q.n && Q.y < P.y + P.n && P.y < Q.y + Q.n)), `plots overlap ${k}/${j}`);
       assert.ok(v.nb.length >= 1, `touches nothing ${k}/${j}`);
+      if (P.n >= 4) assert.ok(P.cells.includes('regional'), `no road on a ${P.n}×${P.n} plot`);
     });
   }
 });
 
-test('a new settlement is the same land of the world map (terrain continues across plots)', () => {
-  const S = g.newGame(17, 2), A = S.region.active, Wn = S.world.n;
-  const want = { regional: 'regional', flood: 'flood', habitat: 'habitat', village: 'village' };
-  S.grid.forEach((p, i) => { const code = S.world.cells[(A.y + Math.floor(i / A.n)) * Wn + A.x + i % A.n];
-    if (want[code]) assert.equal(p.k, want[code], `parcel ${i}`); else assert.ok(['farm', 'muni'].includes(p.k), `parcel ${i}: ${p.k}/${code}`); });
-  // the world has regional roads that cross it from edge to edge
-  assert.ok(S.world.cells.filter(c => c === 'regional').length >= Wn * 2, 'roads across the world');
+test('the map grows: a new plot continues the roads that reach it, and is the land you then play', () => {
+  let checked = 0;
+  for (let seed = 1; seed <= 20; seed++) {
+    g.newGame(seed, 3); consolidateNow();
+    const S = core.S;
+    S.region.cands.forEach(P => {
+      const n = P.n, at = (r, c) => P.cells[r * n + c];
+      for (let k = 0; k < n; k++) {
+        [[P.y - 1, P.x + k, 0, k], [P.y + n, P.x + k, n - 1, k], [P.y + k, P.x - 1, k, 0], [P.y + k, P.x + n, k, n - 1]].forEach(([y, x, r, c]) => {
+          if (core.wcode(y, x) === 'regional') { checked++; assert.equal(at(r, c), 'regional', `road cut at ${y},${x}`); } });
+      }
+    });
+    S.cards = []; S.perkChoice = null; assert.equal(core.attach(0).ok, true);
+    const A = S.region.active;
+    S.grid.forEach((p, i) => { const code = core.wcode(A.y + Math.floor(i / A.n), A.x + i % A.n);
+      if (['regional', 'flood', 'habitat', 'village'].includes(code)) assert.equal(p.k, code); });
+  }
+  assert.ok(checked > 0, 'some roads reached a new plot');
+});
+
+test('permits are decided by political support, not dice; stubborn owners are known in advance', () => {
+  const S = g.newGame(7, 1);
+  const i = S.grid.findIndex((p, k) => p.k === 'farm' && core.hasAccess(...core.rc(k)) && !p.hold);
+  Object.assign(S.grid[i], { st: 'owned', urban: true }); S.slots = 3;
+  S.local = 20; S.neigh = 55; S.comp = 60;
+  assert.ok(core.support() < CFG.approveAt);
+  assert.equal(core.requestPermit(i, 'road').ok, true); S.cards = [];
+  core.endMonth();
+  assert.equal(S.grid[i].st, 'owned', 'low support: rejected');
+  S.slots = 3; S.local = 75; core.requestPermit(i, 'road'); S.cards = [];
+  core.endMonth();
+  assert.ok(['approved', 'building', 'built'].includes(S.grid[i].st), 'enough support: approved');
+  let held = 0; for (let seed = 1; seed <= 10; seed++) { g.newGame(seed, 2); held += core.S.grid.filter(p => p.hold).length; }
+  assert.ok(held > 0);
+  const T = g.newGame(3, 2), h = T.grid.findIndex(p => p.hold && p.st === 'land');
+  if (h >= 0) { T.slots = 3; T.local = 60; const before = T.funds, price = core.landPrice(T.grid[h]); assert.equal(core.acquire(h).ok, true); assert.equal(Math.round((before - T.funds)*10)/10, price); }
 });
 
 test('the edge counts: the consolidated region gives access and forms combos', () => {
@@ -214,8 +244,9 @@ test('difficulty curve stays in its band (bot, 60 seeded runs per settlement, 60
   assert.equal(rate(0), 1, 'the hamlet is always winnable');
   const r2 = rate(1), r4 = rate(3);
   assert.ok(r2 >= 0.6 && r2 <= 1, `settlement II ${r2}`);
-  assert.ok(r4 >= 0.15 && r4 <= 0.5, `settlement IV ${r4}`);
+  assert.equal(r2, 1, 'settlement II: no luck needed');
+  assert.ok(r4 >= 0.3 && r4 <= 0.7, `settlement IV ${r4}`);
   let tot = 0; for (let s = 1; s <= 60; s++) tot += playOneRun(s, { level: 0, run: true }).settled;
   const avg = tot / 60;
-  assert.ok(avg >= 2 && avg <= 5, `settlements per run ${avg}`);
+  assert.ok(avg >= 2.5 && avg <= 6, `settlements per run ${avg}`);
 });

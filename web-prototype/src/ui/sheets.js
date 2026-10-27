@@ -5,7 +5,7 @@ import { B, BUILD_TYPES, CFG, KIND, on } from '../core/config.js';
 import { DIRECTIVE_ICON } from '../core/directives.js';
 import { residents, taxIncome } from '../core/economy.js';
 import { money } from '../core/format.js';
-import { activeSites, approvalChance, buildCost, buildMonths, caps, contractors, hasAccess, landPrice, permitMonths, plotValue } from '../core/rules.js';
+import { activeSites, approvalChance, approves, support, buildCost, buildMonths, caps, contractors, hasAccess, landPrice, permitMonths, plotValue } from '../core/rules.js';
 import { S, has, pname, r1, rc } from '../core/state.js';
 import { t } from '../i18n/index.js';
 import { centreOn, selected, setSelected } from '../render/camera.js';
@@ -65,7 +65,7 @@ export function cityCard(){
     ${on('jobs') ? row('ui.jobs', t('ui.jobsN',{n:cp.jobs})) : ''}
     ${on('services') ? row('ui.schoolPl', cp.school) + row('ui.health', cp.health) : ''}
     ${row('ui.construction', t('ui.sites',{a:activeSites(), c:contractors()}))}
-    ${on('permits') ? row('ui.odds', Math.round(approvalChance()*100)+'%') : ''}
+    ${on('permits') ? row('ui.odds', `<span style="color:${approves()?'var(--ok)':'var(--bad)'}">${support()}</span> / ${CFG.approveAt}`) : ''}
     ${on('market') ? row('ui.market', Math.round(S.market*100)+'%') : ''}
     ${row('ui.taxes', money(tax)+'/'+t('ui.mo'))}
     ${S.perks.length||S.shovel ? row('ui.perks', S.perks.map(k=>t('perk.'+k)).concat(S.shovel?[t('perk.shovel')]:[]).join(', ')) : ''}</dl>
@@ -144,7 +144,7 @@ export function parcelCard(i){
     if(p.urban && on('market')) a.appendChild(actBtn('sell', t('act.sell',{x:money(plotValue(p))}), S.market<CFG.devMinMarket ? t('act.sellCold') : t('act.sellSub'), ()=>doAction(sellPlot(i),i), !acc || off || S.market<CFG.devMinMarket, 'money'));
   }
   else if(p.st==='review' && !on('permits')) html += `<p>${t('pc.reviewSimple',{b:t('b.'+p.ty), n:p.t})}</p>`;
-  else if(p.st==='review') html += `<p>${t('pc.review',{b:t('b.'+p.ty), n:p.t, o:Math.round(approvalChance()*100)})}</p>`;
+  else if(p.st==='review') html += `<p>${t(approves() ? 'pc.reviewOk' : 'pc.reviewNo',{b:t('b.'+p.ty), n:p.t, o:support(), need:CFG.approveAt})}</p>`;
   else if(p.st==='approved') html += `<p>${t('pc.approved',{b:t('b.'+p.ty)})}</p>`;
   else if(p.st==='building') html += `<p>${t('pc.building',{b:t('b.'+p.ty), n:p.t, x:money(p.mcost)})}${p.halt?' <b style="color:var(--bad)">'+t('pc.halted',{n:p.halt})+'</b>':''}</p>`;
   else if(p.st==='private') html += `<p>${t(p.dev.phase==='permit'?'pc.privPermit':'pc.privBuild',{n:p.dev.t})}${S.market<CFG.devMinMarket?' <b style="color:var(--warn)">'+t('pc.privPaused')+'</b>':''}</p>`;

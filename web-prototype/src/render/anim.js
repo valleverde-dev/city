@@ -1,11 +1,11 @@
 import { activeCombos, discovered } from '../core/combos.js';
-import { buildMonths, hasAccess } from '../core/rules.js';
+import { approves, buildMonths, hasAccess } from '../core/rules.js';
 import { N, S, clamp, idx, rc } from '../core/state.js';
-import { cellPos } from '../core/region.js';
+import { cellPos, wid } from '../core/region.js';
 import { t } from '../i18n/index.js';
-import { H, MAPCX, MAPCY, OX, OY, TH, TW, W, WN, attachSel, ctx, cvs, dpr, isoOf, isoW, rotateCoord, scale, selected, viewRot, worldEl } from './camera.js';
+import { FRX, FRY, H, MAPCX, MAPCY, OX, OY, TH, TW, W, WN, attachSel, ctx, cvs, dpr, isoOf, isoW, rotateCoord, scale, selected, viewRot, worldEl } from './camera.js';
 import { GROUNDS, riverTile, roadTile, skirt, wedgeTile } from './ground.js';
-import { AH, AOX, AOY, AW, OWNER, VEIL, art, computeOwner, drawTile, drawWorldTile, gctx, groundCv, gx, planThing, staticKey, setStaticKey, variant, veil, worldThing } from './map.js';
+import { AH, AOX, AOY, AW, OWNER, VEIL, art, computeOwner, inW, drawTile, drawWorldTile, gctx, groundCv, gx, planThing, staticKey, setStaticKey, variant, veil, worldThing } from './map.js';
 import { C, frac, hsh } from './pixel.js';
 import { ARCH, BUILDINGS, CAR_COLS, P3, billboardSprite, carSprite, cones, fenceSprite, flagSprite, noticeSprite, ruinSprite, siteSprite, spr } from './sprites.js';
 import { modal } from '../ui/cards.js';
@@ -171,13 +171,14 @@ let WORLD_PLAN = [], WORLD_WATER = [], darkCv = null, darkStep = 0, darkStamp = 
 // The static layer: every world cell outside the plot in play (open country and the consolidated region).
 // Rebuilt only when the world, the plot in play or the rotation changes.
 function buildStatic(){
-  const A = S.region.active, key = S.runSeed+':'+(S.world.v||0)+':'+viewRot+':'+(A ? A.x+','+A.y+','+A.n : '-')+':'+S.region.blocks.length;
+  const A = S.region.active, key = S.runSeed+':'+(S.world.v||0)+':'+viewRot+':'+(A ? A.x+','+A.y+','+A.n : '-')+':'+S.region.blocks.length+':'+WN+':'+(S.pending||'')+':'+(S.region.cands||[]).map(P=>P.x+','+P.y).join(';');
   if(key === staticKey) return false;
   computeOwner();
   gctx.setTransform(1,0,0,1,0,0); gctx.clearRect(0,0,AW,AH); gctx.imageSmoothingEnabled = false;
   const order = [];
   for(let R=0;R<WN;R++) for(let C=0;C<WN;C++){
-    if(A && R>=A.y && R<A.y+A.n && C>=A.x && C<A.x+A.n) continue;
+    if(A && R>=OY && R<OY+A.n && C>=OX && C<OX+A.n) continue;   // the plot in play is drawn on top
+    if(!inW(R,C)) continue;                                      // no land there
     const [r2,c2] = rotateCoord(R,C,viewRot); order.push([r2+c2, c2, R*WN+C]); }
   order.sort((a,b)=>a[0]-b[0] || a[1]-b[1]);
   WORLD_WATER = [];
@@ -203,6 +204,7 @@ export function draw(){
   while(i < WORLD_PLAN.length || j < act.length){
     const a = WORLD_PLAN[i], b = act[j];
     if(!b || (a && (a[0] < b[0] || (a[0]===b[0] && a[1] <= b[1])))){ PLAN.push(a[2]); i++; } else { PLAN.push(b[2]); j++; } }
+  comboHighlights();
   drawOrder = order; compose(now); present(); kick();
 }
 export function groundFor(step){ if(!step) return groundCv;
@@ -223,12 +225,51 @@ export function drawEntry(E, T, step, now){
     if(E.s){ const b0 = born.get(E.i);
       if(b0 !== undefined && now - b0 < RISE_MS){ rising = true; if(now < b0){ const cc = variant(E.i+7,3); bl(spr('site31_'+cc, ()=>siteSprite(31,cc)), E.x, E.y, step); }
         else drawRise(E, now - b0, step); }
-      else { if(b0 !== undefined) born.delete(E.i); bl(E.s, E.x, E.y, step); } }
+      else { if(b0 !== undefined) born.delete(E.i);
+        const hl = HL.get(E.i); if(hl) drawHalo(E, hl, T);   // Kairosoft-style: the buildings of a combo glow
+        bl(E.s, E.x, E.y, step);
+        if(hl === 'good') drawSparkles(E, T); } }
     if(E.crane) drawCrane(E, T, step);
     if(!rising) E.fx.forEach(f=>FX[f.k](f, E, T, step));
     if(E.walk && !rising) drawWalkers(E, T, step);
     if(E.sheep) drawSheep(E, T, step);
     if(E.toad) drawToad(E, T, step);
+}
+// ---------- combos, Kairosoft-style: the buildings that form a (discovered) combo get a pulsing outline,
+// gold for good combos (with a few sparkles), red for bad ones ----------
+export let HL = new Map();   // entry id (E.i) → 'good' | 'bad'
+export function comboHighlights(){
+  HL = new Map(); if(!S.region.active) return;
+  const known = discovered(), A = S.region.active;
+  const mark = (id, good) => { if(HL.get(id) !== 'good') HL.set(id, good ? 'good' : 'bad'); };
+  activeCombos().forEach(x=>{ if(!known.includes(x.id)) return;
+    mark(x.i, x.good);
+    if(x.j >= 0) mark(x.j, x.good);
+    else { const f = S.frontier[-1-x.j]; mark(-1 - wid(A.y + f.r, A.x + f.c), x.good); } });   // the neighbour across the edge too
+}
+const HALO = {good:[[255,226,77],[255,160,0]], bad:[[255,150,140],[214,46,40]]};
+// A 2-pixel ring around the sprite's silhouette (inner light, outer strong), cached per sprite and colour
+function haloOf(s, kind){
+  s.halo = s.halo || {}; if(s.halo[kind]) return s.halo[kind];
+  const w = s.c.width, h = s.c.height, src = s.c.getContext('2d').getImageData(0,0,w,h).data;
+  const cv = document.createElement('canvas'); cv.width = w+4; cv.height = h+4;
+  const g = cv.getContext('2d'), img = g.createImageData(w+4, h+4), d = img.data, [inner, outer] = HALO[kind];
+  const solid = (x,y) => x>=0 && y>=0 && x<w && y<h && src[(y*w+x)*4+3] > 60;
+  for(let y=-2;y<h+2;y++) for(let x=-2;x<w+2;x++){ if(solid(x,y)) continue;
+    let near = 9; for(let dy=-2;dy<=2;dy++) for(let dx=-2;dx<=2;dx++){ const m = Math.abs(dx)+Math.abs(dy); if(m<=2 && m<near && solid(x+dx,y+dy)) near = m; }
+    if(near > 2) continue; const c = near===1 ? inner : outer, o = ((y+2)*(w+4)+(x+2))*4; d[o]=c[0]; d[o+1]=c[1]; d[o+2]=c[2]; d[o+3]=255; }
+  g.putImageData(img, 0, 0);
+  return s.halo[kind] = {c:cv, ox:s.ox+2, oy:s.oy+2};
+}
+export function drawHalo(E, kind, T){
+  const o = haloOf(E.s, kind); GX.globalAlpha = 0.55 + 0.45*Math.abs(Math.sin(T*2.6 + (E.i%7)));
+  GX.drawImage(o.c, OX0 + E.x - o.ox, OY0 + E.y - o.oy); GX.globalAlpha = 1; }
+// Little 4-point stars that twinkle around the top of a good combo
+export function drawSparkles(E, T){
+  for(let k=0;k<3;k++){ const ph = frac(T*0.7 + k/3 + hsh(E.i,k,61)); if(ph > 0.45) continue;
+    const a = ph/0.45, sz = a < 0.5 ? 1 : 2 - (a > 0.8 ? 1 : 0);
+    const X = Math.round(OX0 + E.x + (hsh(E.i,k,62)-0.5)*40), Y = Math.round(OY0 + E.y - (E.s.top||14)*(0.35 + hsh(E.i,k,63)*0.75));
+    R(X, Y-sz, 1, 2*sz+1, '#fff7c2'); R(X-sz, Y, 2*sz+1, 1, '#fff7c2'); R(X, Y, 1, 1, '#ffffff'); }
 }
 // The part of the art canvas on screen (art pixels, relative to the map origin), with a margin
 export function viewBox(){ const sc = scale(); return {x0: MAPCX - W/2/sc - 48, x1: MAPCX + W/2/sc + 48, y0: MAPCY - H/2/sc - 40, y1: MAPCY + H/2/sc + 150}; }
@@ -317,7 +358,8 @@ export function drawBorder(){
   ctx.beginPath(); pts.forEach(([x,y],k)=>k ? ctx.lineTo(x,y) : ctx.moveTo(x,y)); ctx.closePath(); ctx.stroke(); ctx.restore();
 }
 // A world rectangle as an iso diamond path
-function plotPath(P){ const pts = [[P.y-0.5,P.x-0.5],[P.y-0.5,P.x+P.n-0.5],[P.y+P.n-0.5,P.x+P.n-0.5],[P.y+P.n-0.5,P.x-0.5]].map(([R,C])=>isoW(R,C));
+function plotPath(P){ const y = P.y-FRY, x = P.x-FRX;   // map → frame coordinates
+  const pts = [[y-0.5,x-0.5],[y-0.5,x+P.n-0.5],[y+P.n-0.5,x+P.n-0.5],[y+P.n-0.5,x-0.5]].map(([R,C])=>isoW(R,C));
   ctx.beginPath(); pts.forEach(([x,y],k)=>k ? ctx.lineTo(x,y) : ctx.moveTo(x,y)); ctx.closePath(); }
 // The consolidated settlements (thin outlines) and, while choosing, the plots on offer (numbered)
 export function drawRegion(){
@@ -328,15 +370,16 @@ export function drawRegion(){
     S.region.cands.forEach((P,k)=>{ const on = k===attachSel;
       plotPath(P); ctx.fillStyle = on ? 'rgba(255,210,0,.38)' : 'rgba(255,210,0,'+(0.10+0.08*Math.sin(ph*Math.PI*2))+')'; ctx.fill();
       ctx.setLineDash(on ? [] : [5,3]); ctx.lineWidth = on ? 2.4 : 1.6; ctx.strokeStyle = on ? '#ffd200' : '#fff3a6'; ctx.stroke();
-      const [cx,cy] = isoW(P.y+(P.n-1)/2, P.x+(P.n-1)/2); bigBadge(cx, cy, String(k+1), on); });
+      const [cx,cy] = isoW(P.y-FRY+(P.n-1)/2, P.x-FRX+(P.n-1)/2); bigBadge(cx, cy, String(k+1), on); });
     if(!pulseTimer) pulseTimer = setTimeout(()=>{ pulseTimer = 0; present(); }, 60);
   }
   ctx.restore();
 }
-export const MARK = {rejected:['✕','#d64545'], event:['!','#e8442e'], toad:['!','#2e7d32'], holdout:['€↑','#d98a00'], paused:['II','#d98a00'], ruin:['!','#6b6b6b'], halt:null};
+export const MARK = {rejected:['✕','#d64545'], event:['!','#e8442e'], toad:['!','#2e7d32'], holdout:['+80%','#d98a00'], paused:['II','#d98a00'], ruin:['!','#6b6b6b'], halt:null};
 export function drawLabels(i){
   const p = S.grid[i], r=Math.floor(i/N), c=i%N, [x,y] = isoOf(r,c);
-  if(p.st==='review') badge(x+10,y-24,t('map.m',{n:p.t}),'#1d3c78');
+  if(p.st==='review') badge(x+10,y-24,t('map.m',{n:p.t}), approves() ? '#1d3c78' : '#d64545');
+  if(p.st==='land' && p.hold && hasAccess(r,c)) badge(x+12,y-10,'+80%','#d98a00');   // only where you would buy
   if(p.st==='approved') badge(x,y-12,t('map.queue'),'#e8762b');
   if(p.st==='building'){ const hh = p.ty==='road' ? 2 : 6 + Math.round((1-p.t/buildMonths(p.ty))*5)*5;
     badge(x-12,y-hh-14, p.halt ? t('map.halt',{n:p.halt}) : t('map.m',{n:p.t}), p.halt ? '#d64545' : '#d0571b'); }
@@ -361,7 +404,6 @@ export function presentNow(){
   ctx.setTransform(k,0,0,k, dpr*(W/2 - MAPCX*s), dpr*(H/2 - MAPCY*s)); ctx.imageSmoothingEnabled = true;
   drawRegion();
   drawBorder();
-  if(S.region.active) drawComboLinks();
   order.forEach(o=>{ if(o[2]>=0) drawLabels(o[2]); });
   if(selected>=0){ const p=S.grid[selected], [x,y]=isoOf(Math.floor(selected/N), selected%N);
     const top = y - (TOPS.get(selected) || 14) - 4;

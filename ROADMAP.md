@@ -6,7 +6,15 @@ Living project document · update it as the prototype evolves. The game design l
 
 **Eurocrat** (working title): a satirical, turn-based roguelike city builder. You are a Brussels programme officer who must deliver a model European town with plenty of money and no power — buy the land, file the permits, survive the neighbours, spend the funds before they expire. Tone and references: *Constructor* (1997), with a hyper-realistic, comic look at how building actually works in contemporary Europe. The plan: validate the loop in the web/iPad prototype, then port to Godot to ship on the App Store and Steam.
 
-## Current status — v0.6.1 (Oct 27, 2026) · one world map
+## Current status — v0.7.0 (Oct 27, 2026) · the map grows with the region, fair rules, glowing combos
+
+Playtest feedback on v0.6.1: the fixed world felt like buying land on a map that already exists, not building a region; the second settlement was too hard and too random; combo links looked odd.
+- **The map grows with the region.** No world in advance: the map is the land the region has. Each new settlement adds land next to it, chosen on the map from four plots (N/E/S/W, in a pinwheel so they never overlap) whose terrain you see before choosing. New land continues the roads and the river that reach it; every plot from 4×4 has its own road and village.
+- **Fair, not random.** Permits are approved if political support ≥ 50 when decided (shown in advance, with warnings); stubborn owners (+80%) are marked from the start instead of raising prices at random. The bot now passes settlement II every time; III ~59%, IV ~54%; runs average ~4.1 settlements.
+- **Combos glow, Kairosoft-style:** a pulsing gold outline with sparkles (good) or red outline (bad) around the buildings of a combo, instead of dotted links.
+- Tests: 16 rules tests, 107 browser checks.
+
+## Previous — v0.6.1 (Oct 27, 2026) · one world map
 
 Playtest feedback on v0.6: joining settlements as separate maps felt wrong, and the new territory did not respect the original map (each settlement was generated as a fresh, rotated site and only a strip of its neighbour was shown). v0.6.1 does it the *Cities: Skylines 2* way:
 - **One world map per run** (48×48): regional roads from edge to edge, a river, woods and wetlands, old villages. Land you do not own is veiled.
@@ -87,7 +95,7 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 
 ## Next steps
 
-1. Playtest v0.6: how long a run feels, whether the side choice is understood, tune the 30% target step and the 50% carry-over.
+1. Playtest v0.7: is settlement II fair now, is support easy to read, does the growing map feel right? Tune the 30% target step, the 50% carry-over and debt between settlements (most bot runs end in bankruptcy).
 2. Cross-border events between settlements of the region (a joint Interreg project, a border dispute, a shared hospital) and more settlement types and region combos.
 3. Member states with their own rule quirks (each settlement already has one): a bureaucracy per country.
 4. Turn player actions into cards too (favours, consultants, dirty tricks)?

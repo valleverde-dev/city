@@ -3,9 +3,9 @@ import { residents } from '../core/economy.js';
 import { newGame } from '../core/newgame.js';
 import { buildMonths } from '../core/rules.js';
 import { N, NB, NB8, S, clamp, idx, inside, rc, setSide } from '../core/state.js';
-import { worldIndex } from '../core/region.js';
+import { wid, worldIndex } from '../core/region.js';
 import { LAMPS, WATER } from './anim.js';
-import { OX, OY, TH, TW, W, WN, isoOf, isoW, resize, rotateCoord, selected, setCam, setWorld, viewRot } from './camera.js';
+import { FRX, FRY, OX, OY, TH, TW, W, WN, isoOf, isoW, resize, rotateCoord, selected, setCam, setWorld, viewRot } from './camera.js';
 import { GROUNDS, ground, ring, riverTile, roadTile, skirt, wedgeTile } from './ground.js';
 import { C, hsh } from './pixel.js';
 import { ARCH, BUILDINGS, P3, archOf, archW, billboardSprite, colourOf, colourW, cones, fenceSprite, flagSprite, noticeSprite, ruinSprite, siteSprite, spr } from './sprites.js';
@@ -21,28 +21,40 @@ let canvasWN = 0;
 export let staticKey = '';
 export function invalidateStatic(){ staticKey = ''; }
 export function setStaticKey(k){ staticKey = k; }
-// The art canvases hold the whole world; the view is pointed at the plot in play (the core only knows the grid)
+// The art canvases hold all the land there is (and, while choosing, the plots on offer); the view is pointed at the plot in play
+let CAND = {};   // "y,x" → terrain code of the plots on offer
 export function setMapSize(){
-  const Wn = S && S.world ? S.world.n : CFG.worldN, A = S && S.region && S.region.active;
-  setWorld(Wn, A ? A.x : OX, A ? A.y : OY);
+  const A = S && S.region && S.region.active, cands = S && S.pending==='attach' ? (S.region.cands||[]) : [];
+  CAND = {}; cands.forEach(P=>P.cells.forEach((c,i)=>{ CAND[(P.y+Math.floor(i/P.n))+','+(P.x+i%P.n)] = c; }));
+  const all = S && S.region ? [...S.region.blocks, ...(A ? [A] : []), ...cands] : [];
+  const x0 = all.length ? Math.min(...all.map(b=>b.x)) : 0, y0 = all.length ? Math.min(...all.map(b=>b.y)) : 0;
+  const x1 = all.length ? Math.max(...all.map(b=>b.x+b.n)) : 2, y1 = all.length ? Math.max(...all.map(b=>b.y+b.n)) : 2;
+  const Wn = Math.max(x1-x0, y1-y0) + 2, fx = x0 - 1, fy = y0 - 1;   // a one-cell margin all round
+  setWorld(Wn, A ? A.x - fx : OX, A ? A.y - fy : OY, fx, fy);
   if(canvasWN !== Wn){ AW = Wn*TW + 32; AOX = AW/2; AOY = 112; AH = AOY + (Wn-1)*TH + TH/2 + 20;
     art.width = AW; art.height = AH; groundCv.width = AW; groundCv.height = AH; canvasWN = Wn; }
   staticKey = '';
   if(A){ const [x,y] = isoOf((N-1)/2, (N-1)/2); setCam(x, y); }
   if(W) resize();
 }
-// Start a run and fit the map canvases to its world
+// Start a run and fit the map canvases to its land (the core only knows the grid, not the canvas)
 export function startSite(seed, stage){ newGame(seed, stage); setMapSize(); }
-// ---------- world coordinates: the plot in play is S.grid, everything else is S.world ----------
-// local parcel index of world cell (R,C), or -1 (outside the plot in play, or no plot in play)
+// ---------- frame coordinates: the plot in play is S.grid, the rest of the land is S.world (+ plots on offer) ----------
+// local parcel index of frame cell (R,C), or -1 (outside the plot in play, or no plot in play)
 export const localAt = (R,C) => { if(!S.region || !S.region.active) return -1; const r = R-OY, c = C-OX; return inside(r,c) ? idx(r,c) : -1; };
-export const inW = (R,C) => R>=0 && C>=0 && R<WN && C<WN;
-export const codeW = (R,C) => inW(R,C) ? S.world.cells[R*WN + C] : null;
+// terrain / building code of frame cell (R,C), or null where there is no land
+export const codeW = (R,C) => { const k = (R+FRY)+','+(C+FRX), w = S.world.cells[k]; return w !== undefined ? w : (CAND[k] !== undefined ? CAND[k] : null); };
+export const isCand = (R,C) => S.world.cells[(R+FRY)+','+(C+FRX)] === undefined && CAND[(R+FRY)+','+(C+FRX)] !== undefined;
+export const inW = (R,C) => R>=0 && C>=0 && R<WN && C<WN && codeW(R,C) !== null;
+export const widF = (R,C) => wid(R+FRY, C+FRX);
 export const roadCode = x => x==='road' || x==='regional';
 export function roadW(R,C){ const i = localAt(R,C); if(i>=0){ const q = S.grid[i]; return q.ty==='road' && (q.st==='built' || q.k==='regional'); } return roadCode(codeW(R,C)); }
 export function floodW(R,C){ const i = localAt(R,C); if(i>=0) return S.grid[i].k==='flood'; return codeW(R,C)==='flood'; }
+// No land in front of (R,C), on screen: the earth slab shows there
+export function edges(R,C){ const [r2,c2] = rotateCoord(R,C,viewRot), back = (a,b)=>{ const [o0,o1] = rotateCoord(a,b,4-viewRot); return inW(o0,o1); };
+  return [!back(r2+1,c2), !back(r2,c2+1)]; }
 // Looks come from the WORLD cell and the run seed, so a parcel looks the same before, during and after its settlement
-export const variantW = (wi, n) => Math.floor(hsh(wi, S.runSeed & 0xffff, 77) * n);
+export const variantW = (wi, n) => Math.floor(hsh(wi, S.runSeed & 0xffff, 77) * n);   // wi: wid() of a map cell
 export const variant = (i, n) => variantW(worldIndex(i), n);
 // Which screen directions (NE/SE/SW/NW bits) connect to a matching neighbour, in the current rotation (world coordinates)
 export function connMask(R,C,match,offMap,diag){ const [r2,c2]=rotateCoord(R,C,viewRot); let m=0;
@@ -81,8 +93,9 @@ export function drawTile(i){
   const p = S.grid[i], r=Math.floor(i/N), c=i%N, [x,y] = isoOf(r,c), [r2,c2] = rotateCoord(r+OY,c+OX,viewRot);
   const [k, make] = groundKey(i); gblit(spr('g:'+k, make), x, y);
   const wm = wedgeMask(r+OY,c+OX); if(wm) gblit(spr('wedge'+wm, ()=>wedgeTile(wm)), x, y);
-  if(r2===WN-1) gblit(spr('skirtL', ()=>skirt('L')), x, y);
-  if(c2===WN-1) gblit(spr('skirtR', ()=>skirt('R')), x, y);
+  const [eL, eR] = edges(r+OY, c+OX);
+  if(eL) gblit(spr('skirtL', ()=>skirt('L')), x, y);
+  if(eR) gblit(spr('skirtR', ()=>skirt('R')), x, y);
   const over = [];
   if(p.st==='owned' || p.st==='review' || p.st==='approved') over.push(spr('ringOwned', ()=>ring(C('#1d3c78'),0.05,true)));
   if(i===selected) over.push(spr('ringSel', ()=>ring(C('#ffd23f'),0.06,false)));
@@ -124,10 +137,12 @@ export function planThing(i){
 export const VEIL = 0.42, veil = () => spr('veil', ()=>ground(()=>C('#1d3c78')));
 const GROUND_OF = {housing:'plaza', clinic:'plaza', factory:'yard', school:'school', park:'park', village:'village', habitat:'habitat', muni:'muni'};
 export let OWNER = null;   // per world cell: index of the consolidated settlement it belongs to, or -1
+// per frame cell: index of the consolidated settlement it belongs to, -2 for a plot on offer, -1 otherwise
 export function computeOwner(){ OWNER = new Int16Array(WN*WN).fill(-1);
-  S.region.blocks.forEach((B,k)=>{ for(let y=B.y;y<B.y+B.n;y++) for(let x=B.x;x<B.x+B.n;x++) if(inW(y,x)) OWNER[y*WN+x] = k; }); }
-export function drawWorldTile(wi, water){
-  const R = Math.floor(wi/WN), Cc = wi%WN, code = S.world.cells[wi], [x,y] = isoW(R,Cc), [r2,c2] = rotateCoord(R,Cc,viewRot), v = variantW(wi,3);
+  for(let R=0;R<WN;R++) for(let C=0;C<WN;C++) if(isCand(R,C)) OWNER[R*WN+C] = -2;
+  S.region.blocks.forEach((B,k)=>{ for(let y=B.y;y<B.y+B.n;y++) for(let x=B.x;x<B.x+B.n;x++){ const R = y-FRY, C = x-FRX; if(R>=0 && C>=0 && R<WN && C<WN) OWNER[R*WN+C] = k; } }); }
+export function drawWorldTile(fi, water){
+  const R = Math.floor(fi/WN), Cc = fi%WN, code = codeW(R,Cc), wi = widF(R,Cc), [x,y] = isoW(R,Cc), v = variantW(wi,3);
   let s, k = '';
   if(roadCode(code)){ const m = connMask(R,Cc,roadW,(dr,dc)=>code==='regional',true); k = 'road'+m+(code==='regional'?'R':''); s = spr('g:'+k, ()=>roadTile(m, code==='regional')); }
   else if(code==='flood'){ const m = connMask(R,Cc,floodW,offRoad); k = 'river'+m; s = spr('g:'+k, ()=>riverTile(m)); }
@@ -136,15 +151,16 @@ export function drawWorldTile(wi, water){
   else { const g = GROUND_OF[code] || 'grass'; s = spr('g:'+g+v, ()=>GROUNDS[g](v)); }
   gblit(s, x, y);
   const wm = wedgeMask(R,Cc); if(wm) gblit(spr('wedge'+wm, ()=>wedgeTile(wm)), x, y);
-  if(r2===WN-1) gblit(spr('skirtL', ()=>skirt('L')), x, y);
-  if(c2===WN-1) gblit(spr('skirtR', ()=>skirt('R')), x, y);
-  const wild = OWNER[wi] < 0;
-  if(wild){ gctx.globalAlpha = VEIL; gblit(veil(), x, y); gctx.globalAlpha = 1; }   // open country: not yours (yet)
-  if(k.startsWith('river')) water.push({x, y, m:k.slice(5)|0, over:[], veil:wild});
+  const [eL, eR] = edges(R,Cc);
+  if(eL) gblit(spr('skirtL', ()=>skirt('L')), x, y);
+  if(eR) gblit(spr('skirtR', ()=>skirt('R')), x, y);
+  const offer = OWNER[fi] === -2;
+  if(offer){ gctx.globalAlpha = VEIL; gblit(veil(), x, y); gctx.globalAlpha = 1; }   // land on offer: not yours yet
+  if(k.startsWith('river')) water.push({x, y, m:k.slice(5)|0, over:[], veil:offer});
 }
-export function worldThing(wi){
-  const R = Math.floor(wi/WN), Cc = wi%WN, code = S.world.cells[wi], [x,y] = isoW(R,Cc), [r2,c2] = rotateCoord(R,Cc,viewRot);
-  const E = {i:-1-wi, x, y, s:null, fx:[], walk:null, kids:false, cars:null, lamp:null, sheep:0, toad:false, crane:null, ghost: OWNER[wi] < 0};
+export function worldThing(fi){
+  const R = Math.floor(fi/WN), Cc = fi%WN, code = codeW(R,Cc), wi = widF(R,Cc), [x,y] = isoW(R,Cc), [r2,c2] = rotateCoord(R,Cc,viewRot);
+  const E = {i:-1-wi, x, y, s:null, fx:[], walk:null, kids:false, cars:null, lamp:null, sheep:0, toad:false, crane:null, ghost: OWNER[fi] === -2};
   if(ARCH[code]){ const A = archW(wi, code), v = colourW(wi);
     E.s = spr(code+':'+A.id+':'+v, ()=>A.make(v)); E.fx = typeof A.fx==='function' ? A.fx(v) : (A.fx || []); E.walk = A.walk || null; E.kids = !!A.kids; }
   else if(code==='village'){ const v = variantW(wi,4); E.s = spr('village'+v, ()=>BUILDINGS.village(v)); }

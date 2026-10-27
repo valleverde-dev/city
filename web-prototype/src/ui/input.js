@@ -4,7 +4,7 @@ import { endMonth } from '../core/month.js';
 import { S } from '../core/state.js';
 import { LANG } from '../i18n/index.js';
 import { draw, present, startNight } from '../render/anim.js';
-import { centreOn, cvs, keepVisible, panBy, resize, selected, setSelected, setViewRot, tileAt, tileAtW, viewRot, worldEl, zoom, zoomAt } from '../render/camera.js';
+import { FRX, FRY, centreOn, cvs, keepVisible, panBy, resize, selected, setSelected, setViewRot, tileAt, tileAtW, viewRot, worldEl, zoom, zoomAt } from '../render/camera.js';
 import { modal, showNext } from './cards.js';
 import { $, flushFx } from './dom.js';
 import { refresh } from './guide.js';
@@ -39,7 +39,8 @@ export function up(e){
   if(wasSingle && !dragged && downAt && S && S.pending==='attach'){
     // choosing the next plot: tap one of the numbered plots
     const r = cvs.getBoundingClientRect(), w = tileAtW(e.clientX-r.left, e.clientY-r.top);
-    const k = w ? S.region.cands.findIndex(P=>w[0]>=P.y && w[0]<P.y+P.n && w[1]>=P.x && w[1]<P.x+P.n) : -1;
+    const y = w ? w[0]+FRY : 0, x = w ? w[1]+FRX : 0;   // frame → map coordinates
+    const k = w ? S.region.cands.findIndex(P=>y>=P.y && y<P.y+P.n && x>=P.x && x<P.x+P.n) : -1;
     if(k >= 0) selectPlot(k);
   }
   else if(wasSingle && !dragged && downAt){

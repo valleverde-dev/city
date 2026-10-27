@@ -12,7 +12,7 @@ import { S } from './state.js';
 //    events: crisis cards · directives · neigh/comp: neighbours and compliance meters · services: school + health
 //    lose: you can actually lose · milestones: use-it-or-lose-it · market: developers, property market
 // =====================================================================
-export const VERSION = '0.6.1';   // keep in step with package.json (the build checks it)
+export const VERSION = '0.7.0';   // keep in step with package.json (the build checks it)
 export const BASE_F = {access:1, permits:1, local:1, jobs:1, combos:1, holdout:1};
 export const FULL_F = {...BASE_F, rustic:1, events:1, directives:1, neigh:1, comp:1, services:1, lose:1};
 export const LEVELS = [
@@ -42,6 +42,7 @@ export const CFG = {
   taxShare: 0.5, taxPerFactory: 0.25, taxPerResident: 0.0008,
   loanStep: 5, debtCap: 35, interest: 0.02,
   worldN: 48,                              // the world map is worldN × worldN parcels (3×3 plots of 16×16)
+  approveAt: 50,                           // a permit is approved if political support is at least this when it is decided
   keepShare: 0.5,                          // share of unspent funds a consolidated settlement keeps (the rest goes back to Brussels)
   dividendShare: 0.5,                      // a consolidated settlement pays the region half of the taxes it paid while in play
 };

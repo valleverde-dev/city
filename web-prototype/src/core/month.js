@@ -6,7 +6,7 @@ import { rollEvent } from './events.js';
 import { money } from './format.js';
 import { consolidate, snapshot } from './newgame.js';
 import { recordRun, save } from './persist.js';
-import { activeSites, approvalChance, buildCost, buildMonths, bump, caps, contractors, count, fx, log, slotsPerMonth, spend } from './rules.js';
+import { activeSites, approvalChance, approves, buildCost, buildMonths, bump, caps, contractors, count, fx, log, slotsPerMonth, spend } from './rules.js';
 import { S, clamp, has, pname, r1, ri, rnd } from './state.js';
 
 export function endMonth(){
@@ -16,13 +16,13 @@ export function endMonth(){
   S.grid.forEach((p,i)=>{
     if(p.st!=='review') return;
     if(--p.t > 0) return;
-    if(rnd() < approvalChance()){ p.st='approved'; p.q = ++S.qseq; log('log.approved', {b:p.ty, at:pname(i)}, 'good'); fx(i,'fx.approved',{},'good'); }
+    if(approves()){ p.st='approved'; p.q = ++S.qseq; log('log.approved', {b:p.ty, at:pname(i)}, 'good'); fx(i,'fx.approved',{},'good'); }
     else { const r = Math.floor(rnd()*N_REJECTIONS); log('log.rejected', {b:p.ty, r}, 'bad'); fx(i,'fx.rejected',{},'bad');
       p.st='owned'; p.ty=null; p.flag={k:'rejected', until:S.month+1}; }
   });
   // 2. The urban plan (rezoning)
   if(S.plan && --S.plan.t <= 0){
-    const ok = rnd() < Math.min(0.97, approvalChance()+0.05);
+    const ok = approves(5);
     if(ok){ let n=0; S.plan.list.forEach(i=>{ const p=S.grid[i]; if(['owned','review','approved','building','built'].includes(p.st) && p.k!=='habitat'){ p.urban=true; n++; fx(i,'fx.urban',{},'good'); } });
       S.cards.push({type:'notice', char:'mayor', icon:'map', key:'plan.ok', p:{n}, stamp:'stamp.approved', cls:'ok', sfx:'stamp'}); log('log.planApproved',{n},'good'); }
     else { S.cards.push({type:'notice', char:'mayor', icon:'map', key:'plan.no', p:{r:Math.floor(rnd()*N_REJECTIONS)}, stamp:'stamp.rejected', cls:'bad', sfx:'fail'}); log('log.planRejected',{},'bad'); }

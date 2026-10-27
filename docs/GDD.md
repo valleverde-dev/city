@@ -1,6 +1,6 @@
 # EUROCRAT — Game Design Document
 
-*Living document. v0.6.1 · Oct 27, 2026. Working title. Available in English and Spanish.*
+*Living document. v0.7 · Oct 27, 2026. Working title. Available in English and Spanish.*
 
 > Every city builder is a dictatorship: you click, a house appears, people move in.
 > **Eurocrat** asks what building a new town would *really* take in contemporary Europe —
@@ -22,12 +22,13 @@ References: *Constructor* (1997) for the humour, characters and dirty tricks; *I
 
 **Programme Officer, DG HUF.** Not a mayor, not a god. You can buy land, file paperwork, lobby, consult and report. You cannot simply build: every building needs land, a permit, contractors and time — and someone has to want to live there.
 
-## 4. The Euroregion: one run, one region that grows on one map
+## 4. The Euroregion: one run, one region, one map that grows with it
 
-v0.5 had four separate levels, which played like a campaign rather than a roguelike. In v0.6 **a run is a single Euroregion** that grows, and in v0.6.1 it grows **on one world map**, like buying map tiles in *Cities: Skylines 2*.
+v0.5 had four separate levels, which played like a campaign rather than a roguelike. Since v0.6 **a run is a single Euroregion** that grows. In v0.7 **the map grows with it**: there is no map waiting to be bought. The map is only the land the region has. Every new settlement **adds land onto the map**, next to the region, and you choose where, directly on the map. (v0.6.0 generated each settlement as a separate site; v0.6.1 tried a fixed *Cities: Skylines*-style world. Neither felt right.)
 
-- **The world** is generated at the start of the run: 48×48 parcels of open country. Regional roads cross it from edge to edge, a river runs from north to south (the roads cross it on bridges), and there are woods and wetlands (protected habitats) and old villages along the roads. The land you do not own yet is shown under a blue veil.
-- The run starts with a **2×2 hamlet** next to a regional road, near the middle of the map. Every time a settlement meets its target it is **consolidated**, and the next, bigger one is **acquired next to the region**: 4×4, 8×8, 16×16, then 16×16 again and again, each with a higher target. Any failure ends the run. If no free land is left next to the region, the Euroregion is **complete** (a win; it takes about 7 settlements).
+- The run starts with a **2×2 hamlet**: four parcels floating on the cadastral grid.
+- Every time a settlement meets its target it is **consolidated**, and you add the next, bigger one: 4×4, 8×8, 16×16, then 16×16 again and again, each with a higher target. Any failure ends the run. There is no size limit.
+- **New land continues the old one.** A regional road that reaches the edge of the region goes on across the new plot, and so does the river. Each plot from 4×4 up also brings its own regional road if none arrives, so there is always a way in. From 8×8 up it can also have a river, woods and wetlands (protected), and every plot from 4×4 has an old village by its road.
 
 | Settlement | Plot | Goal | New rules | Can you lose? |
 |---|---|---|---|---|
@@ -42,20 +43,27 @@ v0.5 had four separate levels, which played like a campaign rather than a roguel
 - It keeps paying the region **half of the taxes it paid in play** (the regional dividend, added to every later month).
 - **Brussels recovers 50% of the unspent funds**; the other half comes with you, on top of the next grant. Debt also comes with you.
 - Then you get a **perk** (1 of 3). Perks last for the whole run.
-- Finally you **choose the land of the next settlement on the map.** Up to four plots are offered, highlighted and numbered: the four sides of the settlement you just finished (centred on it, pushed further out if something is in the way), or other free spots next to the region if those do not fit. Tap one (on the map or in the list), see what it borders and what is on it (roads, river, villages, protected land), and acquire it.
+- Finally you **choose where the new land goes, on the map.** Four plots are offered around the settlement you just finished, with their terrain already visible under a blue veil and numbered: north, east, south and west, in a pinwheel so they never overlap (each flush with a different corner, pushed further out if something is in the way). Tap one (on the map or in the list), see what it borders and what is on it (road, river, village, protected land), and acquire it: that land joins the map.
 
 **Settlement types.** Every new settlement has a random type with its own trait: Farming town (land −25%), Industrial town (+80 jobs, neighbours −1/month), Commuter town (+60 homes), Spa town (faster move-ins, +taxes), University town (+200 school places, +taxes), Historic town (Mayor +1/month, permits +1 month), Logistics hub (+50 jobs, +taxes, neighbours −1/month). The first settlement is always a Hamlet.
 
 **Where you attach matters, twice:**
 1. **Region combos** between the type of the new settlement and the type of each settlement it touches. Good ones include Commuter Belt (commuter + industrial), Technology Transfer, Heritage Trail, Farm to Table, Campus Town, Freight Hub, Market Town and Rural Roots. Bad ones include Smokestack View (industrial + spa), Lorries in the Old Town, Slurry Season (farming + commuter), Rust Belt (two industrial towns), Sleeper Sprawl, Freshers' Week and The Hamlet Objects. They are **discovered** like building combos: the attach card shows "region combo?" until you have seen one. The catalogue persists between runs.
-2. **The edge is real.** The world parcels around your plot are its neighbours. Regional roads, villages, any built land and the streets of the consolidated region **give access**, and they **form ordinary adjacency combos** with what you build on your side: their factory next to your housing is still "Smoke in the Living Room".
-3. **The land itself.** A plot with a regional road on it is easy to reach; one with the river has flood land (and riverside parks); woods and wetlands cannot be built on.
+2. **The edge is real.** The parcels of the region around your plot are its neighbours. Regional roads, villages, any built land and the streets of the consolidated region **give access**, and they **form ordinary adjacency combos** with what you build on your side: their factory next to your housing is still "Smoke in the Living Room".
+3. **The land itself.** Where the road runs, where the river and the woods are: you see it before you choose.
 
 - Every settlement opens with a **settlement card** (its type, its region combos, the goal and "what is new") and, up to settlement IV, the **guide**.
 - Rules that are not in play are **invisible**: no meter, tab or button for them.
 - In settlements I–II you cannot order works you cannot pay for (money already promised to works is reserved), so there is no debt and no loan.
 - **Between runs:** the combo catalogue (buildings and region) and the **records** (most settlements consolidated, largest Euroregion population). The title screen shows the best Euroregion.
-- **Difficulty curve.** A greedy test bot plays 150 seeded runs and picks the plot with the best known region combos. Settlements consolidated per run: 1 → 19% · 2 → 35% · 3 → 15% · 4 → 7% · 5 → 15% · 6 → 7% · 7 → 1%. That is an average of about 2.9 (1% complete the map). Starting a settlement directly, with no perks: I 100% · II ~82% · III ~46% · IV ~36%.
+- **Difficulty curve.** A greedy test bot plays 150 seeded runs. Settlements consolidated per run: 2 → 24% · 3 → 17% · 4 → 17% · 5 → 18% · 6 → 16% · 7+ → 8%, an average of about 4.1; most runs end in bankruptcy in the 16×16 settlements (debt carries over). Starting a settlement directly, with no perks: I 100% · II 100% · III ~59% · IV ~54%.
+
+### Fair, not random (v0.7)
+
+Playtest: the second settlement felt impossible and depended on luck (the bot averaged 3.6 rejected permits and 2 farmers raising prices per game). Now:
+- **Permits are decided by political support, not dice.** Support (0–100) comes from the Mayor, the neighbours and compliance. A permit is approved if support is at least **50** when it is decided. The parcel sheet, the map badge (red) and the bell warn you in advance, and you can lobby or consult in time.
+- **Stubborn owners are known from the start.** About a quarter of the farmland belongs to owners who ask 80% more; their parcels are marked "+80%" on the map (where you could build) and their price already includes it. No surprise raises, no lost actions.
+- Randomness stays where it is fun and visible: event cards (each a choice), directives, the market.
 
 ## 5. Core loop
 
@@ -104,7 +112,7 @@ A real new town is not paid for by grants alone; it is paid for by **turning far
 - **Bridge loans**: running out of money no longer ends the game. The regional bank lends in €5M steps at 2%/month; above €35M of debt it pulls the plug.
 - **Use it or lose it**, softened: a warning 3 months before each milestone, and only half of the shortfall is decommitted.
 
-### Combos (v0.4, Kairosoft-style)
+### Combos (v0.4, Kairosoft-style; v0.7 highlight)
 
 Buildings next to each other (8 neighbours) form **combos** — and some combos are bad. Effects apply per pair and are shown on the map as green (good) or red (bad) dotted links.
 
@@ -211,7 +219,7 @@ Pixel-art frame in the imagery of a (fictional) Union portal: pixel fonts for ti
 - **Full-screen map.** Top bar: month, funds, residents, agenda slots, a **bell** with the number of problems, language, music, menu. Meters appear only when their rule is in play (one compact row on phones; tap one for what it means and why it moved).
 - **Bottom tab bar:** Agenda · Town · **End month** · Inbox · Combos. Each opens a **sheet** on demand (bottom sheet on phones, floating card on the left on iPad/PC); tapping a parcel opens its sheet and nudges the map so the parcel stays visible.
 - Directive pill on the map; the mayor's guide bubble; event cards, notices and combos in the **centre of the screen**.
-- **The map is the whole Euroregion**: the world you do not own is under a blue veil, the consolidated settlements have a thin white outline, and a dashed yellow line marks the plot in play. Zoom out to see the whole world. While choosing the next plot, the candidates are highlighted and numbered on the map and listed in a sheet (what each one borders, its region combos, what is on the land); a region minimap also appears in the Town sheet and on the consolidation and end-of-run cards.
+- **The map is the whole Euroregion**, and only that: it grows with every settlement. Consolidated settlements have a thin white outline, and a dashed yellow line marks the plot in play. Zoom out to see it all. **Combos glow, Kairosoft-style:** the buildings of a discovered combo get a pulsing outline, gold with sparkles for good combos and red for bad ones, including the neighbour's building across the edge. While choosing the next plot, the candidates are highlighted and numbered on the map and listed in a sheet (what each one borders, its region combos, what is on the land); a region minimap also appears in the Town sheet and on the consolidation and end-of-run cards.
 - **Title screen:** a full-screen scene — an animated diorama of the model town over an avenue of waving flags of the Union — with the logo and a classic vertical menu: **New Euroregion** (starts a run from the 2×2 hamlet; shows the best Euroregion so far) · **Continue** (disabled with no save, pre-selected when there is one) · **Settings** (language, music) · **Credits** (author, music and font rights, a satire disclaimer). Version bottom-left, copyright bottom-right. Arrow keys / W-S move, Enter picks, Esc goes back. The design canvas holds the reference mockups of the four views.
 
 ## 15. Controls (iPad first)

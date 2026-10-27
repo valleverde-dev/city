@@ -5,7 +5,7 @@ import { loadSave, records, save } from '../core/persist.js';
 import { N, S, clamp, setState } from '../core/state.js';
 import { LANG, setLanguage, t } from '../i18n/index.js';
 import { FX, GX, MOTION, OX0, OY0, RISE_MS, bl, disc, drawBirds, drawCrane, drawEntry, drawRise, drawWalkers, unionFlag, kick, setPainter } from '../render/anim.js';
-import { TH, TW, centreOn, clampCam, defaultZoom, frameBox, isoOf, resize, setAttachSel, worldEl, setCam, setSelected, setViewRot, setZoom } from '../render/camera.js';
+import { TH, TW, centreOn, clampCam, defaultZoom, frameBox, FRX, FRY, isoOf, resize, setAttachSel, worldEl, setCam, setSelected, setViewRot, setZoom } from '../render/camera.js';
 import { GROUNDS, riverTile, roadTile, skirt } from '../render/ground.js';
 import { gx, setMapSize, startSite } from '../render/map.js';
 import { C, dith, frac, hsh, sh } from '../render/pixel.js';
@@ -293,9 +293,10 @@ export function setLang(l){
 export function frameView(){ resize();
   // choosing the next plot: show the whole region and the plots on offer
   if(S.pending==='attach' && S.region.cands && S.region.cands.length){ const all = [...S.region.blocks, ...S.region.cands];
-    const sh = $('sheet'), wr = worldEl.getBoundingClientRect(), sr = sh.hidden ? null : sh.getBoundingClientRect();
-    const side = sr && sr.width < wr.width*0.8, left = side ? sr.right - wr.left : 0, bottom = sr && !side ? Math.max(0, wr.bottom - sr.top) : 0;
-    frameBox(Math.min(...all.map(b=>b.x)), Math.min(...all.map(b=>b.y)), Math.max(...all.map(b=>b.x+b.n)), Math.max(...all.map(b=>b.y+b.n)), left, Math.min(bottom, wr.height*0.6)); return; }
+    // the sheet's layout size (not its on-screen rect: it may still be sliding in)
+    const sh = $('sheet'), wr = worldEl.getBoundingClientRect(), on = !sh.hidden, sw = sh.offsetWidth, shh = sh.offsetHeight;
+    const side = on && sw < wr.width*0.8, left = side ? sh.offsetLeft + sw : 0, bottom = on && !side ? Math.min(shh, wr.height) : 0;
+    frameBox(Math.min(...all.map(b=>b.x))-FRX, Math.min(...all.map(b=>b.y))-FRY, Math.max(...all.map(b=>b.x+b.n))-FRX, Math.max(...all.map(b=>b.y+b.n))-FRY, left, Math.min(bottom, wr.height*0.6)); return; }
   setZoom(defaultZoom()); const [x,y] = isoOf((N-1)/2, (N-1)/2); setCam(x, y); clampCam(); }
 // A new Euroregion (or, for tests and the balance bot, a run that starts at settlement `stage`)
 export function startNew(seed, stage = 0){ hideCover(); startSite(seed, stage); enterSettlement(); }

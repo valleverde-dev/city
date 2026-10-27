@@ -12,14 +12,15 @@ Web prototype playable on iPad, iPhone and desktop; a Godot port is planned for 
 - Plan and status: [ROADMAP.md](ROADMAP.md)
 - Code organisation: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
-## How to play (v0.6.1)
+## How to play (v0.7)
 
 - A run is one **Euroregion**. It starts with a 2×2 hamlet; each settlement has a resident target and a deadline. The settlement card and the mayor's guide tell you what to do.
 - Each turn is **one month**. Tap a parcel to buy it or build on it; press **End month** to let time pass.
 - People only move in if there is what they need (homes; from settlement II, jobs; from settlement III, school and health care).
-- Everything happens on **one world map**. Meet the target and the settlement is **consolidated**: you pick a perk and **choose the land of the next one on the map** (4×4, 8×8, 16×16, then 16×16 with higher targets). Fail once and the run is over; fill the map and the Euroregion is complete.
+- The map grows with the region. Meet the target and the settlement is **consolidated**: you pick a perk and **choose, on the map, where the new land goes** (4×4, 8×8, 16×16, then 16×16 with higher targets); roads and rivers carry on into it. Fail once and the run is over.
+- Permits are approved when political support is at least 50: the game tells you in advance. Stubborn owners (+80%) are marked on the map.
 - Each settlement has a **type** (farming, industrial, spa…). Neighbouring types form **region combos**, good and bad, and the parcels along the border give access and combos to your side.
-- Buildings next to each other form **combos**, good and bad. From settlement III, crises arrive as **cards** and Brussels sends **directives**.
+- Buildings next to each other form **combos**, good and bad: they glow gold or red. From settlement III, crises arrive as **cards** and Brussels sends **directives**.
 - **Controls:** drag to move the map, pinch / wheel / +− to zoom. PC: WASD / arrows, + −, R rotate, C centre, Space end month, Esc close / pause.
 - **Language:** English / Español (top bar or menus).
 

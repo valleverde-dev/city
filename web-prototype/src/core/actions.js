@@ -17,11 +17,6 @@ export function acquire(i){
   const price = landPrice(p);
   if(avail() < price) return fail(on('lose') ? 'err.funds' : 'err.committed');
   S.slots--;
-  if(on('holdout') && p.k==='farm' && !p.hold && rnd() < 0.28){
-    p.hold = true; p.price = r1(p.price*1.8); p.flag = {k:'holdout', until:S.month+1};
-    log('log.holdout', {at:pname(i), x:money(landPrice(p))}, 'bad');
-    return {ok:false, bad:true, msg:{k:'fx.holdout'}, sfx:'farmer'};
-  }
   spend(price); p.st = 'owned';
   log('log.acquired', {at:pname(i), x:money(price)});
   return {ok:true, msg:{k:'fx.money', p:{x:money(-price)}}};

@@ -21,10 +21,11 @@ export { newGame, snapshot, consolidate, attach } from './newgame.js';
 // The Euroregion: settlement types, region combos, placement, frontier
 export { SIZES, STYPES, STYPE_ICON, STYPE_FX, REGION_COMBOS, RCOMBO_BY_ID, DIRS, DIR_KEYS, candidates, attachPreview, neighboursOf,
          regionCombosAt, regionBounds, regionPop, regionDividend, regionFx, frontAt, cellPos, codeTokens, wcode, blockAt, worldIndex } from './region.js';
-export { genWorld } from './newgame.js';
+export { genPlot, wid, setW } from './region.js';
+export { writePlot } from './newgame.js';
 // Derived values (read-only questions about the state)
 export { count, caps, hasAccess, isRoad, givesAccess, nextToVillage, landPrice, plotValue, buildCost, permitMonths, buildMonths,
-         contractors, slotsPerMonth, approvalChance, activeSites } from './rules.js';
+         contractors, slotsPerMonth, approvalChance, support, approves, activeSites } from './rules.js';
 export { residents, taxIncome, monthlyCosts, committed, avail, nextMilestone } from './economy.js';
 export { COMBOS, COMBO_BY_ID, activeCombos, comboFx, comboPreview, discovered } from './combos.js';
 // Player actions (each costs agenda slots)

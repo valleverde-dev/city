@@ -11,6 +11,7 @@ import { records, save } from '../core/persist.js';
 import { S, pname } from '../core/state.js';
 import { t } from '../i18n/index.js';
 import { C } from '../render/pixel.js';
+import { setMapSize } from '../render/map.js';
 import { $, P, country, portrait } from './dom.js';
 import { pulse, refresh } from './guide.js';
 import { hidePop, roman, setSheet, sheet } from './hud.js';
@@ -22,6 +23,7 @@ import { regionCanvas } from './regionmap.js';
 //  CARDS & NOTICES (modal). One renderer per card type; re-rendered on language change.
 // =====================================================================
 export const modal = $('modal'), notice = $('notice');
+let attachKey = '';
 export let rerender = null;
 export function setRerender(f){ rerender = f; }
 export function letter({icon, title, stamp, cls, body, buttons, dock, speaker}){
@@ -82,7 +84,10 @@ export function showNext(){
   hidePop();
   if(S.cards.length){ const c = S.cards[0]; (CARD[c.type])(c); rerender = ()=>CARD[c.type](c); return; }
   if(S.perkChoice){ perkCard(); rerender = perkCard; return; }
-  if(S.pending==='attach' && !S.over){ hideModal(); if(sheet!=='attach'){ setSheet('attach'); refresh(); frameView(); } refresh(); return; }   // choose the next plot on the map
+  if(S.pending==='attach' && !S.over){ hideModal();
+    const key = S.runSeed+':'+S.stage+':'+S.region.cands.map(P=>P.x+','+P.y).join(';');
+    if(attachKey !== key){ attachKey = key; setMapSize(); setSheet('attach'); refresh(); frameView(); }   // once per offer: show the new land
+    refresh(); return; }   // choose the next plot on the map
   if(S.over){ gameOver(); rerender = gameOver; return; }
   S.focus = -1; hideModal(); refresh();
 }

@@ -1,6 +1,6 @@
 # Architecture — web prototype
 
-*Living document. v0.6.1 · Oct 27, 2026.* How the code of `web-prototype/` is organised, why, and how it maps to the Godot port.
+*Living document. v0.7 · Oct 27, 2026.* How the code of `web-prototype/` is organised, why, and how it maps to the Godot port.
 
 ## The idea in one paragraph
 
@@ -40,8 +40,8 @@ Until v0.5 everything lived in one 4,600-line `src/index.html`. v0.5.1 split it 
 |---|---|---|
 | `state.js` | `S` (the whole game state), `N` (map side), `setState`, the seeded RNG (`rnd`, `ri`, `pick`) and grid helpers (`idx`, `rc`, `inside`, neighbours) | `GameState` autoload |
 | `config.js` | `VERSION` (checked by the build against `package.json`), tuning knobs (`CFG`), the settlement templates and their rule flags (`LEVELS`, `stageCfg()`, `on()`), buildings (`B`), perks, characters, town names | `Config` resource / JSON |
-| `newgame.js` | Starting a run (`newGame`), generating the world map (`genWorld`), starting a settlement on a plot of it, `consolidate()` (writes the plot back into the world) and `attach(k)` | `WorldGenerator` + `Run` |
-| `region.js` | The Euroregion: settlement types and traits, region combos, the plots on offer (`candidates`), the frontier (the world cells around the plot), the regional dividend, world helpers (`wcode`, `worldIndex`) | `Region` |
+| `newgame.js` | Starting a run (`newGame`), starting a settlement on a plot, `consolidate()` (writes what was built into the map) and `attach(k)` (adds the chosen plot's land to the map) | `Run` |
+| `region.js` | The Euroregion: settlement types and traits, region combos, the plots on offer (`candidates`, pinwheel) and the terrain of new land (`genPlot`, continuing roads and river), the frontier, the regional dividend, map helpers (`wcode`, `wid`, `worldIndex`) | `Region` + `LandGenerator` |
 | `rules.js` | Meters (`bump`), money (`spend`), access, prices, permit/build times, approval chance, capacities (`caps`), `log` and `fx` | `Rules` |
 | `economy.js` | Residents, taxes, monthly costs, committed money, milestones | `Rules` |
 | `combos.js` | Adjacency combos and their effects; the discovered catalogue | `Combos` |
@@ -58,8 +58,8 @@ The contract with the UI (also the contract the Godot port must honour):
 
 - The UI may **read** anything exported by `core/index.js`.
 - The UI **changes** the game only through `newGame`, the actions, `choosePerk`, `resolveEvent` / `resolveCard`, `endMonth` and `attach`.
-- The state of a run: `S.world` is the world map (`n`, and `cells`: one terrain or building code per parcel). `S.region` holds the consolidated settlements (`blocks`: position, size, type, residents, dividend), the plot in play (`active`) and, between settlements, the next one (`next`) and the plots on offer (`cands`, with `S.pending = 'attach'`). `S.grid` is always the plot in play, in local coordinates; `S.frontier` lists the world cells around it (a combo with one of them has `j = -1-k`).
-- Rendering works in world coordinates (`render/camera.js`: `isoW`, `tileAtW`); `isoOf`/`tileAt` take local parcel indexes of the plot in play. `render/anim.js` keeps a static layer for every world cell outside the plot and repaints only the visible part of the canvas each frame.
+- The state of a run: `S.world.cells` is the map, sparse: `"y,x"` → terrain or building code, only for land that exists (it grows with the region). `S.region` holds the consolidated settlements (`blocks`: position, size, type, residents, dividend), the plot in play (`active`) and, between settlements, the next one (`next`) and the plots on offer (`cands`, each with its terrain `cells`, with `S.pending = 'attach'`). `S.grid` is always the plot in play, in local coordinates; `S.frontier` lists the world cells around it (a combo with one of them has `j = -1-k`).
+- Rendering works in a *frame*: a square around all the land (`render/camera.js`: `FRX`/`FRY` its corner on the map, `isoW`, `tileAtW`); `isoOf`/`tileAt` take local parcel indexes of the plot in play. `render/anim.js` keeps a static layer for the land outside the plot, repaints only the visible part each frame, and draws combo halos (cached outline sprites).
 - Actions return `{ok, msg:{k,p}, bad?, cls?, sfx?}` — an i18n key with parameters and a sound *name*. The core never produces text or plays audio.
 - Cards (`S.cards`), logs (`S.log`) and floating feedback (`S.fx`) are data in the state; the UI renders them.
 

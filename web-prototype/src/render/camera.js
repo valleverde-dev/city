@@ -13,8 +13,10 @@ export const cvs = document.getElementById('map'), ctx = cvs.getContext('2d');
 export let viewRot = 0, zoom = 1, fit = 1, dpr = 1, W = 0, H = 0, selected = -1;
 // The map is the whole world (WN×WN parcels); the settlement in play is the plot at (OX, OY).
 // Rendering works in WORLD coordinates (R, C); the rules and the UI use LOCAL parcel indexes of the plot.
-export let WN = 48, OX = 0, OY = 0;
-export function setWorld(n, ox, oy){ WN = n; OX = ox; OY = oy; }
+// The map grows with the region, so rendering uses a FRAME: a WN×WN square around all the land, whose corner
+// is the map cell (FRY, FRX). Frame coordinates (R, C) = map cell − (FRY, FRX). The plot in play is at (OY, OX).
+export let WN = 4, OX = 0, OY = 0, FRX = 0, FRY = 0;
+export function setWorld(n, ox, oy, fx = FRX, fy = FRY){ WN = n; OX = ox; OY = oy; FRX = fx; FRY = fy; }
 // While choosing the next plot: which of the plots on offer is selected (-1: none)
 export let attachSel = -1;
 export function setAttachSel(k){ attachSel = k; }
@@ -40,7 +42,8 @@ export function isoOf(r,c){ return isoW(r+OY, c+OX); }   // a parcel of the sett
 // Camera: the iso point shown at the centre of the screen. Dragging / WASD move it; it is clamped to the map.
 export let MAPCX = 0, MAPCY = 0;
 export function clampCam(){
-  const mw = WN*TW/2, top = -TH/2 - 40, bot = (WN-1)*TH + TH/2 + 10;
+  const slack = H ? H/2/Math.max(scale(), 0.01) * 0.6 : 0;   // room to lift the map above an open sheet
+  const mw = WN*TW/2, top = -TH/2 - 40 - slack, bot = (WN-1)*TH + TH/2 + 10 + slack;
   MAPCX = clamp(MAPCX, -mw, mw); MAPCY = clamp(MAPCY, top, bot);
 }
 export function centreOn(i){ const [x,y] = isoOf(...rc(i)); MAPCX = x; MAPCY = y; clampCam(); }

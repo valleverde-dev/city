@@ -145,8 +145,9 @@ with sync_playwright() as p:
     ev(f"{G}.newGame(42, 3)"); clear_cards(); S("(S.rfx={}, g.refresh(), 0)")
     N = S("Math.sqrt(S.grid.length)")
     check(N == 16 and S("g.on('market') && g.on('milestones')"), "settlement IV is a 16×16 map with every rule")
-    WN = S("S.world.n")
-    check(S("S.frontier.length") > 0 and ev(f"{G}.artSize[0]") == WN * 64 + 32, "the whole world map is drawn around the settlement")
+    WN = (ev(f"{G}.artSize[0]") - 32) // 64
+    land = S("Object.keys(S.world.cells).length")
+    check(S("S.frontier.length") > 0 and land > N * N and WN >= N + 2, f"the map is all the land of the region ({land} parcels), drawn around the settlement")
     ok_all = True
     for rot in range(4):
         bad = S(f"Array.from({{length:{N*N}}},(_,i)=>i).filter(i=>{{const [x,y]=g.screenOf(i); return x>0&&y>0&&x<innerWidth&&y<innerHeight && g.tileAt(x,y)!==i;}}).length")
@@ -167,7 +168,8 @@ with sync_playwright() as p:
     check(S("g.zoom") < S("g.zoom") * 1.01, "the − button zooms out")
     S("(g.panBy(-99999, -99999), 0)")
     cx, cy = S("g.cam")
-    check(abs(cx) <= WN*32 + 1 and cy <= (WN-1)*32 + 26, "the camera cannot leave the world map")
+    S("(g.panBy(-99999, -99999), 0)")
+    check(S("g.cam") == [cx, cy] and abs(cx) <= WN*32 + 1, "the camera cannot leave the map")
 
     # Land rules
     check(not S("g.acquire(S.grid.findIndex(p=>p.k==='regional')).ok"), "the regional road is not for sale")
@@ -177,6 +179,7 @@ with sync_playwright() as p:
     S("(S.local=30, 0)")
     check(muni < 0 or S(f"g.acquire({muni}).msg.k") == "err.mayorNo", "municipal land needs the mayor (support ≥ 40)")
     S("(S.local=60, S.slots=3, 0)")
+    S(f"(()=>{{ for(let r=2;r<10;r++) for(let c=2;c<10;c++) Object.assign(S.grid[r*{N}+c], {{k:'farm', st:'land', ty:null}}); return 0; }})()")   # plain farmland around (5,5)
     road = 5*N + 5
     S(f"(S.grid[{road}]={{...S.grid[{road}], k:'farm', st:'built', ty:'road'}}, 0)")
     check(S("g.hasAccess(6,6)") and S("g.hasAccess(4,4)") and not S("g.hasAccess(7,7)"), "access counts diagonal neighbours (8-way)")
@@ -352,8 +355,8 @@ with sync_playwright() as p:
     for lv in range(5):
         ev(f"{G}.newGame(3, {lv})"); clear_cards()
         n = S("Math.round(Math.sqrt(S.grid.length))"); aw = ev(f"{G}.artSize[0]")
-        sizes.append(aw == S("S.world.n") * 64 + 32 and n == [2, 4, 8, 16, 16][lv])
-    check(all(sizes), "every settlement is a plot (2, 4, 8, 16, 16) of the same world-sized map")
+        sizes.append(aw >= (n + 2) * 64 + 32 and n == [2, 4, 8, 16, 16][lv])
+    check(all(sizes), "every settlement is a plot (2, 4, 8, 16, 16) of a map that grows with the region")
     check(ev(f"Object.keys({G}.spriteSheet().atlas).length") >= 60, "pixel-art sprite sheet builds")
     check(page.locator(".material-icons").count() == 0 and page.locator("#hud .ico").count() >= 5, "pixel icons replace the icon font")
     check(ev("document.fonts.check('20px Jersey') && document.fonts.check('14px Pixel')"), "embedded pixel fonts are available")
