@@ -6,13 +6,23 @@ Living project document · update it as the prototype evolves. The game design l
 
 **Eurocrat** (working title): a satirical, turn-based roguelike city builder. You are a Brussels programme officer who must deliver a model European town with plenty of money and no power — buy the land, file the permits, survive the neighbours, spend the funds before they expire. Tone and references: *Constructor* (1997), with a hyper-realistic, comic look at how building actually works in contemporary Europe. The plan: validate the loop in the web/iPad prototype, then port to Godot to ship on the App Store and Steam.
 
-## Current status — v0.6.0 (Oct 27, 2026) · the Euroregion
+## Current status — v0.6.1 (Oct 27, 2026) · one world map
+
+Playtest feedback on v0.6: joining settlements as separate maps felt wrong, and the new territory did not respect the original map (each settlement was generated as a fresh, rotated site and only a strip of its neighbour was shown). v0.6.1 does it the *Cities: Skylines 2* way:
+- **One world map per run** (48×48): regional roads from edge to edge, a river, woods and wetlands, old villages. Land you do not own is veiled.
+- **Settlements are plots of that map.** The plot in play is that land, with its roads, river and villages. When it is consolidated, what you built is written back into the world and stays where it was.
+- **The next plot is chosen on the map:** up to four highlighted, numbered plots next to the region. Tap one to see what it borders and what is on it, then acquire it.
+- When no free land is left next to the region, the **Euroregion is complete** (a win).
+- Rendering: the whole world is drawn (static layer + the plot in play) and only the visible part is repainted each frame. Building styles come from the world cell, so a building looks the same before and after consolidation.
+- Tests: 15 rules tests (incl. "the new plot is the same land of the world") and 107 browser checks. Bot: about 2.9 settlements per run.
+
+## Previous — v0.6.0 (Oct 27, 2026) · the Euroregion
 
 Separate levels broke the roguelike logic: they played like a campaign. In v0.6 **a run is one Euroregion that grows**:
 - **One run, one region.** It starts with a 2×2 hamlet. Every settlement that meets its target is **consolidated** (frozen into the region, still paying half its taxes as a regional dividend). The next one is **attached** on the side you choose: N ↗, E ↘, S ↙ or W ↖. Sizes go 4×4, 8×8, 16×16, then 16×16 again and again with a target 30% higher each time. Any failure ends the run. The rules still switch on one settlement at a time, as in v0.5.
 - **Settlement types** (random): farming, industrial, commuter, spa, university, historic, logistics, each with a trait.
 - **Region combos** (8 good, 7 bad) depend on where you attach, between the new settlement's type and its neighbours' types: Commuter Belt, Smokestack View, Slurry Season, Rust Belt… They are discovered like building combos and kept in the same catalogue.
-- **A real border.** The neighbours' parcels along the edge are drawn as a dimmer strip around the map. They give access and form ordinary combos with what you build on your side.
+- **A real border.** The neighbours' parcels along the edge give access and form ordinary combos with what you build on your side (drawn as a strip in v0.6.0; the whole world map from v0.6.1).
 - **Money between settlements:** Brussels recovers 50% of the unspent funds and the other half carries over. Debt and perks carry over too, and you pick a perk at every consolidation.
 - **Region map** (isometric minimap) in the Town sheet, on the consolidation card and on the attach card, which outlines the four candidate positions.
 - **Records between runs:** most settlements and largest population, shown on the title screen (*New Euroregion*).

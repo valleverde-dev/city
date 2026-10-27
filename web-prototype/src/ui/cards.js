@@ -2,8 +2,7 @@ import { setMusic } from '../audio/music.js';
 import { playSound } from '../audio/sfx.js';
 import { COMBO_BY_ID, discovered } from '../core/combos.js';
 import { CFG, CHARS, LEVELS, LV, PERKS, on, stageCfg } from '../core/config.js';
-import { attach } from '../core/newgame.js';
-import { DIR_KEYS, RCOMBO_BY_ID, STYPE_ICON, attachPreview, regionPop } from '../core/region.js';
+import { RCOMBO_BY_ID, STYPE_ICON, regionPop } from '../core/region.js';
 import { DIRECTIVE_ICON, choosePerk } from '../core/directives.js';
 import { residents } from '../core/economy.js';
 import { EVENTS, choicesFor, resolveEvent } from '../core/events.js';
@@ -14,9 +13,9 @@ import { t } from '../i18n/index.js';
 import { C } from '../render/pixel.js';
 import { $, P, country, portrait } from './dom.js';
 import { pulse, refresh } from './guide.js';
-import { hidePop, roman } from './hud.js';
+import { hidePop, roman, setSheet, sheet } from './hud.js';
 import { ic } from './icons.js';
-import { enterSettlement, startMenu, startRun } from './title.js';
+import { enterSettlement, frameView, startMenu, startRun } from './title.js';
 import { regionCanvas } from './regionmap.js';
 
 // =====================================================================
@@ -83,7 +82,7 @@ export function showNext(){
   hidePop();
   if(S.cards.length){ const c = S.cards[0]; (CARD[c.type])(c); rerender = ()=>CARD[c.type](c); return; }
   if(S.perkChoice){ perkCard(); rerender = perkCard; return; }
-  if(S.pending==='attach'){ attachCard(); rerender = ()=>attachCard(); return; }
+  if(S.pending==='attach' && !S.over){ hideModal(); if(sheet!=='attach'){ setSheet('attach'); refresh(); frameView(); } refresh(); return; }   // choose the next plot on the map
   if(S.over){ gameOver(); rerender = gameOver; return; }
   S.focus = -1; hideModal(); refresh();
 }
@@ -166,37 +165,18 @@ export function rcomboChips(list, show){
 }
 // Put the region minimap into the open letter (its '.rmap-slot')
 export function mountMap(opts){ const slot = notice.querySelector('.rmap-slot'); if(!slot) return; slot.innerHTML = ''; slot.appendChild(regionCanvas(opts)); }
-// Choose the side where the next settlement is attached
-export function attachCard(hi){
-  if(S.pending!=='attach' || !S.region.next) return showNext();
-  const nx = S.region.next, last = S.region.blocks[S.region.blocks.length-1];
-  const pv = Object.fromEntries(DIR_KEYS.map(d=>[d, attachPreview(d)]));
-  const cands = Object.fromEntries(DIR_KEYS.map(d=>[d, pv[d].P]));
-  const buttons = DIR_KEYS.map(d=>{ const v = pv[d], b = document.createElement('button'); b.className = 'choice side'; b.dataset.side = d;
-    const nbs = v.nb.map(k=>S.region.blocks[k]).map(B=>`${B.town} <i>(${t('st.'+B.ty)})</i>`).join(', ');
-    b.innerHTML = `<b>${t('side.'+d)}</b><small>${t('att.touches', {list:nbs})}</small>${v.combos.length ? rcomboChips(v.combos) : `<div class="chips"><span class="chip">${t('att.none')}</span></div>`}`;
-    const show = ()=>mountMap({cands, hi:d});
-    b.addEventListener('pointerenter', show); b.addEventListener('focus', show);
-    b.onclick = ()=>{ if(attach(d).ok){ playSound('stamp'); enterSettlement(); } };
-    return b; });
-  letter({icon:'map', title:t('att.t'), speaker:'brussels',
-    body:`<div class="quote">${t('att.x', {town:nx.town, type:t('st.'+nx.ty), s:nx.n, n:stageCfg((S.stage||0)+1).target, last:last ? last.town : ''})}</div>
-      ${stypeBlock(nx.ty)}<div class="rmap-slot"></div><p class="hint">${t('att.hint')}</p>`, buttons});
-  notice.classList.add('attach');
-  mountMap({cands, hi: hi || null});
-}
 // The run is over: what the Euroregion reached, and the records
 export function gameOver(){
   if(!S.over) return showNext();
-  const w = S.over.why, beat = S.over.beat || {}, rec = records();
-  if(!S.over.played){ S.over.played = true; playSound('fail'); setMusic('menu', 0.6); }
-  const pop = regionPop() + residents();
-  const stats = `<dl class="kv"><dt>${t('ui.residents')}</dt><dd>${residents()} / ${CFG.target}</dd><dt>${t('ui.month')}</dt><dd>${Math.min(S.month,CFG.months)} / ${CFG.months}</dd>
+  const w = S.over.why, win = !!S.over.win, beat = S.over.beat || {}, rec = records();
+  if(!S.over.played){ S.over.played = true; playSound(win ? 'win' : 'fail'); setMusic(win ? 'win' : 'menu', win ? 1 : 0.6); }
+  const pop = regionPop() + (S.region.active ? residents() : 0);
+  const stats = `<dl class="kv">${S.region.active ? `<dt>${t('ui.residents')}</dt><dd>${residents()} / ${CFG.target}</dd><dt>${t('ui.month')}</dt><dd>${Math.min(S.month,CFG.months)} / ${CFG.months}</dd>` : ''}
       <dt>${t('ui.settlements')}</dt><dd>${S.region.blocks.length}</dd><dt>${t('ui.regionPop')}</dt><dd>${pop}</dd>
       ${S.debt?`<dt>${t('ui.debt')}</dt><dd>${money(S.debt)}</dd>`:''}${S.directivesDone?`<dt>${t('ui.directivesMet')}</dt><dd>${S.directivesDone}</dd>`:''}</dl>`;
   const record = (beat.settlements || beat.pop) ? `<p class="record">${ic('workspace_premium')}${t('run.record')}</p>` : '';
-  letter({icon:'report', title:t('over.'+w+'.t'), stamp:t('over.'+w+'.s'), cls:'bad', speaker: S.level<2 ? 'mayor' : 'brussels',
-    body:`<div class="quote">${t('over.'+w+'.x', {town:S.town, n:residents(), target:CFG.target, m:CFG.months})}</div>${record}<div class="rmap-slot"></div>${stats}
+  letter({icon: win ? 'celebration' : 'report', title:t('over.'+w+'.t'), stamp:t('over.'+w+'.s'), cls: win ? 'ok' : 'bad', speaker: win || S.level<2 ? 'mayor' : 'brussels',
+    body:`<div class="quote">${t('over.'+w+'.x', {town:S.town, n:residents(), target:CFG.target, m:CFG.months, region:regionName(), s:S.region.blocks.length, p:regionPop()})}</div>${record}<div class="rmap-slot"></div>${stats}
       <p class="hint">${t('run.best', {s:rec.best.settlements, p:rec.best.pop})}</p>`,
     buttons:[btn(t('run.new'),'replay', ()=>startRun(), true), btn(t('menu.main'),'logout', ()=>startMenu()), btn(t('ui.lookMap'),'map', ()=>{ hideModal(); refresh(); })]});
   mountMap({});

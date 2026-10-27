@@ -13,7 +13,7 @@ import { caps, hasAccess } from './core/rules.js';
 import { S, rc } from './core/state.js';
 import { LANG, t } from './i18n/index.js';
 import { born, compose, draw, presentNow, spriteSheet, startNight } from './render/anim.js';
-import { MAPCX, MAPCY, centreOn, isoOf, panBy, resize, selected, tileAt, toScreen, zoom, zoomAt } from './render/camera.js';
+import { MAPCX, MAPCY, attachSel, centreOn, isoOf, isoW, panBy, resize, selected, tileAt, tileAtW, toScreen, zoom, zoomAt } from './render/camera.js';
 import { art, startSite } from './render/map.js';
 import { ARCH, archOf } from './render/sprites.js';
 import { hideModal, makePixelPortrait, showNext } from './ui/cards.js';
@@ -36,7 +36,8 @@ window.__eurocrat = {
   acquire, requestPermit, sellPlot, submitPlan, lobby, consult, fileReport, repay, endMonth, choosePerk, caps, residents, hasAccess,
   choicesFor, resolveEvent, problems, activeCombos, comboPreview, comboFx, discovered, COMBOS, catalogueCard, t, setLang, get lang(){ return LANG; },
   resolveCard,
-  tileAt:(x,y)=>tileAt(x,y), screenOf:(i)=>{ const [ix,iy]=isoOf(...rc(i)); return toScreen(ix,iy); },
+  tileAt:(x,y)=>tileAt(x,y), tileAtW:(x,y)=>tileAtW(x,y), screenOf:(i)=>{ const [ix,iy]=isoOf(...rc(i)); return toScreen(ix,iy); },
+  screenOfW:(R,C)=>{ const [ix,iy]=isoW(R,C); return toScreen(ix,iy); }, get attachSel(){ return attachSel; },
   refresh, showNext, hideModal, get selected(){ return selected; }, spriteSheet, portrait,
   startNight, ARCH, archOf, styleName, get born(){ return born.size; }, get artSize(){ return [art.width, art.height]; },
   frameMs:(n=30)=>{ const t0=performance.now(); for(let k=0;k<n;k++){ compose(t0+k*66); presentNow(); } return (performance.now()-t0)/n; },

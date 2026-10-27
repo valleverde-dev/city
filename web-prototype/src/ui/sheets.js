@@ -14,7 +14,11 @@ import { pulse, refresh, styleName } from './guide.js';
 import { actBtn, agendaAvailable, doAction, hidePop, setSheet, sheet } from './hud.js';
 import { ic } from './icons.js';
 import { problems } from './problems.js';
-import { REGION_COMBOS, regionDividend, regionPop } from '../core/region.js';
+import { REGION_COMBOS, attachPreview, regionDividend, regionPop } from '../core/region.js';
+import { attach } from '../core/newgame.js';
+import { stageCfg } from '../core/config.js';
+import { attachSel, setAttachSel } from '../render/camera.js';
+import { enterSettlement } from './title.js';
 import { rcomboChips, regionName, stypeBlock } from './cards.js';
 import { regionCanvas } from './regionmap.js';
 
@@ -25,6 +29,8 @@ export function renderSheet(){
   const el = $('sheet'), body = $('sheetBody'), title = $('sheetTitle');
   if(sheet==='parcel' && selected<0) setSheet(null);
   if(sheet==='agenda' && !agendaAvailable()) setSheet(null);
+  if(S.pending==='attach' && !S.over && !S.cards.length && !S.perkChoice) setSheet('attach');   // choosing the next plot
+  else if(sheet==='attach') setSheet(null);
   document.body.classList.toggle('sheet-open', !!sheet);
   if(!sheet){ el.hidden = true; return; }
   el.hidden = false; body.innerHTML = '';
@@ -48,6 +54,7 @@ export function renderSheet(){
       if(x.i>=0) li.onclick = ()=>{ setSelected(x.i); setSheet('parcel'); centreOn(x.i); pulse(x.i); playSound('click'); refresh(); };
       ul.appendChild(li); });
     card.appendChild(ul); body.appendChild(card); }
+  if(sheet==='attach'){ title.innerHTML = `${ic('map')}${t('att.t')}`; body.appendChild(attachEl()); }
   if(sheet==='combos'){ title.innerHTML = `${ic('workspace_premium')}${t('combo.cat')}`; body.appendChild(catalogueEl()); }
 }
 export function cityCard(){
@@ -74,6 +81,27 @@ export function regionCard(){
     <p class="hint">${t('ui.thisSettlement')}</p>${stypeBlock(S.stype)}${S.rcombos.length ? rcomboChips(S.rcombos, true) : ''}
     ${S.region.blocks.length ? `<p class="hint">${t('ui.regionHint')}</p>` : ''}`;
   c.querySelector('.rmap-slot').appendChild(regionCanvas({maxW: 300, maxH: 170}));
+  return c;
+}
+// Choosing the plot of the next settlement: the plots on offer are numbered on the map and listed here
+const LAND_ICON = {regional:'add_road', flood:'water', village:'cottage', habitat:'forest'};
+export function selectPlot(k){ setAttachSel(k); playSound('click'); refresh(); }
+export function attachEl(){
+  const nx = S.region.next, c = document.createElement('div'); c.className = 'card attach';
+  c.innerHTML = `<div class="quote">${t('att.x', {town:nx.town, type:t('st.'+nx.ty), s:nx.n, n:stageCfg((S.stage||0)+1).target})}</div>${stypeBlock(nx.ty)}<p class="hint">${t('att.pick')}</p>`;
+  const list = document.createElement('div'); list.className = 'plots';
+  S.region.cands.forEach((P,k)=>{ const v = attachPreview(k), b = document.createElement('button'); b.className = 'choice side'+(k===attachSel?' on':''); b.dataset.k = k;
+    const from = S.region.blocks[v.from], nbs = v.nb.map(j=>S.region.blocks[j]).map(B=>`${B.town} <i>(${t('st.'+B.ty)})</i>`).join(', ');
+    const land = Object.entries(v.land).filter(([,n])=>n>0).map(([kk,n])=>`<span class="chip">${ic(LAND_ICON[kk])}${t('land.'+kk, {n})}</span>`).join('');
+    b.innerHTML = `<b><span class="num">${k+1}</span>${t('att.of', {side:t('side.'+P.dir), town:from ? from.town : ''})}</b><small>${t('att.touches', {list:nbs})}</small>
+      ${v.combos.length ? rcomboChips(v.combos) : `<div class="chips"><span class="chip">${t('att.none')}</span></div>`}${land ? `<div class="chips">${land}</div>` : ''}`;
+    b.onclick = ()=>selectPlot(k);
+    list.appendChild(b); });
+  c.appendChild(list);
+  const go = document.createElement('button'); go.className = 'btn primary acquire'; go.disabled = attachSel < 0 || attachSel >= S.region.cands.length;
+  go.innerHTML = `${ic('real_estate_agent')}${go.disabled ? t('att.pickFirst') : t('att.go', {k:attachSel+1})}`;
+  go.onclick = ()=>{ const k = attachSel; if(attach(k).ok){ playSound('stamp'); enterSettlement(); } };
+  c.appendChild(go);
   return c;
 }
 export function agendaCard(){

@@ -1,16 +1,18 @@
 import { N, NB8, S, inside } from './state.js';
 
 // =====================================================================
-//  EUROREGION — one run is one region that grows. Every settlement is an n×n block placed in
-//  region coordinates (x = column, y = row, in parcels). When a settlement meets its target it is
-//  CONSOLIDATED: frozen into a block of cells, still paying its share of taxes, and the next,
-//  bigger settlement is attached on one of its four sides. Sizes: 2, 4, 8, 16, 16, 16…
+//  EUROREGION — one run is one region that grows on ONE world map (S.world: a W×W grid of terrain
+//  codes, generated at the start of the run, like the map of a Cities: Skylines game). Every settlement
+//  is an n×n plot of that map (x = column, y = row). The plot in play is expanded into S.grid (local
+//  coordinates); when it meets its target it is CONSOLIDATED: what was built is written back into the
+//  world, it keeps paying its share of taxes, and the player acquires the next, bigger plot next to the
+//  region, choosing it on the map. Sizes: 2, 4, 8, 16, 16, 16…
 //
-//  Where you attach matters twice:
+//  Where you put it matters twice:
 //   · the TYPES of the settlements that touch make region combos (commuter town + industrial
 //     estate = commuter belt; industrial town + spa = smokestack view…)
-//   · the parcels along the shared border are real neighbours: their buildings give access and
-//     form ordinary adjacency combos with what you build on your side (the "frontier").
+//   · the ring of world cells around the plot are real neighbours (the "frontier"): roads, villages
+//     and the consolidated region give access, and they form ordinary adjacency combos.
 // =====================================================================
 export const SIZES = [2, 4, 8, 16];
 export const STYPES = ['agrarian', 'industrial', 'commuter', 'spa', 'university', 'historic', 'logistics'];
@@ -57,22 +59,52 @@ export const overlap = (a,b) => a.x < b.x+b.n && b.x < a.x+a.n && a.y < b.y+b.n 
 export const touching = (a,b) =>
   ((a.x+a.n === b.x || b.x+b.n === a.x) && a.y < b.y+b.n && b.y < a.y+a.n) ||
   ((a.y+a.n === b.y || b.y+b.n === a.y) && a.x < b.x+b.n && b.x < a.x+a.n);
-// Where a new n×n settlement goes if attached on side `dir` of the last one: centred on it, and pushed
-// further out past any settlement already in the way, so it always lands on free ground touching the region.
-export function candidate(dir, n, blocks = S.region.blocks){
-  const last = blocks[blocks.length-1];
-  if(!last) return {x:0, y:0, n};
-  const cx = last.x + last.n/2, cy = last.y + last.n/2;
-  let a = last;
-  for(let g=0; g<200; g++){
+// ---------- the world map ----------
+export const W = () => S.world.n;
+export const inWorld = (y,x) => y>=0 && x>=0 && y<S.world.n && x<S.world.n;
+export const wcode = (y,x) => inWorld(y,x) ? S.world.cells[y*S.world.n + x] : null;
+export const blockAt = (y,x) => S.region.blocks.findIndex(B=>x>=B.x && x<B.x+B.n && y>=B.y && y<B.y+B.n);
+// World index of parcel i of the settlement in play (for stable looks across consolidation)
+export function worldIndex(i){ const A = S.region && S.region.active; if(!A || !S.world) return i; return (A.y + Math.floor(i/A.n))*S.world.n + A.x + i%A.n; }
+// Where a new n×n plot goes if put on side `dir` of block `a`: centred on it, pushed further out past
+// anything in the way, kept inside the world. null if it does not fit.
+export function slide(a, dir, n, blocks = S.region.blocks){
+  const Wn = S.world.n, cx = a.x + a.n/2, cy = a.y + a.n/2;
+  const clampX = x => Math.max(0, Math.min(Wn-n, x));
+  let b = a;
+  for(let g=0; g<60; g++){
     const P = {n,
-      x: dir==='e' ? a.x+a.n : dir==='w' ? a.x-n : Math.round(cx - n/2),
-      y: dir==='s' ? a.y+a.n : dir==='n' ? a.y-n : Math.round(cy - n/2)};
-    const hit = blocks.find(b=>overlap(b, P));
-    if(!hit) return P;
-    a = hit;
+      x: dir==='e' ? b.x+b.n : dir==='w' ? b.x-n : clampX(Math.round(cx - n/2)),
+      y: dir==='s' ? b.y+b.n : dir==='n' ? b.y-n : clampX(Math.round(cy - n/2))};
+    if(P.x < 0 || P.y < 0 || P.x+n > Wn || P.y+n > Wn) return null;
+    const hit = blocks.find(B=>overlap(B, P));
+    if(!hit) return blocks.some(B=>touching(B, P)) ? P : null;
+    b = hit;
   }
   return null;
+}
+// The plots on offer for the next settlement: the four sides of the last one, then (if some do not fit)
+// the sides of earlier ones. Up to four, never overlapping the region, always touching it.
+export function candidates(n, blocks = S.region.blocks){
+  const out = [], seen = new Set();
+  for(let k=blocks.length-1; k>=0 && out.length<4; k--)
+    for(const dir of DIR_KEYS){ if(out.length>=4) break;
+      const P = slide(blocks[k], dir, n, blocks); if(!P) continue;
+      const key = P.x+','+P.y; if(seen.has(key) || out.some(Q=>overlap(Q,P))) continue; seen.add(key);   // alternatives never overlap
+      out.push({...P, dir, from:k}); }
+  // still short: any free spot next to the region (on a grid of n/4), the closest to the last settlement first
+  if(out.length < 4 && blocks.length){
+    const Wn = S.world.n, st = Math.max(1, n/4), last = blocks[blocks.length-1], more = [];
+    for(let y=0; y+n<=Wn; y+=st) for(let x=0; x+n<=Wn; x+=st){
+      const P = {x, y, n}; if(seen.has(x+','+y) || blocks.some(B=>overlap(B,P))) continue;
+      const k = blocks.findIndex(B=>touching(B,P)); if(k<0) continue;
+      const B = blocks[k], dx = (x+n/2)-(B.x+B.n/2), dy = (y+n/2)-(B.y+B.n/2);
+      const dir = Math.abs(dx) > Math.abs(dy) ? (dx>0 ? 'e' : 'w') : (dy>0 ? 's' : 'n');
+      more.push({...P, dir, from:k, d: Math.abs(x+n/2-last.x-last.n/2) + Math.abs(y+n/2-last.y-last.n/2)}); }
+    more.sort((a,b)=>a.d-b.d);
+    for(const P of more){ if(out.length >= 4) break; if([...out].some(Q=>overlap(Q,P))) continue; const {d, ...Q} = P; out.push(Q); seen.add(P.x+','+P.y); }
+  }
+  return out;
 }
 export function neighboursOf(P, blocks = S.region.blocks){ return blocks.map((b,k)=>[b,k]).filter(([b])=>touching(b,P)).map(([,k])=>k); }
 // The region combos a settlement of type `ty` at P would make with the settlements it touches
@@ -81,10 +113,13 @@ export function regionCombosAt(P, ty, blocks = S.region.blocks){
   neighboursOf(P, blocks).forEach(k=>matchRegion(ty, blocks[k].ty).forEach(c=>out.push({id:c.id, good:c.good, b:k})));
   return out;
 }
-// Everything the attach card needs to show for one side
-export function attachPreview(dir){
-  const nx = S.region.next, P = candidate(dir, nx.n);
-  return {dir, P, nb: neighboursOf(P), combos: regionCombosAt(P, nx.ty)};
+// Everything the attach sheet needs to show for plot k: its neighbours, region combos and what is on the land
+export function attachPreview(k){
+  const nx = S.region.next, P = S.region.cands[k];
+  if(!P) return null;
+  const land = {regional:0, flood:0, village:0, habitat:0};
+  for(let y=P.y; y<P.y+P.n; y++) for(let x=P.x; x<P.x+P.n; x++){ const c = wcode(y,x); if(c in land) land[c]++; }
+  return {k, dir:P.dir, from:P.from, P, nb: neighboursOf(P), combos: regionCombosAt(P, nx.ty), land};
 }
 export function regionBounds(extra = []){
   const all = [...S.region.blocks, ...(S.region.active ? [S.region.active] : []), ...extra];
@@ -106,18 +141,19 @@ export function cellCode(p){
 export function codeTokens(x){ return BUILDINGS.includes(x) || ['village','regional','flood'].includes(x) ? [x] : []; }
 // Built-up land, roads and the village give access to the parcels next to them, across the border too
 export function codeAccess(x){ return x==='road' || x==='regional' || x==='village' || BUILDINGS.includes(x); }
-// The frontier: cells of consolidated neighbours in the ring around the active settlement, in LOCAL coordinates
-export function buildFrontier(P, blocks = S.region.blocks){
+// The frontier: the ring of world cells around the plot in play, in LOCAL coordinates
+// (b: the consolidated settlement it belongs to, or -1 for open country)
+export function buildFrontier(P){
   const out = [];
   for(let wy=P.y-1; wy<=P.y+P.n; wy++) for(let wx=P.x-1; wx<=P.x+P.n; wx++){
     if(wy>=P.y && wy<P.y+P.n && wx>=P.x && wx<P.x+P.n) continue;
-    const b = blocks.findIndex(B=>wx>=B.x && wx<B.x+B.n && wy>=B.y && wy<B.y+B.n);
-    if(b<0) continue;
-    const B = blocks[b];
-    out.push({r: wy-P.y, c: wx-P.x, x: B.cells[(wy-B.y)*B.n + (wx-B.x)], b});
+    if(!inWorld(wy,wx)) continue;
+    out.push({r: wy-P.y, c: wx-P.x, x: wcode(wy,wx), b: blockAt(wy,wx)});
   }
   return out;
 }
+// Access across the edge: roads and villages, any built land, and the streets of the consolidated region
+export function frontAccess(f){ return codeAccess(f.x) || (f.b >= 0 && f.x!=='habitat' && f.x!=='flood'); }
 // Fast lookup: frontier cell index at local (r,c), or -1 (cached per frontier array)
 const FCACHE = new WeakMap();
 export function frontIndex(r, c){
@@ -126,6 +162,7 @@ export function frontIndex(r, c){
   const k = m.get(r+','+c); return k===undefined ? -1 : k;
 }
 export function frontAt(r, c){ const k = frontIndex(r, c); return k<0 ? null : S.frontier[k].x; }
+export function frontEntry(r, c){ const k = frontIndex(r, c); return k<0 ? null : S.frontier[k]; }
 // Position of a combo end: a parcel of the grid (j >= 0) or a frontier cell (j < 0, stored as -1-k)
 export function cellPos(j){ if(j>=0) return [Math.floor(j/N), j%N]; const f = S.frontier[-1-j]; return [f.r, f.c]; }
 // The frontier cells next to grid parcel (r,c)

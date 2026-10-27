@@ -1,6 +1,6 @@
 # Architecture — web prototype
 
-*Living document. v0.6 · Oct 27, 2026.* How the code of `web-prototype/` is organised, why, and how it maps to the Godot port.
+*Living document. v0.6.1 · Oct 27, 2026.* How the code of `web-prototype/` is organised, why, and how it maps to the Godot port.
 
 ## The idea in one paragraph
 
@@ -40,8 +40,8 @@ Until v0.5 everything lived in one 4,600-line `src/index.html`. v0.5.1 split it 
 |---|---|---|
 | `state.js` | `S` (the whole game state), `N` (map side), `setState`, the seeded RNG (`rnd`, `ri`, `pick`) and grid helpers (`idx`, `rc`, `inside`, neighbours) | `GameState` autoload |
 | `config.js` | `VERSION` (checked by the build against `package.json`), tuning knobs (`CFG`), the settlement templates and their rule flags (`LEVELS`, `stageCfg()`, `on()`), buildings (`B`), perks, characters, town names | `Config` resource / JSON |
-| `newgame.js` | Starting a run (`newGame`), generating a site (`genSite`, turned so the regional road faces away from the region), starting a settlement, `consolidate()` and `attach(side)` | `SiteGenerator` + `Run` |
-| `region.js` | The Euroregion: settlement types and traits, region combos, placement of a new settlement (`candidate`), the frontier (neighbours' parcels around the map), the regional dividend | `Region` |
+| `newgame.js` | Starting a run (`newGame`), generating the world map (`genWorld`), starting a settlement on a plot of it, `consolidate()` (writes the plot back into the world) and `attach(k)` | `WorldGenerator` + `Run` |
+| `region.js` | The Euroregion: settlement types and traits, region combos, the plots on offer (`candidates`), the frontier (the world cells around the plot), the regional dividend, world helpers (`wcode`, `worldIndex`) | `Region` |
 | `rules.js` | Meters (`bump`), money (`spend`), access, prices, permit/build times, approval chance, capacities (`caps`), `log` and `fx` | `Rules` |
 | `economy.js` | Residents, taxes, monthly costs, committed money, milestones | `Rules` |
 | `combos.js` | Adjacency combos and their effects; the discovered catalogue | `Combos` |
@@ -58,7 +58,8 @@ The contract with the UI (also the contract the Godot port must honour):
 
 - The UI may **read** anything exported by `core/index.js`.
 - The UI **changes** the game only through `newGame`, the actions, `choosePerk`, `resolveEvent` / `resolveCard`, `endMonth` and `attach`.
-- The state of a run: `S.region` holds the consolidated settlements (`blocks`, each a frozen array of cell codes), the one in play (`active`) and, between settlements, the one to attach (`next`, with `S.pending = 'attach'`). `S.grid` is always the settlement in play; `S.frontier` lists the neighbours' cells around it in local coordinates (a combo with one of them has `j = -1-k`).
+- The state of a run: `S.world` is the world map (`n`, and `cells`: one terrain or building code per parcel). `S.region` holds the consolidated settlements (`blocks`: position, size, type, residents, dividend), the plot in play (`active`) and, between settlements, the next one (`next`) and the plots on offer (`cands`, with `S.pending = 'attach'`). `S.grid` is always the plot in play, in local coordinates; `S.frontier` lists the world cells around it (a combo with one of them has `j = -1-k`).
+- Rendering works in world coordinates (`render/camera.js`: `isoW`, `tileAtW`); `isoOf`/`tileAt` take local parcel indexes of the plot in play. `render/anim.js` keeps a static layer for every world cell outside the plot and repaints only the visible part of the canvas each frame.
 - Actions return `{ok, msg:{k,p}, bad?, cls?, sfx?}` — an i18n key with parameters and a sound *name*. The core never produces text or plays audio.
 - Cards (`S.cards`), logs (`S.log`) and floating feedback (`S.fx`) are data in the state; the UI renders them.
 
@@ -91,7 +92,7 @@ CSS split by area and imported in order by `styles/index.css` (order matters: `r
 |---|---|---|
 | `npm run check` | Layer check: the core stays portable | Node |
 | `npm run test:core` | Rules tests: settlements, rule flags, determinism, actions, a month passing, consolidation and attach, the border, region effects, records, save/load, the difficulty band | Node |
-| `npm run test:smoke` | 104 checks driving the real UI in Chromium (phone and iPad layouts, both languages) | Playwright |
+| `npm run test:smoke` | 107 checks driving the real UI in Chromium (phone and iPad layouts, both languages) | Playwright |
 | `npm test` | All of the above + build | both |
 | `npm run balance -- 150 --run` / `--level=4` | The greedy bot over whole Euroregion runs, or one settlement, in Node | Node |
 

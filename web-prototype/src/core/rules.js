@@ -1,7 +1,7 @@
 import { comboFx } from './combos.js';
 import { B, CFG, METER_FLAG, on } from './config.js';
 import { NB8, S, clamp, has, idx, inside, r1 } from './state.js';
-import { codeAccess, frontAt, regionFx } from './region.js';
+import { frontAccess, frontEntry, regionFx } from './region.js';
 
 // =====================================================================
 //  RULES
@@ -29,7 +29,7 @@ export function hasAccess(r,c){
   if(!on('access')) return true;
   return NB8.some(([dr,dc])=>{ const r2 = r+dr, c2 = c+dc;
     if(inside(r2,c2)) return givesAccess(S.grid[idx(r2,c2)]);
-    const x = frontAt(r2,c2); return !!x && codeAccess(x); });   // across the border: the consolidated neighbour
+    const f = frontEntry(r2,c2); return !!f && frontAccess(f); });   // across the edge: roads, villages, the consolidated region
 }
 export function nextToVillage(r,c){ return NB8.some(([dr,dc])=> inside(r+dr,c+dc) && S.grid[idx(r+dr,c+dc)].k==='village'); }
 export function landPrice(p){ return r1(p.price * (has('notary') ? 0.7 : 1) * (1 + (regionFx().land||0))); }

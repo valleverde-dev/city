@@ -1,4 +1,5 @@
 import { S } from '../core/state.js';
+import { worldIndex } from '../core/region.js';
 import { grassPx, speck } from './ground.js';
 import { C, PX, box, dith, eachPx, faceA, faceB, frac, gable, gl, hsh, lamp, plane, sh, shadow, sprite } from './pixel.js';
 
@@ -287,8 +288,11 @@ export const BUILDINGS = {
 };
 // Older callers (the title-screen diorama) ask for BUILDINGS.<type>(v): v picks a style and a colourway
 ['housing','factory','school','clinic','park'].forEach(ty=>{ BUILDINGS[ty] = v => { const L = ARCH[ty]; return spr(ty+':'+L[(v|0) % L.length].id+':'+((v|0) % 6), ()=>L[(v|0) % L.length].make((v|0) % 6)); }; });
-export const archOf = (i, ty) => { const L = ARCH[ty]; return L[Math.floor(hsh(i, S.seed & 0xffff, 913) * L.length)]; };
-export const colourOf = i => Math.floor(hsh(i, S.seed & 0xffff, 414) * 6);
+// Style and colourway of a building come from its WORLD cell and the run seed: stable for the whole run
+export const archW = (wi, ty) => { const L = ARCH[ty]; return L[Math.floor(hsh(wi, S.runSeed & 0xffff, 913) * L.length)]; };
+export const colourW = wi => Math.floor(hsh(wi, S.runSeed & 0xffff, 414) * 6);
+export const archOf = (i, ty) => archW(worldIndex(i), ty);
+export const colourOf = i => colourW(worldIndex(i));
 
 // Construction site: concrete core + scaffolding, a tower crane behind (cc = crane colour). The hook and load are animated.
 export const CRANES = [['#f2b705','#b98a00'],['#d64545','#9c2f2f'],['#f2f2ee','#b9bcbf']];

@@ -3,9 +3,9 @@ import { buildMonths, hasAccess } from '../core/rules.js';
 import { N, S, clamp, idx, rc } from '../core/state.js';
 import { cellPos } from '../core/region.js';
 import { t } from '../i18n/index.js';
-import { H, MAPCX, MAPCY, TH, TW, W, ctx, cvs, dpr, isoOf, rotateCoord, scale, selected, viewRot, worldEl } from './camera.js';
+import { H, MAPCX, MAPCY, OX, OY, TH, TW, W, WN, attachSel, ctx, cvs, dpr, isoOf, isoW, rotateCoord, scale, selected, viewRot, worldEl } from './camera.js';
 import { GROUNDS, riverTile, roadTile, skirt, wedgeTile } from './ground.js';
-import { AH, AOX, AOY, AW, art, drawTile, gctx, groundCv, gx, planThing, variant } from './map.js';
+import { AH, AOX, AOY, AW, OWNER, VEIL, art, computeOwner, drawTile, drawWorldTile, gctx, groundCv, gx, planThing, staticKey, setStaticKey, variant, veil, worldThing } from './map.js';
 import { C, frac, hsh } from './pixel.js';
 import { ARCH, BUILDINGS, CAR_COLS, P3, billboardSprite, carSprite, cones, fenceSprite, flagSprite, noticeSprite, ruinSprite, siteSprite, spr } from './sprites.js';
 import { modal } from '../ui/cards.js';
@@ -167,26 +167,52 @@ export function drawRise(E, age, step){ const s = E.s, f = 1 - Math.pow(1 - clam
   GX.globalAlpha = 1; }
 
 export let drawOrder = [], animTimer = 0, groundStamp = 0;
-export const darkGround = [];
-// draw() recomposes the static layers after a state change; compose() paints a frame; present() puts it on screen
-export function draw(){
-  if(!S || !W || S.grid.length !== N*N) return;
-  const now = performance.now(); trackCompletions(now);
-  gctx.setTransform(1,0,0,1,0,0); gctx.clearRect(0,0,AW,AH); gctx.imageSmoothingEnabled = false; darkGround.length = 0;
+let WORLD_PLAN = [], WORLD_WATER = [], darkCv = null, darkStep = 0, darkStamp = -1;
+// The static layer: every world cell outside the plot in play (open country and the consolidated region).
+// Rebuilt only when the world, the plot in play or the rotation changes.
+function buildStatic(){
+  const A = S.region.active, key = S.runSeed+':'+(S.world.v||0)+':'+viewRot+':'+(A ? A.x+','+A.y+','+A.n : '-')+':'+S.region.blocks.length;
+  if(key === staticKey) return false;
+  computeOwner();
+  gctx.setTransform(1,0,0,1,0,0); gctx.clearRect(0,0,AW,AH); gctx.imageSmoothingEnabled = false;
   const order = [];
-  for(let r=0;r<N;r++) for(let c=0;c<N;c++){ const [r2,c2]=rotateCoord(r,c,viewRot); order.push([r2+c2, c2, idx(r,c)]); }
-  (S.frontier||[]).forEach((f,k)=>{ const [r2,c2]=rotateCoord(f.r,f.c,viewRot); order.push([r2+c2, c2, -1-k]); });   // the neighbours' strip
+  for(let R=0;R<WN;R++) for(let C=0;C<WN;C++){
+    if(A && R>=A.y && R<A.y+A.n && C>=A.x && C<A.x+A.n) continue;
+    const [r2,c2] = rotateCoord(R,C,viewRot); order.push([r2+c2, c2, R*WN+C]); }
+  order.sort((a,b)=>a[0]-b[0] || a[1]-b[1]);
+  WORLD_WATER = [];
+  order.forEach(o=>drawWorldTile(o[2], WORLD_WATER));
+  WORLD_PLAN = order.map(o=>[o[0], o[1], worldThing(o[2])]);
+  setStaticKey(key); return true;
+}
+// draw() recomposes the layers after a state change; compose() paints a frame; present() puts it on screen
+export function draw(){
+  if(!S || !W || !S.world) return;
+  const now = performance.now(); trackCompletions(now);
+  buildStatic();
+  gctx.setTransform(1,0,0,1,0,0); gctx.imageSmoothingEnabled = false; groundStamp++;
+  const A = S.region.active, order = [];
+  if(A && S.grid.length === N*N) for(let r=0;r<N;r++) for(let c=0;c<N;c++){ const [r2,c2]=rotateCoord(r+OY,c+OX,viewRot); order.push([r2+c2, c2, idx(r,c)]); }
   order.sort((a,b)=>a[0]-b[0] || a[1]-b[1]);
   WATER = []; LAMPS = []; TOPS = new Map();
-  order.forEach(o=>drawTile(o[2]));
-  PLAN = order.map(o=>planThing(o[2]));
-  PLAN.forEach(E=>TOPS.set(E.i, E.s ? E.s.top : 14));
+  order.forEach(o=>drawTile(o[2]));   // the plot in play, painted over the static layer
+  const act = order.map(o=>[o[0], o[1], planThing(o[2])]);
+  act.forEach(([,,E])=>TOPS.set(E.i, E.s ? E.s.top : 14));
+  // merge the two depth-sorted lists
+  PLAN = []; let i = 0, j = 0;
+  while(i < WORLD_PLAN.length || j < act.length){
+    const a = WORLD_PLAN[i], b = act[j];
+    if(!b || (a && (a[0] < b[0] || (a[0]===b[0] && a[1] <= b[1])))){ PLAN.push(a[2]); i++; } else { PLAN.push(b[2]); j++; } }
   drawOrder = order; compose(now); present(); kick();
 }
-export function groundFor(step){ if(!step) return groundCv; if(darkGround[step]) return darkGround[step];
-  const cv = document.createElement('canvas'); cv.width = AW; cv.height = AH; const g = cv.getContext('2d');
+export function groundFor(step){ if(!step) return groundCv;
+  if(darkCv && darkStep === step && darkStamp === groundStamp) return darkCv;
+  if(!darkCv){ darkCv = document.createElement('canvas'); }
+  if(darkCv.width !== AW || darkCv.height !== AH){ darkCv.width = AW; darkCv.height = AH; }
+  const g = darkCv.getContext('2d'); g.globalCompositeOperation='source-over'; g.clearRect(0,0,AW,AH);
   g.drawImage(groundCv,0,0); g.globalCompositeOperation='multiply'; g.fillStyle=NIGHT[step]; g.fillRect(0,0,AW,AH);
-  g.globalCompositeOperation='destination-in'; g.drawImage(groundCv,0,0); return darkGround[step] = cv; }
+  g.globalCompositeOperation='destination-in'; g.drawImage(groundCv,0,0); g.globalCompositeOperation='source-over';
+  darkStep = step; darkStamp = groundStamp; return darkCv; }
 // One parcel's frame: lamp, traffic, sprite (rising if just finished), crane, effects, people, animals
 export function drawEntry(E, T, step, now){
   if(E.cycle){ drawCycleSite(E, T, step); return; }
@@ -204,19 +230,26 @@ export function drawEntry(E, T, step, now){
     if(E.sheep) drawSheep(E, T, step);
     if(E.toad) drawToad(E, T, step);
 }
+// The part of the art canvas on screen (art pixels, relative to the map origin), with a margin
+export function viewBox(){ const sc = scale(); return {x0: MAPCX - W/2/sc - 48, x1: MAPCX + W/2/sc + 48, y0: MAPCY - H/2/sc - 40, y1: MAPCY + H/2/sc + 150}; }
 export function compose(now){
-  if(!S || !W || S.grid.length !== N*N || !PLAN.length) return;
-  const T = MOTION ? now/1000 : 0, step = MOTION ? nightStep(now) : 0;
+  if(!S || !W || !S.world || !PLAN.length) return;
+  const T = MOTION ? now/1000 : 0, step = MOTION ? nightStep(now) : 0, V = viewBox();
   GX = gx; OX0 = AOX; OY0 = AOY;
-  gx.setTransform(1,0,0,1,0,0); gx.clearRect(0,0,AW,AH); gx.imageSmoothingEnabled = false;
-  gx.drawImage(groundFor(step), 0, 0);
+  gx.setTransform(1,0,0,1,0,0); gx.imageSmoothingEnabled = false;
+  // only the visible part of the world is repainted
+  const bx = clamp(Math.floor(AOX+V.x0), 0, AW), by = clamp(Math.floor(AOY+V.y0-120), 0, AH), bw = clamp(Math.ceil(AOX+V.x1), 0, AW) - bx, bh = clamp(Math.ceil(AOY+V.y1), 0, AH) - by;
+  if(bw <= 0 || bh <= 0) return;
+  gx.clearRect(bx, by, bw, bh); gx.drawImage(groundFor(step), bx, by, bw, bh, bx, by, bw, bh);
+  const seen = E => E.x >= V.x0 && E.x <= V.x1 && E.y >= V.y0 && E.y <= V.y1;
   const wf = Math.floor(T*3.5) % 4;
-  WATER.forEach(w=>{ bl(spr('river'+w.m+'_'+wf, ()=>riverTile(w.m, wf)), w.x, w.y, step); w.over.forEach(s=>bl(s, w.x, w.y, step)); });
+  for(const w of WORLD_WATER.concat(WATER)){ if(!seen(w)) continue; bl(spr('river'+w.m+'_'+wf, ()=>riverTile(w.m, wf)), w.x, w.y, step); w.over.forEach(s=>bl(s, w.x, w.y, step));
+    if(w.veil){ gx.globalAlpha = VEIL; bl(veil(), w.x, w.y, step); gx.globalAlpha = 1; } }
   if(step){ gx.fillStyle = '#ffd77a';            // pools of lamp light: flat iso ellipses, a brighter core
     for(const [rx,ry,al] of [[11,5,0.07],[7,3,0.09]]){ gx.globalAlpha = al*step;
       LAMPS.forEach(([x,y])=>{ for(let j=-ry;j<=ry;j++){ const w = Math.round(rx*Math.sqrt(1-(j/(ry+0.5))**2)); gx.fillRect(Math.round(AOX+x)-w, Math.round(AOY+y+2)+j, w*2+1, 1); } }); }
     gx.globalAlpha = 1; }
-  for(const E of PLAN) drawEntry(E, T, step, now);
+  for(const E of PLAN) if(seen(E)) drawEntry(E, T, step, now);
   if(MOTION) drawBirds(T, step);
   worldEl.classList.toggle('night', step >= 2);
 }
@@ -253,6 +286,14 @@ export function spriteSheet(){
     g.drawImage(s.c, x, y); atlas[k] = {x, y, w:s.c.width, h:s.c.height, ox:s.ox, oy:s.oy}; });
   return {png: cv.toDataURL('image/png'), atlas};
 }
+// A plot number that stays readable at any zoom: drawn in screen pixels at the map point (x,y)
+export function bigBadge(x, y, text, on){
+  const m = ctx.getTransform(), sx = m.a*x + m.e, sy = m.d*y + m.f, z = dpr;
+  ctx.save(); ctx.setTransform(z,0,0,z,0,0); const X = sx/z, Y = sy/z, r = 15;
+  ctx.fillStyle = '#0b1f4d'; ctx.fillRect(X-r-2, Y-r-2, 2*r+4, 2*r+4);
+  ctx.fillStyle = on ? '#e8762b' : '#ffd200'; ctx.fillRect(X-r, Y-r, 2*r, 2*r);
+  ctx.fillStyle = on ? '#ffffff' : '#0b1f4d'; ctx.font = '400 26px Jersey, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, X, Y+1); ctx.restore(); }
 export function badge(x,y,text,col){ ctx.font='700 8px Pixel, sans-serif'; const w=Math.ceil(ctx.measureText(text).width)+6, x0=Math.round(x-w/2), y0=Math.round(y)-5;
   ctx.fillStyle='#0b1f4d'; ctx.fillRect(x0-1,y0-1,w+2,11); ctx.fillRect(x0,y0+10,w+1,1);
   ctx.fillStyle=col; ctx.fillRect(x0,y0,w,9); ctx.fillStyle='rgba(255,255,255,.28)'; ctx.fillRect(x0,y0,w,1);
@@ -270,10 +311,27 @@ export function drawComboLinks(){
 }
 // The edge of the settlement in play, when consolidated neighbours surround it
 export function drawBorder(){
-  if(!S.frontier || !S.frontier.length) return;
+  if(!S.region.active) return;
   const e = N-0.5, pts = [[-0.5,-0.5],[-0.5,e],[e,e],[e,-0.5]].map(([r,c])=>isoOf(r,c));
   ctx.save(); ctx.strokeStyle = 'rgba(255,210,0,.85)'; ctx.lineWidth = 1.2; ctx.setLineDash([4,3]);
   ctx.beginPath(); pts.forEach(([x,y],k)=>k ? ctx.lineTo(x,y) : ctx.moveTo(x,y)); ctx.closePath(); ctx.stroke(); ctx.restore();
+}
+// A world rectangle as an iso diamond path
+function plotPath(P){ const pts = [[P.y-0.5,P.x-0.5],[P.y-0.5,P.x+P.n-0.5],[P.y+P.n-0.5,P.x+P.n-0.5],[P.y+P.n-0.5,P.x-0.5]].map(([R,C])=>isoW(R,C));
+  ctx.beginPath(); pts.forEach(([x,y],k)=>k ? ctx.lineTo(x,y) : ctx.moveTo(x,y)); ctx.closePath(); }
+// The consolidated settlements (thin outlines) and, while choosing, the plots on offer (numbered)
+export function drawRegion(){
+  ctx.save(); ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.setLineDash([]);
+  S.region.blocks.forEach(B=>{ plotPath(B); ctx.stroke(); });
+  if(S.pending==='attach' && S.region.cands && modal.classList.contains('hidden')){
+    const ph = (performance.now()%1400)/1400;
+    S.region.cands.forEach((P,k)=>{ const on = k===attachSel;
+      plotPath(P); ctx.fillStyle = on ? 'rgba(255,210,0,.38)' : 'rgba(255,210,0,'+(0.10+0.08*Math.sin(ph*Math.PI*2))+')'; ctx.fill();
+      ctx.setLineDash(on ? [] : [5,3]); ctx.lineWidth = on ? 2.4 : 1.6; ctx.strokeStyle = on ? '#ffd200' : '#fff3a6'; ctx.stroke();
+      const [cx,cy] = isoW(P.y+(P.n-1)/2, P.x+(P.n-1)/2); bigBadge(cx, cy, String(k+1), on); });
+    if(!pulseTimer) pulseTimer = setTimeout(()=>{ pulseTimer = 0; present(); }, 60);
+  }
+  ctx.restore();
 }
 export const MARK = {rejected:['✕','#d64545'], event:['!','#e8442e'], toad:['!','#2e7d32'], holdout:['€↑','#d98a00'], paused:['II','#d98a00'], ruin:['!','#6b6b6b'], halt:null};
 export function drawLabels(i){
@@ -290,10 +348,10 @@ export function drawLabels(i){
 export let presentQueued = false;
 export function present(){
   if(presentQueued) return; presentQueued = true;
-  (window.requestAnimationFrame || (f=>setTimeout(f,16)))(()=>{ presentQueued = false; presentNow(); });
+  (window.requestAnimationFrame || (f=>setTimeout(f,16)))(()=>{ presentQueued = false; compose(performance.now()); presentNow(); });
 }
 export function presentNow(){
-  if(!S || !W || S.grid.length !== N*N) return;
+  if(!S || !W || !S.world) return;
   const order = drawOrder;
   // Blow the art canvas up with nearest-neighbour scaling, aligned to whole device pixels
   const s = scale(), k = dpr*s;
@@ -301,8 +359,9 @@ export function presentNow(){
   ctx.drawImage(art, Math.round(dpr*(W/2 + (-AOX-MAPCX)*s)), Math.round(dpr*(H/2 + (-AOY-MAPCY)*s)), Math.round(AW*k), Math.round(AH*k));
   // Crisp overlays on top: month badges and the selection marker
   ctx.setTransform(k,0,0,k, dpr*(W/2 - MAPCX*s), dpr*(H/2 - MAPCY*s)); ctx.imageSmoothingEnabled = true;
+  drawRegion();
   drawBorder();
-  drawComboLinks();
+  if(S.region.active) drawComboLinks();
   order.forEach(o=>{ if(o[2]>=0) drawLabels(o[2]); });
   if(selected>=0){ const p=S.grid[selected], [x,y]=isoOf(Math.floor(selected/N), selected%N);
     const top = y - (TOPS.get(selected) || 14) - 4;

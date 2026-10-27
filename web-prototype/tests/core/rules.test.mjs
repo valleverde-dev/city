@@ -96,14 +96,17 @@ test('a month passes: works advance, slots refill, the calendar moves', () => {
   assert.equal(S.slots, CFG.slots);
 });
 
-test('meeting the target consolidates the settlement: half the money stays, a perk, then the side to attach', () => {
+test('meeting the target consolidates the settlement into the world: half the money stays, a perk, then the next plot', () => {
   const S = g.newGame(13, 0);
   S.funds = 10;
   consolidateNow();
   assert.equal(S.pending, 'attach');
   assert.equal(S.over, null);
   assert.equal(S.region.blocks.length, 1);
-  assert.equal(S.region.blocks[0].cells.length, 4);
+  const B = S.region.blocks[0], built = S.grid.map(p => p.st === 'built' ? p.ty : null);
+  // what was built is now part of the world map, at the same place
+  for (let i = 0; i < 4; i++) if (built[i]) assert.equal(S.world.cells[(B.y + Math.floor(i / 2)) * S.world.n + B.x + i % 2], built[i]);
+  assert.ok(S.region.cands.length >= 1 && S.region.cands.length <= 4);
   assert.ok(S.cards.some(c => c.type === 'consolidated'));
   assert.ok(Array.isArray(S.perkChoice) && S.perkChoice.length === 3);
   const kept = S.funds;
@@ -111,10 +114,13 @@ test('meeting the target consolidates the settlement: half the money stays, a pe
   // nothing can be done until the next settlement is attached
   assert.equal(core.endMonth().ok, false);
   assert.equal(core.lobby().msg.k, 'err.slots');
-  assert.equal(core.attach('e').ok, false, 'cards and the perk come first');
+  assert.equal(core.attach(0).ok, false, 'cards and the perk come first');
   while (S.cards.length) core.resolveCard();
   core.choosePerk(S.perkChoice[0]);
-  assert.equal(core.attach('e').ok, true);
+  const P = S.region.cands[0];
+  assert.equal(core.attach(9).ok, false, 'only a plot on offer');
+  assert.equal(core.attach(0).ok, true);
+  assert.deepEqual([S.region.active.x, S.region.active.y, S.region.active.n], [P.x, P.y, P.n]);
   assert.equal(S.stage, 1);
   assert.equal(core.N, 4);
   assert.equal(S.month, 1);
@@ -123,32 +129,43 @@ test('meeting the target consolidates the settlement: half the money stays, a pe
   assert.equal(S.perks.length + (S.shovel ? 1 : 0), 1);
 });
 
-test('every side gives a free spot that touches the region', () => {
+test('the plots on offer are free land of the world, next to the region', () => {
   for (let k = 1; k < 7; k++) {
     g.newGame(20 + k, k);
     consolidateNow();
-    const S = core.S;
-    for (const d of core.DIR_KEYS) {
-      const v = core.attachPreview(d), P = v.P;
-      assert.ok(P, d);
+    const S = core.S, Wn = S.world.n;
+    if (S.over) { assert.equal(S.over.why, 'complete'); continue; }
+    assert.ok(S.region.cands.length >= 1, `no plots ${k}`);
+    S.region.cands.forEach((P, j) => {
+      const v = core.attachPreview(j);
       assert.equal(P.n, S.region.next.n);
-      assert.ok(S.region.blocks.every(b => !(b.x < P.x + P.n && P.x < b.x + b.n && b.y < P.y + P.n && P.y < b.y + b.n)), `overlap ${k}${d}`);
-      assert.ok(v.nb.length >= 1, `touches nothing ${k}${d}`);
-    }
+      assert.ok(P.x >= 0 && P.y >= 0 && P.x + P.n <= Wn && P.y + P.n <= Wn, `outside the world ${k}/${j}`);
+      assert.ok(S.region.blocks.every(b => !(b.x < P.x + P.n && P.x < b.x + b.n && b.y < P.y + P.n && P.y < b.y + b.n)), `overlap ${k}/${j}`);
+      assert.ok(v.nb.length >= 1, `touches nothing ${k}/${j}`);
+    });
   }
 });
 
-test('the border counts: consolidated neighbours give access and form combos', () => {
+test('a new settlement is the same land of the world map (terrain continues across plots)', () => {
+  const S = g.newGame(17, 2), A = S.region.active, Wn = S.world.n;
+  const want = { regional: 'regional', flood: 'flood', habitat: 'habitat', village: 'village' };
+  S.grid.forEach((p, i) => { const code = S.world.cells[(A.y + Math.floor(i / A.n)) * Wn + A.x + i % A.n];
+    if (want[code]) assert.equal(p.k, want[code], `parcel ${i}`); else assert.ok(['farm', 'muni'].includes(p.k), `parcel ${i}: ${p.k}/${code}`); });
+  // the world has regional roads that cross it from edge to edge
+  assert.ok(S.world.cells.filter(c => c === 'regional').length >= Wn * 2, 'roads across the world');
+});
+
+test('the edge counts: the consolidated region gives access and forms combos', () => {
   const S = g.newGame(8, 3);   // a 16×16 next to made-up settlements
   assert.ok(S.frontier.length > 0);
-  const f = S.frontier.find(x => ['housing', 'factory', 'school', 'clinic', 'park'].includes(x.x));
+  const f = S.frontier.find(x => x.b >= 0 && ['housing', 'factory', 'school', 'clinic', 'park'].includes(x.x));
   if (!f) return;
   // the grid parcel just inside the border, next to that building
   const r = Math.min(Math.max(f.r, 0), core.N - 1), c = Math.min(Math.max(f.c, 0), core.N - 1), i = r * core.N + c;
   Object.assign(S.grid[i], { k: 'farm', st: 'land', ty: null });
   assert.equal(core.hasAccess(r, c), true);
-  // build something that pairs with the neighbour across the border (housing next to a factory, or a factory next to anything else)
-  Object.assign(S.grid[i], { st: 'built', ty: f.x === 'factory' ? 'housing' : 'factory' });
+  // build something that pairs with the neighbour across the edge (housing next to a factory or a park, a factory next to the rest)
+  Object.assign(S.grid[i], { st: 'built', ty: ['factory', 'park'].includes(f.x) ? 'housing' : 'factory' });
   const across = core.activeCombos().filter(x => x.j < 0 && x.i === i);
   assert.ok(across.length >= 1, JSON.stringify({ f, across }));
   assert.deepEqual(core.cellPos(across[0].j), [f.r, f.c]);
@@ -166,7 +183,7 @@ test('a settlement type and its region combos change the numbers', () => {
   // the region pays its dividend every month
   S.rfx = {};
   const tax0 = core.taxIncome();
-  S.region.blocks.push({ x: 99, y: 99, n: 2, ty: 'hamlet', cells: ['farm', 'farm', 'farm', 'farm'], res: 100, tax: 0.5 });
+  S.region.blocks.push({ x: 99, y: 99, n: 2, ty: 'hamlet', res: 100, tax: 0.5 });
   assert.equal(Math.round((core.taxIncome() - tax0) * 100) / 100, 0.5);
 });
 

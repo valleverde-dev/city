@@ -1,7 +1,7 @@
 // A simple greedy player used to sanity-check difficulty (v0.6: Euroregion runs, combos, access through buildings and borders).
 // Runs inside the page (window.__eurocrat) or in Node (tests/core/harness.mjs). Returns a summary of one run.
 //   opts.level: the settlement to start at (0 = the 2×2 hamlet) · opts.run: keep going after a consolidation
-//   (pick a perk, attach the next settlement on the side with the best known region combos) until the run ends.
+//   (pick a perk, acquire the plot with the best known region combos) until the run ends.
 // It is deliberately decent but not clever: it always picks the first ("by the book") choice on event cards.
 window.__playOneRun = function(seed, opts){
   opts = opts || {};
@@ -28,9 +28,10 @@ window.__playOneRun = function(seed, opts){
       if(!opts.run || S().stage >= maxStage) break;
       while(S().cards.length) g.resolveCard();
       if(S().perkChoice){ const k = PERK_PREF.find(k=>S().perkChoice.includes(k)) || S().perkChoice[0]; g.choosePerk(k); }
-      const known = g.discovered(), side = g.DIR_KEYS.map(d=>{ const v = g.attachPreview(d);
-        return [d, v.combos.reduce((t,c)=>t + (known.includes(c.id) ? (g.RCOMBO_BY_ID[c.id].good ? 1 : -2) : 0), 0)]; }).sort((a,b)=>b[1]-a[1])[0][0];
-      g.attach(side); while(S().cards.length) g.resolveCard(); guard = 0; continue;
+      // pick the plot with the best known region combos (and some road on it)
+      const known = g.discovered(), plot = S().region.cands.map((P,k)=>{ const v = g.attachPreview(k);
+        return [k, v.combos.reduce((t,c)=>t + (known.includes(c.id) ? (g.RCOMBO_BY_ID[c.id].good ? 1 : -2) : 0), 0) + (v.land.regional ? 0.5 : 0)]; }).sort((a,b)=>b[1]-a[1])[0][0];
+      g.attach(plot); while(S().cards.length) g.resolveCard(); guard = 0; continue;
     }
     while(S().cards.length) g.resolveCard();
     if(S().perkChoice){ const k = PERK_PREF.find(k=>S().perkChoice.includes(k)) || S().perkChoice[0]; g.choosePerk(k); }

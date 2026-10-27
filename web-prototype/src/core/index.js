@@ -19,8 +19,9 @@ export { LEVELS, LV, stageCfg, on, CFG, B, BUILD_TYPES, KIND, PERKS, CHARS, METE
 // Starting a run; consolidating a settlement and attaching the next one
 export { newGame, snapshot, consolidate, attach } from './newgame.js';
 // The Euroregion: settlement types, region combos, placement, frontier
-export { SIZES, STYPES, STYPE_ICON, STYPE_FX, REGION_COMBOS, RCOMBO_BY_ID, DIRS, DIR_KEYS, candidate, attachPreview, neighboursOf,
-         regionCombosAt, regionBounds, regionPop, regionDividend, regionFx, frontAt, cellPos, codeTokens } from './region.js';
+export { SIZES, STYPES, STYPE_ICON, STYPE_FX, REGION_COMBOS, RCOMBO_BY_ID, DIRS, DIR_KEYS, candidates, attachPreview, neighboursOf,
+         regionCombosAt, regionBounds, regionPop, regionDividend, regionFx, frontAt, cellPos, codeTokens, wcode, blockAt, worldIndex } from './region.js';
+export { genWorld } from './newgame.js';
 // Derived values (read-only questions about the state)
 export { count, caps, hasAccess, isRoad, givesAccess, nextToVillage, landPrice, plotValue, buildCost, permitMonths, buildMonths,
          contractors, slotsPerMonth, approvalChance, activeSites } from './rules.js';

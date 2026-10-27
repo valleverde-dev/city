@@ -4,12 +4,12 @@ import { endMonth } from '../core/month.js';
 import { S } from '../core/state.js';
 import { LANG } from '../i18n/index.js';
 import { draw, present, startNight } from '../render/anim.js';
-import { centreOn, cvs, keepVisible, panBy, resize, selected, setSelected, setViewRot, tileAt, viewRot, worldEl, zoom, zoomAt } from '../render/camera.js';
+import { centreOn, cvs, keepVisible, panBy, resize, selected, setSelected, setViewRot, tileAt, tileAtW, viewRot, worldEl, zoom, zoomAt } from '../render/camera.js';
 import { modal, showNext } from './cards.js';
 import { $, flushFx } from './dom.js';
 import { refresh } from './guide.js';
 import { hidePop, setSheet, sheet, showMeterPop } from './hud.js';
-import { closeSheet, openSheet } from './sheets.js';
+import { closeSheet, openSheet, selectPlot } from './sheets.js';
 import { coverKey, coverOpen, frameView, pauseMenu, setLang } from './title.js';
 
 // =====================================================================
@@ -36,7 +36,13 @@ cvs.addEventListener('pointermove', e=>{
 });
 export function up(e){
   const wasSingle = pointers.size===1; pointers.delete(e.pointerId);
-  if(wasSingle && !dragged && downAt){
+  if(wasSingle && !dragged && downAt && S && S.pending==='attach'){
+    // choosing the next plot: tap one of the numbered plots
+    const r = cvs.getBoundingClientRect(), w = tileAtW(e.clientX-r.left, e.clientY-r.top);
+    const k = w ? S.region.cands.findIndex(P=>w[0]>=P.y && w[0]<P.y+P.n && w[1]>=P.x && w[1]<P.x+P.n) : -1;
+    if(k >= 0) selectPlot(k);
+  }
+  else if(wasSingle && !dragged && downAt){
     const r = cvs.getBoundingClientRect(); const i = tileAt(e.clientX-r.left, e.clientY-r.top);
     if(i<0 || i===selected){ setSelected(-1); if(sheet==='parcel') setSheet(null); }
     else { setSelected(i); setSheet('parcel'); }

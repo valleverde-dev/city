@@ -1,5 +1,8 @@
 export const I18N = {
 en: {
+  'att.pick':'Tap one of the numbered plots on the map (or in this list), then acquire it.', 'att.of':'{side} of {town}', 'att.pickFirst':'Choose a plot first',
+  'land.regional':'road ×{n}', 'land.flood':'river ×{n}', 'land.village':'old village ×{n}', 'land.habitat':'protected ×{n}',
+  'over.complete.t':'The Euroregion is complete!', 'over.complete.s':'COMPLETE', 'over.complete.x':'There is no free land left next to the {region}: {s} settlements and {p} residents. Brussels declares it a model of cross-border cooperation and sends a plaque. In three languages, two of them wrong.',
   // --- v0.6: the Euroregion ---
   'ui.settlement':'Settlement', 'ui.region':'Euroregion', 'region.name':'Euroregion {n}', 'ui.sizeN':'{s}×{s}',
   'ui.settlements':'Settlements consolidated', 'ui.regionPop':'Euroregion population', 'ui.dividend':'From the region', 'ui.thisSettlement':'This settlement',
@@ -38,10 +41,10 @@ en: {
   'cons.t':'{town} is consolidated!', 'cons.s':'CONSOLIDATED',
   'cons.x':'{town} has {n} registered residents and joins the {region}. It now pays {x} a month into the region, and its border counts as a neighbour for what comes next.',
   'cons.money':'Brussels recovers <b>{back}</b> of unspent funds. You keep <b>{kept}</b> for the next settlement.',
-  'cons.next':'Next: {type}, {s}×{s}. First choose a perk, then where to attach it.',
-  'att.t':'Where does it go?', 'att.x':'The Commission has approved <b>{town}</b> ({type}, {s}×{s}, target: {n} residents). Choose the side of <b>{last}</b> to attach it to.',
-  'att.hint':'Its neighbours decide the region combos, and the parcels along the border count as neighbours: they give access and form combos.',
-  'att.touches':'Borders on {list}', 'att.none':'No region combos', 'att.go':'Attach here',
+  'cons.next':'Next: {type}, {s}×{s}. First choose a perk, then its land on the map.',
+  'att.t':'Where does it go?', 'att.x':'The Commission has approved <b>{town}</b> ({type}, {s}×{s}, target: {n} residents). Its land has to be bought next to the region.',
+  'att.hint':'Its neighbours decide the region combos; roads, villages and the region along its edge give access and combos.',
+  'att.touches':'Borders on {list}', 'att.none':'No region combos', 'att.go':'Acquire plot {k}',
   'run.record':'New record!', 'run.best':'Best Euroregion: {s} settlements · {p} residents', 'run.new':'New Euroregion', 'run.settled':'{s} settlements consolidated · {p} residents in the region',
   'log.consolidated':'{town} consolidated with {n} residents.',
   'title.newSub':'Best: {s} settlements · {p} residents', 'title.newSub0':'Start with a 2×2 hamlet',
@@ -293,6 +296,9 @@ en: {
   'over.timeout.t':'The programme has ended', 'over.timeout.s':'CLOSED', 'over.timeout.x':'Month {m} is over with {n} of {target} residents. The programme "will be evaluated". A successor with a longer acronym is already being drafted.',
 },
 es: {
+  'att.pick':'Toca una de las parcelas numeradas del mapa (o de esta lista) y después adquiérela.', 'att.of':'{side} de {town}', 'att.pickFirst':'Primero elige una parcela',
+  'land.regional':'carretera ×{n}', 'land.flood':'río ×{n}', 'land.village':'pueblo viejo ×{n}', 'land.habitat':'protegido ×{n}',
+  'over.complete.t':'¡La Euroregión está completa!', 'over.complete.s':'COMPLETA', 'over.complete.x':'No queda terreno libre junto a la {region}: {s} asentamientos y {p} vecinos. Bruselas la declara modelo de cooperación transfronteriza y manda una placa. En tres idiomas, dos de ellos mal.',
   // --- v0.6: la Euroregión ---
   'ui.settlement':'Asentamiento', 'ui.region':'Euroregión', 'region.name':'Euroregión {n}', 'ui.sizeN':'{s}×{s}',
   'ui.settlements':'Asentamientos consolidados', 'ui.regionPop':'Población de la Euroregión', 'ui.dividend':'De la región', 'ui.thisSettlement':'Este asentamiento',
@@ -331,10 +337,10 @@ es: {
   'cons.t':'¡{town} queda consolidado!', 'cons.s':'CONSOLIDADO',
   'cons.x':'{town} tiene {n} vecinos empadronados y se une a la {region}. Desde ahora paga {x} al mes a la región, y su frontera cuenta como vecina para lo que venga después.',
   'cons.money':'Bruselas recupera <b>{back}</b> de fondos sin gastar. Te quedas <b>{kept}</b> para el siguiente asentamiento.',
-  'cons.next':'Lo siguiente: {type}, de {s}×{s}. Primero elige una ventaja y después dónde acoplarlo.',
-  'att.t':'¿Dónde lo ponemos?', 'att.x':'La Comisión ha aprobado <b>{town}</b> ({type}, {s}×{s}, objetivo: {n} vecinos). Elige en qué lado de <b>{last}</b> se acopla.',
-  'att.hint':'Sus vecinos deciden los combos regionales, y las parcelas de la frontera cuentan como vecinas: dan acceso y forman combos.',
-  'att.touches':'Linda con {list}', 'att.none':'Sin combos regionales', 'att.go':'Acoplar aquí',
+  'cons.next':'Lo siguiente: {type}, de {s}×{s}. Primero elige una ventaja y después su terreno en el mapa.',
+  'att.t':'¿Dónde lo ponemos?', 'att.x':'La Comisión ha aprobado <b>{town}</b> ({type}, {s}×{s}, objetivo: {n} vecinos). Su terreno hay que comprarlo junto a la región.',
+  'att.hint':'Sus vecinos deciden los combos regionales; las carreteras, los pueblos y la región junto a su borde dan acceso y combos.',
+  'att.touches':'Linda con {list}', 'att.none':'Sin combos regionales', 'att.go':'Adquirir la parcela {k}',
   'run.record':'¡Nuevo récord!', 'run.best':'Mejor Euroregión: {s} asentamientos · {p} vecinos', 'run.new':'Nueva Euroregión', 'run.settled':'{s} asentamientos consolidados · {p} vecinos en la región',
   'log.consolidated':'{town} consolidado con {n} vecinos.',
   'title.newSub':'Récord: {s} asentamientos · {p} vecinos', 'title.newSub0':'Empieza con una aldea de 2×2',

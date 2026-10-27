@@ -4,6 +4,7 @@ import { CFG } from '../core/config.js';
 import { save } from '../core/persist.js';
 import { count, hasAccess } from '../core/rules.js';
 import { S, rc } from '../core/state.js';
+import { worldIndex } from '../core/region.js';
 import { t } from '../i18n/index.js';
 import { draw } from '../render/anim.js';
 import { hsh } from '../render/pixel.js';
@@ -49,7 +50,7 @@ export function renderGuide(){
 }
 // Every building gets a style (its archetype) and a name, both fixed by the run's seed
 export function styleName(i){ const ty = S.grid[i].ty, A = archOf(i, ty), names = t('names.'+ty).split('|');
-  return `${t('style.'+ty+'.'+A.id)} · «${names[Math.floor(hsh(i, S.seed & 0xffff, 404)*names.length)]}»`; }
+  return `${t('style.'+ty+'.'+A.id)} · «${names[Math.floor(hsh(worldIndex(i), S.runSeed & 0xffff, 404)*names.length)]}»`; }
 export function refresh(){ applyStatic(); updateHUD(); renderSheet(); renderGuide(); draw(); }
 export let pulseUntil = 0;
 export function pulse(i){ S.focus = i; pulseUntil = performance.now()+2600; draw(); }
