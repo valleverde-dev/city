@@ -1,7 +1,7 @@
 """Difficulty check: lets a greedy bot play many seeded runs and prints the outcomes.
 
 Usage:  python3 web-prototype/tests/balance.py [runs] [path/to/index.html] [--level=1..4] [--sell]
-Not part of CI — it's a tuning tool. A good target for "hard": the bot wins
+Not part of CI — it's a tuning tool. Faster, without a browser: node tests/balance.mjs (same bot, same results). A good target for "hard": the bot wins
 some runs but loses most, with a mix of loss causes.
 """
 import collections
@@ -13,7 +13,7 @@ from playwright.sync_api import sync_playwright
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 args = [a for a in sys.argv[1:] if not a.startswith("--")]
 runs = int(args[0]) if args else 60
-target = pathlib.Path(args[1]) if len(args) > 1 else ROOT / "src" / "index.html"
+target = pathlib.Path(args[1]) if len(args) > 1 else ROOT / "dist" / "index.html"
 bot = (ROOT / "tests" / "balance_bot.js").read_text()
 SELL = "--sell" in sys.argv
 LEVEL = next((int(a.split("=")[1]) for a in sys.argv if a.startswith("--level=")), 4) - 1   # 1..4 on the command line

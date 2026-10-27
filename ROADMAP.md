@@ -6,7 +6,16 @@ Living project document · update it as the prototype evolves. The game design l
 
 **Eurocrat** (working title): a satirical, turn-based roguelike city builder. You are a Brussels programme officer who must deliver a model European town with plenty of money and no power — buy the land, file the permits, survive the neighbours, spend the funds before they expire. Tone and references: *Constructor* (1997), with a hyper-realistic, comic look at how building actually works in contemporary Europe. The plan: validate the loop in the web/iPad prototype, then port to Godot to ship on the App Store and Steam.
 
-## Current status — v0.5.0 (Oct 26, 2026)
+## Current status — v0.5.1 (Oct 27, 2026) · architecture for scale
+
+No gameplay changes: v0.5.1 makes the prototype ready to grow and to be ported.
+- **Modules instead of one file.** The 4,600-line `src/index.html` is now ES modules by layer: `core/` (the rules), `i18n/`, `render/`, `ui/`, `audio/`, plus CSS and the real font files. The build (esbuild) still produces **one self-contained `dist/index.html`**, so the PWA, offline play and GitHub Pages work as before.
+- **A portable core.** `src/core/` has no DOM, canvas, audio or `localStorage`; a layer check fails the build if that changes. It is the specification for the Godot port (file → GDScript autoload map in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)).
+- **Tests without a browser.** Rules tests in Node (levels, rule flags, determinism, actions, a month passing, save/load, the difficulty band) and the balance bot running in Node with identical results to the browser.
+- **Proven identical:** the smoke test (now 90 checks) passes, the bot gives the same outcomes for the same seeds, the sprite export is pixel-identical and screenshots of title, level card, sheets and month end match the old build pixel for pixel (iPad and iPhone sizes).
+- `/godot` is **frozen** at v0.1 until the port starts (see *Port triggers* below).
+
+## Previous — v0.5.0 (Oct 26, 2026)
 
 Playtest feedback: "I don't know what to do", "too much information", "too hard". v0.5 answers all three:
 - **Campaign of 4 levels** with maps of 2×2, 4×4, 8×8 and 16×16. Each level switches on new rules (and only shows the UI for the rules in play). Levels I–II cannot be lost.
@@ -53,14 +62,14 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 3. *Constructor*-style characters: named residents, complaints, a mayor with a face.
 4. Member states with their own rule quirks; more buildings (logistics hub, data centre, social housing).
 5. Decide on meta-progression between runs.
-6. Port v0.5 to Godot when the loop is validated.
+6. Port to Godot when a port trigger is met: `core/` first (with its tests), then rendering and UI.
 
 ## Assets
 
 ### Graphics
 
 - ✅ Pixel art chosen (Oct 2026) over flat vector and over satellite imagery (satellite tiles don't fit an isometric view and their licences don't allow shipping them in a commercial game).
-- ✅ Pipeline: sprites are generated in code (`RENDERING` section of `web-prototype/src/index.html`) at 64×32 px per tile; `tools/export_sprites.py` writes `art/sprites/eurocrat_sprites.png` + `.json` atlas, ready to import in Godot (TileSet / AtlasTexture, filter = nearest).
+- ✅ Pipeline: sprites are generated in code (`web-prototype/src/render/`) at 64×32 px per tile; `tools/export_sprites.py` writes `art/sprites/eurocrat_sprites.png` + `.json` atlas, ready to import in Godot (TileSet / AtlasTexture, filter = nearest).
 - Next: animation frames (smoke, water, cranes), seasonal palettes per member state, hand-touched hero sprites (town hall, mayor's office).
 
 ### Art direction
@@ -85,8 +94,10 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 ### Godot
 
 - **When to port:** once the game loop is validated in the web prototype (avoid porting too early and having to redo the design).
-- **What carries over directly:** the rules in `index.html` are written as pure functions over one JSON state (grid, meters, rng) — easy to move to GDScript; state structure (already JSON, easy to move to GDScript/Godot Resources).
+- **What carries over directly:** the rules live in `web-prototype/src/core/` as pure functions over one JSON state (grid, meters, rng), with no browser code (enforced by a layer check) and their own Node tests — port them file by file to GDScript autoloads (map in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)); the JSON state can stay identical so web saves load in Godot.
 - **Why Godot:** native export to iOS and desktop (Windows/Mac/Linux) for Steam, and lighter than Unity for solo iteration.
+- **Port triggers** (decide on these, not on anxiety): (1) the v0.5 playtest goes well — players finish level IV and ask for more; (2) bigger maps (32×32+) with a living town make the iPad web build slow; (3) Steam needs controller support, achievements or cloud saves as core features. Until then the web build stays the sandbox and `/godot` stays frozen.
+- **Alternative kept open:** ship the web build itself, wrapped (Capacitor for iOS, Tauri/Electron for Steam). Reasonable for a turn-based 2D game; iOS would still need Xcode.
 
 ### GitHub
 
@@ -106,7 +117,7 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 
 ## Suggested phases
 
-1. **Web prototype:** ✅ v0.1 (basic loop) · ✅ v0.2 (Eurocrat roguelike loop) · ✅ v0.3 (cards, land economy, EN/ES) · ✅ v0.4 (combos, readability) · ✅ v0.5 (campaign of 4 levels, guide, sheets UI, panning).
+1. **Web prototype:** ✅ v0.1 (basic loop) · ✅ v0.2 (Eurocrat roguelike loop) · ✅ v0.3 (cards, land economy, EN/ES) · ✅ v0.4 (combos, readability) · ✅ v0.5 (campaign of 4 levels, guide, sheets UI, panning) · ✅ v0.5.1 (modules, portable core, Node tests).
 2. **Mechanics design (current):** ✅ v0.3 cards, characters, land economy, i18n · next: playtest, tutorial.
 3. **Asset production:** consolidate the style guide, music, possible 3D assets.
 4. **Godot port:** migrate logic and UI, with the GitHub repository already active.

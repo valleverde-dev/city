@@ -1,0 +1,24 @@
+/* --- Main area: the map on a cadastral sheet + the panel --- */
+#main{flex:1; display:flex; flex-direction:column; min-height:0; background:var(--desk);}
+#world.night{background-color:#46527f !important;}
+#world{flex:1; position:relative; min-height:0; overflow:hidden; background-color:#cbd9ea; transition:background-color .25s steps(3);
+       background-image:
+         linear-gradient(rgba(22,63,148,.16) 2px, transparent 2px), linear-gradient(90deg, rgba(22,63,148,.16) 2px, transparent 2px),
+         linear-gradient(rgba(22,63,148,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(22,63,148,.07) 1px, transparent 1px);
+       background-size:96px 96px, 96px 96px, 16px 16px, 16px 16px; background-position:-1px -1px;}
+#world:before{content:""; position:absolute; inset:0; pointer-events:none;
+       background:radial-gradient(ellipse at center, transparent 55%, rgba(11,31,77,.18) 100%);}
+#map{position:absolute; inset:0; touch-action:none; display:block;}
+#hint{position:absolute; top:10px; left:50%; transform:translateX(-50%); max-width:calc(100% - 24px); text-align:center;
+      font-size:12px; color:#fff; background:var(--navy); border:2px solid #061232; box-shadow:2px 2px 0 rgba(11,31,77,.3);
+      padding:3px 10px; pointer-events:none; z-index:2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+#rotateBtn{position:absolute; right:12px; bottom:12px; z-index:2; width:44px; height:44px; background:var(--white); color:var(--blue);
+           border:2px solid var(--navy); box-shadow:inset -3px -3px 0 var(--sky2), var(--raise); cursor:pointer; display:flex; align-items:center; justify-content:center;}
+#rotateBtn:active{transform:translateY(3px); box-shadow:inset 3px 3px 0 var(--sky2);}
+#panel{background:var(--desk); border-top:2px solid var(--navy); overflow-y:auto; max-height:44%;
+       padding:12px 12px 14px; -webkit-overflow-scrolling:touch; touch-action:pan-y;}
+@media (min-width:900px) and (min-aspect-ratio:1/1){
+  #main{flex-direction:row;}
+  #panel{width:380px; max-height:none; border-top:none; border-left:2px solid var(--navy);}
+}
+

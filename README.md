@@ -8,6 +8,7 @@ Web prototype playable on iPad, iPhone and desktop; a Godot port is planned for 
 
 - Game design: [docs/GDD.md](docs/GDD.md)
 - Plan and status: [ROADMAP.md](ROADMAP.md)
+- Code organisation: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ## How to play (v0.5)
 
@@ -25,12 +26,23 @@ Web prototype playable on iPad, iPhone and desktop; a Godot port is planned for 
 .
 ├── ROADMAP.md                  living project document
 ├── docs/GDD.md                 game design document
+├── docs/ARCHITECTURE.md        how the code is organised (layers, files, port map)
 ├── web-prototype/
-│   ├── src/index.html          the game (a single self-contained HTML file)
+│   ├── src/
+│   │   ├── core/               the rules: pure functions over one JSON state, no DOM (→ GDScript)
+│   │   ├── i18n/               English + Spanish strings, t()
+│   │   ├── render/             isometric pixel art and animation (canvas)
+│   │   ├── ui/                 HUD, sheets, cards, title screen, input
+│   │   ├── audio/              music and sound effects
+│   │   ├── styles/ assets/     CSS and the embedded pixel fonts
+│   │   ├── index.html          page template
+│   │   └── main.js             boot
 │   ├── public/                 PWA manifest, service worker, icons, music
-│   ├── scripts/build.mjs       build src + public → dist (no dependencies)
-│   ├── tests/smoke_test.py     automated test in Chromium (Playwright), runs in CI
-│   ├── tests/balance.py        difficulty check: a bot plays many seeded runs
+│   ├── scripts/build.mjs       bundle src → one self-contained dist/index.html (esbuild)
+│   ├── scripts/check-layers.mjs  keeps core/ free of browser code
+│   ├── tests/core/             rules tests in Node (no browser)
+│   ├── tests/smoke_test.py     UI test in Chromium (Playwright), runs in CI
+│   ├── tests/balance.mjs|.py   difficulty check: a bot plays many seeded runs (Node or browser)
 │   └── package.json
 ├── audio/                      soundtrack sources (MIDI + generator)
 ├── godot/                      Godot 4 skeleton (v0.1 mechanics, for Xogot)
@@ -41,13 +53,14 @@ Web prototype playable on iPad, iPhone and desktop; a Godot port is planned for 
 
 ```bash
 cd web-prototype
-npm run build        # generates dist/
-npm run serve        # http://localhost:8080
-npm test             # smoke test against src/ (requires: pip install playwright && python -m playwright install chromium)
-python3 tests/balance.py 150   # difficulty check over 150 seeded runs
+npm install          # once: installs esbuild (the only dev dependency)
+npm run dev          # rebuilds dist/ on every change in src/
+npm run serve        # http://localhost:8080 (second terminal)
+npm test             # layer check + rules tests (Node) + build + smoke test (needs: pip install playwright && python -m playwright install chromium)
+npm run balance -- 150 --level=4   # difficulty check over 150 seeded runs, in Node
 ```
 
-To iterate, just open `web-prototype/src/index.html` in a browser. The tuning knobs (`CFG`, building table `B`, events, directives, perks) are at the top of the script.
+The tuning knobs (`CFG`, levels, building table `B`, perks) are in `src/core/config.js`; events in `src/core/events.js`; every text in `src/i18n/strings.js`. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for where everything else lives.
 
 ### Playing on iPad
 

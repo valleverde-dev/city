@@ -1,0 +1,4 @@
+/* Pixel fonts (SIL OFL 1.1, subset to Latin). The build inlines them, so the game makes no network requests. */
+@font-face{font-family:'Jersey'; src:url('../assets/fonts/jersey10.woff') format('woff'); font-display:block;}
+@font-face{font-family:'Pixel'; src:url('../assets/fonts/pixelify-sans.woff') format('woff'); font-weight:400 700; font-display:block;}
+@font-face{font-family:'Silk'; src:url('../assets/fonts/silkscreen-bold.woff') format('woff'); font-display:block;}
