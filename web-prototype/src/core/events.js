@@ -11,7 +11,7 @@ import { S, pick, pname, r1, rc, ri, rnd } from './state.js';
 export const sitesFree = () => S.grid.map((p,i)=>i).filter(i=>S.grid[i].st==='building' && !S.grid[i].halt);
 export const halt = (i,n) => { const p=S.grid[i]; p.halt = Math.max(p.halt, n); p.flag = {k:'halt', until:S.month+n}; };
 export const EVENTS = {
-  archaeology: {char:'heritage', sfx:'clink', icon:'account_balance', w:3,
+  archaeology: {char:'heritage', sfx:'clink', icon:'domain_disabled', w:3,
     ok:()=>sitesFree().length>0, setup:()=>({i:pick(sitesFree())}),
     choices:[
       {k:'call',     fx:()=>[['delay',3]], run:v=>{ halt(v.i,3); }},

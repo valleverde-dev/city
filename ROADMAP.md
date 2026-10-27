@@ -18,6 +18,7 @@ No gameplay changes: v0.5.1 makes the prototype ready to grow and to be ported.
 ## Since v0.5.1 — title screen
 
 - **Classic title screen**, from the design wireframe: the logo, a vertical menu — *New game* (the case files) · *Continue* · *Settings* (language, music) · *Credits* — and the version and copyright in the bottom corners, over the animated diorama and an avenue of waving flags of Europe. Keyboard: arrows / W-S, Enter, Esc. Replaces the "one-stop shop" panel and the news ticker.
+- **No more portico emblem.** The fictional Union emblem is gone from the header and the letterheads (wordmark and name only); its small icon became a ballot box (municipal land) and ruins (archaeology). The flag of Europe stays scenery only.
 - The version shown comes from `core/config.js` (`VERSION`); the build fails if it differs from `package.json`.
 - Smoke test: 96 checks (menu, its views, keyboard navigation, Continue pre-selected with a save).
 

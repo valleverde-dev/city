@@ -48,7 +48,7 @@ export const B = {
   park:    {icon:'park',           cost:1.5, build:2, permit:1, upkeep:0.02},
 };
 export const BUILD_TYPES = ['road','housing','factory','school','clinic','park'];
-export const KIND = { farm:'agriculture', muni:'account_balance', flood:'water', habitat:'forest', village:'cottage', regional:'add_road' };
+export const KIND = { farm:'agriculture', muni:'how_to_vote', flood:'water', habitat:'forest', village:'cottage', regional:'add_road' };
 export const PERKS = {
   notary:'history_edu', fasttrack:'bolt', prefab:'view_in_ar', contractor:'engineering', cousin:'family_restroom',
   translation:'translate', comms:'campaign', fixer:'handshake', shovel:'workspace_premium', lobbyist:'restaurant',

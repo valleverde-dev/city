@@ -27,7 +27,6 @@ b, strong{font-weight:700;}
 .ico{display:inline-block; flex:0 0 auto; width:18px; height:18px; background-color:currentColor; vertical-align:middle;
      -webkit-mask:var(--m) center/100% 100% no-repeat; mask:var(--m) center/100% 100% no-repeat;}
 .ico.s12{width:12px; height:12px;} .ico.s24{width:24px; height:24px;} .ico.s36{width:36px; height:36px;}
-.emblem{display:inline-block; flex:0 0 auto; width:40px; height:40px; background:var(--m) center/100% 100% no-repeat; image-rendering:pixelated;}
 
 #app{display:flex; flex-direction:column; height:100%;
      padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); background:var(--blue);}

@@ -12,7 +12,6 @@
 @keyframes slam{0%{transform:translateY(40px); opacity:0;} 100%{transform:none; opacity:1;}}
 .notice .letterhead{display:flex; align-items:center; gap:10px; background:var(--blue); color:#fff; padding:8px 12px 8px 10px;
         border-bottom:4px solid var(--yellow); position:sticky; top:0; z-index:2;}
-.notice .letterhead .emblem{width:32px; height:32px;}
 .notice .letterhead .org{font:400 8px/1.5 var(--f-tag); letter-spacing:.06em; text-transform:uppercase; color:#fff;}
 .notice .letterhead .org i{display:block; font-style:normal; color:var(--yellow);}
 .notice .letterhead .date{margin-left:auto; font:400 16px/1 var(--f-display); color:#c9d6f2; white-space:nowrap;}

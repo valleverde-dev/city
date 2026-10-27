@@ -12,19 +12,6 @@ export const PIXEL_ICONS = {
     '....#####...',
     '............',
     '............'],
-  portico: [
-    '.....##.....',
-    '...######...',
-    '.##########.',
-    '############',
-    '............',
-    '.##.##.##.##',
-    '.##.##.##.##',
-    '.##.##.##.##',
-    '.##.##.##.##',
-    '............',
-    '############',
-    '############'],
   wallet: [
     '............',
     '.#########..',
@@ -860,7 +847,7 @@ export const PIXEL_ICONS = {
 };
 // Material Icons names used by the game → pixel icon
 export const ICON_ALIAS = {
-  euro:'euro', account_balance:'portico', account_balance_wallet:'wallet', add_circle:'plus', add_location:'pin', place:'pin',
+  euro:'euro', account_balance_wallet:'wallet', add_circle:'plus', add_location:'pin', place:'pin',
   wrong_location:'pin', add_road:'road', agriculture:'wheat', apartment:'block', assignment_late:'hourglass', block:'ban', bolt:'bolt',
   campaign:'megaphone', cancel:'stop', casino:'dice', celebration:'party', check:'check', check_circle:'check', task_alt:'check', verified:'check',
   close:'close', content_cut:'scissors', cottage:'house', cruelty_free:'toad', description:'doc', fact_check:'doccheck', history_edu:'doc',
@@ -875,36 +862,11 @@ export const ICON_ALIAS = {
 };
 export function bitmapPath(rows, ch='#'){ let d=''; rows.forEach((r,y)=>{ let x=0; while(x<r.length){ if(r[x]===ch){ const s=x; while(x<r.length && r[x]===ch) x++; d+=`M${s} ${y}h${x-s}v1h${s-x}z`; } else x++; } }); return d; }
 export const svgURL = s => `url("data:image/svg+xml,${encodeURIComponent(s)}")`;
-// The Union's (fictional) emblem: a yellow portico on institutional blue. No stars, no real symbols.
-export const EMBLEM_ROWS = [
-  'NNNNNNNNNNNNNNNNNNNN',
-  'NBBBBBBBBBBBBBBBBBBN',
-  'NBBBBBBBBYYBBBBBBBBN',
-  'NBBBBBBBYYYYBBBBBBBN',
-  'NBBBBBBYYDDYYBBBBBBN',
-  'NBBBBBYYYYYYYYBBBBBN',
-  'NBBBBYYYYYYYYYYBBBBN',
-  'NBBBYYYYYYYYYYYYBBBN',
-  'NBBBBBBBBBBBBBBBBBBN',
-  'NBBBYYBYYBBYYBYYBBBN',
-  'NBBBYDBYDBBYDBYDBBBN',
-  'NBBBYDBYDBBYDBYDBBBN',
-  'NBBBYDBYDBBYDBYDBBBN',
-  'NBBBYDBYDBBYDBYDBBBN',
-  'NBBBBBBBBBBBBBBBBBBN',
-  'NBBYYYYYYYYYYYYYYBBN',
-  'NBYYYYYYYYYYYYYYYYBN',
-  'NBBBBBBBBBBBBBBBBBBN',
-  'NBBBBBBBBBBBBBBBBBBN',
-  'NNNNNNNNNNNNNNNNNNNN'];
-export const EMBLEM_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" shape-rendering="crispEdges">`+
-  [['N','#0b1f4d'],['B','#163f94'],['Y','#ffd200'],['D','#e6b400']].map(([c,f])=>`<path fill="${f}" d="${bitmapPath(EMBLEM_ROWS,c)}"/>`).join('')+'</svg>';
 (function injectIconCSS(){
   const by = {}; for(const [k,v] of Object.entries(ICON_ALIAS)) (by[v] = by[v] || []).push(k);
   const css = Object.entries(PIXEL_ICONS).map(([name, rows])=>{
     const sel = [name, ...(by[name]||[])].map(n=>'.i-'+n).join(',');
     return `${sel}{--m:${svgURL(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" shape-rendering="crispEdges"><path d="${bitmapPath(rows)}"/></svg>`)}}`; });
-  css.push(`.emblem{--m:${svgURL(EMBLEM_SVG)}}`);
   const st = document.createElement('style'); st.textContent = css.join('\n'); document.head.appendChild(st);
 })();
 export function ic(name, cls){ const n = (ICON_ALIAS[name] || PIXEL_ICONS[name]) ? name : 'info';
