@@ -12,8 +12,14 @@ No gameplay changes: v0.5.1 makes the prototype ready to grow and to be ported.
 - **Modules instead of one file.** The 4,600-line `src/index.html` is now ES modules by layer: `core/` (the rules), `i18n/`, `render/`, `ui/`, `audio/`, plus CSS and the real font files. The build (esbuild) still produces **one self-contained `dist/index.html`**, so the PWA, offline play and GitHub Pages work as before.
 - **A portable core.** `src/core/` has no DOM, canvas, audio or `localStorage`; a layer check fails the build if that changes. It is the specification for the Godot port (file → GDScript autoload map in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)).
 - **Tests without a browser.** Rules tests in Node (levels, rule flags, determinism, actions, a month passing, save/load, the difficulty band) and the balance bot running in Node with identical results to the browser.
-- **Proven identical:** the smoke test (now 90 checks) passes, the bot gives the same outcomes for the same seeds, the sprite export is pixel-identical and screenshots of title, level card, sheets and month end match the old build pixel for pixel (iPad and iPhone sizes).
+- **Proven identical:** the smoke test (90 checks at the time) passes, the bot gives the same outcomes for the same seeds, the sprite export is pixel-identical and screenshots of title, level card, sheets and month end match the old build pixel for pixel (iPad and iPhone sizes).
 - `/godot` is **frozen** at v0.1 until the port starts (see *Port triggers* below).
+
+## Since v0.5.1 — title screen
+
+- **Classic title screen**, from the design wireframe: the logo, a vertical menu — *New game* (the case files) · *Continue* · *Settings* (language, music) · *Credits* — and the version and copyright in the bottom corners, over the animated diorama and an avenue of waving flags of Europe. Keyboard: arrows / W-S, Enter, Esc. Replaces the "one-stop shop" panel and the news ticker.
+- The version shown comes from `core/config.js` (`VERSION`); the build fails if it differs from `package.json`.
+- Smoke test: 96 checks (menu, its views, keyboard navigation, Continue pre-selected with a save).
 
 ## Previous — v0.5.0 (Oct 26, 2026)
 
@@ -74,7 +80,7 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 
 ### Art direction
 
-- **v0.2: Constructor-style** colourful isometric map + a UI that parodies an institutional e-government portal (white panels, institutional blue, yellow highlights, rubber stamps). Fictional institutions only — no real EU names, flags or emblems.
+- **v0.2: Constructor-style** colourful isometric map + a UI that parodies an institutional e-government portal (white panels, institutional blue, yellow highlights, rubber stamps). Fictional institutions only — no real EU names or institutional logos; the flag of Europe appears only as scenery (see GDD §1).
 - v0.1 used a Syndicate (1993) neon look; it was dropped with the pivot.
 - Recommendation: document this as a style guide (moodboard + palette + typefaces) to keep assets consistent as they scale.
 

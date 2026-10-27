@@ -184,7 +184,7 @@ Later: short stingers for stamps, approvals, failed directives and audits; a ten
 
 ## 13. Language
 
-English and Spanish, switchable at any time (HUD button or menus); the choice is remembered. Every string lives in one dictionary (`web-prototype/src/i18n/strings.js`); logs and cards store keys, so switching language re-renders everything.
+English and Spanish, switchable at any time (HUD button, pause menu or Settings on the title screen); the choice is remembered. Every string lives in one dictionary (`web-prototype/src/i18n/strings.js`); logs and cards store keys, so switching language re-renders everything.
 
 ## 14. Interface
 
@@ -193,6 +193,7 @@ Pixel-art frame in the imagery of a (fictional) Union portal: pixel fonts for ti
 - **Full-screen map.** Top bar: month, funds, residents, agenda slots, a **bell** with the number of problems, language, music, menu. Meters appear only when their rule is in play (one compact row on phones; tap one for what it means and why it moved).
 - **Bottom tab bar:** Agenda · Town · **End month** · Inbox · Combos. Each opens a **sheet** on demand (bottom sheet on phones, floating card on the left on iPad/PC); tapping a parcel opens its sheet and nudges the map so the parcel stays visible.
 - Directive pill on the map; the mayor's guide bubble; event cards, notices and combos in the **centre of the screen**.
+- **Title screen:** a full-screen scene — an animated diorama of the model town over an avenue of waving flags of Europe — with the logo and a classic vertical menu: **New game** (the case files, i.e. the levels) · **Continue** (disabled with no save, pre-selected when there is one) · **Settings** (language, music) · **Credits** (author, music and font rights, a satire disclaimer). Version bottom-left, copyright bottom-right. Arrow keys / W-S move, Enter picks, Esc goes back. The design canvas holds the reference mockups of the four views.
 
 ## 15. Controls (iPad first)
 

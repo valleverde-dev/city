@@ -39,7 +39,7 @@ Until v0.5 everything lived in one 4,600-line `src/index.html`. v0.5.1 split it 
 | File | What it holds | Godot port |
 |---|---|---|
 | `state.js` | `S` (the whole game state), `N` (map side), `setState`, the seeded RNG (`rnd`, `ri`, `pick`) and grid helpers (`idx`, `rc`, `inside`, neighbours) | `GameState` autoload |
-| `config.js` | Tuning knobs (`CFG`), levels and their rule flags (`LEVELS`, `on()`), buildings (`B`), perks, characters, town names | `Config` resource / JSON |
+| `config.js` | `VERSION` (checked by the build against `package.json`), tuning knobs (`CFG`), levels and their rule flags (`LEVELS`, `on()`), buildings (`B`), perks, characters, town names | `Config` resource / JSON |
 | `newgame.js` | Generating a site: farmland, village, river, habitat, municipal plots | `SiteGenerator` |
 | `rules.js` | Meters (`bump`), money (`spend`), access, prices, permit/build times, approval chance, capacities (`caps`), `log` and `fx` | `Rules` |
 | `economy.js` | Residents, taxes, monthly costs, committed money, milestones | `Rules` |
@@ -74,7 +74,7 @@ The contract with the UI (also the contract the Godot port must honour):
 | `anim.js` | The ~15 fps animation layer, night, completions, birds, flags, traffic |
 
 ### `src/ui/`, `src/audio/`, `src/main.js`
-`dom.js` (helpers, floating feedback), `hud.js` (top bar, meters), `problems.js` (the bell), `sheets.js`, `guide.js` (the mayor's guide), `cards.js` (letters, event cards), `title.js` (title screen, menus, starting levels), `input.js` (touch, mouse, keyboard), `icons.js` (66 pixel icons). `audio/music.js` and `audio/sfx.js`. `main.js` boots the game and exposes `window.__eurocrat` for the tests.
+`dom.js` (helpers, floating feedback), `hud.js` (top bar, meters), `problems.js` (the bell), `sheets.js`, `guide.js` (the mayor's guide), `cards.js` (letters, event cards), `title.js` (title screen: the scene, the menu and its views — new game, settings, credits — keyboard navigation, starting levels), `input.js` (touch, mouse, keyboard), `icons.js` (66 pixel icons). `audio/music.js` and `audio/sfx.js`. `main.js` boots the game and exposes `window.__eurocrat` for the tests.
 
 ### `src/styles/` and `src/assets/`
 CSS split by area and imported in order by `styles/index.css` (order matters: `readability.css` and `layout.css` refine the earlier files). The three OFL fonts are real `.woff` files in `assets/fonts/`; the build inlines them.
@@ -89,7 +89,7 @@ CSS split by area and imported in order by `styles/index.css` (order matters: `r
 |---|---|---|
 | `npm run check` | Layer check: the core stays portable | Node |
 | `npm run test:core` | Rules tests: levels, rule flags, determinism, actions, a month passing, save/load, the difficulty band | Node |
-| `npm run test:smoke` | 90 checks driving the real UI in Chromium (phone and iPad layouts, both languages) | Playwright |
+| `npm run test:smoke` | 96 checks driving the real UI in Chromium (phone and iPad layouts, both languages) | Playwright |
 | `npm test` | All of the above + build | both |
 | `npm run balance -- 150 --level=4` | The greedy bot over seeded runs, in Node | Node |
 
