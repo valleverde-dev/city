@@ -1,6 +1,7 @@
 import { activeCombos, discovered } from '../core/combos.js';
 import { buildMonths, hasAccess } from '../core/rules.js';
 import { N, S, clamp, idx, rc } from '../core/state.js';
+import { cellPos } from '../core/region.js';
 import { t } from '../i18n/index.js';
 import { H, MAPCX, MAPCY, TH, TW, W, ctx, cvs, dpr, isoOf, rotateCoord, scale, selected, viewRot, worldEl } from './camera.js';
 import { GROUNDS, riverTile, roadTile, skirt, wedgeTile } from './ground.js';
@@ -174,6 +175,7 @@ export function draw(){
   gctx.setTransform(1,0,0,1,0,0); gctx.clearRect(0,0,AW,AH); gctx.imageSmoothingEnabled = false; darkGround.length = 0;
   const order = [];
   for(let r=0;r<N;r++) for(let c=0;c<N;c++){ const [r2,c2]=rotateCoord(r,c,viewRot); order.push([r2+c2, c2, idx(r,c)]); }
+  (S.frontier||[]).forEach((f,k)=>{ const [r2,c2]=rotateCoord(f.r,f.c,viewRot); order.push([r2+c2, c2, -1-k]); });   // the neighbours' strip
   order.sort((a,b)=>a[0]-b[0] || a[1]-b[1]);
   WATER = []; LAMPS = []; TOPS = new Map();
   order.forEach(o=>drawTile(o[2]));
@@ -188,6 +190,7 @@ export function groundFor(step){ if(!step) return groundCv; if(darkGround[step])
 // One parcel's frame: lamp, traffic, sprite (rising if just finished), crane, effects, people, animals
 export function drawEntry(E, T, step, now){
   if(E.cycle){ drawCycleSite(E, T, step); return; }
+  if(E.ghost) step = Math.max(step, 1);   // the consolidated neighbours, a shade dimmer
     if(E.lamp) drawLamp(E, step);
     if(E.cars) drawCars(E, T, step);
     let rising = false;
@@ -258,12 +261,19 @@ export function badge(x,y,text,col){ ctx.font='700 8px Pixel, sans-serif'; const
 export function drawComboLinks(){
   const known = discovered();
   activeCombos().forEach(x=>{ if(!known.includes(x.id)) return;
-    const [x1,y1] = isoOf(...rc(x.i)), [x2,y2] = isoOf(...rc(x.j)), col = x.good ? '#1d8148' : '#c62f28';
+    const [x1,y1] = isoOf(...rc(x.i)), [x2,y2] = isoOf(...cellPos(x.j)), col = x.good ? '#1d8148' : '#c62f28';
     ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 1.6; ctx.setLineDash([2.5,2]);
     ctx.beginPath(); ctx.moveTo(x1,y1-4); ctx.lineTo(x2,y2-4); ctx.stroke(); ctx.setLineDash([]);
     const mx=(x1+x2)/2, my=(y1+y2)/2-4; ctx.fillStyle = col; ctx.fillRect(mx-3.5,my-3.5,7,7);
     ctx.fillStyle = '#fff'; ctx.font = 'bold 6px system-ui, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(x.good?'+':'!', mx, my+0.3);
     ctx.restore(); });
+}
+// The edge of the settlement in play, when consolidated neighbours surround it
+export function drawBorder(){
+  if(!S.frontier || !S.frontier.length) return;
+  const e = N-0.5, pts = [[-0.5,-0.5],[-0.5,e],[e,e],[e,-0.5]].map(([r,c])=>isoOf(r,c));
+  ctx.save(); ctx.strokeStyle = 'rgba(255,210,0,.85)'; ctx.lineWidth = 1.2; ctx.setLineDash([4,3]);
+  ctx.beginPath(); pts.forEach(([x,y],k)=>k ? ctx.lineTo(x,y) : ctx.moveTo(x,y)); ctx.closePath(); ctx.stroke(); ctx.restore();
 }
 export const MARK = {rejected:['✕','#d64545'], event:['!','#e8442e'], toad:['!','#2e7d32'], holdout:['€↑','#d98a00'], paused:['II','#d98a00'], ruin:['!','#6b6b6b'], halt:null};
 export function drawLabels(i){
@@ -291,8 +301,9 @@ export function presentNow(){
   ctx.drawImage(art, Math.round(dpr*(W/2 + (-AOX-MAPCX)*s)), Math.round(dpr*(H/2 + (-AOY-MAPCY)*s)), Math.round(AW*k), Math.round(AH*k));
   // Crisp overlays on top: month badges and the selection marker
   ctx.setTransform(k,0,0,k, dpr*(W/2 - MAPCX*s), dpr*(H/2 - MAPCY*s)); ctx.imageSmoothingEnabled = true;
+  drawBorder();
   drawComboLinks();
-  order.forEach(o=>drawLabels(o[2]));
+  order.forEach(o=>{ if(o[2]>=0) drawLabels(o[2]); });
   if(selected>=0){ const p=S.grid[selected], [x,y]=isoOf(Math.floor(selected/N), selected%N);
     const top = y - (TOPS.get(selected) || 14) - 4;
     const bob = Math.round(top) - 1 + (MOTION ? Math.round(Math.sin(performance.now()/170)) : 0);   // stepped pixel arrow: navy outline, yellow fill

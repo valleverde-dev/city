@@ -15,6 +15,8 @@ import { problems } from './problems.js';
 
 // --- Static texts (re-applied when the language changes) ---
 export const ROMAN = ['I','II','III','IV','V','VI'];
+export function roman(n){ const T = [[1000,'M'],[900,'CM'],[500,'D'],[400,'CD'],[100,'C'],[90,'XC'],[50,'L'],[40,'XL'],[10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']];
+  let out = ''; for(const [v,s] of T) while(n >= v){ out += s; n -= v; } return out; }
 export let sheet = null;          // which sheet is open: null | 'parcel' | 'agenda' | 'city' | 'inbox' | 'problems' | 'combos'
 export function setSheet(name){ sheet = name; }
 export function applyStatic(){
@@ -37,7 +39,7 @@ export function setMeter(id, v, prev, warnBelow=40, badBelow=25){
   el.classList.toggle('alarm', d <= -8);
 }
 export function updateHUD(){
-  $('townName').textContent = `${t('ui.level')} ${ROMAN[S.level]} · ${S.town}`;
+  $('townName').textContent = `${t('ui.settlement')} ${roman((S.stage||0)+1)} · ${S.town}`;
   $('month').textContent = Math.min(S.month, CFG.months); $('months').textContent = CFG.months;
   $('funds').textContent = money(S.funds); $('residents').textContent = residents(); $('target').textContent = CFG.target;
   $('st-debt').hidden = !(S.debt>0); $('debt').textContent = money(-S.debt);
@@ -58,8 +60,9 @@ export function updateHUD(){
   $('bellN').hidden = !pb.length; $('bellN').textContent = pb.length; $('bellBtn').classList.toggle('alert', bad);
   // Bottom bar
   const end = $('endTurn'); end.querySelector('.lbl').textContent = t(innerWidth < 600 ? 'ui.endMonthTiny' : 'ui.endMonthShort');
-  end.querySelector('small').textContent = t('ui.endMonthSub', {m:Math.min(S.month, CFG.months), n:CFG.months, c:money(monthlyCosts()-taxIncome())});
-  end.disabled = !!S.over;
+  { const net = monthlyCosts()-taxIncome();   // what the month will cost (−) or bring in (+)
+    end.querySelector('small').textContent = t('ui.endMonthSub', {m:Math.min(S.month, CFG.months), n:CFG.months, c:(net>0.05 ? '−' : net<-0.05 ? '+' : '')+money(Math.abs(net))}); }
+  end.disabled = !!S.over || !!S.pending;
   document.querySelectorAll('.tab[data-tab]').forEach(b=>{ const tab = b.dataset.tab;
     b.hidden = (tab==='agenda' && !agendaAvailable()) || (tab==='combos' && !on('combos'));
     b.classList.toggle('on', sheet===tab); });

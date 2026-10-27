@@ -1,5 +1,6 @@
 import { on } from './config.js';
 import { N, NB8, S, idx, inside, rc } from './state.js';
+import { codeTokens, frontierAround, regionFx } from './region.js';
 import { storage } from './storage.js';
 
 // =====================================================================
@@ -36,18 +37,23 @@ export function activeCombos(){
   for(let i=0;i<N*N;i++){ const ti = tokens(S.grid[i]); if(!ti.length) continue; const [r,c] = rc(i);
     for(const [dr,dc] of NB8){ const r2=r+dr, c2=c+dc; if(!inside(r2,c2)) continue; const j = idx(r2,c2); if(j<=i) continue;
       const tj = tokens(S.grid[j]); if(!tj.length) continue;
-      matchCombos(ti, tj).forEach(cb=>list.push({id:cb.id, i, j, good:cb.good})); } }   // every combo needs a building ('a')
+      matchCombos(ti, tj).forEach(cb=>list.push({id:cb.id, i, j, good:cb.good})); }   // every combo needs a building ('a')
+    // across the border: the consolidated neighbour's parcels (j = -1-k)
+    frontierAround(r,c).forEach(k=>matchCombos(ti, codeTokens(S.frontier[k].x)).forEach(cb=>list.push({id:cb.id, i, j:-1-k, good:cb.good}))); }
   return list;
 }
 export const COMBO_BY_ID = Object.fromEntries(COMBOS.map(c=>[c.id,c]));
 export function comboFx(){ const f = {homes:0, jobs:0, school:0, health:0, neigh:0, local:0, tax:0, rate:0};
-  activeCombos().forEach(x=>{ const e = COMBO_BY_ID[x.id].fx; for(const k in e) f[k] += e[k]; }); return f; }
+  activeCombos().forEach(x=>{ const e = COMBO_BY_ID[x.id].fx; for(const k in e) f[k] += e[k]; });
+  const R = regionFx(); for(const k in f) if(R[k]) f[k] += R[k];   // the settlement's type and its region combos
+  return f; }
 // Which combos would appear if 'ty' were built on parcel i (used for the preview)
 export function comboPreview(i, ty){
   if(!on('combos')) return [];
   const [r,c] = rc(i), me = [ty];
   const seen = new Map();
   NB8.forEach(([dr,dc])=>{ if(!inside(r+dr,c+dc)) return; matchCombos(me, tokens(S.grid[idx(r+dr,c+dc)])).forEach(cb=>seen.set(cb.id, cb)); });
+  frontierAround(r,c).forEach(k=>matchCombos(me, codeTokens(S.frontier[k].x)).forEach(cb=>seen.set(cb.id, cb)));
   return [...seen.values()];
 }
 // The catalogue of discovered combos survives between runs (it is knowledge, not power)

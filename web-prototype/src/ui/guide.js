@@ -33,9 +33,9 @@ export const GUIDES = [
     {k:'g4.spend',   done:()=>S.month>=8} ],
 ];
 export let guideAt = -1;
-export function guideStep(){ const g = GUIDES[S.level] || []; const k = g.findIndex(s=>!s.done()); return k<0 ? null : {s:g[k], n:k+1, total:g.length}; }
+export function guideStep(){ const g = GUIDES[S.stage||0] || []; const k = g.findIndex(s=>!s.done()); return k<0 ? null : {s:g[k], n:k+1, total:g.length}; }
 export function renderGuide(){
-  const el = $('guide'), cur = (S.guideOff || S.over) ? null : guideStep();
+  const el = $('guide'), cur = (S.guideOff || S.over || S.pending) ? null : guideStep();
   guideAt = -1; $('endTurn').classList.remove('nudge');
   if(!cur){ el.hidden = true; $('hint').hidden = false; return; }
   $('hint').hidden = true; el.hidden = false;

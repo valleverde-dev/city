@@ -14,6 +14,9 @@ import { pulse, refresh, styleName } from './guide.js';
 import { actBtn, agendaAvailable, doAction, hidePop, setSheet, sheet } from './hud.js';
 import { ic } from './icons.js';
 import { problems } from './problems.js';
+import { REGION_COMBOS, regionDividend, regionPop } from '../core/region.js';
+import { rcomboChips, regionName, stypeBlock } from './cards.js';
+import { regionCanvas } from './regionmap.js';
 
 // --- Sheets: one thing at a time, on demand ---
 export function openSheet(name){ hidePop(); setSheet(name); if(name==='inbox') S.logSeen = S.logN||0; refresh(); }
@@ -32,7 +35,7 @@ export function renderSheet(){
         <div class="due" style="color:${left<=1?'var(--bad)':'var(--ink)'}">${t('ui.due', {m:d.deadline, n:left})}</div>`;
       body.appendChild(c); }
     body.appendChild(agendaCard()); }
-  if(sheet==='city'){ title.innerHTML = `${ic('insights')}${t('ui.town')}`; body.appendChild(cityCard()); }
+  if(sheet==='city'){ title.innerHTML = `${ic('insights')}${t('ui.town')}`; body.appendChild(cityCard()); body.appendChild(regionCard()); }
   if(sheet==='inbox'){ title.innerHTML = `${ic('inbox')}${t('ui.inbox')}`;
     const lg = document.createElement('div'); lg.className='card';
     lg.innerHTML = `<ul class="log">${S.log.slice(0,30).map(l=>`<li class="${l.c}"><span class="m">M${l.m}</span>${t(l.k, P(l.p))}</li>`).join('')}</ul>`;
@@ -61,6 +64,17 @@ export function cityCard(){
     ${S.perks.length||S.shovel ? row('ui.perks', S.perks.map(k=>t('perk.'+k)).concat(S.shovel?[t('perk.shovel')]:[]).join(', ')) : ''}</dl>
     <div class="bottleneck">${t('ui.limitedBy')} <b>${t('bn.'+cp.bottleneck)}</b></div>`;
   return st;
+}
+// The Euroregion: the map of all settlements, what the region pays, this settlement's type and region combos
+export function regionCard(){
+  const c = document.createElement('div'); c.className = 'card region';
+  const row = (k, v) => `<dt>${t(k)}</dt><dd>${v}</dd>`;
+  c.innerHTML = `<h4>${ic('map')}${regionName()}</h4><div class="rmap-slot"></div>
+    <dl class="kv">${row('ui.settlements', S.region.blocks.length)}${row('ui.regionPop', regionPop() + residents())}${S.region.blocks.length ? row('ui.dividend', money(regionDividend())+'/'+t('ui.mo')) : ''}</dl>
+    <p class="hint">${t('ui.thisSettlement')}</p>${stypeBlock(S.stype)}${S.rcombos.length ? rcomboChips(S.rcombos, true) : ''}
+    ${S.region.blocks.length ? `<p class="hint">${t('ui.regionHint')}</p>` : ''}`;
+  c.querySelector('.rmap-slot').appendChild(regionCanvas({maxW: 300, maxH: 170}));
+  return c;
 }
 export function agendaCard(){
   const c = document.createElement('div'); c.className='card';
@@ -127,7 +141,12 @@ export function catalogueEl(){
   const items = COMBOS.map(cb=>{ const k = known.includes(cb.id);
     return `<li class="${k?(cb.good?'good':'bad'):'unknown'}">${ic(k?(cb.good?'workspace_premium':'warning'):'info')}<span><b>${k?t('combo.'+cb.id):t('combo.unknown')}</b>
       <small>${k ? t('combod.'+cb.id) + ' · ' + t('combo.pieces',{a:t('piece.'+cb.a), b:t('piece.'+cb.b)}) : t('combo.unknownHint')}</small></span></li>`; }).join('');
-  wrap.innerHTML = `<p>${t('combo.catx',{n:known.length, t:COMBOS.length})}</p><ul class="catalogue">${items}</ul>`;
+  const rk = REGION_COMBOS.filter(c=>known.includes(c.id)).length;
+  const ritems = REGION_COMBOS.map(cb=>{ const k = known.includes(cb.id);
+    return `<li class="${k?(cb.good?'good':'bad'):'unknown'}">${ic(k?(cb.good?'workspace_premium':'warning'):'info')}<span><b>${k?t('rcombo.'+cb.id):t('combo.unknown')}</b>
+      <small>${k ? t('rcombod.'+cb.id) + ' · ' + t('combo.pieces',{a:t('st.'+cb.a), b:t('st.'+cb.b)}) : t('combo.unknownHint')}</small></span></li>`; }).join('');
+  wrap.innerHTML = `<p>${t('combo.catx',{n:known.filter(id=>COMBOS.some(c=>c.id===id)).length, t:COMBOS.length})}</p><ul class="catalogue">${items}</ul>
+    <h4>${ic('map')}${t('combo.region')}</h4><p>${t('combo.regionx',{n:rk, t:REGION_COMBOS.length})}</p><ul class="catalogue">${ritems}</ul>`;
   return wrap;
 }
 export function catalogueCard(){ openSheet('combos'); }

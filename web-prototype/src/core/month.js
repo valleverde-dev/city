@@ -4,13 +4,13 @@ import { directiveProgress, issueDirective, offerPerks } from './directives.js';
 import { residents, taxIncome } from './economy.js';
 import { rollEvent } from './events.js';
 import { money } from './format.js';
-import { snapshot } from './newgame.js';
-import { levelWon, save } from './persist.js';
+import { consolidate, snapshot } from './newgame.js';
+import { recordRun, save } from './persist.js';
 import { activeSites, approvalChance, buildCost, buildMonths, bump, caps, contractors, count, fx, log, slotsPerMonth, spend } from './rules.js';
 import { S, clamp, has, pname, r1, ri, rnd } from './state.js';
 
 export function endMonth(){
-  if(S.over || S.perkChoice || S.cards.length) return {ok:false};
+  if(S.over || S.perkChoice || S.pending || S.cards.length) return {ok:false};
   S.fx = []; S.prev = snapshot();
   // 1. Permit reviews
   S.grid.forEach((p,i)=>{
@@ -60,7 +60,7 @@ export function endMonth(){
   const combosNow = activeCombos(); S.comboSeen = S.comboSeen || [];
   combosNow.forEach(x=>{ const key = x.id+':'+x.i+':'+x.j; if(S.comboSeen.includes(key)) return; S.comboSeen.push(key);
     if(discover(x.id)) S.cards.push({type:'combo', id:x.id, i:x.i, j:x.j});
-    else fx(x.good ? x.i : x.j, x.good ? 'fx.combo' : 'fx.comboBad', {c:x.id}, x.good ? 'good' : 'bad');
+    else fx(x.good || x.j < 0 ? x.i : x.j, x.good ? 'fx.combo' : 'fx.comboBad', {c:x.id}, x.good ? 'good' : 'bad');   // j < 0: across the border
     log(x.good ? 'log.combo' : 'log.comboBad', {c:x.id}, x.good ? 'good' : 'bad'); });
   // 6. Upkeep, interest and the municipality's share of new taxes
   S.grid.forEach(p=>{ if(p.st==='built' && p.ty && p.k!=='regional' && !p.priv) spend(B[p.ty].upkeep); });
@@ -125,16 +125,16 @@ export function endMonth(){
   S.month++; S.slots = Math.max(1, slotsPerMonth() - S.slotPenalty); S.slotPenalty = 0; S.lobbied = 0;
   S.grid.forEach(p=>{ if(p.flag && p.flag.until < S.month) p.flag = null; });
   // 15. Win / lose
+  //     Meeting the target consolidates the settlement and the region grows; any loss ends the run.
   if(!S.over){
     const L = on('lose');
-    if(residents() >= CFG.target) S.over = {win:true, why:'target'};
+    if(residents() >= CFG.target){ S.perkChoice = null; consolidate(); }
     else if(L && S.debt > CFG.debtCap) S.over = {win:false, why:'bankrupt'};
     else if(L && on('comp') && S.comp <= 0) S.over = {win:false, why:'audit'};
     else if(L && S.strikes >= 2) S.over = {win:false, why:'suspended'};
-    else if(S.month > CFG.months) S.over = {win:false, why: L ? 'timeout' : 'retry'};
+    else if(S.month > CFG.months) S.over = {win:false, why:'timeout'};
   }
-  if(S.over && S.over.win) levelWon();
-  if(S.over) S.perkChoice = null;
+  if(S.over){ S.perkChoice = null; S.over.beat = recordRun(); }
   save();
   return {ok:true};
 }

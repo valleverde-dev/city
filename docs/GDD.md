@@ -1,6 +1,6 @@
 # EUROCRAT — Game Design Document
 
-*Living document. v0.5 · Oct 26, 2026. Working title. Available in English and Spanish.*
+*Living document. v0.6 · Oct 27, 2026. Working title. Available in English and Spanish.*
 
 > Every city builder is a dictatorship: you click, a house appears, people move in.
 > **Eurocrat** asks what building a new town would *really* take in contemporary Europe —
@@ -22,27 +22,42 @@ References: *Constructor* (1997) for the humour, characters and dirty tricks; *I
 
 **Programme Officer, DG HUF.** Not a mayor, not a god. You can buy land, file paperwork, lobby, consult and report. You cannot simply build: every building needs land, a permit, contractors and time — and someone has to want to live there.
 
-## 4. Campaign: four levels, one rule at a time
+## 4. The Euroregion: one run, one region that grows
 
-Playtest feedback (v0.4): players did not know what to do, there was too much information at once, and it was too hard from minute one. The campaign fixes that by **teaching the bureaucracy one layer at a time** while the map doubles in size.
+v0.5 had four separate levels, which played like a campaign rather than a roguelike. In v0.6 **a run is a single Euroregion** that grows. It starts as a 2×2 hamlet. Every time a settlement meets its target it is **consolidated** and a bigger one is **attached** to it: 4×4, 8×8, 16×16, then 16×16 again and again, each with a higher target. Any failure ends the run. One seed gives one whole run, procedurally.
 
-| Level | Map | Goal | New rules | Can you lose? |
+| Settlement | Map | Goal | New rules | Can you lose? |
 |---|---|---|---|---|
-| I · Pilot Project | 2×2 | 100 residents in 8 months | Buy a parcel, build housing, end months | No (retry) |
-| II · Expansion Phase | 4×4 | 250 in 14 months | Access (roads / built neighbours), permits can be rejected, the Mayor meter, jobs, combos, farmers holding out | No (retry) |
+| I · Pilot Project (always a hamlet) | 2×2 | 100 residents in 8 months | Buy a parcel, build housing, end months | Only by running out of time |
+| II · Expansion Phase | 4×4 | 250 in 14 months | Access (roads / built neighbours, also across the border), permits can be rejected, the Mayor meter, jobs, combos, farmers holding out | Only by running out of time |
 | III · Partial Plan | 8×8 | 420 in 24 months | Rustic land + urban plans, event cards, directives, neighbours, compliance, school and health, the bank | Yes |
 | IV · Model Town | 16×16 | 1,100 in 36 months | Use-it-or-lose-it milestones, developers, property market | Yes |
+| V, VI, … | 16×16 | +30% target each time (1,430 · 1,760 · …) | None: the same bureaucracy, harder | Yes |
 
-- Every level opens with a **level card** (goal + "what is new") and a **guide**: the mayor (or Brussels) shows the next step and highlights where to tap; steps tick off by themselves.
+**Consolidating** (target met):
+- The settlement is frozen into the region as a block of cells: its buildings stay on the region map, but you no longer build there.
+- It keeps paying the region **half of the taxes it paid in play** (the regional dividend, added to every later month).
+- **Brussels recovers 50% of the unspent funds**; the other half comes with you, on top of the next grant. Debt also comes with you.
+- Then you get a **perk** (1 of 3). Perks last for the whole run.
+- Finally you **choose the side** (N ↗, E ↘, S ↙, W ↖, as seen on the map) on which the next settlement is attached to the one you just finished. If something is already in the way, it slides further out, so every side is always free and always touches the region.
+
+**Settlement types.** Every new settlement has a random type with its own trait: Farming town (land −25%), Industrial town (+80 jobs, neighbours −1/month), Commuter town (+60 homes), Spa town (faster move-ins, +taxes), University town (+200 school places, +taxes), Historic town (Mayor +1/month, permits +1 month), Logistics hub (+50 jobs, +taxes, neighbours −1/month). The first settlement is always a Hamlet.
+
+**Where you attach matters, twice:**
+1. **Region combos** between the type of the new settlement and the type of each settlement it touches. Good ones include Commuter Belt (commuter + industrial), Technology Transfer, Heritage Trail, Farm to Table, Campus Town, Freight Hub, Market Town and Rural Roots. Bad ones include Smokestack View (industrial + spa), Lorries in the Old Town, Slurry Season (farming + commuter), Rust Belt (two industrial towns), Sleeper Sprawl, Freshers' Week and The Hamlet Objects. They are **discovered** like building combos: the attach card shows "region combo?" until you have seen one. The catalogue persists between runs.
+2. **The border is real.** The parcels of a consolidated neighbour along the shared edge are drawn as a dimmer strip around the map. They **give access** (built land, roads and villages count as streets) and **form ordinary adjacency combos** with what you build on your side: their factory next to your housing is still "Smoke in the Living Room".
+
+The regional road of each new site is placed on the far side from where you came, so a settlement has two ways in: the road and the border.
+
+- Every settlement opens with a **settlement card** (its type, its region combos, the goal and "what is new") and, up to settlement IV, the **guide**.
 - Rules that are not in play are **invisible**: no meter, tab or button for them.
-- In levels I–II you cannot order works you cannot pay for (money already promised to works is reserved), so there is no debt and no loan.
-- **Progression:** completing a level unlocks the next and lets you **choose 1 of 3 perks to carry**; carried perks apply from the start of every later level. The combo catalogue also persists.
-- **Difficulty curve** (greedy test bot, 150 seeded runs each, no carried perks): I 100% · II ~84% · III ~38% · IV ~35%.
-- Later: more 16×16 levels set in different member states, each with its own bureaucratic quirk.
+- In settlements I–II you cannot order works you cannot pay for (money already promised to works is reserved), so there is no debt and no loan.
+- **Between runs:** the combo catalogue (buildings and region) and the **records** (most settlements consolidated, largest Euroregion population). The title screen shows the best Euroregion.
+- **Difficulty curve.** A greedy test bot plays 150 seeded runs and picks the side with the best known region combos. Settlements consolidated per run: 1 → 10% · 2 → 33% · 3 → 16% · 4 → 13% · 5 → 17% · 6 → 9% · 7+ → 1%. That is an average of about 3.3, and most runs end in settlement III or in the first two 16×16 ones. Starting a settlement directly, with no perks: I 100% · II ~87% · III ~48% · IV ~30%.
 
 ## 5. Core loop
 
-One turn = **one month**. A run (one programme) = **36 months** ≈ 10–15 minutes.
+One turn = **one month**. A settlement lasts 8 to 36 months; a run (one Euroregion) lasts until a settlement fails, typically 3–5 settlements ≈ 30–60 minutes.
 
 Each month:
 1. You have **3 agenda slots** (your working time). Spend them on parcels (acquire, request permits, sell to developers), on planning (submit an urban plan) or on politics (lobby the mayor, public consultation, file a report).
@@ -142,19 +157,19 @@ v0.3 deck (15): archaeological find, protected toad, municipal elections, neighb
 
 ## 9. Perks (roguelike build)
 
-Picked 1 of 3 after each completed directive: *Friendly Notary* (cheaper land), *Fast-track Decree* (faster permits), *Prefab Supplier* (faster construction), *Extra Contractor*, *Cousin at the Ministry* (+1 agenda slot), *Translation Unit* (compliance decays slower), *Comms Agency* (neighbours improve monthly), *Local Fixer* (local support never drops below 30), *Golden Shovel* (one free construction)…
+Picked 1 of 3 after each completed directive and after every consolidated settlement, and kept for the whole run: *Friendly Notary* (cheaper land), *Fast-track Decree* (faster permits), *Prefab Supplier* (faster construction), *Extra Contractor*, *Cousin at the Ministry* (+1 agenda slot), *Translation Unit* (compliance decays slower), *Comms Agency* (neighbours improve monthly), *Local Fixer* (local support never drops below 30), *Golden Shovel* (one free construction)…
 
 ## 10. Winning and losing
 
-- **Win:** reach the level's resident target before its deadline (level IV: 1,100 residents by month 36 — the Inauguration). Score: residents, month, funds left minus debt, directives met.
-- **Lose:** debt above the bank's limit · compliance hits 0 (audit) · a court annuls the plan · 2 failed directives · month 36 without reaching the target ("The programme will be evaluated").
-- **Difficulty:** hard but fair. A greedy test bot that always picks the "by the book" option and never sells land plays combo-aware placement and wins ~35% of 200 seeded runs (v0.2: 8%, v0.3: 37%); its losses are spread across bankruptcy, suspension and timeout. Every loss should be traceable to a decision.
+- **A settlement is won** by reaching its resident target before its deadline: it is consolidated and the region grows. There is no final victory. The question is how big your Euroregion gets, measured in settlements consolidated and total population.
+- **The run is lost** when: debt goes above the bank's limit · compliance hits 0 (audit) · a court annuls the plan · 2 directives fail · time runs out on a settlement ("The programme will be evaluated"). The end-of-run card shows the region map, what it reached and the records.
+- **Difficulty:** hard but fair. Every loss should be traceable to a decision. See §4 for the bot's curve.
 
 ## 11. Roguelike variety
 
-Each run is a new **site** on a **12×12** map (random farmland, municipal plots, protected habitat, flood zone, the old village), a new **member state and town name**, a random stream of events and directives, and a different set of perks.
+Every run is a new **Euroregion**: a name, a chain of settlements with random types, member states and town names, procedural sites (farmland, municipal plots, protected habitat, a river with its flood zone, the old village by the regional road), the shape that your attach choices give the region, a random stream of events and directives, and a different set of perks.
 
-Later: member states with their own rule quirks; meta-progression between runs (e.g. contacts you keep); more building types (logistics hub, data centre, social housing, tram); a campaign with an ending.
+Later: member states with their own rule quirks; more settlement types and region combos; cross-border events (a joint Interreg project, a border dispute between two of your settlements); more building types (logistics hub, data centre, social housing, tram).
 
 ## 12. Art direction
 
@@ -170,18 +185,18 @@ From *Syndicate* neon to **Constructor-style** colourful isometric with a bureau
 
 ### Music
 
-The soundtrack plays the bureaucracy for laughs, like everything else, and grows with the campaign. All tracks are original arrangements; the Ode to Joy is Beethoven's public-domain melody, never an official anthem arrangement.
+The soundtrack plays the bureaucracy for laughs, like everything else, and grows with the region. All tracks are original arrangements; the Ode to Joy is Beethoven's public-domain melody, never an official anthem arrangement.
 
 | Screen | Track | Style |
 |---|---|---|
 | Title / menus | *Ode to Joy (Brussels Eurodance Mix)* | Cheap 90s Eurodance |
-| Level I · Pilot Project | *Village Fete Waltz* | Musette waltz: accordion, glockenspiel, oom-pah tuba; the Ode in 3/4 |
-| Level II · Expansion Phase | *Let's Build Together* | 80s Eurovision synth-pop, original melody |
-| Level III · Partial Plan | *Regulatory Framework* | Tense office ambient: clock, typewriters, stamps, the Ode in minor |
-| Level IV · Model Town | *Harmonised Trance Anthem* | Euro-trance: supersaws, choir breakdown, the drop |
-| Inauguration (win) | *Douze Points for Harmonisation* | Eurovision schlager with the key change |
+| Settlement I · Pilot Project | *Village Fete Waltz* | Musette waltz: accordion, glockenspiel, oom-pah tuba; the Ode in 3/4 |
+| Settlement II · Expansion Phase | *Let's Build Together* | 80s Eurovision synth-pop, original melody |
+| Settlement III · Partial Plan | *Regulatory Framework* | Tense office ambient: clock, typewriters, stamps, the Ode in minor |
+| Settlement IV and later · Model Town | *Harmonised Trance Anthem* | Euro-trance: supersaws, choir breakdown, the drop |
+| Settlement consolidated | *Douze Points for Harmonisation* | Eurovision schlager with the key change |
 
-Later: short stingers for stamps, approvals, failed directives and audits; a tension layer for the last months of a level.
+Later: short stingers for stamps, approvals, failed directives and audits; a tension layer for the last months of a settlement.
 
 ## 13. Language
 
@@ -194,7 +209,8 @@ Pixel-art frame in the imagery of a (fictional) Union portal: pixel fonts for ti
 - **Full-screen map.** Top bar: month, funds, residents, agenda slots, a **bell** with the number of problems, language, music, menu. Meters appear only when their rule is in play (one compact row on phones; tap one for what it means and why it moved).
 - **Bottom tab bar:** Agenda · Town · **End month** · Inbox · Combos. Each opens a **sheet** on demand (bottom sheet on phones, floating card on the left on iPad/PC); tapping a parcel opens its sheet and nudges the map so the parcel stays visible.
 - Directive pill on the map; the mayor's guide bubble; event cards, notices and combos in the **centre of the screen**.
-- **Title screen:** a full-screen scene — an animated diorama of the model town over an avenue of waving flags of the Union — with the logo and a classic vertical menu: **New game** (the case files, i.e. the levels) · **Continue** (disabled with no save, pre-selected when there is one) · **Settings** (language, music) · **Credits** (author, music and font rights, a satire disclaimer). Version bottom-left, copyright bottom-right. Arrow keys / W-S move, Enter picks, Esc goes back. The design canvas holds the reference mockups of the four views.
+- **The Euroregion** appears in three places: the region minimap (isometric, north ↗) in the Town sheet, on the consolidation card and on the attach card, which shows the four candidate positions (N/E/S/W) and, for each side, which settlements it would border and its region combos. Around the map, the consolidated neighbours' parcels form a dimmer strip, and a dashed yellow line marks the edge of the settlement in play.
+- **Title screen:** a full-screen scene — an animated diorama of the model town over an avenue of waving flags of the Union — with the logo and a classic vertical menu: **New Euroregion** (starts a run from the 2×2 hamlet; shows the best Euroregion so far) · **Continue** (disabled with no save, pre-selected when there is one) · **Settings** (language, music) · **Credits** (author, music and font rights, a satire disclaimer). Version bottom-left, copyright bottom-right. Arrow keys / W-S move, Enter picks, Esc goes back. The design canvas holds the reference mockups of the four views.
 
 ## 15. Controls (iPad first)
 
@@ -202,8 +218,9 @@ Tap a parcel to open its sheet. **Drag** (one finger or mouse) to move the map; 
 
 ## 16. Open questions
 
-- Does the run length (36 months / ~12 min) feel right?
+- Does the length of a run (3–5 settlements, 30–60 min) feel right, or should settlements be shorter?
+- Should consolidated settlements ever come back into play (a crisis next door, a merger)?
 - Should residents have personalities and complaints (*Constructor*-style tenants)?
-- Meta-progression: what carries over between runs, if anything?
+- Meta-progression beyond the catalogue and records: should anything else carry over between runs?
 - Should player actions also become cards (favours, consultants, dirty tricks)?
 - Member states with their own rule quirks (each a different bureaucracy).

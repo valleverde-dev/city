@@ -1,10 +1,13 @@
-// A simple greedy player used to sanity-check difficulty (v0.5: levels I-IV, combos, access through buildings).
-// Runs inside the page: window.__eurocrat must exist. Returns a summary of one run.
+// A simple greedy player used to sanity-check difficulty (v0.6: Euroregion runs, combos, access through buildings and borders).
+// Runs inside the page (window.__eurocrat) or in Node (tests/core/harness.mjs). Returns a summary of one run.
+//   opts.level: the settlement to start at (0 = the 2×2 hamlet) · opts.run: keep going after a consolidation
+//   (pick a perk, attach the next settlement on the side with the best known region combos) until the run ends.
 // It is deliberately decent but not clever: it always picks the first ("by the book") choice on event cards.
 window.__playOneRun = function(seed, opts){
   opts = opts || {};
   const g = window.__eurocrat; g.newGame(seed, opts.level===undefined ? 3 : opts.level);
-  const S = () => g.S, N = Math.round(Math.sqrt(g.S.grid.length));
+  const start = g.S.stage, maxStage = opts.maxStage === undefined ? 12 : opts.maxStage;
+  const S = () => g.S, side = () => Math.round(Math.sqrt(g.S.grid.length));   // the map grows with every settlement
   const PERK_PREF = ['contractor','cousin','prefab','fasttrack','translation','notary','fixer','lobbyist','comms','shovel'];
   const planned = ty => S().grid.filter(p=>p.ty===ty && p.k!=='regional' && ['review','approved','building','built','private'].includes(p.st)).length;
   const desired = () => {
@@ -16,10 +19,19 @@ window.__playOneRun = function(seed, opts){
     let best = null; for(const k in lim) if(lim[k] < T && (best===null || lim[k] < lim[best])) best = k;
     return best || 'park';
   };
-  const rc = i => [Math.floor(i/N), i%N];
+  const rc = i => { const N = side(); return [Math.floor(i/N), i%N]; };
   const buyable = p => p.st==='land' && ['farm','muni','flood'].includes(p.k) && !(p.k==='muni' && S().local<40);
   let guard = 0;
-  while(!S().over && guard++ < 80 && !(S().over)){
+  while(!S().over && guard++ < 80){
+    if(S().pending){
+      // consolidated: stop here (single settlement), or pick a perk and attach the next one
+      if(!opts.run || S().stage >= maxStage) break;
+      while(S().cards.length) g.resolveCard();
+      if(S().perkChoice){ const k = PERK_PREF.find(k=>S().perkChoice.includes(k)) || S().perkChoice[0]; g.choosePerk(k); }
+      const known = g.discovered(), side = g.DIR_KEYS.map(d=>{ const v = g.attachPreview(d);
+        return [d, v.combos.reduce((t,c)=>t + (known.includes(c.id) ? (g.RCOMBO_BY_ID[c.id].good ? 1 : -2) : 0), 0)]; }).sort((a,b)=>b[1]-a[1])[0][0];
+      g.attach(side); while(S().cards.length) g.resolveCard(); guard = 0; continue;
+    }
     while(S().cards.length) g.resolveCard();
     if(S().perkChoice){ const k = PERK_PREF.find(k=>S().perkChoice.includes(k)) || S().perkChoice[0]; g.choosePerk(k); }
     if(S().over) break;
@@ -52,6 +64,7 @@ window.__playOneRun = function(seed, opts){
     if(S().perkChoice) continue;
     g.endMonth();
   }
-  const s = S();
-  return {seed, level: S().level, win: !!(s.over && s.over.win), why: s.over ? s.over.why : 'none', month: s.month, residents: g.residents(), funds: Math.round(s.funds*10)/10, debt: s.debt, perks: s.perks.length};
+  const s = S(), settled = s.region.blocks.length - start;   // settlements this bot consolidated itself
+  return {seed, level: start, win: settled > 0, settled, stage: s.stage, why: s.over ? s.over.why : (s.pending ? 'target' : 'none'), month: s.month,
+          residents: g.residents(), pop: g.regionPop() + (s.pending ? 0 : g.residents()), funds: Math.round(s.funds*10)/10, debt: s.debt, perks: s.perks.length};
 };

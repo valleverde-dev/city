@@ -6,7 +6,7 @@ import { S, has, pname, r1, rc, ri, rnd } from './state.js';
 
 // --- Player actions. Each returns {ok, msg:{k,p}, bad?} and never grants anything for free. ---
 export const fail = (k,p) => ({ok:false, bad:true, msg:{k, p}});
-export function canAct(n=1){ return !S.over && !S.perkChoice && S.slots >= n; }
+export function canAct(n=1){ return !S.over && !S.perkChoice && !S.pending && S.slots >= n; }
 export function acquire(i){
   const p = S.grid[i];
   if(!canAct()) return fail('err.slots');

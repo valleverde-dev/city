@@ -6,7 +6,9 @@ import { residents } from './core/economy.js';
 import { EVENTS, choicesFor, resolveEvent } from './core/events.js';
 import { resolveCard } from './core/index.js';
 import { endMonth } from './core/month.js';
-import { campaign, carryPerk } from './core/persist.js';
+import { records } from './core/persist.js';
+import { attach } from './core/newgame.js';
+import { DIR_KEYS, RCOMBO_BY_ID, attachPreview, cellPos, regionPop } from './core/region.js';
 import { caps, hasAccess } from './core/rules.js';
 import { S, rc } from './core/state.js';
 import { LANG, t } from './i18n/index.js';
@@ -20,15 +22,16 @@ import { guideStep, refresh, styleName } from './ui/guide.js';
 import { sheet } from './ui/hud.js';
 import { problems } from './ui/problems.js';
 import { catalogueCard, closeSheet, openSheet } from './ui/sheets.js';
-import { setLang, startLevel, startMenu, startNew } from './ui/title.js';
+import { enterSettlement, setLang, startMenu, startNew, startRun } from './ui/title.js';
 import './ui/input.js';   // pointer, wheel and keyboard listeners
 
 // =====================================================================
 //  BOOT + test hook (used by tests/smoke_test.py and tests/balance.py)
 // =====================================================================
 window.__eurocrat = {
-  get S(){ return S; }, CFG, B, EVENTS, LEVELS, newGame:(seed, level=3)=>{ startNew(seed, level); S.cards=[]; hideModal(); return S; },
-  startLevel, campaign, carryPerk, openSheet, closeSheet, get sheet(){ return sheet; }, guideStep, get zoom(){ return zoom; }, get cam(){ return [MAPCX, MAPCY]; },
+  get S(){ return S; }, CFG, B, EVENTS, LEVELS, newGame:(seed, stage=3)=>{ startNew(seed, stage); S.cards=[]; hideModal(); return S; },
+  startRun, records, regionPop, attachPreview, DIR_KEYS, RCOMBO_BY_ID, cellPos, attach:(d)=>{ const r = attach(d); if(r.ok) enterSettlement(); return r; },
+  openSheet, closeSheet, get sheet(){ return sheet; }, guideStep, get zoom(){ return zoom; }, get cam(){ return [MAPCX, MAPCY]; },
   panBy, zoomAt, centreOn, on,
   acquire, requestPermit, sellPlot, submitPlan, lobby, consult, fileReport, repay, endMonth, choosePerk, caps, residents, hasAccess,
   choicesFor, resolveEvent, problems, activeCombos, comboPreview, comboFx, discovered, COMBOS, catalogueCard, t, setLang, get lang(){ return LANG; },

@@ -6,7 +6,20 @@ Living project document · update it as the prototype evolves. The game design l
 
 **Eurocrat** (working title): a satirical, turn-based roguelike city builder. You are a Brussels programme officer who must deliver a model European town with plenty of money and no power — buy the land, file the permits, survive the neighbours, spend the funds before they expire. Tone and references: *Constructor* (1997), with a hyper-realistic, comic look at how building actually works in contemporary Europe. The plan: validate the loop in the web/iPad prototype, then port to Godot to ship on the App Store and Steam.
 
-## Current status — v0.5.1 (Oct 27, 2026) · architecture for scale
+## Current status — v0.6.0 (Oct 27, 2026) · the Euroregion
+
+Separate levels broke the roguelike logic: they played like a campaign. In v0.6 **a run is one Euroregion that grows**:
+- **One run, one region.** It starts with a 2×2 hamlet. Every settlement that meets its target is **consolidated** (frozen into the region, still paying half its taxes as a regional dividend). The next one is **attached** on the side you choose: N ↗, E ↘, S ↙ or W ↖. Sizes go 4×4, 8×8, 16×16, then 16×16 again and again with a target 30% higher each time. Any failure ends the run. The rules still switch on one settlement at a time, as in v0.5.
+- **Settlement types** (random): farming, industrial, commuter, spa, university, historic, logistics, each with a trait.
+- **Region combos** (8 good, 7 bad) depend on where you attach, between the new settlement's type and its neighbours' types: Commuter Belt, Smokestack View, Slurry Season, Rust Belt… They are discovered like building combos and kept in the same catalogue.
+- **A real border.** The neighbours' parcels along the edge are drawn as a dimmer strip around the map. They give access and form ordinary combos with what you build on your side.
+- **Money between settlements:** Brussels recovers 50% of the unspent funds and the other half carries over. Debt and perks carry over too, and you pick a perk at every consolidation.
+- **Region map** (isometric minimap) in the Town sheet, on the consolidation card and on the attach card, which outlines the four candidate positions.
+- **Records between runs:** most settlements and largest population, shown on the title screen (*New Euroregion*).
+- **Balance** (bot, 150 runs): average ~3.3 settlements per run. 10% end in settlement II, 33% in III, then a long tail; very few pass the sixth.
+- **Tests:** 14 rules tests in Node (consolidation, attach geometry, the border, region effects, records, the run's difficulty band) and 104 browser checks (a whole consolidation and attach through the UI, every new card in EN/ES).
+
+## Previous — v0.5.1 (Oct 27, 2026) · architecture for scale
 
 No gameplay changes: v0.5.1 makes the prototype ready to grow and to be ported.
 - **Modules instead of one file.** The 4,600-line `src/index.html` is now ES modules by layer: `core/` (the rules), `i18n/`, `render/`, `ui/`, `audio/`, plus CSS and the real font files. The build (esbuild) still produces **one self-contained `dist/index.html`**, so the PWA, offline play and GitHub Pages work as before.
@@ -15,7 +28,7 @@ No gameplay changes: v0.5.1 makes the prototype ready to grow and to be ported.
 - **Proven identical:** the smoke test (90 checks at the time) passes, the bot gives the same outcomes for the same seeds, the sprite export is pixel-identical and screenshots of title, level card, sheets and month end match the old build pixel for pixel (iPad and iPhone sizes).
 - `/godot` is **frozen** at v0.1 until the port starts (see *Port triggers* below).
 
-## Since v0.5.1 — title screen
+## Between v0.5.1 and v0.6 — title screen
 
 - **Classic title screen**, from the design wireframe: the logo, a vertical menu — *New game* (the case files) · *Continue* · *Settings* (language, music) · *Credits* — and the version and copyright in the bottom corners, over the animated diorama and an avenue of waving flags. Keyboard: arrows / W-S, Enter, Esc. Replaces the "one-stop shop" panel and the news ticker.
 - **The Union's own flag:** the shape and proportions of Vietnam's flag (3:2, one centred star, radius 3/10 of the height) but a white star on European blue. It replaces the portico emblem on the letterheads (the header shows only the logo), and every flag on the title screen (the avenue, the front row, the diorama's plazas) now flies it instead of the flag of Europe; the star rides the waving cloth as one piece so it stays legible. The portico's small icon became a ballot box (municipal land) and ruins (archaeology). The flag of Europe is no longer used anywhere.
@@ -64,12 +77,12 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 
 ## Next steps
 
-1. Playtest v0.5 with new players; tune the level targets and the guide texts.
-2. More 16×16 levels in different member states, each with its own bureaucratic quirk.
-2b. Turn player actions into cards too (favours, consultants, dirty tricks)?
-3. *Constructor*-style characters: named residents, complaints, a mayor with a face.
-4. Member states with their own rule quirks; more buildings (logistics hub, data centre, social housing).
-5. Decide on meta-progression between runs.
+1. Playtest v0.6: how long a run feels, whether the side choice is understood, tune the 30% target step and the 50% carry-over.
+2. Cross-border events between settlements of the region (a joint Interreg project, a border dispute, a shared hospital) and more settlement types and region combos.
+3. Member states with their own rule quirks (each settlement already has one): a bureaucracy per country.
+4. Turn player actions into cards too (favours, consultants, dirty tricks)?
+5. *Constructor*-style characters: named residents, complaints, a mayor with a face.
+6. More buildings (logistics hub, data centre, social housing, tram).
 6. Port to Godot when a port trigger is met: `core/` first (with its tests), then rendering and UI.
 
 ## Assets

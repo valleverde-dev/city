@@ -1,6 +1,6 @@
 # Architecture — web prototype
 
-*Living document. v0.5.1 · Oct 27, 2026.* How the code of `web-prototype/` is organised, why, and how it maps to the Godot port.
+*Living document. v0.6 · Oct 27, 2026.* How the code of `web-prototype/` is organised, why, and how it maps to the Godot port.
 
 ## The idea in one paragraph
 
@@ -39,8 +39,9 @@ Until v0.5 everything lived in one 4,600-line `src/index.html`. v0.5.1 split it 
 | File | What it holds | Godot port |
 |---|---|---|
 | `state.js` | `S` (the whole game state), `N` (map side), `setState`, the seeded RNG (`rnd`, `ri`, `pick`) and grid helpers (`idx`, `rc`, `inside`, neighbours) | `GameState` autoload |
-| `config.js` | `VERSION` (checked by the build against `package.json`), tuning knobs (`CFG`), levels and their rule flags (`LEVELS`, `on()`), buildings (`B`), perks, characters, town names | `Config` resource / JSON |
-| `newgame.js` | Generating a site: farmland, village, river, habitat, municipal plots | `SiteGenerator` |
+| `config.js` | `VERSION` (checked by the build against `package.json`), tuning knobs (`CFG`), the settlement templates and their rule flags (`LEVELS`, `stageCfg()`, `on()`), buildings (`B`), perks, characters, town names | `Config` resource / JSON |
+| `newgame.js` | Starting a run (`newGame`), generating a site (`genSite`, turned so the regional road faces away from the region), starting a settlement, `consolidate()` and `attach(side)` | `SiteGenerator` + `Run` |
+| `region.js` | The Euroregion: settlement types and traits, region combos, placement of a new settlement (`candidate`), the frontier (neighbours' parcels around the map), the regional dividend | `Region` |
 | `rules.js` | Meters (`bump`), money (`spend`), access, prices, permit/build times, approval chance, capacities (`caps`), `log` and `fx` | `Rules` |
 | `economy.js` | Residents, taxes, monthly costs, committed money, milestones | `Rules` |
 | `combos.js` | Adjacency combos and their effects; the discovered catalogue | `Combos` |
@@ -48,7 +49,7 @@ Until v0.5 everything lived in one 4,600-line `src/index.html`. v0.5.1 split it 
 | `directives.js` | Brussels directives and perks | `Directives` |
 | `events.js` | Event cards: setup, choices, consequences | `Events` (+ data) |
 | `month.js` | `endMonth()`: the world resolves | `Turn` |
-| `persist.js` | Save / load, campaign progress, carried perks | `SaveGame` (user://) |
+| `persist.js` | Save / load of the run, records between runs | `SaveGame` (user://) |
 | `storage.js` | Key–value adapter: `localStorage` in the browser, memory in Node | `ConfigFile` / `FileAccess` |
 | `format.js` | `money()` in the current language | a helper |
 | `index.js` | **The public API** — read this first | — |
@@ -56,7 +57,8 @@ Until v0.5 everything lived in one 4,600-line `src/index.html`. v0.5.1 split it 
 The contract with the UI (also the contract the Godot port must honour):
 
 - The UI may **read** anything exported by `core/index.js`.
-- The UI **changes** the game only through `newGame`, the actions, `choosePerk`, `resolveEvent` / `resolveCard` and `endMonth`.
+- The UI **changes** the game only through `newGame`, the actions, `choosePerk`, `resolveEvent` / `resolveCard`, `endMonth` and `attach`.
+- The state of a run: `S.region` holds the consolidated settlements (`blocks`, each a frozen array of cell codes), the one in play (`active`) and, between settlements, the one to attach (`next`, with `S.pending = 'attach'`). `S.grid` is always the settlement in play; `S.frontier` lists the neighbours' cells around it in local coordinates (a combo with one of them has `j = -1-k`).
 - Actions return `{ok, msg:{k,p}, bad?, cls?, sfx?}` — an i18n key with parameters and a sound *name*. The core never produces text or plays audio.
 - Cards (`S.cards`), logs (`S.log`) and floating feedback (`S.fx`) are data in the state; the UI renders them.
 
@@ -74,7 +76,7 @@ The contract with the UI (also the contract the Godot port must honour):
 | `anim.js` | The ~15 fps animation layer, night, completions, birds, flags, traffic |
 
 ### `src/ui/`, `src/audio/`, `src/main.js`
-`dom.js` (helpers, floating feedback), `hud.js` (top bar, meters), `problems.js` (the bell), `sheets.js`, `guide.js` (the mayor's guide), `cards.js` (letters, event cards), `title.js` (title screen: the scene, the menu and its views — new game, settings, credits — keyboard navigation, starting levels), `input.js` (touch, mouse, keyboard), `icons.js` (66 pixel icons). `audio/music.js` and `audio/sfx.js`. `main.js` boots the game and exposes `window.__eurocrat` for the tests.
+`dom.js` (helpers, floating feedback), `hud.js` (top bar, meters), `problems.js` (the bell), `sheets.js`, `guide.js` (the mayor's guide), `cards.js` (letters, event cards), `title.js` (title screen: the scene, the menu and its views — new game, settings, credits — keyboard navigation, starting a run), `input.js` (touch, mouse, keyboard), `icons.js` (66 pixel icons), `regionmap.js` (the Euroregion minimap). `audio/music.js` and `audio/sfx.js`. `main.js` boots the game and exposes `window.__eurocrat` for the tests.
 
 ### `src/styles/` and `src/assets/`
 CSS split by area and imported in order by `styles/index.css` (order matters: `readability.css` and `layout.css` refine the earlier files). The three OFL fonts are real `.woff` files in `assets/fonts/`, and `assets/logo.svg` is the game logo (generated by `tools/make_logo.py`, which also writes `art/logo/`); the build inlines them all.
@@ -88,10 +90,10 @@ CSS split by area and imported in order by `styles/index.css` (order matters: `r
 | Command | What | Needs |
 |---|---|---|
 | `npm run check` | Layer check: the core stays portable | Node |
-| `npm run test:core` | Rules tests: levels, rule flags, determinism, actions, a month passing, save/load, the difficulty band | Node |
-| `npm run test:smoke` | 96 checks driving the real UI in Chromium (phone and iPad layouts, both languages) | Playwright |
+| `npm run test:core` | Rules tests: settlements, rule flags, determinism, actions, a month passing, consolidation and attach, the border, region effects, records, save/load, the difficulty band | Node |
+| `npm run test:smoke` | 104 checks driving the real UI in Chromium (phone and iPad layouts, both languages) | Playwright |
 | `npm test` | All of the above + build | both |
-| `npm run balance -- 150 --level=4` | The greedy bot over seeded runs, in Node | Node |
+| `npm run balance -- 150 --run` / `--level=4` | The greedy bot over whole Euroregion runs, or one settlement, in Node | Node |
 
 `tests/balance_bot.js` is shared: the same bot plays in the browser (`tests/balance.py`) and in Node (`tests/balance.mjs`) and gets identical results for the same seeds.
 

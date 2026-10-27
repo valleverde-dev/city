@@ -1,0 +1,16 @@
+/* v0.6 — the Euroregion: settlement type, region minimap, the attach card */
+.stype{display:flex; gap:10px; align-items:center; margin:8px 0; padding:7px 9px; background:var(--cream); border:2px solid var(--navy);}
+.stype > .ico{width:36px; height:36px; flex:0 0 36px; -webkit-mask:none; mask:none; background:var(--yellow); border:2px solid var(--navy); position:relative;}
+.stype > .ico:after{content:""; position:absolute; inset:7px; background:var(--navy); -webkit-mask:var(--m) center/100% 100% no-repeat; mask:var(--m) center/100% 100% no-repeat;}
+.stype b{display:block; font:400 22px/1 var(--f-display); color:var(--navy);}
+.stype small{display:block; color:var(--sub); font-size:13.5px; line-height:1.35; margin-top:2px;}
+.rmap-slot{display:flex; justify-content:center; margin:8px 0; padding:6px; background:#dfe7f5; border:2px solid var(--navy);}
+.regionmap{display:block; max-width:100%; height:auto; image-rendering:pixelated;}
+.choice.side small{display:block; color:var(--sub); font-size:13px; line-height:1.35; margin:-2px 0 6px;}
+.choice.side small i{font-style:normal; opacity:.8;}
+.choice.side b{font:400 22px/1 var(--f-display);}
+.notice.attach .btns{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+@media (max-width:520px){ .notice.attach .btns{grid-template-columns:1fr;} }
+.record{display:flex; align-items:center; gap:6px; font:400 24px/1 var(--f-display); color:var(--ok); margin:8px 0;}
+.card.region h4{display:flex; align-items:center; gap:6px; margin:0 0 4px; font:400 20px/1 var(--f-display); color:var(--navy);}
+.catalogue + h4{display:flex; align-items:center; gap:6px; margin:14px 0 2px; font:400 20px/1 var(--f-display); color:var(--navy);}

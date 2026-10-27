@@ -4,14 +4,15 @@ import { S } from './state.js';
 //  CONFIG — tuning knobs (see docs/GDD.md)
 // =====================================================================
 // =====================================================================
-//  LEVELS — the campaign. Each level doubles the map side and switches on new rules (f),
-//  so the player learns the bureaucracy one layer at a time.
+//  LEVELS — the settlements of a Euroregion run. Each one doubles the map side and switches on new
+//  rules (f), so the player learns the bureaucracy one layer at a time. After the fourth, every new
+//  settlement is 16×16 with a higher target (stageCfg).
 //    access: buildings need a road/built neighbour · permits: reviews can be rejected · local: the mayor matters
 //    jobs: residents need jobs · combos · holdout: farmers raise prices · rustic: farmland needs an urban plan
 //    events: crisis cards · directives · neigh/comp: neighbours and compliance meters · services: school + health
 //    lose: you can actually lose · milestones: use-it-or-lose-it · market: developers, property market
 // =====================================================================
-export const VERSION = '0.5.1';   // keep in step with package.json (the build checks it)
+export const VERSION = '0.6.0';   // keep in step with package.json (the build checks it)
 export const BASE_F = {access:1, permits:1, local:1, jobs:1, combos:1, holdout:1};
 export const FULL_F = {...BASE_F, rustic:1, events:1, directives:1, neigh:1, comp:1, services:1, lose:1};
 export const LEVELS = [
@@ -20,7 +21,13 @@ export const LEVELS = [
   {n:8,  months:24, grant:90,  target:420,  slots:3, f:{...FULL_F}},
   {n:16, months:36, grant:200, target:1100, slots:3, f:{...FULL_F, milestones:1, market:1}},
 ];
-export const LV = () => LEVELS[(S && S.level) || 0];
+// Settlement k of a run (0-based): the level template, and past the last one a rising target
+export function stageCfg(k){
+  const L = LEVELS[Math.min(k, LEVELS.length-1)], extra = Math.max(0, k-(LEVELS.length-1));
+  return extra ? {...L, target: Math.round(L.target*(1+CFG_STAGE.targetStep*extra)/10)*10} : L;
+}
+export const CFG_STAGE = { targetStep: 0.3 };
+export const LV = () => stageCfg(S ? (S.stage ?? S.level ?? 0) : 0);
 export const on = flag => !!LV().f[flag];
 export const METER_FLAG = {local:'local', neigh:'neigh', comp:'comp'};
 export const MILESTONES = { 12: 0.20, 24: 0.50 };   // share of the grant that must be spent by then (level IV)
@@ -34,6 +41,8 @@ export const CFG = {
   devMinMarket: 0.8,                       // developers only buy when the market is at least this hot
   taxShare: 0.5, taxPerFactory: 0.25, taxPerResident: 0.0008,
   loanStep: 5, debtCap: 35, interest: 0.02,
+  keepShare: 0.5,                          // share of unspent funds a consolidated settlement keeps (the rest goes back to Brussels)
+  dividendShare: 0.5,                      // a consolidated settlement pays the region half of the taxes it paid while in play
 };
 Object.defineProperties(CFG, {
   months:{get:()=>LV().months}, grant:{get:()=>LV().grant}, target:{get:()=>LV().target}, slots:{get:()=>LV().slots},

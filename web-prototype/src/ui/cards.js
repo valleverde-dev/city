@@ -1,20 +1,23 @@
 import { setMusic } from '../audio/music.js';
 import { playSound } from '../audio/sfx.js';
-import { COMBO_BY_ID } from '../core/combos.js';
-import { CFG, CHARS, LEVELS, LV, PERKS, on } from '../core/config.js';
+import { COMBO_BY_ID, discovered } from '../core/combos.js';
+import { CFG, CHARS, LEVELS, LV, PERKS, on, stageCfg } from '../core/config.js';
+import { attach } from '../core/newgame.js';
+import { DIR_KEYS, RCOMBO_BY_ID, STYPE_ICON, attachPreview, regionPop } from '../core/region.js';
 import { DIRECTIVE_ICON, choosePerk } from '../core/directives.js';
 import { residents } from '../core/economy.js';
 import { EVENTS, choicesFor, resolveEvent } from '../core/events.js';
 import { money } from '../core/format.js';
-import { carryPerk, save } from '../core/persist.js';
+import { records, save } from '../core/persist.js';
 import { S, pname } from '../core/state.js';
 import { t } from '../i18n/index.js';
 import { C } from '../render/pixel.js';
 import { $, P, country, portrait } from './dom.js';
 import { pulse, refresh } from './guide.js';
-import { ROMAN, hidePop } from './hud.js';
+import { hidePop, roman } from './hud.js';
 import { ic } from './icons.js';
-import { startLevel, startMenu } from './title.js';
+import { enterSettlement, startMenu, startRun } from './title.js';
+import { regionCanvas } from './regionmap.js';
 
 // =====================================================================
 //  CARDS & NOTICES (modal). One renderer per card type; re-rendered on language change.
@@ -80,6 +83,7 @@ export function showNext(){
   hidePop();
   if(S.cards.length){ const c = S.cards[0]; (CARD[c.type])(c); rerender = ()=>CARD[c.type](c); return; }
   if(S.perkChoice){ perkCard(); rerender = perkCard; return; }
+  if(S.pending==='attach'){ attachCard(); rerender = ()=>attachCard(); return; }
   if(S.over){ gameOver(); rerender = gameOver; return; }
   S.focus = -1; hideModal(); refresh();
 }
@@ -108,15 +112,32 @@ export const CARD = {
     letter({icon:E.icon, title:t('ev.'+c.id+'.t'), speaker:E.char, dock:true,
       body:`${where}<div class="quote">${t('ev.'+c.id+'.x', {...P(v), x:v.x, at:v.i>=0?pname(v.i):''})}</div><p class="hint">${t('ui.choose')}</p>`, buttons});
     if(!c.played){ c.played = true; playSound(E.sfx); } },
-  level: c => { const L = LV(), n = S.level;
-    const rules = (t('lvl.'+(n+1)+'.rules')).split('|').map(x=>`<li>${ic('check')}<span>${x}</span></li>`).join('');
-    const carried = S.perks.length || S.shovel ? `<p class="hint">${t('lvl.carried', {p:S.perks.map(k=>t('perk.'+k)).concat(S.shovel?[t('perk.shovel')]:[]).join(', ')})}</p>` : '';
-    letter({icon:'map', title:`<span class="lvl-tag">${t('ui.level')} ${ROMAN[n]}</span>${t('lvl.'+(n+1)+'.name')}`, speaker: n>=2 ? 'brussels' : 'mayor',
-      body:`<div class="quote">${t('lvl.'+(n+1)+'.x', {town:S.town})}</div>
+  level: c => { const L = LV(), k = S.stage||0, n = Math.min(k, LEVELS.length-1), more = k >= LEVELS.length;
+    const rules = (more ? t('stl.more.rules', {n:L.target}) : t('lvl.'+(n+1)+'.rules')).split('|').map(x=>`<li>${ic('check')}<span>${x}</span></li>`).join('');
+    const perks = S.perks.length || S.shovel ? `<p class="hint">${t('stl.perks', {p:S.perks.map(k=>t('perk.'+k)).concat(S.shovel?[t('perk.shovel')]:[]).join(', ')})}</p>` : '';
+    const carried = S.carried > 0 ? `<p class="hint">${t('stl.carry', {x:money(S.carried)})}</p>` : '';
+    letter({icon:'map', title:`<span class="lvl-tag">${t('ui.settlement')} ${roman(k+1)}</span>${more ? S.town : t('lvl.'+(n+1)+'.name')}`, speaker: n>=2 ? 'brussels' : 'mayor',
+      body:`<div class="quote">${more ? t('stl.more.x', {region:regionName()}) : t('lvl.'+(n+1)+'.x', {town:S.town})}</div>
+        ${stypeBlock(S.stype)}${S.rcombos.length ? `<p class="hint">${t('stl.rcombos')}</p>${rcomboChips(S.rcombos, true)}` : ''}
         <div class="goal">${t('lvl.goal', {n:L.target, m:L.months, s:L.n})}</div>
-        <p class="hint">${t('lvl.newRules')}</p><ul class="rules">${rules}</ul>${carried}
-        ${n===0 ? `<p class="keys">${t('lvl.keys')}</p>` : ''}`,
+        <p class="hint">${t('lvl.newRules')}</p><ul class="rules">${rules}</ul>${carried}${perks}
+        ${k===0 ? `<p class="keys">${t('lvl.keys')}</p>` : ''}`,
       buttons:[btn(t('lvl.go'),'play_arrow', ()=>nextCard('stamp'), true)]}); },
+  consolidated: c => { const B = S.region.blocks[S.region.blocks.length-1], nx = S.region.next;
+    letter({icon:'celebration', title:t('cons.t', {town:c.town}), stamp:t('cons.s'), cls:'ok', speaker:'mayor',
+      body:`<div class="quote">${t('cons.x', {town:c.town, n:c.res, region:regionName(), x:money(B ? B.tax : 0)})}</div>
+        <p>${t('cons.money', {back:money(c.back), kept:money(c.kept)})}</p><div class="rmap-slot"></div>
+        <dl class="kv"><dt>${t('ui.settlements')}</dt><dd>${S.region.blocks.length}</dd><dt>${t('ui.regionPop')}</dt><dd>${regionPop()}</dd></dl>
+        ${nx ? `<p class="hint">${t('cons.next', {type:t('st.'+nx.ty), s:nx.n})}</p>` : ''}`,
+      buttons:[btn(t('ui.noted'),'check', ()=>nextCard('click'), true)]});
+    mountMap({});
+    if(!c.played){ c.played = true; playSound('win'); setMusic('win', 1); } },
+  rcombo: c => { const cb = RCOMBO_BY_ID[c.id], B = S.region.blocks[c.b];
+    letter({icon: cb.good?'workspace_premium':'warning', title: t(cb.good?'rcombo.new.t':'rcombo.newBad.t'), stamp: t(cb.good?'stamp.combo':'stamp.comboBad'), cls: cb.good?'ok':'bad',
+      speaker: cb.good ? 'mayor' : 'neighbour',
+      body:`<div class="combo-name ${cb.good?'good':'bad'}">${t('rcombo.'+cb.id)}</div><div class="quote">${t('rcombod.'+cb.id)}<br><small>${t('rcombo.between', {a:S.town+' ('+t('st.'+S.stype)+')', b:B ? B.town+' ('+t('st.'+B.ty)+')' : ''})}</small></div><p class="hint">${t(cb.good?'combo.new.x':'combo.newBad.x')}</p>`,
+      buttons:[btn(t('ui.noted'),'check', ()=>nextCard('click'), true)]});
+    if(!c.played){ c.played = true; playSound(cb.good ? 'fanfare' : 'crowd'); } },
   combo: c => { const cb = COMBO_BY_ID[c.id]; pulse(c.i);
     letter({icon: cb.good?'workspace_premium':'warning', title: t(cb.good?'combo.new.t':'combo.newBad.t'), stamp: t(cb.good?'stamp.combo':'stamp.comboBad'), cls: cb.good?'ok':'bad',
       speaker: cb.good ? 'mayor' : 'neighbour',
@@ -133,22 +154,50 @@ export function perkCard(){
     b.onclick=()=>{ choosePerk(k); playSound('ok'); refresh(); showNext(); }; return b; });
   letter({icon:'workspace_premium', title:t('perk.title'), speaker:'brussels', body:`<div class="quote">${t('perk.x')}</div>`, buttons:wrap});
 }
-export function score(){ return residents() + Math.max(0,Math.round(S.funds))*5 - Math.round(S.debt)*5 + (S.over&&S.over.win ? (CFG.months+1-S.month)*25 : 0) + S.directivesDone*50; }
+// --- The Euroregion in the cards ---
+export const regionName = () => t('region.name', {n:S.region.name});
+export function stypeBlock(ty){ return `<div class="stype">${ic(STYPE_ICON[ty])}<span><b>${t('st.'+ty)}</b><small>${t('std.'+ty)}</small></span></div>`; }
+// Region combo chips: named once discovered (or when `show`), otherwise a mysterious "region combo?"
+export function rcomboChips(list, show){
+  const known = discovered();
+  return `<div class="chips">${list.map(c=>{ const cb = RCOMBO_BY_ID[c.id];
+    return show || known.includes(c.id) ? `<span class="chip ${cb.good?'good':'bad'}">${ic(cb.good?'workspace_premium':'warning')}${t('rcombo.'+c.id)}</span>`
+      : `<span class="chip mystery">${ic('workspace_premium')}${t('rcombo.possible')}</span>`; }).join('')}</div>`;
+}
+// Put the region minimap into the open letter (its '.rmap-slot')
+export function mountMap(opts){ const slot = notice.querySelector('.rmap-slot'); if(!slot) return; slot.innerHTML = ''; slot.appendChild(regionCanvas(opts)); }
+// Choose the side where the next settlement is attached
+export function attachCard(hi){
+  if(S.pending!=='attach' || !S.region.next) return showNext();
+  const nx = S.region.next, last = S.region.blocks[S.region.blocks.length-1];
+  const pv = Object.fromEntries(DIR_KEYS.map(d=>[d, attachPreview(d)]));
+  const cands = Object.fromEntries(DIR_KEYS.map(d=>[d, pv[d].P]));
+  const buttons = DIR_KEYS.map(d=>{ const v = pv[d], b = document.createElement('button'); b.className = 'choice side'; b.dataset.side = d;
+    const nbs = v.nb.map(k=>S.region.blocks[k]).map(B=>`${B.town} <i>(${t('st.'+B.ty)})</i>`).join(', ');
+    b.innerHTML = `<b>${t('side.'+d)}</b><small>${t('att.touches', {list:nbs})}</small>${v.combos.length ? rcomboChips(v.combos) : `<div class="chips"><span class="chip">${t('att.none')}</span></div>`}`;
+    const show = ()=>mountMap({cands, hi:d});
+    b.addEventListener('pointerenter', show); b.addEventListener('focus', show);
+    b.onclick = ()=>{ if(attach(d).ok){ playSound('stamp'); enterSettlement(); } };
+    return b; });
+  letter({icon:'map', title:t('att.t'), speaker:'brussels',
+    body:`<div class="quote">${t('att.x', {town:nx.town, type:t('st.'+nx.ty), s:nx.n, n:stageCfg((S.stage||0)+1).target, last:last ? last.town : ''})}</div>
+      ${stypeBlock(nx.ty)}<div class="rmap-slot"></div><p class="hint">${t('att.hint')}</p>`, buttons});
+  notice.classList.add('attach');
+  mountMap({cands, hi: hi || null});
+}
+// The run is over: what the Euroregion reached, and the records
 export function gameOver(){
-  const w = S.over.why, win = S.over.win, last = S.level+1 >= LEVELS.length;
-  if(!S.over.played){ S.over.played = true; playSound(win?'win':'fail'); setMusic(win ? 'win' : 'menu', win ? 1 : 0.6); }
-  const stats = `<dl class="kv"><dt>${t('ui.residents')}</dt><dd>${residents()} / ${CFG.target}</dd><dt>${t('ui.month')}</dt><dd>${Math.min(S.month,CFG.months)} / ${CFG.months}</dd><dt>${t('ui.funds')}</dt><dd>${money(S.funds)}</dd>
-      ${S.debt?`<dt>${t('ui.debt')}</dt><dd>${money(S.debt)}</dd>`:''}${on('directives')?`<dt>${t('ui.directivesMet')}</dt><dd>${S.directivesDone}</dd>`:''}<dt>${t('ui.score')}</dt><dd>${score()}</dd></dl>`;
-  if(win && !last){
-    // Level complete: pick the perk you carry into the next level
-    const perks = (S.carryChoice||[]).map(k=>{ const b=document.createElement('button'); b.className='perk';
-      b.innerHTML=`${ic(PERKS[k])}<span><b>${t('perk.'+k)}</b><small>${t('perkd.'+k)}</small></span>`;
-      b.onclick=()=>{ carryPerk(k); playSound('ok'); startLevel(S.level+1); }; return b; });
-    letter({icon:'celebration', title:t('lvl.done.t', {n:ROMAN[S.level]}), stamp:t('stamp.approved'), cls:'ok', speaker:'mayor',
-      body:`<div class="quote">${t('lvl.done.x', {town:S.town, n:residents(), next:t('lvl.'+(S.level+2)+'.name')})}</div>${stats}<p class="hint">${t('lvl.carry')}</p>`,
-      buttons:[...perks, btn(t('menu.main'),'logout', ()=>startMenu())]});
-    return; }
-  const body = `<div class="quote">${t('over.'+w+'.x',{town:S.town, n:residents(), target:CFG.target, m:CFG.months})}</div>${win ? `<p class="hint">${t('over.campaign')}</p>` : ''}${stats}`;
-  letter({icon: win?'celebration':'report', title:t('over.'+w+'.t'), stamp:t('over.'+w+'.s'), cls:win?'ok':'bad', speaker: win?'mayor':(S.level<2?'mayor':'brussels'),
-    body, buttons:[btn(t(win?'over.again':'lvl.retry'),'replay', ()=>startLevel(S.level), true), btn(t('menu.main'),'logout', ()=>startMenu()), btn(t('ui.lookMap'),'map', ()=>{ hideModal(); refresh(); })]});
+  if(!S.over) return showNext();
+  const w = S.over.why, beat = S.over.beat || {}, rec = records();
+  if(!S.over.played){ S.over.played = true; playSound('fail'); setMusic('menu', 0.6); }
+  const pop = regionPop() + residents();
+  const stats = `<dl class="kv"><dt>${t('ui.residents')}</dt><dd>${residents()} / ${CFG.target}</dd><dt>${t('ui.month')}</dt><dd>${Math.min(S.month,CFG.months)} / ${CFG.months}</dd>
+      <dt>${t('ui.settlements')}</dt><dd>${S.region.blocks.length}</dd><dt>${t('ui.regionPop')}</dt><dd>${pop}</dd>
+      ${S.debt?`<dt>${t('ui.debt')}</dt><dd>${money(S.debt)}</dd>`:''}${S.directivesDone?`<dt>${t('ui.directivesMet')}</dt><dd>${S.directivesDone}</dd>`:''}</dl>`;
+  const record = (beat.settlements || beat.pop) ? `<p class="record">${ic('workspace_premium')}${t('run.record')}</p>` : '';
+  letter({icon:'report', title:t('over.'+w+'.t'), stamp:t('over.'+w+'.s'), cls:'bad', speaker: S.level<2 ? 'mayor' : 'brussels',
+    body:`<div class="quote">${t('over.'+w+'.x', {town:S.town, n:residents(), target:CFG.target, m:CFG.months})}</div>${record}<div class="rmap-slot"></div>${stats}
+      <p class="hint">${t('run.best', {s:rec.best.settlements, p:rec.best.pop})}</p>`,
+    buttons:[btn(t('run.new'),'replay', ()=>startRun(), true), btn(t('menu.main'),'logout', ()=>startMenu()), btn(t('ui.lookMap'),'map', ()=>{ hideModal(); refresh(); })]});
+  mountMap({});
 }

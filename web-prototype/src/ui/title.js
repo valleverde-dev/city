@@ -1,11 +1,11 @@
 import { gameTrack, music, setMusic, toggleMusic, updateMusicBtn } from '../audio/music.js';
 import { playSound } from '../audio/sfx.js';
-import { CFG, LEVELS, VERSION } from '../core/config.js';
-import { campaign, loadSave, save } from '../core/persist.js';
+import { CFG, VERSION } from '../core/config.js';
+import { loadSave, records, save } from '../core/persist.js';
 import { N, S, clamp, setState } from '../core/state.js';
 import { LANG, setLanguage, t } from '../i18n/index.js';
 import { FX, GX, MOTION, OX0, OY0, RISE_MS, bl, disc, drawBirds, drawCrane, drawEntry, drawRise, drawWalkers, unionFlag, kick, setPainter } from '../render/anim.js';
-import { TH, TW, centreOn, clampCam, defaultZoom, resize, setCam, setSelected, setViewRot, setZoom } from '../render/camera.js';
+import { TH, TW, centreOn, clampCam, defaultZoom, isoOf, resize, setCam, setSelected, setViewRot, setZoom } from '../render/camera.js';
 import { GROUNDS, riverTile, roadTile, skirt } from '../render/ground.js';
 import { gx, setMapSize, startSite } from '../render/map.js';
 import { C, dith, frac, hsh, sh } from '../render/pixel.js';
@@ -13,7 +13,7 @@ import { ARCH, BUILDINGS, P3, billboardSprite, fenceSprite, flagSprite, noticeSp
 import { btn, hideModal, letter, modal, notice, rerender, setRerender, showNext } from './cards.js';
 import { $, country } from './dom.js';
 import { refresh } from './guide.js';
-import { ROMAN, setSheet } from './hud.js';
+import { roman, setSheet } from './hud.js';
 import { ic } from './icons.js';
 
 // --- Start / pause menu (with language switch) ---
@@ -213,26 +213,18 @@ function go(v){ view = v; renderMenu(true); requestAnimationFrame(layoutCover); 
 function renderMenu(fresh){
   const menu = cover.querySelector('.cv-menu'); if(!menu) return;
   const items = [...menu.querySelectorAll('.cv-item')], at = items.indexOf(document.activeElement);
-  const saved = loadSave(), camp = campaign(), cont = saved && !saved.over;
+  const saved = loadSave(), rec = records(), cont = saved && !saved.over;
   menu.innerHTML = ''; menu.dataset.view = view;
   const head = txt => { const h = document.createElement('div'); h.className = 'cv-head'; h.textContent = txt; menu.appendChild(h); };
   const add = b => menu.appendChild(b);
   let first = null;
   if(view === 'main'){
-    add(item(t('title.new'), ()=>go('new')));
+    add(item(t('title.new'), ()=>startRun(), {sub: rec.best.settlements || rec.best.pop ? t('title.newSub', {s:rec.best.settlements, p:rec.best.pop}) : t('title.newSub0'), cls:'new'}));
     const c = add(item(t('title.continue'), ()=>{ setState(saved); afterLoad(); },
-      {sub: cont ? t('title.contSub',{l:ROMAN[saved.level||0], town:saved.town, m:saved.month}) : t('title.noSave'), disabled:!cont, cls:'cont'}));
+      {sub: cont ? t('title.contSub',{l:roman((saved.stage||0)+1), town:saved.town, m:saved.month}) : t('title.noSave'), disabled:!cont, cls:'cont'}));
     add(item(t('title.settings'), ()=>go('settings')));
     add(item(t('title.credits'), ()=>go('credits')));
     first = cont ? c : menu.querySelector('.cv-item');
-  } else if(view === 'new'){
-    head(t('title.cases'));
-    LEVELS.forEach((L,k)=>{ const locked = k > camp.max, done = k < camp.max || (k===LEVELS.length-1 && camp.done);
-      const b = add(item(`<span class="num">${ROMAN[k]}</span>${t('lvl.'+(k+1)+'.name')}${done ? ic('check') : locked ? ic('block') : ''}`, ()=>startLevel(k),
-        {sub: t('lvl.goalMenu',{s:L.n, n:L.target, m:L.months}), disabled: locked, cls: 'lvl'+(done?' done':'')}));
-      if(!locked && !done) first = b; });
-    add(item(t('title.back'), ()=>go('main'), {cls:'back'}));
-    first = first || menu.querySelector('.cv-item:not(:disabled)');
   } else if(view === 'settings'){
     const other = LANG === 'es' ? 'en' : 'es';
     first = add(item(t('title.lang', {l: t('lang.'+LANG)}), ()=>setLang(other), {silent:true, cls:'lang'}));
@@ -291,7 +283,7 @@ export function pauseMenu(){
   setMusic(gameTrack(), 0.4);
   letter({icon:'pause', title:t('pause.t'), body:`<p>${t('pause.x',{town:S.town, country:country(), m:Math.min(S.month,CFG.months), n:CFG.months})}</p><p class="keys">${t('lvl.keys')}</p>`,
     buttons:[btn(t('pause.back'),'play_arrow', ()=>{ setMusic(gameTrack()); hideModal(); }, true), musicButton(), ...langButtons(),
-      btn(t('lvl.retry'),'replay', ()=>startLevel(S.level)), btn(t('menu.main'),'logout', ()=>{ startMenu(); })]});
+      btn(t('pause.abandon'),'replay', ()=>startRun()), btn(t('menu.main'),'logout', ()=>{ startMenu(); })]});
   updateMusicBtn(); setRerender(pauseMenu);
 }
 export function setLang(l){
@@ -299,7 +291,13 @@ export function setLang(l){
   playSound('click'); refresh(); if(rerender && (!modal.classList.contains('hidden') || coverOpen())) rerender();
 }
 export function frameView(){ resize(); setZoom(defaultZoom());
-  const v = S.grid.findIndex(p=>p.k==='village'); if(N>=16 && v>=0) centreOn(v); else { setCam(0, (N-1)*TH/2 - 12); clampCam(); } }
-export function startNew(seed, level){ hideCover(); startSite(seed, level===undefined ? campaign().max : level); setSelected(-1); setSheet(null); setViewRot(0); frameView(); save(); setMusic(gameTrack()); refresh(); showNext(); }
-export function startLevel(k){ startNew(undefined, k); }
-export function afterLoad(){ hideCover(); setSelected(-1); setSheet(null); setMapSize(LEVELS[S.level||0].n); frameView(); setMusic(gameTrack()); refresh(); showNext(); }
+  // big maps: halfway between the old village (where the action starts) and the middle of the map
+  const v = S.grid.findIndex(p=>p.k==='village');
+  if(N>=16 && v>=0){ const [x,y] = isoOf(Math.floor(v/N), v%N); setCam(x/2, (y + (N-1)*TH/2)/2); clampCam(); }
+  else { setCam(0, (N-1)*TH/2 - 12); clampCam(); } }
+// A new Euroregion (or, for tests and the balance bot, a run that starts at settlement `stage`)
+export function startNew(seed, stage = 0){ hideCover(); startSite(seed, stage); enterSettlement(); }
+export function startRun(){ startNew(undefined, 0); }
+// Show the settlement in play: fit the map to it and open its cards
+export function enterSettlement(){ setSelected(-1); setSheet(null); setViewRot(0); setMapSize(Math.round(Math.sqrt(S.grid.length))); frameView(); save(); setMusic(gameTrack()); refresh(); showNext(); }
+export function afterLoad(){ hideCover(); enterSettlement(); }

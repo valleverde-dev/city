@@ -1,6 +1,7 @@
 import { comboFx } from './combos.js';
 import { B, CFG, METER_FLAG, on } from './config.js';
 import { NB8, S, clamp, has, idx, inside, r1 } from './state.js';
+import { codeAccess, frontAt, regionFx } from './region.js';
 
 // =====================================================================
 //  RULES
@@ -26,15 +27,17 @@ export function isRoad(p, planned){
 export function givesAccess(p){ return isRoad(p, true) || (p.st==='built' && p.k!=='habitat') || p.k==='village'; }
 export function hasAccess(r,c){
   if(!on('access')) return true;
-  return NB8.some(([dr,dc])=> inside(r+dr,c+dc) && givesAccess(S.grid[idx(r+dr,c+dc)]));
+  return NB8.some(([dr,dc])=>{ const r2 = r+dr, c2 = c+dc;
+    if(inside(r2,c2)) return givesAccess(S.grid[idx(r2,c2)]);
+    const x = frontAt(r2,c2); return !!x && codeAccess(x); });   // across the border: the consolidated neighbour
 }
 export function nextToVillage(r,c){ return NB8.some(([dr,dc])=> inside(r+dr,c+dc) && S.grid[idx(r+dr,c+dc)].k==='village'); }
-export function landPrice(p){ return r1(p.price * (has('notary') ? 0.7 : 1)); }
+export function landPrice(p){ return r1(p.price * (has('notary') ? 0.7 : 1) * (1 + (regionFx().land||0))); }
 export function plotValue(p){ return r1(p.price * CFG.urbanUplift * S.market); }
 export function buildCost(p, ty){ return r1(B[ty].cost * S.inflation * (p.k==='flood' ? 1.5 : 1)); }
 export function permitMonths(ty){
   if(!on('permits')) return 1;
-  return Math.max(1, B[ty].permit + (S.neigh<40?1:0) + (S.neigh<25?1:0) - (has('fasttrack')?1:0));
+  return Math.max(1, B[ty].permit + (S.neigh<40?1:0) + (S.neigh<25?1:0) - (has('fasttrack')?1:0) + (regionFx().permit||0));
 }
 export function buildMonths(ty){ return Math.max(1, B[ty].build - (has('prefab')?1:0)); }
 export function contractors(){ return CFG.contractors + (has('contractor')?1:0); }
