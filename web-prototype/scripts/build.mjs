@@ -29,7 +29,7 @@ try { commit = execSync('git rev-parse --short HEAD', { cwd: root, stdio: ['igno
 async function bundle() {
   const common = { bundle: true, write: false, logLevel: 'silent', legalComments: 'none' };
   const js = await esbuild.build({ ...common, entryPoints: [join(src, 'main.js')], format: 'iife', banner: { js: '"use strict";' } });
-  const css = await esbuild.build({ ...common, entryPoints: [join(src, 'styles', 'index.css')], loader: { '.woff': 'dataurl', '.woff2': 'dataurl', '.png': 'dataurl' } });
+  const css = await esbuild.build({ ...common, entryPoints: [join(src, 'styles', 'index.css')], loader: { '.woff': 'dataurl', '.woff2': 'dataurl', '.png': 'dataurl', '.svg': 'dataurl' } });
   return { js: js.outputFiles[0].text, css: css.outputFiles[0].text };
 }
 

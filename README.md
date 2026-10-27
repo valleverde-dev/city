@@ -1,5 +1,7 @@
 # Eurocrat
 
+![Eurocrat](art/logo/eurocrat-logo@4x.png)
+
 *Working title.* A satirical, turn-based roguelike city builder. You are a programme officer sent from Brussels to deliver a model European town: lots of money, 36 months and no power whatsoever. Buy the land, file the permits, survive the neighbours — and spend the funds before they expire.
 
 Web prototype playable on iPad, iPhone and desktop; a Godot port is planned for the App Store and Steam.

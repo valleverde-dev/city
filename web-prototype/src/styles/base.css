@@ -13,6 +13,9 @@
   color-scheme: light;
 }
 *{box-sizing:border-box;}
+/* The Eurocrat logo (art/logo, made by tools/make_logo.py): 74×17 art pixels. The name stays in the markup for screen readers. */
+.logo-art{position:relative; display:block; aspect-ratio:74/17; background:url('../assets/logo.svg') center/100% 100% no-repeat; image-rendering:pixelated;}
+.logo-art > .sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap;}
 .emblem{display:inline-block; flex:0 0 auto; width:48px; height:32px; background:var(--m) center/100% 100% no-repeat; box-shadow:0 0 0 2px var(--navy);}
 [hidden]{display:none !important;}
 html,body{height:100%;}

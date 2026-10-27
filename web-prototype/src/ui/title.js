@@ -264,7 +264,7 @@ export function coverKey(e, k){
 function buildScene(){
   cover.innerHTML = `<canvas id="coverSky" aria-hidden="true"></canvas><div class="cv-clouds" aria-hidden="true"></div><canvas id="coverFlags" aria-hidden="true"></canvas>
     <div class="cv-body">
-      <h1 class="cv-logo">EURO<span>CRAT</span></h1>
+      <h1 class="cv-logo logo-art"><span class="sr">Eurocrat</span></h1>
       <nav class="cv-menu" aria-label="Menu"></nav>
       <div class="cv-dio"></div>
     </div>
