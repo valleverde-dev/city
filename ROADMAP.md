@@ -105,6 +105,12 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 
 ## Production
 
+### itch.io (every release)
+
+- ✅ `npm run build:itch` makes `release/eurocrat-<version>-web.zip` (no service worker or PWA tags; tested inside a cross-origin iframe like itch's).
+- ✅ Tagging `vX.Y.Z` runs the Release workflow: tests, GitHub Release with the zip, and a butler push to itch.io once `BUTLER_API_KEY` + `ITCH_GAME` are set.
+- To do: create the itch.io page (HTML5, 1280×800, mobile friendly, fullscreen button) and add the two settings.
+
 ### App Store
 
 - Apple Developer account (USD 99/year).

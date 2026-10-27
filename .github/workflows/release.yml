@@ -1,0 +1,75 @@
+# Release: push a version tag (e.g. `git tag v0.5.1 && git push origin v0.5.1`) and this workflow
+#   1. checks that the tag matches web-prototype/package.json,
+#   2. runs the layer check, the rules tests and the smoke test on the itch.io build,
+#   3. attaches eurocrat-<version>-web.zip (ready for itch.io) to a GitHub Release,
+#   4. pushes it to itch.io with butler, if the repo has the secret BUTLER_API_KEY
+#      and the variable ITCH_GAME (e.g. "valleverde/eurocrat"). Without them it stops after step 3.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to (re)release, e.g. v0.5.1'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web-prototype
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web-prototype/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Tag matches package.json
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          [ "$TAG" = "v$VERSION" ] || { echo "::error::tag $TAG does not match package.json version $VERSION"; exit 1; }
+      - name: Install tools
+        run: |
+          npm ci
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Layer check + rules tests
+        run: npm run check && npm run test:core
+      - name: Build for itch.io
+        run: npm run build:itch
+      - name: Smoke test (itch.io build)
+        run: |
+          set -o pipefail
+          python3 tests/smoke_test.py dist-itch/index.html 2>&1 | tee smoke.log || { grep -E 'FAIL|Error|Traceback|line [0-9]+' smoke.log | tail -15 | sed 's/^/::error::/'; exit 1; }
+      - name: GitHub Release with the itch.io zip
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ZIP=release/eurocrat-$VERSION-web.zip
+          if gh release view "$TAG" >/dev/null 2>&1; then gh release upload "$TAG" "$ZIP" --clobber
+          else gh release create "$TAG" "$ZIP" --title "Eurocrat $VERSION" --generate-notes; fi
+      - name: Push to itch.io (butler)
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+          ITCH_GAME: ${{ vars.ITCH_GAME }}
+        run: |
+          if [ -z "$BUTLER_API_KEY" ] || [ -z "$ITCH_GAME" ]; then
+            echo "::notice::itch.io push skipped: set the secret BUTLER_API_KEY and the variable ITCH_GAME to enable it"; exit 0; fi
+          curl -sSL -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+          unzip -q butler.zip -d butler && chmod +x butler/butler
+          ./butler/butler push dist-itch "$ITCH_GAME:html5" --userversion "$VERSION"

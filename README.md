@@ -62,6 +62,25 @@ npm run balance -- 150 --level=4   # difficulty check over 150 seeded runs, in N
 
 The tuning knobs (`CFG`, levels, building table `B`, perks) are in `src/core/config.js`; events in `src/core/events.js`; every text in `src/i18n/strings.js`. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for where everything else lives.
 
+### Releases and itch.io
+
+Each release produces a zip ready for itch.io (`index.html` at the root, no service worker):
+
+```bash
+cd web-prototype
+npm run build:itch   # -> dist-itch/ and release/eurocrat-<version>-web.zip
+```
+
+To publish a release: bump `version` in `web-prototype/package.json`, merge to `main`, then tag it:
+
+```bash
+git tag v0.5.1 && git push origin v0.5.1
+```
+
+The **Release** workflow tests the itch build, attaches the zip to a GitHub Release and, once configured, uploads it to itch.io with butler (channel `html5`). To switch the upload on: in GitHub → Settings → Secrets and variables → Actions, add the secret `BUTLER_API_KEY` (itch.io → Settings → API keys) and the variable `ITCH_GAME` (`user/game`, e.g. `valleverde/eurocrat`).
+
+itch.io page settings (once): Kind of project **HTML**; tick *This file will be played in the browser* on the upload; viewport **1280 × 800**; enable *Mobile friendly* and the *Fullscreen button*.
+
 ### Playing on iPad
 
 Every push to `main` publishes the build to GitHub Pages. In Safari, open the link above, then Share → *Add to Home Screen* to launch it full-screen like an app.
