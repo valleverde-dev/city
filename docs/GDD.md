@@ -184,7 +184,7 @@ Later: short stingers for stamps, approvals, failed directives and audits; a ten
 
 ## 13. Language
 
-English and Spanish, switchable at any time (HUD button or menus); the choice is remembered. Every string lives in one dictionary (`I18N` in `index.html`); logs and cards store keys, so switching language re-renders everything.
+English and Spanish, switchable at any time (HUD button or menus); the choice is remembered. Every string lives in one dictionary (`web-prototype/src/i18n/strings.js`); logs and cards store keys, so switching language re-renders everything.
 
 ## 14. Interface
 

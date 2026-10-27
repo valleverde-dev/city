@@ -1,0 +1,55 @@
+/* =====================================================================
+   v0.4 READABILITY PASS — pixel fonts stay for titles, figures, buttons and stamps;
+   everything you READ uses a crisp system sans, bigger and darker.
+   ===================================================================== */
+:root{ --f-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; --sub:#3a4560; }
+body{font-size:15px;}
+.card p{font-size:15px; line-height:1.5; color:#2b3550;}
+.card .ref, .notice .ref{font:700 11.5px/1.5 var(--f-ui); letter-spacing:.07em; color:#4a5570;}
+.log .m{font:700 10.5px/1 var(--f-ui); letter-spacing:.04em;}
+.where{font:700 12px/1 var(--f-ui); letter-spacing:.05em; padding:5px 8px 5px 6px;}
+.notice .letterhead .org{font:700 11px/1.45 var(--f-ui); letter-spacing:.07em;}
+.meter{font-size:14px; color:#3a4560;}
+.act{font-size:15.5px; line-height:1.2; padding:8px 10px 8px 8px;}
+.act small{font-size:13.5px; line-height:1.4; color:#3a4560; margin-top:3px;}
+.act:disabled small{color:#7d879c;}
+.act.build small{display:flex; flex-direction:column; gap:3px;}
+.act.build .meta{font-weight:700; color:var(--blue);}
+.act.build .why{font-weight:700; color:var(--bad);}
+.act.build .chips{margin-top:2px;}
+.act.cat > .ico{background:var(--yellow2);}
+.problems li{font-size:15px; line-height:1.35;}
+.problems li small{font-size:13.5px; color:#3a4560;}
+.log{font-size:13.5px; color:#3a4560;}
+.bottleneck{font-size:14px;}
+.kv{font-size:14px;}
+
+#pop{font-size:14px;} #pop p{color:#3a4560;}
+.notice p{font-size:16px; line-height:1.55;}
+.quote{font-size:16.5px; line-height:1.55;}
+.quote small{display:block; margin-top:6px; font-size:14px; color:#3a4560;}
+.speaker small{font-size:14.5px; color:#3a4560;}
+.choice b{font-size:16.5px; line-height:1.3;}
+.chip{font-size:13px; padding:3px 7px 3px 5px;}
+.chip.mystery{background:#fff6c7; color:#7a5d00; border-style:dashed;}
+.perk small{font-size:14.5px;}
+.hint{font-size:14px; color:#3a4560; margin:10px 0 6px;}
+.float-txt{font-size:22px;}
+/* combos */
+.combos-here{margin-top:8px; padding:8px; background:var(--sky); border:2px dotted var(--blue2);}
+.combos-here b{display:block; font:400 18px/1 var(--f-display); color:var(--navy); margin-bottom:6px;}
+.combos-here p{margin:0;}
+.combo-name{font:400 34px/1 var(--f-display); margin:4px 0 2px;} .combo-name.good{color:var(--ok);} .combo-name.bad{color:var(--bad);}
+.catalogue{list-style:none; margin:8px 0 0; padding:0; display:grid; gap:6px;}
+.catalogue li{display:flex; gap:10px; align-items:flex-start; padding:8px; border:2px solid var(--navy); background:var(--white);}
+.catalogue li > .ico{width:20px; height:20px; flex:0 0 20px; margin-top:2px;}
+.catalogue li b{display:block; font:400 20px/1.05 var(--f-display); color:var(--navy);}
+.catalogue li small{display:block; font-size:14px; line-height:1.4; color:#3a4560; margin-top:2px;}
+.catalogue li.good > .ico{color:var(--ok);} .catalogue li.bad > .ico{color:var(--bad);}
+.catalogue li.unknown{background:#eef1f6; border-style:dashed;} .catalogue li.unknown b{color:#7d879c;}
+/* cards in the middle of the screen (the map stays visible around them) */
+#modal.dock{align-items:center; justify-content:center; background:rgba(11,31,77,.28); padding:16px;}
+#modal.dock .notice{max-height:90vh;}
+@media (min-width:900px) and (min-aspect-ratio:1/1){ #modal.dock{align-items:center; justify-content:center; padding-right:16px;} }
+.notice{max-width:500px;}
+

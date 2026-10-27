@@ -1,0 +1,14 @@
+/* =====================================================================
+   EUROCRAT UI — an institutional portal of "the Union", drawn in pixels.
+   Fonts (SIL OFL 1.1, subset to Latin, embedded): Jersey 10 (display),
+   Pixelify Sans (UI text), Silkscreen Bold (stamps, reference numbers).
+/* Order matters: later files refine earlier ones (v0.4 readability, v0.5 layout). */
+@import './fonts.css';
+@import './base.css';
+@import './hud.css';
+@import './map.css';
+@import './panels.css';
+@import './modal.css';
+@import './title.css';
+@import './readability.css';
+@import './layout.css';

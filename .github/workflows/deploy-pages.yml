@@ -1,4 +1,4 @@
-# Build + test the web prototype and publish it to GitHub Pages on every push to main.
+# Check layers + test the rules + build + smoke test the web prototype and publish it to GitHub Pages on every push to main.
 # Enable Pages in the repo: Settings → Pages → Source: "GitHub Actions".
 name: Web prototype
 
@@ -30,6 +30,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: web-prototype/package-lock.json
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -37,10 +39,19 @@ jobs:
         run: |
           pip install playwright
           python -m playwright install --with-deps chromium
+      - name: Install build tools
+        run: npm ci
+      - name: Layer check (the core stays portable)
+        run: npm run check
+      - name: Rules tests (Node, no browser)
+        run: npm run test:core
       - name: Build
         run: npm run build
       - name: Smoke test (build output)
-        run: npm run test:dist
+        # failures are also raised as annotations, so they show on the PR without opening the log
+        run: |
+          set -o pipefail
+          npm run test:smoke 2>&1 | tee smoke.log || { grep -E 'FAIL|Error|Traceback|line [0-9]+' smoke.log | tail -15 | sed 's/^/::error::/'; exit 1; }
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web-prototype/dist

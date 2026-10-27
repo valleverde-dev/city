@@ -1,6 +1,6 @@
 """Export every map sprite of the web prototype to a PNG sheet + JSON atlas.
 
-The sprites are generated in code (see the RENDERING section of src/index.html);
+The sprites are generated in code (src/render/: pixel.js, ground.js, sprites.js);
 this dumps them to files so they can be reviewed and reused in the Godot port.
 
 Usage:    python3 web-prototype/tools/export_sprites.py [out_dir]   (default: art/sprites)
@@ -24,7 +24,7 @@ with sync_playwright() as p:
     browser = p.chromium.launch()
     page = browser.new_page()
     page.route("**/fonts.g*/**", lambda r: r.abort())
-    page.goto((ROOT / "src" / "index.html").resolve().as_uri())
+    page.goto((ROOT / "dist" / "index.html").resolve().as_uri())   # run `npm run build` first
     sheet = page.evaluate("window.__eurocrat.spriteSheet()")
     browser.close()
 

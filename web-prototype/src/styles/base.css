@@ -1,0 +1,34 @@
+/* Design tokens, reset and pixel icons */
+:root{
+  --navy:#0b1f4d; --blue:#163f94; --blue2:#2a63c9; --sky:#dfe8f6; --sky2:#c7d6ee;
+  --yellow:#ffd200; --yellow2:#e6b400; --cream:#fff6c7;
+  --paper:#fbf8ee; --paper2:#f2ecd9; --desk:#dfe5ef; --white:#ffffff;
+  --ink:#14203d; --sub:#55617c; --line:#b7c2d8;
+  --ok:#1d8148; --bad:#c62f28; --warn:#b86e00;
+  --okbg:#dff2e5; --badbg:#fbe1de; --warnbg:#fdeec9;
+  --f-display:'Jersey', 'Pixel', system-ui, sans-serif;
+  --f-ui:'Pixel', system-ui, -apple-system, sans-serif;
+  --f-tag:'Silk', 'Pixel', monospace;
+  --raise: 0 3px 0 var(--navy);
+  color-scheme: light;
+}
+*{box-sizing:border-box;}
+[hidden]{display:none !important;}
+html,body{height:100%;}
+body{
+  margin:0; background:var(--desk); color:var(--ink); font-family:var(--f-ui); font-size:14px;
+  overflow:hidden; touch-action:none; -webkit-user-select:none; user-select:none;
+  -webkit-font-smoothing:none; -moz-osx-font-smoothing:grayscale; text-rendering:optimizeSpeed;
+}
+button{font:inherit; color:inherit;}
+b, strong{font-weight:700;}
+
+/* --- Pixel icons: one-colour masks, tinted with the text colour --- */
+.ico{display:inline-block; flex:0 0 auto; width:18px; height:18px; background-color:currentColor; vertical-align:middle;
+     -webkit-mask:var(--m) center/100% 100% no-repeat; mask:var(--m) center/100% 100% no-repeat;}
+.ico.s12{width:12px; height:12px;} .ico.s24{width:24px; height:24px;} .ico.s36{width:36px; height:36px;}
+.emblem{display:inline-block; flex:0 0 auto; width:40px; height:40px; background:var(--m) center/100% 100% no-repeat; image-rendering:pixelated;}
+
+#app{display:flex; flex-direction:column; height:100%;
+     padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); background:var(--blue);}
+

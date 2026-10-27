@@ -1,6 +1,6 @@
 """Smoke test for the Eurocrat web prototype (v0.5: levels, guide, sheets, panning).
 
-Usage:    python3 web-prototype/tests/smoke_test.py [path/to/index.html]
+Usage:    npm run build && python3 web-prototype/tests/smoke_test.py [path/to/index.html]   (default: dist/index.html)
 Requires: pip install playwright && python3 -m playwright install chromium
 """
 import pathlib
@@ -10,7 +10,7 @@ import sys
 from playwright.sync_api import sync_playwright
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-target = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "src" / "index.html"
+target = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "dist" / "index.html"
 URL = target.resolve().as_uri()
 
 failures = []
@@ -291,6 +291,12 @@ with sync_playwright() as p:
     page.set_viewport_size({"width": 1180, "height": 820})
 
     page.screenshot(path=str(ROOT / "tests" / "last-run.png"))
+    sizes = []
+    for lv in range(4):
+        ev(f"{G}.startLevel({lv})"); drain(); clear_cards()
+        n = S("Math.round(Math.sqrt(S.grid.length))"); aw = ev(f"{G}.artSize[0]")
+        sizes.append(aw == n * 64 + 32)
+    check(all(sizes), "every level's map canvas fits its grid (2, 4, 8, 16)")
     check(ev(f"Object.keys({G}.spriteSheet().atlas).length") >= 60, "pixel-art sprite sheet builds")
     check(page.locator(".material-icons").count() == 0 and page.locator("#hud .ico").count() >= 5, "pixel icons replace the icon font")
     check(ev("document.fonts.check('20px Jersey') && document.fonts.check('14px Pixel')"), "embedded pixel fonts are available")

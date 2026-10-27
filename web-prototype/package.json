@@ -1,16 +1,24 @@
 {
   "name": "eurocrat-web-prototype",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
-  "description": "Eurocrat \u2014 satirical roguelike city builder, web prototype",
+  "description": "Eurocrat — satirical roguelike city builder, web prototype",
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
+    "dev": "node scripts/build.mjs --watch",
+    "build:itch": "node scripts/build.mjs --target=itch",
     "serve": "python3 -m http.server 8080 --directory dist",
-    "test": "python3 tests/smoke_test.py src/index.html",
-    "test:dist": "python3 tests/smoke_test.py dist/index.html"
+    "check": "node scripts/check-layers.mjs",
+    "test:core": "node --test tests/core/*.test.mjs",
+    "test:smoke": "python3 tests/smoke_test.py dist/index.html",
+    "test": "npm run check && npm run test:core && npm run build && npm run test:smoke",
+    "balance": "node tests/balance.mjs"
   },
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
   }
 }
