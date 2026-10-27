@@ -38,6 +38,8 @@ async function build() {
   const stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 13); // YYYYMMDDTHHMM
   const buildId = `${pkg.version}-${stamp}-${commit}`;
   const { js, css } = await bundle();
+  const cfgVersion = (readFileSync(join(src, 'core', 'config.js'), 'utf8').match(/export const VERSION = '([^']+)'/) || [])[1];
+  if (cfgVersion !== pkg.version) throw new Error(`src/core/config.js VERSION is ${cfgVersion}, package.json says ${pkg.version}: update one of them`);
   if (/<\/script/i.test(js)) throw new Error('bundled script contains "</script": it would break the inline <script> tag');
 
   rmSync(dist, { recursive: true, force: true });

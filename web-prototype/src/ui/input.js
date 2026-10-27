@@ -10,7 +10,7 @@ import { $, flushFx } from './dom.js';
 import { refresh } from './guide.js';
 import { hidePop, setSheet, sheet, showMeterPop } from './hud.js';
 import { closeSheet, openSheet } from './sheets.js';
-import { cover, coverOpen, frameView, pauseMenu, setLang } from './title.js';
+import { coverKey, coverOpen, frameView, pauseMenu, setLang } from './title.js';
 
 // =====================================================================
 //  INPUT — tap to select · drag (one finger / mouse) to move · pinch / wheel / +− to zoom
@@ -56,7 +56,7 @@ export function keyStep(){ let dx=0, dy=0; held.forEach(k=>{ const v = PAN_KEYS[
 addEventListener('keydown', e=>{
   if(e.target.closest && e.target.closest('input,textarea')) return;
   const k = e.key.toLowerCase(), modalOpen = !modal.classList.contains('hidden');
-  if(coverOpen()){ if((k==='enter' || k===' ') && !(e.target.closest && e.target.closest('button'))){ e.preventDefault(); cover.querySelector('.cv-play').click(); } return; }
+  if(coverOpen()){ coverKey(e, k); return; }
   if(k==='escape'){ if(sheet) closeSheet(); else if(!modalOpen && S && !S.over) pauseMenu(); return; }
   if(modalOpen) return;
   if(PAN_KEYS[k]){ e.preventDefault(); held.add(k); if(!keyLoop) keyLoop = requestAnimationFrame(keyStep); return; }

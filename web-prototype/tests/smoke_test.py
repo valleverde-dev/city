@@ -58,18 +58,29 @@ with sync_playwright() as p:
         x, y = S(f"g.screenOf({i})"); box = page.locator("#map").bounding_box()
         page.mouse.click(box["x"] + x, box["y"] + y); page.wait_for_timeout(60)
 
-    # --- Start menu: language and the level list
-    check(page.locator(".lvl").count() == 4, "the start menu lists the 4 levels")
-    check(page.locator(".lvl:disabled").count() == 3, "only level I is unlocked at first")
-    check(page.is_visible("#cover .cv-logo") and page.is_visible("#cover .cv-ticker") and S("g.lang") == "en", "the title screen is a full-screen scene with logo, menu and bulletin")
-    cb = page.locator("#cover").bounding_box(); vw = page.viewport_size
+    # --- Title screen: logo, the four-item menu, version and copyright; settings (language), credits, level list
+    cv = page.locator("#cover")
+    items = [x.strip().lower() for x in page.locator("#cover .cv-item b").all_inner_texts()]
+    check(page.is_visible("#cover .cv-logo") and items == ["new game", "continue", "settings", "credits"], f"the title screen shows the logo and New game · Continue · Settings · Credits ({items})")
+    check(page.locator("#cover .cv-item.cont").is_disabled(), "Continue is disabled with no saved programme")
+    check(page.is_visible("#cover .cv-foot .ver") and "Groenendaal" in page.locator("#cover .cv-foot .copy").inner_text(), "version and copyright sit in the corners")
+    cb = cv.bounding_box(); vw = page.viewport_size
     check(cb["width"] == vw["width"] and cb["height"] == vw["height"], "the title screen covers the whole viewport")
-    page.click("text=Español")
-    check(page.is_visible("text=Proyecto piloto") and S("g.lang") == "es", "switching to Spanish translates the menu")
+    page.keyboard.press("ArrowDown"); page.keyboard.press("Enter")
+    check(page.locator("#cover .cv-menu").get_attribute("data-view") == "settings", "arrow keys skip the disabled item; Enter opens Settings")
+    page.locator("#cover .cv-item.lang").click()
+    check(page.is_visible("text=Idioma: Español") and S("g.lang") == "es", "switching to Spanish translates the menu")
     page.reload()
-    check(page.is_visible("text=Proyecto piloto"), "the language choice is remembered")
-    page.click("text=English")
-    check(page.is_visible("text=Pilot Project"), "switching back to English")
+    check(page.is_visible("text=Nueva partida"), "the language choice is remembered")
+    page.click("text=Ajustes"); page.locator("#cover .cv-item.lang").click()
+    check(page.is_visible("text=Language: English"), "switching back to English")
+    page.keyboard.press("Escape")
+    check(page.locator("#cover .cv-menu").get_attribute("data-view") == "main", "Esc goes back to the main menu")
+    page.click("text=Credits")
+    check("Groenendaal" in page.locator("#cover .cv-credits").inner_text(), "the credits name the author")
+    page.click("text=Back"); page.click("text=New game")
+    check(page.locator(".lvl").count() == 4, "New game lists the 4 levels")
+    check(page.locator(".lvl:disabled").count() == 3, "only level I is unlocked at first")
 
     # --- Level I through the real UI: intro, level card, guide, buy, build, end months, win
     page.locator(".lvl").first.click()
@@ -108,7 +119,7 @@ with sync_playwright() as p:
     check(S("g.on('access') && !g.on('rustic') && !g.on('events')"), "level II rules: access yes, rustic land and events not yet")
 
     # --- Back to the menu: level II is unlocked now
-    page.click("#menuBtn"); page.click("text=Main menu")
+    page.click("#menuBtn"); page.click("text=Main menu"); page.click("#cover >> text=New game")
     check(page.locator(".lvl:not(:disabled)").count() == 2, "the menu shows level II unlocked")
     page.keyboard.press("Escape")
 
@@ -258,8 +269,9 @@ with sync_playwright() as p:
     S("(S.slots=3, 0)"); S("g.lobby()"); clear_cards(); S("g.endMonth()"); clear_cards(); S("(g.refresh(), 0)")
     town = S("S.town")
     page.reload()
-    play = page.locator("#cover .cv-play")
-    check(page.is_visible("#cover") and "Continue" in play.inner_text() and f"Level II · {town}" in play.inner_text(), "the start menu offers to continue the saved level")
+    play = page.locator("#cover .cv-item.cont")
+    check(page.is_visible("#cover") and play.is_enabled() and f"Level II · {town}" in play.inner_text(), "the start menu offers to continue the saved level")
+    check(page.evaluate("document.activeElement.classList.contains('cont')"), "with a saved programme, Continue is the selected item")
     play.click(); page.wait_for_timeout(100); drain()
     check(page.locator("#cover").is_hidden(), "the cover closes when a level starts")
     check(S("S.town") == town and S("S.level") == 1 and S("Math.sqrt(S.grid.length)") == 4, "continue restores the level and its map")

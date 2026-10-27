@@ -1,6 +1,6 @@
 import { gameTrack, music, setMusic, toggleMusic, updateMusicBtn } from '../audio/music.js';
 import { playSound } from '../audio/sfx.js';
-import { CFG, LEVELS } from '../core/config.js';
+import { CFG, LEVELS, VERSION } from '../core/config.js';
 import { campaign, loadSave, save } from '../core/persist.js';
 import { N, S, clamp, setState } from '../core/state.js';
 import { LANG, setLanguage, t } from '../i18n/index.js';
@@ -182,67 +182,109 @@ export function avenueFrame(now){
 }
 export function layoutCover(){
   if(!coverOpen()) return;
-  const sky = $('coverSky'), stage = cover.querySelector('.cv-stage'), dio = cover.querySelector('.cv-dio canvas'), box = cover.querySelector('.cv-dio');
-  if(!sky || !stage || !dio) return;
+  const sky = $('coverSky'), dio = cover.querySelector('.cv-dio canvas'), box = cover.querySelector('.cv-dio');
+  if(!sky || !dio) return;
   const cr = cover.getBoundingClientRect(), lr = cover.querySelector('.cv-logo').getBoundingClientRect();
   const dprC = window.devicePixelRatio || 1;
   dio.style.width = '1px'; dio.style.height = '1px';
-  const br = box.getBoundingClientRect(), availW = Math.max(120, br.width), availH = Math.max(100, br.height);
+  const br = box.getBoundingClientRect(), availW = Math.max(120, br.width), availH = Math.max(80, br.height);
   // whole device pixels when the art is big; half steps below 3× (invisible on dense screens) so phones get a decent size
   const fitK = Math.min(availW*dprC/dio.width, availH*dprC/dio.height), k = fitK >= 3 ? Math.floor(fitK) : Math.max(1, Math.floor(fitK*2)/2);
   dio.style.width = dio.width*k/dprC + 'px'; dio.style.height = dio.height*k/dprC + 'px';
   const dr = dio.getBoundingClientRect();
   const hz = clamp((dr.top + dr.height*0.42 - cr.top)/cr.height, 0.45, 0.85);
   paintSky(sky, cr.width, cr.height, lr.left + lr.width/2 - cr.left, lr.top + lr.height/2 - cr.top, hz);
-  const tk = cover.querySelector('.cv-ticker').getBoundingClientRect();
-  SKY.fg = {top: Math.ceil((dr.bottom - cr.top)/SKY.PS) + 3, base: Math.floor((tk.top - cr.top)/SKY.PS) - 1};
+  const fr = cover.querySelector('.cv-foot').getBoundingClientRect();   // the front row stands above the version and copyright
+  SKY.fg = {top: Math.ceil((dr.bottom - cr.top)/SKY.PS) + 3, base: Math.floor((fr.top - cr.top)/SKY.PS) + 1};
   avenueFrame(performance.now());
+}
+// --- The title screen: logo, a vertical menu (new game · continue · settings · credits), version and copyright in the corners.
+// The scene (sky, clouds, flags, diorama) is built once per visit; the menu re-renders on its own (views, language).
+let view = 'main';
+function item(label, fn, opt={}){
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'cv-item' + (opt.cls ? ' '+opt.cls : '');
+  b.innerHTML = `<i class="cv-ptr" aria-hidden="true"></i><span><b>${label}</b>${opt.sub ? `<small>${opt.sub}</small>` : ''}</span>`;
+  if(opt.disabled) b.disabled = true;
+  b.onclick = ()=>{ if(!opt.silent) playSound('click'); fn(); };
+  b.addEventListener('pointerenter', ()=>{ if(!b.disabled && document.activeElement !== b) b.focus({preventScroll:true}); });
+  return b;
+}
+function go(v){ view = v; renderMenu(true); requestAnimationFrame(layoutCover); }
+function renderMenu(fresh){
+  const menu = cover.querySelector('.cv-menu'); if(!menu) return;
+  const items = [...menu.querySelectorAll('.cv-item')], at = items.indexOf(document.activeElement);
+  const saved = loadSave(), camp = campaign(), cont = saved && !saved.over;
+  menu.innerHTML = ''; menu.dataset.view = view;
+  const head = txt => { const h = document.createElement('div'); h.className = 'cv-head'; h.textContent = txt; menu.appendChild(h); };
+  const add = b => menu.appendChild(b);
+  let first = null;
+  if(view === 'main'){
+    add(item(t('title.new'), ()=>go('new')));
+    const c = add(item(t('title.continue'), ()=>{ setState(saved); afterLoad(); },
+      {sub: cont ? t('title.contSub',{l:ROMAN[saved.level||0], town:saved.town, m:saved.month}) : t('title.noSave'), disabled:!cont, cls:'cont'}));
+    add(item(t('title.settings'), ()=>go('settings')));
+    add(item(t('title.credits'), ()=>go('credits')));
+    first = cont ? c : menu.querySelector('.cv-item');
+  } else if(view === 'new'){
+    head(t('title.cases'));
+    LEVELS.forEach((L,k)=>{ const locked = k > camp.max, done = k < camp.max || (k===LEVELS.length-1 && camp.done);
+      const b = add(item(`<span class="num">${ROMAN[k]}</span>${t('lvl.'+(k+1)+'.name')}${done ? ic('check') : locked ? ic('block') : ''}`, ()=>startLevel(k),
+        {sub: t('lvl.goalMenu',{s:L.n, n:L.target, m:L.months}), disabled: locked, cls: 'lvl'+(done?' done':'')}));
+      if(!locked && !done) first = b; });
+    add(item(t('title.back'), ()=>go('main'), {cls:'back'}));
+    first = first || menu.querySelector('.cv-item:not(:disabled)');
+  } else if(view === 'settings'){
+    const other = LANG === 'es' ? 'en' : 'es';
+    first = add(item(t('title.lang', {l: t('lang.'+LANG)}), ()=>setLang(other), {silent:true, cls:'lang'}));
+    add(item(t('title.music', {s: t(music.on ? 'on' : 'off')}), ()=>{ toggleMusic(); renderMenu(); }, {cls:'music'}));
+    add(item(t('title.back'), ()=>go('main'), {cls:'back'}));
+  } else if(view === 'credits'){
+    const c = document.createElement('div'); c.className = 'cv-credits';
+    c.innerHTML = `<p class="by">${t('title.by')}</p>
+      <dl><dt>${t('title.c.music')}</dt><dd>${t('title.c.musicX')}</dd><dt>${t('title.c.fonts')}</dt><dd>${t('title.c.fontsX')}</dd></dl>
+      <p class="note">${t('title.c.note')}</p>`;
+    menu.appendChild(c);
+    first = add(item(t('title.back'), ()=>go('main'), {cls:'back'}));
+  }
+  const now = [...menu.querySelectorAll('.cv-item')];
+  const target = (!fresh && at >= 0 && now[at] && !now[at].disabled) ? now[at] : first;
+  if(target) target.focus({preventScroll:true});
+}
+// Arrow keys / W-S move through the menu, Enter or Space picks (native button behaviour), Esc or Backspace goes back
+export function coverKey(e, k){
+  const menu = cover.querySelector('.cv-menu'); if(!menu) return;
+  const items = [...menu.querySelectorAll('.cv-item:not(:disabled)')]; if(!items.length) return;
+  const i = items.indexOf(document.activeElement);
+  if(k==='arrowdown' || k==='s' || k==='arrowup' || k==='w'){ e.preventDefault();
+    const d = (k==='arrowdown' || k==='s') ? 1 : -1, n = i < 0 ? 0 : (i + d + items.length) % items.length;
+    items[n].focus({preventScroll:true}); playSound('click'); return; }
+  if((k==='escape' || k==='backspace') && view !== 'main'){ e.preventDefault(); playSound('click'); go('main'); return; }
+  if((k==='enter' || k===' ') && i < 0){ e.preventDefault(); items[0].click(); }
+}
+function buildScene(){
+  cover.innerHTML = `<canvas id="coverSky" aria-hidden="true"></canvas><div class="cv-clouds" aria-hidden="true"></div><canvas id="coverFlags" aria-hidden="true"></canvas>
+    <div class="cv-body">
+      <h1 class="cv-logo">EURO<span>CRAT</span></h1>
+      <nav class="cv-menu" aria-label="Menu"></nav>
+      <div class="cv-dio"></div>
+    </div>
+    <div class="cv-foot"><span class="ver">v${VERSION}</span><span class="copy">© Copyright 2026 · Groenendaal</span></div>`;
+  // clouds: made once per visit, spread across the sky with negative delays
+  const clouds = cover.querySelector('.cv-clouds');
+  // they stay in the band of the logo, so they never pass behind the menu
+  [[0.01,140,0],[0.07,190,1],[0.03,110,2],[0.1,230,3],[0,170,4]].forEach(([top,dur,sd],j)=>{ const c = cloudCanvas(sd);
+    c.className = 'cv-cloud'; c.style.top = `calc(${top} * min(100%, 1000px))`; c.style.width = c.width*4+'px'; c.style.height = c.height*4+'px';
+    c.style.animationDuration = dur+'s'; c.style.animationDelay = (-dur*((j*0.37)%1))+'s'; clouds.appendChild(c); });
+  cover.querySelector('.cv-dio').appendChild(coverDiorama());
 }
 export function startMenu(){
   setMusic('menu');
-  const saved = loadSave(), camp = campaign();
   modal.classList.add('hidden'); modal.classList.remove('title'); notice.className = 'notice';
-  const news = [1,2,3,4,5,6,7,8].map(i=>`<span>${t('cover.n'+i)}</span><i>■</i>`).join('');
-  cover.innerHTML = `<canvas id="coverSky" aria-hidden="true"></canvas><div class="cv-clouds" aria-hidden="true"></div><canvas id="coverFlags" aria-hidden="true"></canvas>
-    <div class="cv-body">
-      <div class="cv-stage">
-        <div class="cv-brand"><h1 class="cv-logo">EURO<span>CRAT</span></h1></div>
-        <div class="cv-dio"></div>
-      </div>
-      <div class="cv-panel">
-        <div class="cv-desk"><div class="lbl">${t('cover.desk')}<small>${t('cover.window')}</small></div>
-          <div class="cv-led"><small>${t('cover.serving')}</small><b>A${String(camp.max+1).padStart(2,'0')}</b></div></div>
-        <div class="cv-in"><div class="cv-go"></div><div class="cv-h">${t('cover.cases')}</div><div class="levels"></div><div class="cv-opts"></div></div>
-        <div class="cv-foot">${t('cover.foot')}</div>
-      </div>
-    </div>
-    <div class="cv-ticker"><div class="lbl">${ic('campaign')}${t('cover.bulletin')}</div><div class="cv-track"><div>${news}${news}</div></div></div>`;
-  // primary action: continue the saved level, or open the next case file
-  const go = document.createElement('button'); go.className = 'cv-play';
-  const cont = saved && !saved.over, nextLv = Math.min(camp.max, LEVELS.length-1);
-  go.innerHTML = cont ? `${ic('play_arrow')}<span><b>${t('cover.continue')}</b><small>${t('cover.contSub',{l:ROMAN[saved.level||0], town:saved.town, m:saved.month})}</small></span>`
-                      : `${ic('play_arrow')}<span><b>${t('menu.new')}</b><small>${t('cover.newSub',{l:ROMAN[nextLv], name:t('lvl.'+(nextLv+1)+'.name')})}</small></span>`;
-  go.onclick = ()=>{ playSound('click'); if(cont){ setState(saved); afterLoad(); } else startLevel(nextLv); };
-  cover.querySelector('.cv-go').appendChild(go);
-  const lv = cover.querySelector('.levels');
-  LEVELS.forEach((L,k)=>{ const b = document.createElement('button'); const locked = k > camp.max, done = k < camp.max || (k===LEVELS.length-1 && camp.done);
-    b.className = 'lvl'+(done?' done':'')+(!locked && !done ? ' cur' : ''); b.disabled = locked;
-    const tag = locked ? ['pend','cover.pending'] : done ? ['ok','cover.approved'] : ['cur','cover.open'];
-    b.innerHTML = `<span class="cv-tag ${tag[0]}">${t(tag[1])}</span><span class="num">${ROMAN[k]}</span><b>${t('lvl.'+(k+1)+'.name')}</b><small>${t('lvl.goalMenu',{s:L.n, n:L.target, m:L.months})}</small>`;
-    b.onclick = ()=>{ playSound('click'); startLevel(k); }; lv.appendChild(b); });
-  const opts = cover.querySelector('.cv-opts'), seg = document.createElement('div'); seg.className = 'cv-seg';
-  ['en','es'].forEach(l=>{ const b = document.createElement('button'); b.textContent = t('lang.'+l); b.lang = l; if(l===LANG) b.classList.add('on');
-    b.onclick = ()=>setLang(l); seg.appendChild(b); });
-  opts.appendChild(seg); opts.appendChild(musicButton());
-  // clouds: made once per visit, spread across the sky with negative delays
-  const clouds = cover.querySelector('.cv-clouds');
-  [[0.08,140,0],[0.2,190,1],[0.13,110,2],[0.3,230,3],[0.05,170,4]].forEach(([top,dur,sd],j)=>{ const c = cloudCanvas(sd);
-    c.className = 'cv-cloud'; c.style.top = (top*100)+'%'; c.style.width = c.width*4+'px'; c.style.height = c.height*4+'px';
-    c.style.animationDuration = dur+'s'; c.style.animationDelay = (-dur*((j*0.37)%1))+'s'; clouds.appendChild(c); });
-  cover.querySelector('.cv-dio').appendChild(coverDiorama());
-  cover.hidden = false; kick(); cover.querySelector('.cv-body').scrollTop = 0;
+  if(!coverOpen() || !cover.querySelector('.cv-menu')) buildScene();
+  view = 'main'; cover.hidden = false; kick();
+  renderMenu(true);
   requestAnimationFrame(layoutCover); if(document.fonts && document.fonts.ready) document.fonts.ready.then(layoutCover);
-  updateMusicBtn(); setRerender(startMenu);
+  updateMusicBtn(); setRerender(()=>{ renderMenu(); requestAnimationFrame(layoutCover); });
 }
 addEventListener('resize', ()=>{ if(coverOpen()) layoutCover(); });
 export function pauseMenu(){
