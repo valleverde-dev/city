@@ -17,8 +17,8 @@ No gameplay changes: v0.5.1 makes the prototype ready to grow and to be ported.
 
 ## Since v0.5.1 — title screen
 
-- **Classic title screen**, from the design wireframe: the logo, a vertical menu — *New game* (the case files) · *Continue* · *Settings* (language, music) · *Credits* — and the version and copyright in the bottom corners, over the animated diorama and an avenue of waving flags of Europe. Keyboard: arrows / W-S, Enter, Esc. Replaces the "one-stop shop" panel and the news ticker.
-- **New Union emblem:** a flag like Vietnam's in shape and proportions, but a white star on European blue, replaces the portico in the header and on the letterheads. The portico's small icon became a ballot box (municipal land) and ruins (archaeology). The flag of Europe stays scenery only.
+- **Classic title screen**, from the design wireframe: the logo, a vertical menu — *New game* (the case files) · *Continue* · *Settings* (language, music) · *Credits* — and the version and copyright in the bottom corners, over the animated diorama and an avenue of waving flags. Keyboard: arrows / W-S, Enter, Esc. Replaces the "one-stop shop" panel and the news ticker.
+- **The Union's own flag:** the shape and proportions of Vietnam's flag (3:2, one centred star, radius 3/10 of the height) but a white star on European blue. It replaces the portico emblem in the header and on the letterheads, and every flag on the title screen (the avenue, the front row, the diorama's plazas) now flies it instead of the flag of Europe; the star rides the waving cloth as one piece so it stays legible. The portico's small icon became a ballot box (municipal land) and ruins (archaeology). The flag of Europe is no longer used anywhere.
 - The version shown comes from `core/config.js` (`VERSION`); the build fails if it differs from `package.json`.
 - Smoke test: 96 checks (menu, its views, keyboard navigation, Continue pre-selected with a save).
 
@@ -81,7 +81,7 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 
 ### Art direction
 
-- **v0.2: Constructor-style** colourful isometric map + a UI that parodies an institutional e-government portal (white panels, institutional blue, yellow highlights, rubber stamps). Fictional institutions only — no real EU names or institutional logos; the flag of Europe appears only as scenery (see GDD §1).
+- **v0.2: Constructor-style** colourful isometric map + a UI that parodies an institutional e-government portal (white panels, institutional blue, yellow highlights, rubber stamps). Fictional institutions only — no real EU names, flags or logos; the Union has its own flag (see GDD §1).
 - v0.1 used a Syndicate (1993) neon look; it was dropped with the pivot.
 - Recommendation: document this as a style guide (moodboard + palette + typefaces) to keep assets consistent as they scale.
 

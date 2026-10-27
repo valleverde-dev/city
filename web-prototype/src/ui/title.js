@@ -4,7 +4,7 @@ import { CFG, LEVELS, VERSION } from '../core/config.js';
 import { campaign, loadSave, save } from '../core/persist.js';
 import { N, S, clamp, setState } from '../core/state.js';
 import { LANG, setLanguage, t } from '../i18n/index.js';
-import { FX, GX, MOTION, OX0, OY0, RISE_MS, bl, disc, drawBirds, drawCrane, drawEntry, drawRise, drawWalkers, euFlag, kick, setPainter } from '../render/anim.js';
+import { FX, GX, MOTION, OX0, OY0, RISE_MS, bl, disc, drawBirds, drawCrane, drawEntry, drawRise, drawWalkers, unionFlag, kick, setPainter } from '../render/anim.js';
 import { TH, TW, centreOn, clampCam, defaultZoom, resize, setCam, setSelected, setViewRot, setZoom } from '../render/camera.js';
 import { GROUNDS, riverTile, roadTile, skirt } from '../render/ground.js';
 import { gx, setMapSize, startSite } from '../render/map.js';
@@ -125,7 +125,7 @@ export function coverDiorama(){
       case 'F': E.s = fenceSprite(); break;
       case 'n': E.s = noticeSprite(); break;
       case 'm': E.s = flagSprite(); E.fx = [{k:'flag', x:0, y:-13, c:['#1d3c78','#ffffff']}]; break;
-      case 'E': E.fx = [{k:'eu', at:[[-18,6],[-7,1],[4,-4],[15,-9]], w:9, h:6, pole:17}]; break;
+      case 'E': E.fx = [{k:'union', at:[[-18,6],[-7,1],[4,-4],[15,-9]], w:9, h:6, pole:17}]; break;
       case 'x': E.s = ruinSprite(); break;
       case 'w': if((r+c*2)%4===1) E.sheep = 3; break;
       case 'R': { const m = mask(r,c,'R'), A = (m&2) && (m&8), B = (m&1) && (m&4);
@@ -167,17 +167,17 @@ export function drawCycleSite(E, T, step){
     GX.globalAlpha = 1; }
 }
 // Fit the scene to the screen: sky, rays behind the logo, the diorama at a whole-pixel scale
-// An avenue of flagpoles along the hills behind the town, every flag of Europe waving out of step with the next
+// An avenue of flagpoles along the hills behind the town, every flag of the Union waving out of step with the next
 export function avenueFrame(now){
   const cv = $('coverFlags'); if(!cv || !SKY) return;
   if(cv.width !== SKY.w || cv.height !== SKY.h){ cv.width = SKY.w; cv.height = SKY.h; cv.style.width = SKY.w*SKY.PS+'px'; cv.style.height = SKY.h*SKY.PS+'px'; }
   const g = cv.getContext('2d'), T = MOTION ? now/1000 : 0; g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,cv.width,cv.height);
   const keep = [GX, OX0, OY0]; setPainter(g, 0, 0);
   for(let x = 5, q = 0; x < SKY.w - 4; x += 23, q++){ const base = Math.floor(SKY.near(x)) + 2, poleH = 27 + (q%3)*2;
-    euFlag(x, base - poleH, 15, 10, T, q*1.3, 0, poleH); }
+    unionFlag(x, base - poleH, 15, 10, T, q*1.3, 0, poleH); }
   // a nearer row of bigger flags in the free band under the town (only when there is room for it)
   if(SKY.fg){ const {top, base} = SKY.fg, poleH = base - top;
-    if(poleH >= 30) for(let x = 9, q = 0; x < SKY.w - 8; x += 44, q++){ const ph = poleH - (q%2)*4; euFlag(x, base - ph, 27, 18, T, q*2.1 + 0.6, 0, ph); } }
+    if(poleH >= 30) for(let x = 9, q = 0; x < SKY.w - 8; x += 44, q++){ const ph = poleH - (q%2)*4; unionFlag(x, base - ph, 27, 18, T, q*2.1 + 0.6, 0, ph); } }
   setPainter(...keep);
 }
 export function layoutCover(){

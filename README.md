@@ -87,4 +87,4 @@ Every push to `main` publishes the build to GitHub Pages. In Safari, open the li
 
 ## Note on satire
 
-All institutions, countries and programmes in the game are fictional parodies. No real EU names or institutional logos are used; the flag of Europe appears only as scenery (title screen, plazas), never as the game's logo, icon or letterhead. The Union's emblem (a white star on a blue flag) is our own invention. The game is not affiliated with, or endorsed by, the European Union.
+All institutions, countries and programmes in the game are fictional parodies. No real EU names, flags or institutional logos are used: the Union has its own flag (a white star on blue, in the proportions of Vietnam's), our own invention. The game is not affiliated with, or endorsed by, the European Union.

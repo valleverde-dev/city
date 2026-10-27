@@ -48,19 +48,35 @@ export function trackCompletions(now){
 }
 
 // ---------- animated overlays (all positions in art pixels) ----------
-// The flag of Europe: blue cloth, a ring of twelve gold stars, waving column by column.
-export const EU_BLUE = '#003399', EU_GOLD = '#ffcc00';
-export function euFlag(X, Y, w, h, T, ph, step, poleH){
-  const big = h >= 14, amp = h >= 9 ? 1.5 : 1;
+// The Union's flag (the emblem, waving): 3:2 blue cloth with one white five-point star in the centre, outer radius
+// 3/10 of the height (the proportions of Vietnam's flag). The star is rasterised once per flag size.
+export const UNION_BLUE = '#003399';
+const STAR_MASKS = new Map();
+function starMask(w, h){
+  const key = w+'x'+h; let m = STAR_MASKS.get(key); if(m) return m; m = new Set();
+  if(h < 8){ const x0 = Math.floor(w/2) - 1, y0 = Math.floor(h/2) - 1;   // too small for a polygon: a hand-made 3×3 star
+    ['.#.','###','#.#'].forEach((row,j)=>[...row].forEach((c,i)=>{ if(c==='#') m.add((x0+i)+','+(y0+j)); })); }
+  else {
+    const R = 0.3*h, r = R*0.381966, cx = w/2, cy = h/2, th = h >= 14 ? 0.3 : 0.4, pts = [];
+    for(let k=0;k<10;k++){ const a = -Math.PI/2 + k*Math.PI/5, rad = k%2 ? r : R; pts.push([cx + rad*Math.cos(a), cy + rad*Math.sin(a)]); }
+    const inside = (x,y) => { let c = false; for(let i=0, j=9; i<10; j=i++){ const [xi,yi] = pts[i], [xj,yj] = pts[j];
+      if((yi>y) !== (yj>y) && x < (xj-xi)*(y-yi)/(yj-yi) + xi) c = !c; } return c; };
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++){ let n = 0;
+      for(let a=0;a<6;a++) for(let b=0;b<6;b++) if(inside(x+(a+0.5)/6, y+(b+0.5)/6)) n++;
+      if(n/36 >= th) m.add(x+','+y); } }
+  STAR_MASKS.set(key, m); return m;
+}
+export function unionFlag(X, Y, w, h, T, ph, step, poleH){
+  const amp = h >= 9 ? 1.5 : 1, star = starMask(w, h);
   if(poleH){ R(X, Y, 1, poleH, nc('#d9dce2', step)); R(X+1, Y, 1, poleH, nc('#9aa0aa', step)); R(X, Y-1, 2, 1, nc('#f2c230', step)); }
-  const cx = (w-1)/2, cy = (h-1)/2, r = Math.min(w, h)*(big ? 0.34 : 0.33), stars = new Set();
-  for(let k=0;k<12;k++){ const a = k*Math.PI/6, sx = Math.round(cx + r*Math.cos(a)*1.05), sy = Math.round(cy + r*Math.sin(a));
-    stars.add(sx+','+sy); if(big){ stars.add((sx-1)+','+sy); stars.add((sx+1)+','+sy); stars.add(sx+','+(sy-1)); } }
-  for(let i=0;i<w;i++){ const ph2 = i*0.55 - T*6 + ph, yo = Math.round(Math.sin(ph2)*amp*(i/Math.max(1,w-1))), sl = Math.cos(ph2);
-    const blue = sl > 0.55 ? '#1a4bb0' : sl < -0.55 ? '#002a80' : EU_BLUE;
-    for(let j=0;j<h;j++) R(X+2+i, Y+1+j+yo, 1, 1, nc(stars.has(i+','+j) ? EU_GOLD : blue, step)); } }
+  // the cloth waves column by column; the star rides on it as one piece (a sheared pixel star stops reading as a star)
+  const wave = i => { const ph2 = i*0.55 - T*6 + ph; return [Math.round(Math.sin(ph2)*amp*(i/Math.max(1,w-1))), Math.cos(ph2)]; };
+  for(let i=0;i<w;i++){ const [yo, sl] = wave(i), blue = sl > 0.55 ? '#1a4bb0' : sl < -0.55 ? '#002a80' : UNION_BLUE;
+    R(X+2+i, Y+1+yo, 1, h, nc(blue, step)); }
+  const [yc, sc] = wave(Math.floor(w/2)), white = nc(sc < -0.55 ? '#dfe6f5' : '#ffffff', step);
+  star.forEach(k=>{ const [i,j] = k.split(',').map(Number); R(X+2+i, Y+1+j+yc, 1, 1, white); }); }
 export const FX = {
-  eu(f, E, T, step){ (f.at || [[0,0]]).forEach(([dx,dy],q)=> euFlag(Math.round(OX0+E.x+dx), Math.round(OY0+E.y+dy-(f.pole||16)), f.w||9, f.h||6, T, E.i*1.7+q*0.9, step, f.pole||16)); },
+  union(f, E, T, step){ (f.at || [[0,0]]).forEach(([dx,dy],q)=> unionFlag(Math.round(OX0+E.x+dx), Math.round(OY0+E.y+dy-(f.pole||16)), f.w||9, f.h||6, T, E.i*1.7+q*0.9, step, f.pole||16)); },
   smoke(f, E, T, step){ const steam = f.c==='steam', n = steam ? 4 : 6, X0 = OX0+E.x+f.x, Y0 = OY0+E.y+f.y;
     for(let k=n-1;k>=0;k--){ const a = frac(T/(steam?2.4:3.4) + k/n + E.i*0.13), r = (steam?0.9:1.6) + a*(steam?1.4:3) - (a>0.8 ? (a-0.8)*10 : 0);
       if(r < 0.6) continue; const x = X0 + a*(steam?5:13) + Math.sin(a*7+k)*1.2, y = Y0 - a*(steam?11:24);
