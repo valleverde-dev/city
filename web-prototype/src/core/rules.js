@@ -51,14 +51,19 @@ export function approvalChance(){
 export function support(){ return Math.round(approvalChance()*100); }
 export function approves(bonus = 0){ return !on('permits') || support() + bonus >= CFG.approveAt; }
 export function count(ty, st='built'){ return S.grid.filter(p=>p.ty===ty && p.st===st && p.k!=='regional').length; }
+// What the finished buildings bring together (capacities, taxes, meters a month, move-in speed)
+export function builtFx(){ const f = {homes:0, jobs:0, school:0, health:0, tax:0, neigh:0, local:0, rate:0};
+  S.grid.forEach(p=>{ if(p.st!=='built' || !p.ty || p.k==='regional') return; const d = B[p.ty]; if(!d) return; for(const k in f) if(d[k]) f[k] += d[k]; });
+  return f; }
 export function activeSites(){ return S.grid.filter(p=>p.st==='building').length; }
 export function caps(){
   const f = comboFx();
   const OFF = 1e9;   // a need that is not in play this level never limits growth
-  const homes = Math.max(0, count('housing')*B.housing.homes + f.homes);
-  const jobs = on('jobs') ? Math.floor(Math.max(0, count('factory')*B.factory.jobs + f.jobs) / CFG.jobsPerResident) + CFG.baseJobs : OFF;
-  const school = on('services') ? Math.max(0, CFG.baseSchool + count('school')*B.school.school + f.school) : OFF;
-  const health = on('services') ? Math.max(0, CFG.baseHealth + count('clinic')*B.clinic.health + f.health) : OFF;
+  const b = builtFx();
+  const homes = Math.max(0, b.homes + f.homes);
+  const jobs = on('jobs') ? Math.floor(Math.max(0, b.jobs + f.jobs) / CFG.jobsPerResident) + CFG.baseJobs : OFF;
+  const school = on('services') ? Math.max(0, CFG.baseSchool + b.school + f.school) : OFF;
+  const health = on('services') ? Math.max(0, CFG.baseHealth + b.health + f.health) : OFF;
   const all = {homes, jobs, school, health};
   let k = 'homes'; for(const key in all) if(all[key] < all[k]) k = key;
   return {...all, cap: all[k], bottleneck: k};

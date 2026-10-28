@@ -12,7 +12,7 @@ Web prototype playable on iPad, iPhone and desktop; a Godot port is planned for 
 - Plan and status: [ROADMAP.md](ROADMAP.md)
 - Code organisation: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
-## How to play (v0.7)
+## How to play (v0.8)
 
 - A run is one **Euroregion**. It starts with a 2×2 hamlet; each settlement has a resident target and a deadline. The settlement card and the mayor's guide tell you what to do.
 - Each turn is **one month**. Tap a parcel to buy it or build on it; press **End month** to let time pass.
@@ -22,6 +22,7 @@ Web prototype playable on iPad, iPhone and desktop; a Godot port is planned for 
 - Each settlement has a **type** (farming, industrial, spa…). Neighbouring types form **region combos**, good and bad, and the parcels along the border give access and combos to your side.
 - Buildings next to each other form **combos**, good and bad: they glow gold or red. From settlement III, crises arrive as **cards** and Brussels sends **directives**.
 - **Controls:** drag to move the map, pinch / wheel / +− to zoom. PC: WASD / arrows, + −, R rotate, C centre, Space end month, Esc close / pause.
+- **Career:** every run gives experience, even a lost one. Ranks raise every grant; 26 achievements, 8 of which unlock new buildings for good (market, social housing, library, police, solar farm, station, data centre, town hall). After the first, guided run, *New Euroregion* offers three dossiers to draft from.
 - **Language:** English / Español (top bar or menus).
 
 ## Structure

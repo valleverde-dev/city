@@ -18,6 +18,7 @@ import { hidePop, roman, setSheet, sheet } from './hud.js';
 import { ic } from './icons.js';
 import { enterSettlement, frameView, startMenu, startRun } from './title.js';
 import { regionCanvas } from './regionmap.js';
+import { closeDrama, dramaLose, dramaWin } from './drama.js';
 
 // =====================================================================
 //  CARDS & NOTICES (modal). One renderer per card type; re-rendered on language change.
@@ -127,15 +128,7 @@ export const CARD = {
         <p class="hint">${t('lvl.newRules')}</p><ul class="rules">${rules}</ul>${carried}${perks}
         ${k===0 ? `<p class="keys">${t('lvl.keys')}</p>` : ''}`,
       buttons:[btn(t('lvl.go'),'play_arrow', ()=>nextCard('stamp'), true)]}); },
-  consolidated: c => { const B = S.region.blocks[S.region.blocks.length-1], nx = S.region.next;
-    letter({icon:'celebration', title:t('cons.t', {town:c.town}), stamp:t('cons.s'), cls:'ok', speaker:'mayor',
-      body:`<div class="quote">${t('cons.x', {town:c.town, n:c.res, region:regionName(), x:money(B ? B.tax : 0)})}</div>
-        <p>${t('cons.money', {back:money(c.back), kept:money(c.kept)})}</p><div class="rmap-slot"></div>
-        <dl class="kv"><dt>${t('ui.settlements')}</dt><dd>${S.region.blocks.length}</dd><dt>${t('ui.regionPop')}</dt><dd>${regionPop()}</dd></dl>
-        ${nx ? `<p class="hint">${t('cons.next', {type:t('st.'+nx.ty), s:nx.n})}</p>` : ''}`,
-      buttons:[btn(t('ui.noted'),'check', ()=>nextCard('click'), true)]});
-    mountMap({});
-    if(!c.played){ c.played = true; playSound('win'); setMusic('win', 1); } },
+  consolidated: c => { hideModal(); dramaWin(c, ()=>nextCard('click')); },
   rcombo: c => { const cb = RCOMBO_BY_ID[c.id], B = S.region.blocks[c.b];
     letter({icon: cb.good?'workspace_premium':'warning', title: t(cb.good?'rcombo.new.t':'rcombo.newBad.t'), stamp: t(cb.good?'stamp.combo':'stamp.comboBad'), cls: cb.good?'ok':'bad',
       speaker: cb.good ? 'mayor' : 'neighbour',
@@ -173,16 +166,7 @@ export function mountMap(opts){ const slot = notice.querySelector('.rmap-slot');
 // The run is over: what the Euroregion reached, and the records
 export function gameOver(){
   if(!S.over) return showNext();
-  const w = S.over.why, win = !!S.over.win, beat = S.over.beat || {}, rec = records();
-  if(!S.over.played){ S.over.played = true; playSound(win ? 'win' : 'fail'); setMusic(win ? 'win' : 'menu', win ? 1 : 0.6); }
-  const pop = regionPop() + (S.region.active ? residents() : 0);
-  const stats = `<dl class="kv">${S.region.active ? `<dt>${t('ui.residents')}</dt><dd>${residents()} / ${CFG.target}</dd><dt>${t('ui.month')}</dt><dd>${Math.min(S.month,CFG.months)} / ${CFG.months}</dd>` : ''}
-      <dt>${t('ui.settlements')}</dt><dd>${S.region.blocks.length}</dd><dt>${t('ui.regionPop')}</dt><dd>${pop}</dd>
-      ${S.debt?`<dt>${t('ui.debt')}</dt><dd>${money(S.debt)}</dd>`:''}${S.directivesDone?`<dt>${t('ui.directivesMet')}</dt><dd>${S.directivesDone}</dd>`:''}</dl>`;
-  const record = (beat.settlements || beat.pop) ? `<p class="record">${ic('workspace_premium')}${t('run.record')}</p>` : '';
-  letter({icon: win ? 'celebration' : 'report', title:t('over.'+w+'.t'), stamp:t('over.'+w+'.s'), cls: win ? 'ok' : 'bad', speaker: win || S.level<2 ? 'mayor' : 'brussels',
-    body:`<div class="quote">${t('over.'+w+'.x', {town:S.town, n:residents(), target:CFG.target, m:CFG.months, region:regionName(), s:S.region.blocks.length, p:regionPop()})}</div>${record}<div class="rmap-slot"></div>${stats}
-      <p class="hint">${t('run.best', {s:rec.best.settlements, p:rec.best.pop})}</p>`,
-    buttons:[btn(t('run.new'),'replay', ()=>startRun(), true), btn(t('menu.main'),'logout', ()=>startMenu()), btn(t('ui.lookMap'),'map', ()=>{ hideModal(); refresh(); })]});
-  mountMap({});
+  hideModal(); refresh();
+  dramaLose([btn(t('run.new'),'replay', ()=>{ closeDrama(); startRun(); }, true), btn(t('menu.main'),'logout', ()=>{ closeDrama(); startMenu(); }),
+    btn(t('ui.lookMap'),'map', ()=>{ closeDrama(); hideModal(); refresh(); })]);
 }

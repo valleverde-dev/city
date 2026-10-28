@@ -1,6 +1,6 @@
 # EUROCRAT — Game Design Document
 
-*Living document. v0.7 · Oct 27, 2026. Working title. Available in English and Spanish.*
+*Living document. v0.8 · Oct 28, 2026. Working title. Available in English and Spanish.*
 
 > Every city builder is a dictatorship: you click, a house appears, people move in.
 > **Eurocrat** asks what building a new town would *really* take in contemporary Europe —
@@ -98,6 +98,21 @@ Land ──acquire──▶ Owned (rustic) ──urban plan──▶ Owned (urba
 | Health centre | Needed as the town grows. |
 | Park | Neighbours like it; residents move in faster. |
 
+**Unlockable buildings (v0.8)** — earned once through an achievement, available in every later run:
+
+| Building | Unlocked by | Purpose |
+|---|---|---|
+| Market | First housing block | Some jobs and taxes, urban |
+| Social housing | 2 settlements in a run | Many cheap homes; neighbours grumble; needs access |
+| Library | 5 combos discovered | School places, neighbours like it |
+| Police station | First lost run | Neighbours and local support up |
+| Solar farm | 3 parks at once | Taxes from rustic land |
+| Station | 3 settlements in a run | Some homes, residents move in faster |
+| Data centre | Consolidate a settlement in debt | Taxes, few jobs, neighbours dislike it |
+| Town hall | 5 permits approved | Local support; one per settlement |
+
+14 combos use them (Market Street, Farmers' Market, Commute, Freight Yard, Reading Park, Study Hall, Safe Streets, Self-consumption, Green Cloud, Plaza Mayor, Community Garden; bad: Glare, Server Hum, Station Noise).
+
 ### Residents
 
 People only move in if there is **housing**, **jobs** (each job supports ~1.6 residents) and **services** (school and health places). The town grows toward the lowest of those limits, a share of the gap each month. The chicken-and-egg problem — no jobs without people, no people without jobs — is the point: you need an anchor employer early.
@@ -175,11 +190,20 @@ Picked 1 of 3 after each completed directive and after every consolidated settle
 - **The run is lost** when: debt goes above the bank's limit · compliance hits 0 (audit) · a court annuls the plan · 2 directives fail · time runs out on a settlement ("The programme will be evaluated"). The end-of-run card shows the region map, what it reached and the records.
 - **Difficulty:** hard but fair. Every loss should be traceable to a decision. See §4 for the bot's curve.
 
+## 10b. The career (v0.8): why play again
+
+What carries over between runs, apart from the combo catalogue and the records:
+- **Experience** after every run, won or lost: 100 per consolidated settlement + 1 per 20 residents, plus each achievement's own XP.
+- **Rank** (8: Trainee → Director-General, at 0 / 250 / 700 / 1,400 / 2,500 / 4,000 / 6,000 / 9,000 XP). Each rank above the first adds +4% to every settlement's grant.
+- **26 achievements** (first stone, Kafka, Pelotazo, Bailout Denied, Mascot…), 8 of which unlock buildings (see §5). Banners announce them during play; the career file on the title screen lists them, with the condition of each locked one.
+- **The tutorial runs once.** After it, *New Euroregion* deals **three dossiers**: a settlement type, a perk to start with and a member state. The guide can be turned back on in Settings.
+- **Full-screen moments:** consolidation cuts a ribbon over confetti, then the *Union Gazette* reports it; game over stamps the dossier REJECTED and shreds it, then the Gazette and a summary of XP, promotions, achievements and unlocks.
+
 ## 11. Roguelike variety
 
 Every run is a new **Euroregion**: a name, a chain of settlements with random types, member states and town names, procedural sites (farmland, municipal plots, protected habitat, a river with its flood zone, the old village by the regional road), the shape that your attach choices give the region, a random stream of events and directives, and a different set of perks.
 
-Later: member states with their own rule quirks; more settlement types and region combos; cross-border events (a joint Interreg project, a border dispute between two of your settlements); more building types (logistics hub, data centre, social housing, tram).
+Later: member states with their own rule quirks; more settlement types and region combos; cross-border events (a joint Interreg project, a border dispute between two of your settlements); missions that extend deadlines and chained events (v0.9).
 
 ## 12. Art direction
 

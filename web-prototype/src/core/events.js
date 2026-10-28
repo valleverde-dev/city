@@ -1,4 +1,5 @@
 import { CFG, on } from './config.js';
+import { checkAch } from './career.js';
 import { money } from './format.js';
 import { activeSites, bump, count, hasAccess, landPrice, log, plotValue, spend } from './rules.js';
 import { S, pick, pname, r1, rc, ri, rnd } from './state.js';
@@ -157,6 +158,7 @@ export function resolveEvent(card, k){
   const ch = choicesFor(card).find(c=>c.k===k); if(!ch) return null;
   if(ch.can && !ch.can(card.v)) return null;
   const res = ch.run(card.v) || null;
+  if(card.id==='toad' && k==='mascot') checkAch('mascot');
   log('log.choice', {e:card.id, c:k, res}, res && /caught|lost|stays|refused|unimpressed|ruin|annulled|long/.test(res) ? 'bad' : '');
   return res;
 }

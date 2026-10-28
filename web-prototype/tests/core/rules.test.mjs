@@ -250,3 +250,49 @@ test('difficulty curve stays in its band (bot, 60 seeded runs per settlement, 60
   const avg = tot / 60;
   assert.ok(avg >= 2.5 && avg <= 6, `settlements per run ${avg}`);
 });
+
+test('the career: locked buildings, achievements unlock them, experience and ranks carry over', () => {
+  core.storage.set('eurocrat_career', JSON.stringify({ xp: 0, ach: [], types: [], runs: 0, tutorial: false, guide: false }));
+  const S = g.newGame(12, 1);
+  assert.equal(core.unlocked('housing'), true);
+  assert.equal(core.unlocked('market'), false);
+  const i = S.grid.findIndex((p, k) => p.k === 'farm' && core.hasAccess(...core.rc(k)));
+  Object.assign(S.grid[i], { st: 'owned', urban: true }); S.slots = 3;
+  assert.equal(core.requestPermit(i, 'market').msg.k, 'err.locked');
+  // finishing the first housing block earns 'firstStone', which unlocks the market
+  const j = S.grid.findIndex((p, k) => k !== i && p.k === 'farm');
+  Object.assign(S.grid[j], { st: 'built', ty: 'housing' }); S.cards = [];
+  core.endMonth();
+  assert.ok(core.career().ach.includes('firstStone'));
+  assert.ok(S.newAch.includes('firstStone'));
+  assert.equal(core.unlocked('market'), true);
+  assert.ok(core.career().xp >= 50);
+  S.slots = 3; S.local = 70; S.cards = [];
+  assert.equal(core.requestPermit(i, 'market').ok, true);
+  // the new buildings count in the numbers
+  Object.assign(S.grid[i], { st: 'built', ty: 'market' });
+  assert.ok(core.builtFx().jobs >= 60 && core.builtFx().tax >= 0.04);
+  // losing a run still gives experience, and 'firstLoss'
+  const xp0 = core.career().xp;
+  S.debt = 999; S.cards = []; S.month = CFG.months + 1; core.endMonth();
+  assert.ok(S.over && S.over.career && S.over.career.after > xp0);
+  assert.ok(core.career().ach.includes('firstLoss'));
+  assert.equal(core.career().runs, 1);
+  // ranks: more experience, a bigger grant (only when the UI passes the bonus)
+  assert.equal(core.rankOf(0), 0); assert.equal(core.rankOf(core.RANKS[2]), 2);
+  const A = g.newGame(5, 0), plain = A.grant; core.newGame(5, 0, { bonus: 0.08 }); core.S.cards = [];
+  assert.equal(core.S.grant, Math.round(plain * 1.08 * 10) / 10);
+});
+
+test('quick start: three different dossiers, and the run starts at 4×4 with that type and perk', () => {
+  const d = core.drafts(77);
+  assert.equal(d.length, 3);
+  assert.equal(new Set(d.map(x => x.ty)).size, 3);
+  assert.deepEqual(core.drafts(77), d, 'the same offer for the same seed');
+  core.newGame(d[0].seed, 1, { ty: d[0].ty, perk: d[0].perk, country: d[0].country, guide: false });
+  const S = core.S;
+  assert.equal(S.stage, 1); assert.equal(core.N, 4);
+  assert.equal(S.stype, d[0].ty);
+  assert.ok(S.perks.includes(d[0].perk) || (d[0].perk === 'shovel' && S.shovel));
+  assert.equal(S.guideOff, true);
+});

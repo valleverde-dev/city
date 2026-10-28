@@ -262,6 +262,73 @@ export const ARCH = {
         treeAt(e,-0.36,0.0,'round',0.75); treeAt(e,0.0,-0.38,'round',0.75); }, false),
       fx:[{k:'fountain', x:0, y:-11}], walk:[[-0.42,0.3,0.42,0.3],[0.3,-0.42,0.3,0.42]] },
   ],
+  // ---- v0.8: buildings unlocked through the career ----
+  market: [
+    { id:'hall', ground:'plaza', make: v => thing(e=>{ const wall=C('#e9dcc0'), A0=-0.4, A1=0.4, B0=-0.36, B1=0.1, Hh=12, stripe=pick2(v,[C('#c62f28'),C('#1d8148'),C('#2a63c9')]);
+        shadow(e,A0,A1,B0,B1,0.25);
+        box(e,A0,A1,B0,B1,0,Hh,(s,z)=> (z<9 && z>1 && Math.floor(s)%6<4) ? (z<4 ? C('#6b4430') : gl(C('#5d7e99'))) : sh(wall,0.95),
+          (s,z)=> (z>2 && z<8 && Math.floor(s)%5>1) ? gl(C('#4d6b84')) : sh(wall,0.72), null);
+        gable(e,A0,A1,B0,B1,Hh,9,'a',C('#9a6b4a'),sh(wall,0.72));
+        [-0.27,0,0.27].forEach((a,k)=>{   // stalls with striped awnings
+          box(e,a-0.1,a+0.1,B1+0.07,B1+0.25,0,5,()=>C('#8a5a33'),()=>C('#6d4528'),()=>pick2(v+k,[C('#f2c230'),C('#e8762b'),C('#5ea83a')],k));
+          box(e,a-0.12,a+0.12,B1+0.05,B1+0.28,8,9,s2=> Math.floor(s2)%2 ? stripe : C('#ffffff'), s2=> Math.floor(s2)%2 ? sh(stripe,0.8) : C('#dddddd'),
+            (a2,b2,x)=> Math.floor(x/2)%2 ? stripe : C('#ffffff')); }); }),
+      walk:[[-0.4,0.46,0.4,0.46],[-0.3,0.44,0.2,0.44]] } ],
+  social: [
+    { id:'block', ground:'plaza', make: v => thing(e=>{ const wall=pick2(v,[C('#d9c7a6'),C('#c9d3e6'),C('#e6c9b6')]), bal=pick2(v,BANDS,3), A0=-0.44, A1=0.44, B0=-0.2, B1=0.2, Hh=44;
+        shadow(e,A0,A1,B0,B1,0.5);
+        box(e,A0,A1,B0,B1,0,Hh,(s,z)=>{ if(z>4 && z%8<2 && Math.floor(s)%6<4) return bal; return windows(s,z,28,Hh,sh(wall,0.95)); },
+          (s,z)=>windows(s,z,13,Hh,sh(wall,0.72)), ()=>C('#8f9396'));
+        box(e,-0.1,0.1,-0.1,0.1,Hh,Hh+5,()=>C('#9aa0a6'),()=>C('#7d838a'),()=>C('#b4b9be'));
+        treeAt(e,0.38,0.36,'round',0.6); }),
+      walk:[[-0.44,0.4,0.44,0.4]], kids:true } ],
+  library: [
+    { id:'classic', ground:'plaza', make: v => thing(e=>{ const stone=C('#efe7d6'), A0=-0.36, A1=0.36, B0=-0.3, B1=0.2, Hh=16;
+        shadow(e,A0,A1,B0,B1,0.3);
+        box(e,A0-0.05,A1+0.05,B0-0.05,B1+0.1,0,2,()=>sh(stone,0.9),()=>sh(stone,0.7),()=>C('#d9d0bd'));   // steps
+        box(e,A0,A1,B0,B1,2,Hh,(s,z)=> (Math.floor(s)%4===0 && z<Hh-3) ? C('#fbf7ee') : (z<Hh-3 && z>4 ? gl(C('#4a5d73')) : sh(stone,0.92)),
+          (s,z)=> (Math.floor(s)%4===0 && z<Hh-3) ? sh(stone,0.85) : sh(stone,0.72), null);
+        gable(e,A0,A1,B0,B1,Hh,7,'b',C('#8a8f96'),sh(stone,0.95));
+        treeAt(e,-0.42,0.38,'round',0.6); treeAt(e,0.42,0.38,'round',0.6); }),
+      walk:[[-0.3,0.42,0.3,0.42]] } ],
+  police: [
+    { id:'station', ground:'plaza', make: v => thing(e=>{ const wall=C('#f1f3f5'), blue=C('#1d4cab'), A=0.34, Hh=20;
+        shadow(e,-A,A,-A,A,0.3);
+        box(e,-A,A,-A,A,0,Hh,(s,z)=>{ if(z>12 && z<16) return blue; if(z<7 && Math.abs(s-11)<2) return C('#2e4255'); return windows(s,z,22,Hh,sh(wall,0.95),{floor:9,step:6}); },
+          (s,z)=> (z>12 && z<16) ? sh(blue,0.75) : windows(s,z,22,Hh,sh(wall,0.72),{floor:9,step:6}), ()=>C('#a3a9ad'));
+        box(e,-0.06,0.06,-0.06,0.06,Hh,Hh+3,()=>C('#2a63c9'),()=>C('#1d4cab'),()=>C('#5d8fdf'));
+        box(e,0.12,0.3,A+0.06,A+0.2,0,6,()=>C('#f6f6f4'),()=>C('#d5d7d8'),(a,b)=> Math.abs(b-(A+0.13))<0.03 ? blue : C('#ececea')); }),   // a patrol car
+      fx:[{k:'blink', x:0, y:-25, c:'#2a63c9', p:0.6, o:0}, {k:'blink', x:0, y:-25, c:'#e8442e', p:0.6, o:0.5}] } ],
+  solar: [
+    { id:'farm', ground:'grass', make: v => thing(e=>{
+        [-0.36,-0.1,0.16].forEach(b=>{ box(e,-0.42,0.42,b,b+0.17,2,5,()=>C('#5a5f6e'),()=>C('#474b57'),(a,bb)=>pv(a,bb)); });
+        box(e,0.3,0.42,0.34,0.44,0,7,()=>C('#cfd4d9'),()=>C('#aab0b6'),()=>C('#e0e3e6')); }) } ],
+  station: [
+    { id:'halt', ground:'plaza', make: v => thing(e=>{ const wall=pick2(v,[C('#d9b48f'),C('#e7c7a0'),C('#cfa98a')]), A0=-0.44, A1=0.44;
+        plane(e,A0,A1,0.18,0.44,0,0,0,(a,b)=> (Math.abs(b-0.25)<0.02 || Math.abs(b-0.37)<0.02) ? C('#7d838a') : (Math.floor((a+1)*30)%3===0 ? C('#6d4c35') : C('#a39878')));   // the tracks
+        shadow(e,-0.3,0.3,-0.4,-0.05,0.25);
+        box(e,-0.3,0.3,-0.4,-0.05,0,14,(s,z)=> (z<9 && z>2 && Math.floor(s)%5<3) ? gl(C('#5d7e99')) : sh(wall,0.95),(s,z)=>sh(wall,0.72),null);
+        gable(e,-0.3,0.3,-0.4,-0.05,14,7,'a',C('#5f6670'),sh(wall,0.72));
+        box(e,A0,A1,-0.05,0.13,10,11,()=>C('#7f8a94'),()=>C('#66707a'),()=>C('#9aa5af'));   // platform canopy
+        [A0+0.04,0,A1-0.06].forEach(a=>box(e,a-0.015,a+0.015,0.09,0.11,0,10,()=>C('#5d6570'),()=>C('#4a5058'),null));
+        box(e,-0.05,0.05,-0.27,-0.18,14,24,(s,z)=> (z>18 && z<22) ? C('#ffffff') : sh(wall,0.9),()=>sh(wall,0.7),()=>C('#5f6670')); }),   // clock
+      walk:[[-0.4,0.05,0.4,0.05]] } ],
+  data: [
+    { id:'servers', ground:'yard', make: v => thing(e=>{ const wall=C('#c7ccd1'), A0=-0.42, A1=0.42, B0=-0.36, B1=0.3, Hh=18;
+        shadow(e,A0,A1,B0,B1,0.3);
+        box(e,A0,A1,B0,B1,0,Hh,(s)=> Math.floor(s)%3===0 ? sh(wall,0.86) : sh(wall,0.95),(s)=> Math.floor(s)%3===0 ? sh(wall,0.62) : sh(wall,0.7),()=>C('#9aa0a6'));
+        [[-0.25,-0.2],[0,-0.2],[0.25,-0.2],[-0.25,0.1],[0,0.1],[0.25,0.1]].forEach(([a,b])=>
+          cyl(e,a,b,0.07,Hh,Hh+3,()=>C('#8a9096'),(u,w)=> Math.hypot(u,w)<0.5 ? C('#3a3f45') : C('#b4b9be'))); }),
+      fx:[{k:'blink', x:-14, y:-10, c:'#21a05a', p:0.5, o:0}, {k:'blink', x:6, y:-6, c:'#21a05a', p:0.7, o:0.3}, {k:'blink', x:18, y:-12, c:'#ffb000', p:0.9, o:0.6}] } ],
+  townhall: [
+    { id:'hall', ground:'plaza', make: v => thing(e=>{ const stone=C('#efe2c4'), A0=-0.42, A1=0.42, B0=-0.3, B1=0.3, Hh=18;
+        shadow(e,A0,A1,B0,B1,0.4);
+        const win = (s,z,c,g) => (z>3 && z<15 && Math.floor(s)%5>1 && Math.floor(s)%5<4) ? gl(g) : c;
+        box(e,A0,A1,B0,B1,0,Hh,(s,z)=> (z<5 && Math.abs(s-13.5)<2) ? C('#6b4430') : win(s,z,sh(stone,0.95),C('#4a5d73')),(s,z)=>win(s,z,sh(stone,0.72),C('#3d4f63')),null);
+        gable(e,A0,A1,B0,B1,Hh,7,'a',C('#b5523b'),sh(stone,0.72));
+        box(e,-0.1,0.1,-0.1,0.1,Hh,Hh+20,(s,z)=> (z>Hh+12 && z<Hh+17 && Math.abs(s-3.2)<2) ? C('#ffffff') : sh(stone,0.92),()=>sh(stone,0.7),null);
+        gable(e,-0.1,0.1,-0.1,0.1,Hh+20,8,'b',C('#5f6670'),sh(stone,0.92)); }),
+      fx:[{k:'union', at:[[14,-30]], w:9, h:6, pole:14}], walk:[[-0.4,0.44,0.4,0.44]] } ],
 };
 // Unchanged natural/old features
 export const BUILDINGS = {

@@ -2,6 +2,10 @@ import { gameTrack, music, setMusic, toggleMusic, updateMusicBtn } from '../audi
 import { playSound } from '../audio/sfx.js';
 import { CFG, VERSION } from '../core/config.js';
 import { loadSave, records, save } from '../core/persist.js';
+import { ACH, RANKS, RANK_BONUS, UNLOCKED_BY, career, drafts, rankBonus, rankOf, saveCareer, unlocked } from '../core/career.js';
+import { B, NEW_TYPES } from '../core/config.js';
+import { STYPE_ICON } from '../core/region.js';
+import { closeDrama } from './drama.js';
 import { N, S, clamp, setState } from '../core/state.js';
 import { LANG, setLanguage, t } from '../i18n/index.js';
 import { FX, GX, MOTION, OX0, OY0, RISE_MS, bl, disc, drawBirds, drawCrane, drawEntry, drawRise, drawWalkers, unionFlag, kick, setPainter } from '../render/anim.js';
@@ -219,15 +223,41 @@ function renderMenu(fresh){
   const add = b => menu.appendChild(b);
   let first = null;
   if(view === 'main'){
-    add(item(t('title.new'), ()=>startRun(), {sub: rec.best.settlements || rec.best.pop ? t('title.newSub', {s:rec.best.settlements, p:rec.best.pop}) : t('title.newSub0'), cls:'new'}));
+    const car = career();
+    add(item(t('title.new'), ()=> car.tutorial ? go('draft') : startRun(), {sub: car.tutorial ? t('title.newSubQuick', {rank:t('rank.'+rankOf(car.xp))}) : t('title.newSubTut'), cls:'new'}));
     const c = add(item(t('title.continue'), ()=>{ setState(saved); afterLoad(); },
       {sub: cont ? t('title.contSub',{l:roman((saved.stage||0)+1), town:saved.town, m:saved.month}) : t('title.noSave'), disabled:!cont, cls:'cont'}));
+    add(item(t('title.career'), ()=>go('career'), {sub: t('title.careerSub', {rank:t('rank.'+rankOf(car.xp)), n:car.ach.length, t:ACH.length}), cls:'career'}));
     add(item(t('title.settings'), ()=>go('settings')));
     add(item(t('title.credits'), ()=>go('credits')));
     first = cont ? c : menu.querySelector('.cv-item');
+  } else if(view === 'draft'){
+    // Quick start: three dossiers (a settlement type, a starting perk, a country), or the tutorial
+    head(t('draft.t'));
+    if(!draftOffer) draftOffer = drafts((Math.random()*2147483647)|0);
+    draftOffer.forEach((d,k)=>{ const b = add(item(`${ic(STYPE_ICON[d.ty])} ${t('st.'+d.ty)}`, ()=>startQuick(d),
+      {sub: `${t('std.'+d.ty)} · ${t('draft.perk', {p:t('perk.'+d.perk)})} · ${t('country.'+d.country)}`, cls:'draft'})); if(!k) first = b; });
+    add(item(t('draft.tutorial'), ()=>startRun(), {cls:'tut'}));
+    add(item(t('title.back'), ()=>go('main'), {cls:'back'}));
+  } else if(view === 'career'){
+    const c = career(), r = rankOf(c.xp), next = RANKS[r+1], prev = RANKS[r], rec = records();
+    const box = document.createElement('div'); box.className = 'cv-career';
+    const pct = next ? Math.round((c.xp-prev)/(next-prev)*100) : 100;
+    const achs = ACH.map(a=>{ const on = c.ach.includes(a.id);
+      return `<li class="${on?'on':'off'}">${ic(on?'workspace_premium':'lock')}<span><b>${t('ach.'+a.id+'.t')}</b>${t('ach.'+a.id+'.x')} <small>+${a.xp} XP${a.unlock ? ' · '+t('car.unlocks', {b:t('b.'+a.unlock)}) : ''}</small></span></li>`; }).join('');
+    const blds = NEW_TYPES.map(ty=>{ const on = unlocked(ty);
+      return `<li class="${on?'on':'off'}">${ic(B[ty].icon)}<span><b>${t('b.'+ty)}</b>${t('bd.'+ty)} <small>${on ? '' : t('car.lockedBy', {a:t('ach.'+UNLOCKED_BY[ty]+'.t')})}</small></span></li>`; }).join('');
+    box.innerHTML = `<div class="rank">${t('rank.'+r)}</div><div class="xpbar"><i style="width:${pct}%"></i></div>
+      <small>${next ? t('car.xp', {x:c.xp, n:next}) : t('car.xpMax', {x:c.xp})} · ${t('car.bonus', {p:Math.round(r*RANK_BONUS*100)})}</small><br>
+      <small>${t('car.runs', {n:c.runs, s:rec.best.settlements, p:rec.best.pop})}</small>
+      <h4>${t('car.build', {n:NEW_TYPES.filter(unlocked).length, t:NEW_TYPES.length})}</h4><ul>${blds}</ul>
+      <h4>${t('car.ach', {n:c.ach.length, t:ACH.length})}</h4><ul>${achs}</ul>`;
+    menu.appendChild(box);
+    first = add(item(t('title.back'), ()=>go('main'), {cls:'back'}));
   } else if(view === 'settings'){
     const other = LANG === 'es' ? 'en' : 'es';
     first = add(item(t('title.lang', {l: t('lang.'+LANG)}), ()=>setLang(other), {silent:true, cls:'lang'}));
+    add(item(t('title.guide', {s: t(career().guide ? 'on' : 'off')}), ()=>{ const c = career(); c.guide = !c.guide; saveCareer(c); renderMenu(); }, {cls:'guide'}));
     add(item(t('title.music', {s: t(music.on ? 'on' : 'off')}), ()=>{ toggleMusic(); renderMenu(); }, {cls:'music'}));
     add(item(t('title.back'), ()=>go('main'), {cls:'back'}));
   } else if(view === 'credits'){
@@ -270,7 +300,7 @@ function buildScene(){
   cover.querySelector('.cv-dio').appendChild(coverDiorama());
 }
 export function startMenu(){
-  setMusic('menu');
+  closeDrama(); setMusic('menu');
   modal.classList.add('hidden'); modal.classList.remove('title'); notice.className = 'notice';
   if(!coverOpen() || !cover.querySelector('.cv-menu')) buildScene();
   view = 'main'; cover.hidden = false; kick();
@@ -299,8 +329,12 @@ export function frameView(){ resize();
     frameBox(Math.min(...all.map(b=>b.x))-FRX, Math.min(...all.map(b=>b.y))-FRY, Math.max(...all.map(b=>b.x+b.n))-FRX, Math.max(...all.map(b=>b.y+b.n))-FRY, left, Math.min(bottom, wr.height*0.6)); return; }
   setZoom(defaultZoom()); const [x,y] = isoOf((N-1)/2, (N-1)/2); setCam(x, y); clampCam(); }
 // A new Euroregion (or, for tests and the balance bot, a run that starts at settlement `stage`)
-export function startNew(seed, stage = 0){ hideCover(); startSite(seed, stage); enterSettlement(); }
-export function startRun(){ startNew(undefined, 0); }
+export function startNew(seed, stage = 0, opts = {}){ closeDrama(); hideCover(); startSite(seed, stage, opts); enterSettlement(); }
+// The tutorial run: the 2×2 hamlet with the mayor's guide
+export function startRun(){ draftOffer = null; startNew(undefined, 0, {bonus: rankBonus(), guide: true}); }
+// Quick start from a dossier: straight into a 4×4 town of that type, with its perk
+let draftOffer = null;
+export function startQuick(d){ draftOffer = null; startNew(d.seed, 1, {ty:d.ty, perk:d.perk, country:d.country, bonus: rankBonus(), guide: career().guide}); }
 // Show the settlement in play: fit the map to it and open its cards
 export function enterSettlement(){ setAttachSel(-1); setSelected(-1); setSheet(null); setViewRot(0); setMapSize(); frameView(); save(); setMusic(gameTrack()); refresh(); showNext(); }
 export function afterLoad(){ hideCover(); enterSettlement(); }

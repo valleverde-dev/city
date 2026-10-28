@@ -6,7 +6,8 @@ import { rollEvent } from './events.js';
 import { money } from './format.js';
 import { consolidate, snapshot } from './newgame.js';
 import { recordRun, save } from './persist.js';
-import { activeSites, approvalChance, approves, buildCost, buildMonths, bump, caps, contractors, count, fx, log, slotsPerMonth, spend } from './rules.js';
+import { checkAch, endRun } from './career.js';
+import { activeSites, approvalChance, approves, buildCost, builtFx, buildMonths, bump, caps, contractors, count, fx, log, slotsPerMonth, spend } from './rules.js';
 import { S, clamp, has, pname, r1, ri, rnd } from './state.js';
 
 export function endMonth(){
@@ -16,7 +17,7 @@ export function endMonth(){
   S.grid.forEach((p,i)=>{
     if(p.st!=='review') return;
     if(--p.t > 0) return;
-    if(approves()){ p.st='approved'; p.q = ++S.qseq; log('log.approved', {b:p.ty, at:pname(i)}, 'good'); fx(i,'fx.approved',{},'good'); }
+    if(approves()){ p.st='approved'; p.q = ++S.qseq; S.stats.approved = (S.stats.approved||0) + 1; log('log.approved', {b:p.ty, at:pname(i)}, 'good'); fx(i,'fx.approved',{},'good'); }
     else { const r = Math.floor(rnd()*N_REJECTIONS); log('log.rejected', {b:p.ty, r}, 'bad'); fx(i,'fx.rejected',{},'bad');
       p.st='owned'; p.ty=null; p.flag={k:'rejected', until:S.month+1}; }
   });
@@ -70,7 +71,7 @@ export function endMonth(){
   // 7. Residents move in (or out) toward the tightest limit
   const cp = caps(); S.bottleneck = cp.bottleneck;
   if(cp.cap > S.newcomers){
-    const rate = clamp(0.3 + 0.06*count('park') + comboFx().rate, 0.1, 0.6);
+    const rate = clamp(0.3 + 0.06*count('park') + comboFx().rate + builtFx().rate, 0.1, 0.6);
     S.newcomers += Math.ceil((cp.cap - S.newcomers)*rate);
   } else if(cp.cap < S.newcomers){
     S.newcomers -= Math.ceil((S.newcomers - cp.cap)*0.15);
@@ -81,6 +82,7 @@ export function endMonth(){
   bump('neigh', -activeSites()*CFG.noisePerSite, 'why.noise');
   if(has('comms')) bump('neigh', 2, 'why.comms');
   { const f = comboFx(); if(f.neigh) bump('neigh', f.neigh, 'why.combos'); if(f.local) bump('local', f.local, 'why.combos'); }
+  { const b = builtFx(); if(b.neigh) bump('neigh', b.neigh, 'why.buildings'); if(b.local) bump('local', b.local, 'why.buildings'); }
   S.market = r1(clamp(S.market + (1-S.market)*0.15 + (rnd()-0.5)*0.1, 0.6, 1.3)*100)/100;
   // 9. Delayed national co-financing
   S.refunds = S.refunds.filter(f=>{ if(f.m<=S.month){ S.funds += f.x; log('log.cofin',{x:money(f.x)},'good'); return false; } return true; });
@@ -134,7 +136,8 @@ export function endMonth(){
     else if(L && S.strikes >= 2) S.over = {win:false, why:'suspended'};
     else if(S.month > CFG.months) S.over = {win:false, why:'timeout'};
   }
-  if(S.over){ S.perkChoice = null; S.over.beat = recordRun(); }
+  if(!S.over && !S.pending) checkAch('month');
+  if(S.over){ S.perkChoice = null; S.over.beat = recordRun(); S.over.career = endRun(); }
   save();
   return {ok:true};
 }

@@ -6,7 +6,19 @@ Living project document · update it as the prototype evolves. The game design l
 
 **Eurocrat** (working title): a satirical, turn-based roguelike city builder. You are a Brussels programme officer who must deliver a model European town with plenty of money and no power — buy the land, file the permits, survive the neighbours, spend the funds before they expire. Tone and references: *Constructor* (1997), with a hyper-realistic, comic look at how building actually works in contemporary Europe. The plan: validate the loop in the web/iPad prototype, then port to Godot to ship on the App Store and Steam.
 
-## Current status — v0.7.0 (Oct 27, 2026) · the map grows with the region, fair rules, glowing combos
+## Current status — v0.8.0 (Oct 28, 2026) · the civil servant's career, full-screen moments
+
+Playtest feedback on v0.7: little reason to replay, too few buildings, the tutorial got in the way, wins and losses were small cards.
+- **A career that carries over.** Every run gives experience (100 per settlement + residents/20, plus achievements), even a lost one. Experience raises your **rank** (8 ranks, from Trainee to Director-General); each rank adds +4% to every settlement's grant.
+- **26 achievements**, checked at month end, consolidation and game over. 8 of them **unlock buildings for good**: market (first housing), social housing (2 settlements), library (5 combos), police station (first lost run), solar farm (3 parks), station (3 settlements), data centre (consolidate in debt), town hall (5 approved permits). Locked buildings show in the build list with how to unlock them.
+- **8 new buildings** with their own pixel art and icons, and **14 new combos** around them (Market Street, Green Cloud, Plaza Mayor, Glare, Server Hum…).
+- **Tutorial only once.** The first run is guided; after that *New Euroregion* offers a **quick start**: three dossiers (settlement type + perk + country) to draft from. The guide can be switched back on in Settings.
+- **Career file** on the title screen: rank, XP bar, achievements and unlocks.
+- **Full-screen moments.** Consolidating a settlement cuts a ribbon over a confetti sky, then the *Union Gazette* spins in with the headline. Losing stamps the dossier REJECTED, shakes the screen and feeds it to a shredder, then shows the Gazette and the run's summary: XP gained, promotions, achievements and unlocks. Achievements, unlocks and promotions also pop as banners during play.
+- Balance unchanged (bot, 200 runs, no rank bonus): ~4.1 settlements per run.
+- Tests: 18 rules tests, 113 browser checks.
+
+## Previous — v0.7.0 (Oct 27, 2026) · the map grows with the region, fair rules, glowing combos
 
 Playtest feedback on v0.6.1: the fixed world felt like buying land on a map that already exists, not building a region; the second settlement was too hard and too random; combo links looked odd.
 - **The map grows with the region.** No world in advance: the map is the land the region has. Each new settlement adds land next to it, chosen on the map from four plots (N/E/S/W, in a pinwheel so they never overlap) whose terrain you see before choosing. New land continues the roads and the river that reach it; every plot from 4×4 has its own road and village.
@@ -95,12 +107,11 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 
 ## Next steps
 
-1. Playtest v0.7: is settlement II fair now, is support easy to read, does the growing map feel right? Tune the 30% target step, the 50% carry-over and debt between settlements (most bot runs end in bankruptcy).
-2. Cross-border events between settlements of the region (a joint Interreg project, a border dispute, a shared hospital) and more settlement types and region combos.
-3. Member states with their own rule quirks (each settlement already has one): a bureaucracy per country.
-4. Turn player actions into cards too (favours, consultants, dirty tricks)?
+1. **v0.9 — missions and events:** contracts from the characters that extend deadlines or add money, an official request for an extension, ~35 events including chained ones and cross-border events between settlements.
+2. **v0.10 — new interface** (mockup first): a bottom build bar, information revealed gradually, a "Despacho" screen.
+3. Playtest v0.8: is the career a reason to replay? Tune XP, rank bonus and unlock conditions.
+4. Member states with their own rule quirks: a bureaucracy per country.
 5. *Constructor*-style characters: named residents, complaints, a mayor with a face.
-6. More buildings (logistics hub, data centre, social housing, tram).
 6. Port to Godot when a port trigger is met: `core/` first (with its tests), then rendering and UI.
 
 ## Assets

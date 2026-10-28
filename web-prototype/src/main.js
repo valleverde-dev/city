@@ -7,6 +7,7 @@ import { EVENTS, choicesFor, resolveEvent } from './core/events.js';
 import { resolveCard } from './core/index.js';
 import { endMonth } from './core/month.js';
 import { records } from './core/persist.js';
+import { ACH_BY_ID } from './core/career.js';
 import { attach } from './core/newgame.js';
 import { DIR_KEYS, RCOMBO_BY_ID, attachPreview, cellPos, regionPop } from './core/region.js';
 import { caps, hasAccess } from './core/rules.js';
@@ -30,7 +31,7 @@ import './ui/input.js';   // pointer, wheel and keyboard listeners
 // =====================================================================
 window.__eurocrat = {
   get S(){ return S; }, CFG, B, EVENTS, LEVELS, newGame:(seed, stage=3)=>{ startNew(seed, stage); S.cards=[]; hideModal(); return S; },
-  startRun, records, regionPop, attachPreview, DIR_KEYS, RCOMBO_BY_ID, cellPos, attach:(d)=>{ const r = attach(d); if(r.ok) enterSettlement(); return r; },
+  startRun, records, regionPop, get ACH_BY_ID(){ return ACH_BY_ID; }, attachPreview, DIR_KEYS, RCOMBO_BY_ID, cellPos, attach:(d)=>{ const r = attach(d); if(r.ok) enterSettlement(); return r; },
   openSheet, closeSheet, get sheet(){ return sheet; }, guideStep, get zoom(){ return zoom; }, get cam(){ return [MAPCX, MAPCY]; },
   panBy, zoomAt, centreOn, on,
   acquire, requestPermit, sellPlot, submitPlan, lobby, consult, fileReport, repay, endMonth, choosePerk, caps, residents, hasAccess,

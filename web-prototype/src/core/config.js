@@ -12,7 +12,7 @@ import { S } from './state.js';
 //    events: crisis cards · directives · neigh/comp: neighbours and compliance meters · services: school + health
 //    lose: you can actually lose · milestones: use-it-or-lose-it · market: developers, property market
 // =====================================================================
-export const VERSION = '0.7.0';   // keep in step with package.json (the build checks it)
+export const VERSION = '0.8.0';   // keep in step with package.json (the build checks it)
 export const BASE_F = {access:1, permits:1, local:1, jobs:1, combos:1, holdout:1};
 export const FULL_F = {...BASE_F, rustic:1, events:1, directives:1, neigh:1, comp:1, services:1, lose:1};
 export const LEVELS = [
@@ -58,7 +58,24 @@ export const B = {
   clinic:  {icon:'local_hospital', cost:6,   build:3, permit:2, upkeep:0.06, health:600, urban:true},
   park:    {icon:'park',           cost:1.5, build:2, permit:1, upkeep:0.02},
 };
-export const BUILD_TYPES = ['road','housing','factory','school','clinic','park'];
+// Buildings unlocked through the career (achievements), v0.8. Effects, all per finished building:
+//   homes / jobs / school / health: capacity · tax: €M a month · neigh / local: meter change a month · rate: faster move-ins
+//   flag: the rule that must be in play to build it · rustic: can go on rustic land · unique: one per settlement
+Object.assign(B, {
+  market:   {icon:'storefront',     cost:4,   build:2, permit:1, upkeep:0.03, jobs:60, tax:0.04, urban:true, flag:'jobs'},
+  social:   {icon:'volunteer',      cost:6.5, build:3, permit:2, upkeep:0.08, homes:220, neigh:-1, urban:true, flag:'access'},
+  library:  {icon:'menu_book',      cost:3,   build:2, permit:1, upkeep:0.03, school:150, neigh:1, urban:true, flag:'access'},
+  police:   {icon:'local_police',   cost:4,   build:2, permit:2, upkeep:0.05, neigh:1, local:1, urban:true, flag:'access'},
+  solar:    {icon:'solar_power',    cost:5,   build:2, permit:2, upkeep:0.01, tax:0.07, rustic:true, flag:'access'},
+  station:  {icon:'train',          cost:8,   build:4, permit:3, upkeep:0.06, homes:40, rate:0.06, urban:true, flag:'access'},
+  data:     {icon:'dns',            cost:10,  build:3, permit:2, upkeep:0.04, jobs:40, tax:0.16, neigh:-1, urban:true, flag:'jobs'},
+  townhall: {icon:'account_balance',cost:6,   build:3, permit:2, upkeep:0.05, local:2, urban:true, unique:true, flag:'access'},
+});
+export const BASE_TYPES = ['road','housing','factory','school','clinic','park'];
+export const NEW_TYPES = ['market','social','library','police','solar','station','data','townhall'];
+export const BUILD_TYPES = [...BASE_TYPES, ...NEW_TYPES];
+// The capacity effects of the original six, in the same generic fields
+Object.assign(B.housing, {homes:150}); Object.assign(B.factory, {jobs:150}); Object.assign(B.school, {school:300}); Object.assign(B.clinic, {health:600});
 export const KIND = { farm:'agriculture', muni:'how_to_vote', flood:'water', habitat:'forest', village:'cottage', regional:'add_road' };
 export const PERKS = {
   notary:'history_edu', fasttrack:'bolt', prefab:'view_in_ar', contractor:'engineering', cousin:'family_restroom',

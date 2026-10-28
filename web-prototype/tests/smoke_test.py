@@ -61,13 +61,13 @@ with sync_playwright() as p:
     # --- Title screen: logo, the four-item menu, version and copyright; settings (language), credits, level list
     cv = page.locator("#cover")
     items = [x.strip().lower() for x in page.locator("#cover .cv-item b").all_inner_texts()]
-    check(page.is_visible("#cover .cv-logo") and items == ["new euroregion", "continue", "settings", "credits"], f"the title screen shows the logo and New Euroregion · Continue · Settings · Credits ({items})")
+    check(page.is_visible("#cover .cv-logo") and items == ["new euroregion", "continue", "career file", "settings", "credits"], f"the title screen shows the logo and New Euroregion · Continue · Career file · Settings · Credits ({items})")
     check("2×2 hamlet" in page.locator("#cover .cv-item.new").inner_text(), "with no record yet, New Euroregion says it starts with a 2×2 hamlet")
     check(page.locator("#cover .cv-item.cont").is_disabled(), "Continue is disabled with no saved programme")
     check(page.is_visible("#cover .cv-foot .ver") and "Groenendaal" in page.locator("#cover .cv-foot .copy").inner_text(), "version and copyright sit in the corners")
     cb = cv.bounding_box(); vw = page.viewport_size
     check(cb["width"] == vw["width"] and cb["height"] == vw["height"], "the title screen covers the whole viewport")
-    page.keyboard.press("ArrowDown"); page.keyboard.press("Enter")
+    page.keyboard.press("ArrowDown"); page.keyboard.press("ArrowDown"); page.keyboard.press("Enter")
     check(page.locator("#cover .cv-menu").get_attribute("data-view") == "settings", "arrow keys skip the disabled item; Enter opens Settings")
     page.locator("#cover .cv-item.lang").click()
     check(page.is_visible("text=Idioma: Español") and S("g.lang") == "es", "switching to Spanish translates the menu")
@@ -107,8 +107,11 @@ with sync_playwright() as p:
         page.click("#endTurn"); page.wait_for_timeout(60)
     check(S("S.pending") == "attach" and not S("S.over"), f"settlement I is consolidated by ending months ({S('S.month')} months)")
     check(S("S.debt") == 0, "settlement I never needs a loan")
-    check(page.is_visible("text=is consolidated!") and page.locator("#notice canvas.regionmap").count() == 1, "the consolidation card shows the region map")
-    page.locator("#notice .btn.primary").first.click(); page.wait_for_timeout(60)
+    check(page.is_visible("#drama.win") and page.locator("#drama .ribbon").count() == 1, "consolidating is a full-screen inauguration (ribbon, confetti)")
+    page.locator("#drama").click(); page.wait_for_timeout(900)
+    check(page.is_visible("#drama .gazette") and page.locator("#drama canvas.regionmap").count() == 1, "then the Union Gazette's front page, with the region map")
+    page.locator("#drama .go").click(); page.wait_for_timeout(60)
+    check(page.locator("#drama").is_hidden(), "Continue closes the full-screen moment")
     check(page.locator("#notice .perk").count() == 3, "then choose 1 of 3 perks")
     perk = S("S.perkChoice[0]")
     page.locator("#notice .perk").first.click(); page.wait_for_timeout(100)
@@ -139,7 +142,14 @@ with sync_playwright() as p:
     # --- Back to the menu: the run can be continued
     page.click("#menuBtn"); page.click("text=Main menu")
     check("Settlement II" in page.locator("#cover .cv-item.cont").inner_text(), "the menu offers to continue the run at settlement II")
+    check(page.evaluate("!!document.querySelector('#toast') && document.querySelector('#toast').textContent.length > 5") and "firstStone" in page.evaluate("localStorage.getItem('eurocrat_career')"), "achievements pop up as banners during play, and stay in the career")
+    page.click("#cover .cv-item.career"); page.wait_for_timeout(60)
+    check(page.locator(".cv-career li").count() == 8 + S("Object.keys(g.ACH_BY_ID).length") and page.locator(".cv-career li.on").count() >= 2,
+          "the career file lists the 8 unlockable buildings and every achievement (market unlocked already)")
     page.keyboard.press("Escape")
+    page.click("#cover .cv-item.new"); page.wait_for_timeout(60)
+    check(page.locator("#cover .cv-item.draft").count() == 3 and page.locator("#cover .cv-item.tut").count() == 1, "after the tutorial, New Euroregion offers three dossiers (or the tutorial again)")
+    page.keyboard.press("Escape"); page.keyboard.press("Escape")
 
     # --- Full rules: settlement IV (16×16, with made-up neighbours), deterministic; its type's bonuses switched off
     ev(f"{G}.newGame(42, 3)"); clear_cards(); S("(S.rfx={}, g.refresh(), 0)")
@@ -232,8 +242,12 @@ with sync_playwright() as p:
     S("(S.cards=[], S.perkChoice=null, 0)"); S("g.attach(0)"); clear_cards()
     check(S("S.stage") == 4 and S("g.CFG.target") > 1100, "settlement V: same size, higher target")
     S("(S.debt=g.CFG.debtCap+1, S.cards=[], 0)"); S("g.endMonth()"); S("g.showNext()")
-    check(S("S.over && S.over.why") == "bankrupt" and page.is_visible("text=New Euroregion") and page.locator("#notice canvas.regionmap").count() == 1,
-          "a loss ends the run: what the region reached, and start a new one")
+    check(S("S.over && S.over.why") == "bankrupt" and page.is_visible("#drama.lose") and page.locator("#drama .stamp-big").count() == 1,
+          "a loss is a full-screen moment: the dossier is stamped and shredded")
+    page.locator("#drama").click(); page.wait_for_timeout(500)
+    check(page.is_visible("#drama .gazette") and page.locator("#drama canvas.regionmap").count() == 1 and page.is_visible("#drama >> text=New Euroregion"),
+          "then the Gazette, what the region reached, and start a new one")
+    check(page.locator("#drama .xpbar").count() == 1 and S("S.over.career && S.over.career.after > S.over.career.before"), "every run gives experience, even a lost one")
     check(S("g.records().best.settlements") >= 4, "the record keeps the best Euroregion")
 
     # --- Combos (discovered by building), access through finished buildings
@@ -299,16 +313,23 @@ with sync_playwright() as p:
         S("(S.cards=[], S.newcomers=3*g.CFG.target, S.directive=null, 0)"); S("g.endMonth()")
         S("(S.cards=[S.cards.find(c=>c.type==='consolidated'), {type:'rcombo', id:'slurry', b:0}], 0)")
         for _ in range(2):
-            S("g.showNext()")
-            if re.search(r"\b(cons|rcombo|st|ui)\.\w|\{\w+\}", page.locator("#notice").inner_text()): raw.append(f"{lang}:card{_}")
+            S("g.showNext()"); page.wait_for_timeout(20)
+            box_ = "#drama" if _ == 0 else "#notice"
+            if _ == 0: page.locator("#drama").click(); page.wait_for_timeout(50)
+            if re.search(r"\b(cons|rcombo|st|ui|news|drama)\.\w|\{\w+\}", page.locator(box_).inner_text()): raw.append(f"{lang}:card{_}")
             S("(S.cards.shift(), 0)")
         S("(S.perkChoice=null, 0)"); S("g.showNext()"); S("(g.refresh(), 0)")
         if re.search(r"\b(att|side|st|std|rcombo|land)\.\w|\{\w+\}", page.locator("#sheet").inner_text()): raw.append(f"{lang}:attach")
-        S("(S.pending=null, S.over={win:false, why:'timeout'}, 0)"); S("g.showNext()")
-        if re.search(r"\b(over|run|ui)\.\w|\{\w+\}", page.locator("#notice").inner_text()): raw.append(f"{lang}:over")
-        S("(S.over={win:true, why:'complete'}, 0)"); S("g.showNext()")
-        if re.search(r"\b(over|run|ui)\.\w|\{\w+\}", page.locator("#notice").inner_text()): raw.append(f"{lang}:over")
+        for why in ("timeout", "bankrupt", "audit", "suspended", "court"):
+            S(f"(S.pending=null, S.over={{win:false, why:'{why}', dramaPlayed:true}}, 0)"); S("g.showNext()")
+            if re.search(r"\b(over|run|ui|news|sum|rank|ach)\.\w|\{\w+\}", page.locator("#drama").inner_text()): raw.append(f"{lang}:over-{why}")
         S("(S.over=null, 0)")
+        ev(f"{G}.startRun()"); ev(f"{G}.hideModal()"); page.click("#menuBtn"); page.click("text=Main menu" if lang == "en" else "text=Menú principal")
+        for view in ("career", "new"):
+            page.click(f"#cover .cv-item.{view}"); page.wait_for_timeout(50)
+            if re.search(r"\b(car|ach|rank|b|bd|title|draft|st|std|perk|country)\.\w|\{\w+\}", page.locator("#cover").inner_text()): raw.append(f"{lang}:menu-{view}")
+            page.keyboard.press("Escape")
+        page.keyboard.press("Escape")
     check(not raw, "cards, settlements, guide and sheets render in EN and ES with no raw keys" + (f": {raw}" if raw else ""))
     S("(g.setLang('en'), S.cards=[], 0)"); ev(f"{G}.hideModal()")
 

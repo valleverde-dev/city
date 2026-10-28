@@ -1,11 +1,11 @@
 import { comboFx } from './combos.js';
 import { B, CFG, on } from './config.js';
-import { buildCost, count } from './rules.js';
+import { buildCost, builtFx, count } from './rules.js';
 import { S, r1 } from './state.js';
 import { regionDividend } from './region.js';
 
 export function residents(){ return S.newcomers + (S.base||0); }
-export function taxIncome(){ return Math.round((CFG.taxShare*(count('factory')*CFG.taxPerFactory + S.newcomers*CFG.taxPerResident) + comboFx().tax + regionDividend())*100)/100; }
+export function taxIncome(){ return Math.round((CFG.taxShare*(count('factory')*CFG.taxPerFactory + S.newcomers*CFG.taxPerResident) + comboFx().tax + builtFx().tax + regionDividend())*100)/100; }
 export function monthlyCosts(){
   let c = S.debt*S.rate;
   S.grid.forEach(p=>{ if(p.st==='building' && !p.halt) c += p.mcost;

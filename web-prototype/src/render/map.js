@@ -38,7 +38,7 @@ export function setMapSize(){
   if(W) resize();
 }
 // Start a run and fit the map canvases to its land (the core only knows the grid, not the canvas)
-export function startSite(seed, stage){ newGame(seed, stage); setMapSize(); }
+export function startSite(seed, stage, opts){ newGame(seed, stage, opts); setMapSize(); }
 // ---------- frame coordinates: the plot in play is S.grid, the rest of the land is S.world (+ plots on offer) ----------
 // local parcel index of frame cell (R,C), or -1 (outside the plot in play, or no plot in play)
 export const localAt = (R,C) => { if(!S.region || !S.region.active) return -1; const r = R-OY, c = C-OX; return inside(r,c) ? idx(r,c) : -1; };

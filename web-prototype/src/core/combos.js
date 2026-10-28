@@ -23,6 +23,21 @@ export const COMBOS = [
   {id:'villageFactory', a:'factory', b:'village',  good:false, fx:{neigh:-2}},
   {id:'fumes',          a:'factory', b:'school',   good:false, fx:{school:-80, neigh:-1}},
   {id:'clinicNoise',    a:'factory', b:'clinic',   good:false, fx:{health:-100}},
+  // v0.8: the buildings unlocked through the career
+  {id:'marketStreet',   a:'market',  b:'housing',  good:true,  fx:{homes:20, tax:0.02}},
+  {id:'farmersMarket',  a:'market',  b:'village',  good:true,  fx:{local:1, tax:0.02}},
+  {id:'commute',        a:'station', b:'housing',  good:true,  fx:{homes:30, rate:0.03}},
+  {id:'freightYard',    a:'station', b:'factory',  good:true,  fx:{jobs:50}},
+  {id:'readingPark',    a:'library', b:'park',     good:true,  fx:{neigh:1}},
+  {id:'studyHall',      a:'library', b:'school',   good:true,  fx:{school:100}},
+  {id:'safeStreets',    a:'police',  b:'housing',  good:true,  fx:{homes:15, neigh:1}},
+  {id:'selfConsumption',a:'solar',   b:'factory',  good:true,  fx:{tax:0.04, jobs:20}},
+  {id:'greenCloud',     a:'data',    b:'solar',    good:true,  fx:{tax:0.05}},
+  {id:'plazaMayor',     a:'townhall',b:'village',  good:true,  fx:{local:1, neigh:1}},
+  {id:'communityGarden',a:'social',  b:'park',     good:true,  fx:{homes:25, neigh:1}},
+  {id:'glare',          a:'solar',   b:'housing',  good:false, fx:{homes:-20, neigh:-1}},
+  {id:'serverHum',      a:'data',    b:'housing',  good:false, fx:{homes:-25, neigh:-1}},
+  {id:'stationNoise',   a:'station', b:'school',   good:false, fx:{school:-60}},
 ];
 // What a parcel "is" for combos: its finished building and/or its land feature
 export function tokens(p){ const t = [];

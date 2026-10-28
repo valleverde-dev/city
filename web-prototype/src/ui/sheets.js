@@ -1,7 +1,8 @@
 import { playSound } from '../audio/sfx.js';
 import { acquire, consult, fileReport, lobby, repay, requestPermit, sellPlot, submitPlan } from '../core/actions.js';
 import { COMBOS, COMBO_BY_ID, activeCombos, comboPreview, discovered } from '../core/combos.js';
-import { B, BUILD_TYPES, CFG, KIND, on } from '../core/config.js';
+import { B, BUILD_TYPES, CFG, KIND, NEW_TYPES, on } from '../core/config.js';
+import { unlocked } from '../core/career.js';
 import { DIRECTIVE_ICON } from '../core/directives.js';
 import { residents, taxIncome } from '../core/economy.js';
 import { money } from '../core/format.js';
@@ -135,12 +136,14 @@ export function parcelCard(i){
   } else if(p.st==='owned'){
     const acc = hasAccess(r,c);
     html += `<p>${!acc ? t('pc.noAccess') : !on('rustic') ? t('pc.ownedSimple') : p.urban ? t('pc.ownedUrban') : t('pc.ownedRustic')}</p>`;
-    const types = BUILD_TYPES.filter(ty => (ty!=='road' || on('access')) && (ty!=='factory' || on('jobs')) && ((ty!=='school' && ty!=='clinic') || on('services')));
-    types.forEach(ty=>{ const bt=B[ty], blocked = !acc || (bt.urban && !p.urban);
-      const why = !acc ? t('err.noAccess') : (bt.urban && !p.urban) ? t('pc.needsUrban') : '';
+    const inPlay = ty => (ty!=='road' || on('access')) && (ty!=='factory' || on('jobs')) && ((ty!=='school' && ty!=='clinic') || on('services')) && (!B[ty].flag || on(B[ty].flag));
+    const types = BUILD_TYPES.filter(ty => inPlay(ty) && unlocked(ty)), locked = NEW_TYPES.filter(ty => !unlocked(ty)).length;
+    types.forEach(ty=>{ const bt=B[ty], taken = bt.unique && S.grid.some(q=>q.ty===ty && !['land','owned'].includes(q.st)), blocked = !acc || (bt.urban && !p.urban) || taken;
+      const why = !acc ? t('err.noAccess') : (bt.urban && !p.urban) ? t('pc.needsUrban') : taken ? t('err.unique') : '';
       a.appendChild(actBtn(bt.icon, t('b.'+ty), `<span class="meta">${on('permits') ? t('pc.timing',{p:permitMonths(ty), b:buildMonths(ty), x:money(buildCost(p,ty))}) : t('pc.timingSimple',{b:buildMonths(ty)+1, x:money(buildCost(p,ty))})}</span>`
         + `<span class="desc">${t('bd.'+ty)}</span>` + (why ? `<span class="why">${why}</span>` : '') + comboChips(comboPreview(i, ty)),
         ()=>doAction(requestPermit(i,ty),i), blocked || off, 'build')); });
+    if(locked && on('access')){ const n = document.createElement('p'); n.className = 'locked-note'; n.innerHTML = `${ic('lock')}${t('pc.locked', {n:locked})}`; a.appendChild(n); }
     if(p.urban && on('market')) a.appendChild(actBtn('sell', t('act.sell',{x:money(plotValue(p))}), S.market<CFG.devMinMarket ? t('act.sellCold') : t('act.sellSub'), ()=>doAction(sellPlot(i),i), !acc || off || S.market<CFG.devMinMarket, 'money'));
   }
   else if(p.st==='review' && !on('permits')) html += `<p>${t('pc.reviewSimple',{b:t('b.'+p.ty), n:p.t})}</p>`;

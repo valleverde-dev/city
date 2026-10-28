@@ -1,4 +1,5 @@
 import { B, CFG, on } from './config.js';
+import { unlocked } from './career.js';
 import { avail } from './economy.js';
 import { money } from './format.js';
 import { buildCost, bump, hasAccess, landPrice, log, nextToVillage, permitMonths, plotValue, spend } from './rules.js';
@@ -26,6 +27,9 @@ export function requestPermit(i, ty){
   if(!canAct()) return fail('err.slots');
   if(p.st!=='owned') return fail('err.mustOwn');
   if(!hasAccess(r,c)) return fail('err.noAccess');
+  if(!unlocked(ty)) return fail('err.locked');
+  if(B[ty].flag && !on(B[ty].flag)) return fail('err.notYet');
+  if(B[ty].unique && S.grid.some(q=>q.ty===ty && q.st!=='land' && q.st!=='owned')) return fail('err.unique');
   if(B[ty].urban && !p.urban) return fail('err.rustic');
   if(S.funds < CFG.permitFee) return fail('err.funds');
   // In the learning levels (no bank drama yet) you cannot order works you cannot pay for
@@ -45,7 +49,7 @@ export function sellPlot(i){
   if(!hasAccess(r,c)) return fail('err.noAccess');
   if(S.market < CFG.devMinMarket) return fail('err.noBuyers');
   const price = plotValue(p);
-  S.slots--; S.funds += price;
+  S.slots--; S.funds += price; if(S.rs) S.rs.sold++;
   Object.assign(p, {st:'private', ty:'housing', dev:{phase:'permit', t:ri(2,3)}, flag:null});
   log('log.sold', {at:pname(i), x:money(price)}, 'good');
   return {ok:true, msg:{k:'fx.money', p:{x:money(price)}}, cls:'good', sfx:'cash'};
@@ -64,7 +68,7 @@ export function submitPlan(){
 export function lobby(){
   if(!canAct()) return fail('err.slots');
   if(S.funds < CFG.lobbyCost) return fail('err.funds');
-  S.slots--; spend(CFG.lobbyCost);
+  S.slots--; spend(CFG.lobbyCost); if(S.rs) S.rs.lunches++;
   const g = has('lobbyist') ? 20 : (S.lobbied ? 6 : 12); S.lobbied++; S.stats.lobby++;
   bump('local', g, 'why.lobby');
   log('log.lobby', {n:g}, 'good');

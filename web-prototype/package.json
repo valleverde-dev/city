@@ -1,6 +1,6 @@
 {
   "name": "eurocrat-web-prototype",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "private": true,
   "description": "Eurocrat — satirical roguelike city builder, web prototype",
   "type": "module",

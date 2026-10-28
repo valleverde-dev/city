@@ -375,11 +375,11 @@ export function drawRegion(){
   }
   ctx.restore();
 }
-export const MARK = {rejected:['✕','#d64545'], event:['!','#e8442e'], toad:['!','#2e7d32'], holdout:['+80%','#d98a00'], paused:['II','#d98a00'], ruin:['!','#6b6b6b'], halt:null};
+export const MARK = {rejected:['✕','#d64545'], event:['!','#e8442e'], toad:['!','#2e7d32'], holdout:['+%','#d98a00'], paused:['II','#d98a00'], ruin:['!','#6b6b6b'], halt:null};
 export function drawLabels(i){
   const p = S.grid[i], r=Math.floor(i/N), c=i%N, [x,y] = isoOf(r,c);
   if(p.st==='review') badge(x+10,y-24,t('map.m',{n:p.t}), approves() ? '#1d3c78' : '#d64545');
-  if(p.st==='land' && p.hold && hasAccess(r,c)) badge(x+12,y-10,'+80%','#d98a00');   // only where you would buy
+  if(p.st==='land' && p.hold && hasAccess(r,c)) badge(x+12,y-10,'+%','#d98a00');   // only where you would buy
   if(p.st==='approved') badge(x,y-12,t('map.queue'),'#e8762b');
   if(p.st==='building'){ const hh = p.ty==='road' ? 2 : 6 + Math.round((1-p.t/buildMonths(p.ty))*5)*5;
     badge(x-12,y-hh-14, p.halt ? t('map.halt',{n:p.halt}) : t('map.m',{n:p.t}), p.halt ? '#d64545' : '#d0571b'); }
