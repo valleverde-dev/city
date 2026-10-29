@@ -11,7 +11,7 @@ export function spend(x){ S.funds -= x; S.spent += x; }
 // Change a meter and remember why (shown when the player taps the meter)
 export function bump(m, d, why){
   if(!d || (METER_FLAG[m] && !on(METER_FLAG[m]))) return 0;   // meters that are not in play this level stay still
-  const lo = (m==='local' && has('fixer')) ? 30 : 0, before = S[m];
+  const lo = (m==='local' && has('fixer')) ? 30 : (m==='neigh' && has('ombudsman')) ? 25 : 0, before = S[m];
   S[m] = clamp(S[m]+d, lo, 100);
   const real = S[m]-before;
   if(real){ S.trail.unshift({m:S.month, meter:m, d:real, why}); S.trail.length = Math.min(S.trail.length, 60); }
@@ -33,7 +33,7 @@ export function hasAccess(r,c){
 }
 export function nextToVillage(r,c){ return NB8.some(([dr,dc])=> inside(r+dr,c+dc) && S.grid[idx(r+dr,c+dc)].k==='village'); }
 export function landPrice(p){ return r1(p.price * (has('notary') ? 0.7 : 1) * (1 + (regionFx().land||0))); }
-export function plotValue(p){ return r1(p.price * CFG.urbanUplift * S.market); }
+export function plotValue(p){ return r1(p.price * CFG.urbanUplift * S.market * (has('revolving') ? 1.3 : 1)); }
 export function buildCost(p, ty){ return r1(B[ty].cost * S.inflation * (p.k==='flood' ? 1.5 : 1)); }
 export function permitMonths(ty){
   if(!on('permits')) return 1;

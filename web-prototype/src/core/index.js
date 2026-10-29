@@ -25,19 +25,19 @@ export { genPlot, wid, setW } from './region.js';
 export { writePlot } from './newgame.js';
 // Derived values (read-only questions about the state)
 export { count, caps, hasAccess, isRoad, givesAccess, nextToVillage, landPrice, plotValue, buildCost, permitMonths, buildMonths,
-         contractors, slotsPerMonth, approvalChance, support, approves, activeSites, builtFx } from './rules.js';
+         contractors, slotsPerMonth, approvalChance, support, approves, activeSites, builtFx, bump } from './rules.js';
 export { residents, taxIncome, monthlyCosts, committed, avail, nextMilestone } from './economy.js';
-export { COMBOS, COMBO_BY_ID, activeCombos, comboFx, comboPreview, discovered } from './combos.js';
+export { COMBOS, COMBO_BY_ID, activeCombos, comboFx, comboPreview, comboPreviewAt, discovered } from './combos.js';
 // Player actions (each costs agenda slots)
 export { acquire, requestPermit, sellPlot, submitPlan, lobby, consult, fileReport, repay, canAct } from './actions.js';
 // Directives and perks
-export { DIRECTIVE_ICON, directiveProgress, choosePerk } from './directives.js';
+export { DIRECTIVE_ICON, directiveProgress, choosePerk, offerPerks } from './directives.js';
 // Event cards
 export { EVENTS, choicesFor, resolveEvent } from './events.js';
 // The turn
 export { endMonth } from './month.js';
 // The career: experience, ranks, achievements, unlocks, quick-start dossiers
-export { RANKS, RANK_BONUS, ACH, ACH_BY_ID, UNLOCKED_BY, career, saveCareer, rankOf, rankBonus, unlocked, checkAch, drafts, runXp } from './career.js';
+export { RANKS, RANK_LEVEL, levelXp, levelOf, RANK_BONUS, ACH, ACH_BY_ID, UNLOCKED_BY, XP_FOR, PERK_RANK, career, saveCareer, resetCareer, rankOf, rankNow, rankBonus, unlocked, checkAch, gainXp, perkAvailable, seePerk, drafts, runXp } from './career.js';
 // Saves and records
 export { SAVE_KEY, save, loadSave, records, recordRun } from './persist.js';
 export { storage } from './storage.js';

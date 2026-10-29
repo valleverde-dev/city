@@ -12,7 +12,7 @@ import { S } from './state.js';
 //    events: crisis cards · directives · neigh/comp: neighbours and compliance meters · services: school + health
 //    lose: you can actually lose · milestones: use-it-or-lose-it · market: developers, property market
 // =====================================================================
-export const VERSION = '0.8.0';   // keep in step with package.json (the build checks it)
+export const VERSION = '0.9.0';   // keep in step with package.json (the build checks it)
 export const BASE_F = {access:1, permits:1, local:1, jobs:1, combos:1, holdout:1};
 export const FULL_F = {...BASE_F, rustic:1, events:1, directives:1, neigh:1, comp:1, services:1, lose:1};
 export const LEVELS = [
@@ -80,6 +80,7 @@ export const KIND = { farm:'agriculture', muni:'how_to_vote', flood:'water', hab
 export const PERKS = {
   notary:'history_edu', fasttrack:'bolt', prefab:'view_in_ar', contractor:'engineering', cousin:'family_restroom',
   translation:'translate', comms:'campaign', fixer:'handshake', shovel:'workspace_premium', lobbyist:'restaurant',
+  cohesion:'savings', taxadvisor:'percent', ombudsman:'volunteer', revolving:'sell',   // v0.9: unlocked by rank
 };
 // Recurring characters (fictional). Portrait parameters are drawn as SVG in the UI.
 export const CHARS = {

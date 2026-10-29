@@ -9,52 +9,56 @@
 </head>
 <body>
 <div id="app">
-  <div id="hud">
-    <div class="brand"><h1><span class="logo-art hud-logo"><span class="sr">Eurocrat</span></span><small id="townName"></small></h1></div>
-    <div class="stats">
-      <span class="stat" id="st-month"><i class="ico i-event"></i><b id="month">1</b><span class="of">/<span id="months">36</span></span></span>
-      <span class="stat" id="st-funds"><i class="ico i-euro"></i><b id="funds">0</b></span>
-      <span class="stat debt" id="st-debt" hidden><i class="ico i-account_balance_wallet"></i><b id="debt">0</b></span>
-      <span class="stat" id="st-res"><i class="ico i-groups"></i><b id="residents">0</b><span class="of">/<span id="target">600</span></span></span>
-      <span class="stat" id="st-slots"><span class="slots" id="slots"></span></span>
-    </div>
-    <div class="hud-actions">
-      <button class="hud-btn" id="bellBtn" aria-label="Problems"><i class="ico i-report"></i><span class="badge" id="bellN" hidden>0</span></button>
-      <button class="hud-btn" id="langBtn" aria-label="Language">ES</button>
-      <button class="hud-btn" id="musicBtn" aria-label="Music"><i class="ico i-music_note"></i></button>
-      <button class="hud-btn" id="menuBtn" aria-label="Menu"><i class="ico i-menu"></i></button>
-    </div>
-  </div>
-  <div id="meters">
-    <div class="meter" id="m-local" data-m="local"><div class="top"><span><i class="ico i-how_to_vote"></i><span class="lbl"></span></span><span><b>0</b><span class="delta"></span></span></div><div class="bar"><i></i></div></div>
-    <div class="meter" id="m-neigh" data-m="neigh"><div class="top"><span><i class="ico i-diversity_3"></i><span class="lbl"></span></span><span><b>0</b><span class="delta"></span></span></div><div class="bar"><i></i></div></div>
-    <div class="meter" id="m-comp" data-m="comp"><div class="top"><span><i class="ico i-fact_check"></i><span class="lbl"></span></span><span><b>0</b><span class="delta"></span></span></div><div class="bar"><i></i></div></div>
-    <div class="meter" id="m-spent" data-m="spent"><div class="top"><span><i class="ico i-savings"></i><span class="lbl"></span></span><span><b>0</b></span></div><div class="bar"><i></i></div></div>
-  </div>
-  <div id="main">
-    <div id="world">
-      <canvas id="map"></canvas>
-      <div id="hint"></div>
-      <button id="dirPill" hidden></button>
-      <div id="mapBtns">
-        <button class="mapbtn" id="zoomInBtn" aria-label="Zoom in">+</button>
-        <button class="mapbtn" id="zoomOutBtn" aria-label="Zoom out">−</button>
-        <button class="mapbtn" id="centreBtn" aria-label="Centre"><i class="ico i-place"></i></button>
-        <button class="mapbtn" id="rotateBtn" aria-label="Rotate view"><i class="ico i-rotate_right"></i></button>
+  <!-- v0.9: the map fills the screen; the HUD floats over it and one bar at the bottom does the rest (no sheets) -->
+  <div id="world">
+    <canvas id="map"></canvas>
+    <div id="hud">
+      <div class="brand"><span class="logo-art hud-logo"><span class="sr">Eurocrat</span></span><small id="townName"></small></div>
+      <div id="goal">
+        <div class="cap res" id="st-res">
+          <div class="row"><i class="ico i-groups"></i><b id="residents">0</b><span class="of">/ <span id="target">0</span></span><em id="bneck"></em></div>
+          <div class="pbar"><i id="resBar"></i></div>
+        </div>
+        <div class="cap months" id="st-month">
+          <div class="row"><i class="ico i-event"></i><b id="monthsLeft">0</b><span class="of" id="monthsLbl"></span></div>
+          <div class="pips" id="pips"></div>
+        </div>
       </div>
-      <div id="guide" hidden></div>
+      <div class="hud-r">
+        <div class="cap money" id="st-funds"><i class="ico i-euro"></i><b id="funds">0</b><span class="debt" id="st-debt" hidden><i class="ico i-account_balance_wallet"></i><b id="debt">0</b></span></div>
+        <button class="hud-btn" id="inboxBtn" aria-label="Inbox"><i class="ico i-inbox"></i><span class="badge" id="inboxN" hidden>0</span></button>
+        <button class="hud-btn blue" id="menuBtn" aria-label="Menu"><i class="ico i-menu"></i></button>
+      </div>
+      <div id="meters">
+        <button class="meter" id="m-local" data-m="local"><i class="ico i-how_to_vote"></i><span class="lbl"></span><span class="seg"></span><b>0</b></button>
+        <button class="meter" id="m-neigh" data-m="neigh"><i class="ico i-diversity_3"></i><span class="lbl"></span><span class="seg"></span><b>0</b></button>
+        <button class="meter" id="m-comp" data-m="comp"><i class="ico i-fact_check"></i><span class="lbl"></span><span class="seg"></span><b>0</b></button>
+        <button class="meter" id="m-spent" data-m="spent"><i class="ico i-savings"></i><span class="lbl"></span><span class="seg"></span><b>0</b></button>
+      </div>
+      <div id="relics"></div>
     </div>
-    <div id="sheet" hidden><div class="sheet-head"><h3 id="sheetTitle"></h3><button id="sheetClose" aria-label="Close"><i class="ico i-close"></i></button></div><div id="sheetBody"></div></div>
+    <button id="dirPill" hidden></button>
+    <div id="news"></div>
+    <div id="guide" hidden></div>
+    <div id="hint"></div>
+    <div id="chips"></div>
+    <div id="confirm" hidden></div>
+    <div id="mapBtns">
+      <button class="mapbtn" id="zoomInBtn" aria-label="Zoom in">+</button>
+      <button class="mapbtn" id="zoomOutBtn" aria-label="Zoom out">−</button>
+      <button class="mapbtn" id="centreBtn" aria-label="Centre"><i class="ico i-place"></i></button>
+      <button class="mapbtn" id="rotateBtn" aria-label="Rotate view"><i class="ico i-rotate_right"></i></button>
+    </div>
   </div>
-  <nav id="tabs">
-    <button class="tab" data-tab="agenda"><i class="ico i-work"></i><span></span></button>
-    <button class="tab" data-tab="city"><i class="ico i-insights"></i><span></span></button>
-    <button class="tab end" id="endTurn"><i class="ico i-skip_next"></i><span class="lbl"></span><small></small></button>
-    <button class="tab" data-tab="inbox"><i class="ico i-inbox"></i><span></span><em class="badge" id="inboxN" hidden></em></button>
-    <button class="tab" data-tab="combos"><i class="ico i-workspace_premium"></i><span></span></button>
-  </nav>
+  <div id="dock">
+    <button id="runBtn"><i class="ico i-work"></i><span class="lbl"></span><span class="xpbar"><i></i></span><small id="xpTxt"></small><em class="badge" id="runN" hidden></em></button>
+    <div id="ctx"><div id="ctxHead"></div><div id="strip"></div></div>
+    <button id="endTurn"><i class="ico i-skip_next"></i><span class="lbl"></span><span class="slots" id="slots"></span><small></small></button>
+  </div>
 </div>
+<div id="run" hidden></div>
 <div id="pop" class="hidden"></div>
+<div id="inbox" hidden></div>
 <div id="modal" class="hidden"><div class="notice" id="notice"></div></div>
 <div id="cover" hidden></div>
 

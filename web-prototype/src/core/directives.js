@@ -1,8 +1,9 @@
 import { CFG, PERKS } from './config.js';
+import { perkAvailable, seePerk } from './career.js';
 import { residents } from './economy.js';
 import { save } from './persist.js';
 import { count, log } from './rules.js';
-import { S, pick, ri, rnd } from './state.js';
+import { S, pick, r1, ri, rnd } from './state.js';
 
 // --- Directives (random missions from Brussels) ---
 export function directiveProgress(d){
@@ -38,15 +39,17 @@ export function issueDirective(){
   log('log.directiveNew', {d:d.kind, m:d.deadline});
 }
 export function offerPerks(){
-  const free = Object.keys(PERKS).filter(k=>!S.perks.includes(k) || k==='shovel');
+  const free = Object.keys(PERKS).filter(k=>(!S.perks.includes(k) || k==='shovel') && perkAvailable(k));
   const choice = [];
   while(choice.length < 3 && free.length){ choice.push(free.splice(Math.floor(rnd()*free.length),1)[0]); }
-  S.perkChoice = choice;
+  S.perkChoice = choice.length ? choice : null;   // nothing left to offer at this rank: no card
 }
 export function choosePerk(k){
   if(!S.perkChoice || !S.perkChoice.includes(k)) return {ok:false};
   if(k==='shovel') S.shovel = true; else S.perks.push(k);
   if(k==='cousin') S.slots++;
+  if(k==='cohesion' && S.region.active) S.funds = r1(S.funds + S.grant*0.15);   // this settlement too
+  seePerk(k);
   S.perkChoice = null;
   log('log.perk', {k}, 'good');
   save();

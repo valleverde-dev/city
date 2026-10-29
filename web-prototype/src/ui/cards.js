@@ -14,11 +14,11 @@ import { C } from '../render/pixel.js';
 import { setMapSize } from '../render/map.js';
 import { $, P, country, portrait } from './dom.js';
 import { pulse, refresh } from './guide.js';
-import { hidePop, roman, setSheet, sheet } from './hud.js';
+import { hidePop, roman } from './hud.js';
 import { ic } from './icons.js';
 import { enterSettlement, frameView, startMenu, startRun } from './title.js';
 import { regionCanvas } from './regionmap.js';
-import { closeDrama, dramaLose, dramaWin } from './drama.js';
+import { closeDrama, dramaLose, dramaWin, toast } from './drama.js';
 
 // =====================================================================
 //  CARDS & NOTICES (modal). One renderer per card type; re-rendered on language change.
@@ -83,11 +83,17 @@ export function chip([type, v]){
 }
 export function showNext(){
   hidePop();
+  // new combos are banners: they never stop the game
+  let shifted = false;
+  while(S.cards.length && (S.cards[0].type==='combo' || S.cards[0].type==='rcombo')){ const c = S.cards.shift(); shifted = true;
+    if(c.type==='combo'){ toast({k:'combo', id:c.id, good:COMBO_BY_ID[c.id].good}); pulse(c.i); }
+    else toast({k:'combo', id:c.id, good:RCOMBO_BY_ID[c.id].good, region:true}); }
+  if(shifted) save();
   if(S.cards.length){ const c = S.cards[0]; (CARD[c.type])(c); rerender = ()=>CARD[c.type](c); return; }
   if(S.perkChoice){ perkCard(); rerender = perkCard; return; }
   if(S.pending==='attach' && !S.over){ hideModal();
     const key = S.runSeed+':'+S.stage+':'+S.region.cands.map(P=>P.x+','+P.y).join(';');
-    if(attachKey !== key){ attachKey = key; setMapSize(); setSheet('attach'); refresh(); frameView(); }   // once per offer: show the new land
+    if(attachKey !== key){ attachKey = key; setMapSize(); refresh(); frameView(); }   // once per offer: show the new land
     refresh(); return; }   // choose the next plot on the map
   if(S.over){ gameOver(); rerender = gameOver; return; }
   S.focus = -1; hideModal(); refresh();
@@ -104,19 +110,10 @@ export const CARD = {
   notice: c => { letter({icon:c.icon, title:t(c.key+'.t', P(c.p)), stamp:t(c.stamp), cls:c.cls, speaker:c.char,
       body:`<div class="quote">${t(c.key+'.x', P(c.p))}</div>`, buttons:[btn(t('ui.noted'),'check', ()=>nextCard('click'), true)]});
     if(!c.played){ c.played = true; playSound(c.sfx||'stamp'); } },
-  event: c => { const E = EVENTS[c.id], v = c.v;
+  // v0.9: events and their results live in the bottom bar (ui/dock.js); the map stays in view
+  event: c => { const E = EVENTS[c.id], v = c.v; hideModal();
     if(v.i>=0 && v.i!==undefined) pulse(v.i);
-    const where = v.i>=0 && v.i!==undefined ? `<span class="where">${ic('place')}${t('ui.parcel',{at:pname(v.i)})}</span>` : '';
-    const buttons = choicesFor(c).map(ch=>{ const b = document.createElement('button'); b.className='choice'; const can = !ch.can || ch.can(v);
-      b.disabled = !can; b.innerHTML = `<b>${t('ev.'+c.id+'.c.'+ch.k)}</b><div class="chips">${ch.fx(v).map(chip).join('')}${can?'':`<span class="chip bad">${t('err.funds')}</span>`}</div>`;
-      b.onclick = ()=>{ const res = resolveEvent(c, ch.k); S.cards.shift();
-        if(res) S.cards.unshift({type:'result', id:c.id, res, v});
-        playSound(res && /caught|lost|stays|refused|unimpressed|ruin|annulled|long/.test(res) ? 'fail' : 'stamp');
-        save(); refresh(); showNext(); };
-      return b; });
-    letter({icon:E.icon, title:t('ev.'+c.id+'.t'), speaker:E.char, dock:true,
-      body:`${where}<div class="quote">${t('ev.'+c.id+'.x', {...P(v), x:v.x, at:v.i>=0?pname(v.i):''})}</div><p class="hint">${t('ui.choose')}</p>`, buttons});
-    if(!c.played){ c.played = true; playSound(E.sfx); } },
+    if(!c.played){ c.played = true; playSound(E.sfx); } refresh(); },
   level: c => { const L = LV(), k = S.stage||0, n = Math.min(k, LEVELS.length-1), more = k >= LEVELS.length;
     const rules = (more ? t('stl.more.rules', {n:L.target}) : t('lvl.'+(n+1)+'.rules')).split('|').map(x=>`<li>${ic('check')}<span>${x}</span></li>`).join('');
     const perks = S.perks.length || S.shovel ? `<p class="hint">${t('stl.perks', {p:S.perks.map(k=>t('perk.'+k)).concat(S.shovel?[t('perk.shovel')]:[]).join(', ')})}</p>` : '';
@@ -129,6 +126,7 @@ export const CARD = {
         ${k===0 ? `<p class="keys">${t('lvl.keys')}</p>` : ''}`,
       buttons:[btn(t('lvl.go'),'play_arrow', ()=>nextCard('stamp'), true)]}); },
   consolidated: c => { hideModal(); dramaWin(c, ()=>nextCard('click')); },
+  // v0.9: a new combo is a banner, not a letter (the game goes on)
   rcombo: c => { const cb = RCOMBO_BY_ID[c.id], B = S.region.blocks[c.b];
     letter({icon: cb.good?'workspace_premium':'warning', title: t(cb.good?'rcombo.new.t':'rcombo.newBad.t'), stamp: t(cb.good?'stamp.combo':'stamp.comboBad'), cls: cb.good?'ok':'bad',
       speaker: cb.good ? 'mayor' : 'neighbour',
@@ -141,15 +139,14 @@ export const CARD = {
       body:`<div class="combo-name ${cb.good?'good':'bad'}">${t('combo.'+cb.id)}</div><div class="quote">${t('combod.'+cb.id)}<br><small>${t('combo.pieces',{a:t('piece.'+cb.a), b:t('piece.'+cb.b)})}</small></div><p class="hint">${t(cb.good?'combo.new.x':'combo.newBad.x')}</p>`,
       buttons:[btn(t('ui.noted'),'check', ()=>nextCard('click'), true)]});
     if(!c.played){ c.played = true; playSound(cb.good ? 'fanfare' : 'crowd'); } },
-  result: c => { const E = EVENTS[c.id], bad = /caught|lost|stays|refused|unimpressed|ruin|annulled|long/.test(c.res);
-    letter({icon:E.icon, title:t('ev.'+c.id+'.t'), stamp:t(bad?'stamp.bad':'stamp.done'), cls:bad?'bad':'ok', speaker:E.char,
-      body:`<div class="quote">${t('ev.'+c.id+'.r.'+c.res)}</div>`, buttons:[btn(t('ui.noted'),'check', ()=>nextCard('click'), true)]}); },
+  result: c => { hideModal(); refresh(); },
 };
 export function perkCard(){
   const wrap = S.perkChoice.map(k=>{ const b=document.createElement('button'); b.className='perk';
-    b.innerHTML=`${ic(PERKS[k])}<span><b>${t('perk.'+k)}</b><small>${t('perkd.'+k)}</small></span>`;
+    b.innerHTML=`${ic(PERKS[k])}<b>${t('perk.'+k)}</b><small>${t('perkd.'+k)}</small>`;
     b.onclick=()=>{ choosePerk(k); playSound('ok'); refresh(); showNext(); }; return b; });
-  letter({icon:'workspace_premium', title:t('perk.title'), speaker:'brussels', body:`<div class="quote">${t('perk.x')}</div>`, buttons:wrap});
+  letter({icon:'workspace_premium', title:t('perk.title'), body:`<p class="hint">${t('perk.x2')}</p>`, buttons:wrap});
+  notice.classList.add('perks');
 }
 // --- The Euroregion in the cards ---
 export const regionName = () => t('region.name', {n:S.region.name});

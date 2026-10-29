@@ -3,11 +3,11 @@ import { approves, buildMonths, hasAccess } from '../core/rules.js';
 import { N, S, clamp, idx, rc } from '../core/state.js';
 import { cellPos, wid } from '../core/region.js';
 import { t } from '../i18n/index.js';
-import { FRX, FRY, H, MAPCX, MAPCY, OX, OY, TH, TW, W, WN, attachSel, ctx, cvs, dpr, isoOf, isoW, rotateCoord, scale, selected, viewRot, worldEl } from './camera.js';
+import { FRX, FRY, H, MAPCX, MAPCY, OX, OY, TH, TW, W, WN, attachSel, ctx, cvs, dpr, isoOf, isoW, preview, rotateCoord, scale, selected, viewHooks, viewRot, worldEl } from './camera.js';
 import { GROUNDS, riverTile, roadTile, skirt, wedgeTile } from './ground.js';
 import { AH, AOX, AOY, AW, OWNER, VEIL, art, computeOwner, inW, drawTile, drawWorldTile, gctx, groundCv, gx, planThing, staticKey, setStaticKey, variant, veil, worldThing } from './map.js';
 import { C, frac, hsh } from './pixel.js';
-import { ARCH, BUILDINGS, CAR_COLS, P3, billboardSprite, carSprite, cones, fenceSprite, flagSprite, noticeSprite, ruinSprite, siteSprite, spr } from './sprites.js';
+import { ARCH, BUILDINGS, archOf, colourOf, CAR_COLS, P3, billboardSprite, carSprite, cones, fenceSprite, flagSprite, noticeSprite, ruinSprite, siteSprite, spr } from './sprites.js';
 import { modal } from '../ui/cards.js';
 import { guideAt, pulseUntil } from '../ui/guide.js';
 import { avenueFrame, coverOpen, dioFrame, drawCycleSite } from '../ui/title.js';
@@ -405,6 +405,7 @@ export function presentNow(){
   drawRegion();
   drawBorder();
   order.forEach(o=>{ if(o[2]>=0) drawLabels(o[2]); });
+  if(preview && preview.i>=0 && preview.i < S.grid.length) drawPreview();
   if(selected>=0){ const p=S.grid[selected], [x,y]=isoOf(Math.floor(selected/N), selected%N);
     const top = y - (TOPS.get(selected) || 14) - 4;
     const bob = Math.round(top) - 1 + (MOTION ? Math.round(Math.sin(performance.now()/170)) : 0);   // stepped pixel arrow: navy outline, yellow fill
@@ -426,5 +427,18 @@ export function presentNow(){
     [[-5,-8,11],[-4,-7,9],[-3,-6,7],[-2,-5,5],[-1,-4,3],[0,-3,1]].forEach(([dx,dy,w])=>{ ctx.fillStyle='#0b1f4d'; ctx.fillRect(x+dx-1,top+dy-1,w+2,2); });
     [[-4,-7,9],[-3,-6,7],[-2,-5,5],[-1,-4,3]].forEach(([dx,dy,w])=>{ ctx.fillStyle='#ffd200'; ctx.fillRect(x+dx,top+dy,w,1); });
     if(!pulseTimer) pulseTimer = setTimeout(()=>{ pulseTimer = 0; present(); }, 50); }
+  viewHooks.forEach(f=>f());
 }
 export let pulseTimer = 0;
+// The ghost of the building you are about to order, and the parcels it would make a combo with
+function diamond(x, y){ ctx.beginPath(); ctx.moveTo(x,y-TH/2); ctx.lineTo(x+TW/2,y); ctx.lineTo(x,y+TH/2); ctx.lineTo(x-TW/2,y); ctx.closePath(); }
+function drawPreview(){
+  const {i, ty, combos} = preview, [x,y] = isoOf(...rc(i)), ph = (performance.now()%1200)/1200;
+  (combos||[]).forEach(cb=>{ const [cx,cy] = isoOf(cb.r, cb.c);
+    diamond(cx, cy); ctx.fillStyle = !cb.known ? 'rgba(255,255,255,.18)' : cb.good ? 'rgba(255,210,0,.22)' : 'rgba(214,46,40,.2)'; ctx.fill();
+    ctx.setLineDash([4,3]); ctx.lineDashOffset = -ph*7; ctx.lineWidth = 2; ctx.strokeStyle = !cb.known ? '#ffffff' : cb.good ? '#ffd200' : '#ff5a4f'; ctx.stroke(); ctx.setLineDash([]); });
+  diamond(x, y); ctx.fillStyle = 'rgba(255,255,255,.25)'; ctx.fill(); ctx.lineWidth = 2.6; ctx.strokeStyle = '#ffd200'; ctx.stroke();
+  if(ty !== 'road'){ const A = archOf(i, ty), v = colourOf(i), s = spr(ty+':'+A.id+':'+v, ()=>A.make(v));
+    ctx.save(); ctx.imageSmoothingEnabled = false; ctx.globalAlpha = 0.62 + 0.12*Math.sin(ph*Math.PI*2); ctx.drawImage(s.c, Math.round(x - s.ox), Math.round(y - s.oy)); ctx.restore(); }
+  if(!pulseTimer) pulseTimer = setTimeout(()=>{ pulseTimer = 0; present(); }, 70);
+}

@@ -12,17 +12,18 @@ Web prototype playable on iPad, iPhone and desktop; a Godot port is planned for 
 - Plan and status: [ROADMAP.md](ROADMAP.md)
 - Code organisation: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
-## How to play (v0.8)
+## How to play (v0.9)
 
 - A run is one **Euroregion**. It starts with a 2×2 hamlet; each settlement has a resident target and a deadline. The settlement card and the mayor's guide tell you what to do.
-- Each turn is **one month**. Tap a parcel to buy it or build on it; press **End month** to let time pass.
+- Each turn is **one month**. Tap a parcel: the bar at the bottom shows what you can do (buy; for your land, a card per building — pick one, see it as a ghost on the map with its combos, confirm). Nothing selected, the bar is your agenda. Press **End month** to let time pass.
 - People only move in if there is what they need (homes; from settlement II, jobs; from settlement III, school and health care).
 - The map grows with the region. Meet the target and the settlement is **consolidated**: you pick a perk and **choose, on the map, where the new land goes** (4×4, 8×8, 16×16, then 16×16 with higher targets); roads and rivers carry on into it. Fail once and the run is over.
 - Permits are approved when political support is at least 50: the game tells you in advance. Stubborn owners (+80%) are marked on the map.
 - Each settlement has a **type** (farming, industrial, spa…). Neighbouring types form **region combos**, good and bad, and the parcels along the border give access and combos to your side.
 - Buildings next to each other form **combos**, good and bad: they glow gold or red. From settlement III, crises arrive as **cards** and Brussels sends **directives**.
 - **Controls:** drag to move the map, pinch / wheel / +− to zoom. PC: WASD / arrows, + −, R rotate, C centre, Space end month, Esc close / pause.
-- **Career:** every run gives experience, even a lost one. Ranks raise every grant; 26 achievements, 8 of which unlock new buildings for good (market, social housing, library, police, solar farm, station, data centre, town hall). After the first, guided run, *New Euroregion* offers three dossiers to draft from.
+- **Run file** (bottom left, or E): your combo collection, the perks of this run and the pool, your career and the region.
+- **Career:** experience comes with every step (levels and ranks during play), even in a lost run. Higher ranks add perks to the pool. Ranks raise every grant; 26 achievements, 8 of which unlock new buildings for good (market, social housing, library, police, solar farm, station, data centre, town hall). After the first, guided run, *New Euroregion* offers three dossiers to draft from.
 - **Language:** English / Español (top bar or menus).
 
 ## Structure
@@ -37,7 +38,7 @@ Web prototype playable on iPad, iPhone and desktop; a Godot port is planned for 
 │   │   ├── core/               the rules: pure functions over one JSON state, no DOM (→ GDScript)
 │   │   ├── i18n/               English + Spanish strings, t()
 │   │   ├── render/             isometric pixel art and animation (canvas)
-│   │   ├── ui/                 HUD, sheets, cards, title screen, input
+│   │   ├── ui/                 HUD, bottom bar, run file, cards, title screen, input
 │   │   ├── audio/              music and sound effects
 │   │   ├── styles/ assets/     CSS and the embedded pixel fonts
 │   │   ├── index.html          page template

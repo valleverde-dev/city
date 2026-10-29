@@ -6,7 +6,19 @@ Living project document · update it as the prototype evolves. The game design l
 
 **Eurocrat** (working title): a satirical, turn-based roguelike city builder. You are a Brussels programme officer who must deliver a model European town with plenty of money and no power — buy the land, file the permits, survive the neighbours, spend the funds before they expire. Tone and references: *Constructor* (1997), with a hyper-realistic, comic look at how building actually works in contemporary Europe. The plan: validate the loop in the web/iPad prototype, then port to Godot to ship on the App Store and Steam.
 
-## Current status — v0.8.0 (Oct 28, 2026) · the civil servant's career, full-screen moments
+## Current status — v0.9.0 (Oct 29, 2026) · a new interface: everything on one screen, sideways; live experience
+
+Playtest feedback on v0.8: the UI was ugly and vertical (cards stacked in a side "sheet"), too much text, a glitch every time a sheet appeared (it closed and slid in again on every tap, and the guide bubble jumped in again on every action), and no place to see combos, experience and perks the roguelike way. Designed first as a mockup (iPad and iPhone), approved, then built:
+- **No more sheets.** The map fills the screen and the **HUD floats over it**: the goal (residents, what holds growth back, months as pips) and the money first, the meters as segments, the perks always on show as **relics**.
+- **One bottom bar** that never opens or closes: the **run file** (experience bar and level) · a **strip of cards** that changes with what you do · **End month** (agenda slots as pips). Nothing selected: the agenda and the directive. A parcel: buy, or one card per building (its look on this parcel, cost, months, a combo badge), locked ones dark with how to unlock them, sell. **Picking a building shows a ghost on the map** with the combos it would make outlined and labelled, and **Request permit** next to it. The next plot: one card per plot. **Events take the bar**: character, headline, choices with their effects as chips; the letter is one tap away. Everything scrolls sideways.
+- **The run file ("Expediente")**, full screen, four tabs: *Combos* (the collection, filters, silhouettes for the undiscovered), *Perks* (this run's hand and the pool), *Career* (level, rank, achievements, the buildings to unlock with progress bars), *Region* (map and numbers).
+- **Less text:** new combos are banners, not letters; the inbox is a small panel (what needs attention + news), and the month's news appear on the map and fade; shorter appointment letter, settlement rules and guide.
+- **Live experience:** every step gives XP (+2 land, +3 permit, +6 building, +25 a new combo, +100 a settlement…), with **levels** (100, 300, 600, 1,000… XP) and **ranks** at certain levels; "+5 XP" rises from the run file and level-ups pop as banners.
+- **Perks by rank:** six basic perks to start; the rest join the pool as you rise, plus four new ones (*Cohesion Funds*, *Tax Adviser*, *Ombudsman*, *Revolving Doors*). The pool is the one of the rank you had when the run began.
+- Balance (bot, 200 runs): a brand-new career (rank 0, six perks) averages ~3.5 settlements per run (v0.8 had every perk from the start: ~4.1); a career that keeps playing averages ~5.3.
+- Tests: 20 rules tests (+ live XP and levels, perks by rank and the new perks), 121 browser checks rewritten for the bar, the ghost and confirm, the run file and the inbox.
+
+## Previous — v0.8.0 (Oct 28, 2026) · the civil servant's career, full-screen moments
 
 Playtest feedback on v0.7: little reason to replay, too few buildings, the tutorial got in the way, wins and losses were small cards.
 - **A career that carries over.** Every run gives experience (100 per settlement + residents/20, plus achievements), even a lost one. Experience raises your **rank** (8 ranks, from Trainee to Director-General); each rank adds +4% to every settlement's grant.
@@ -107,12 +119,11 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 
 ## Next steps
 
-1. **v0.9 — missions and events:** contracts from the characters that extend deadlines or add money, an official request for an extension, ~35 events including chained ones and cross-border events between settlements.
-2. **v0.10 — new interface** (mockup first): a bottom build bar, information revealed gradually, a "Despacho" screen.
-3. Playtest v0.8: is the career a reason to replay? Tune XP, rank bonus and unlock conditions.
-4. Member states with their own rule quirks: a bureaucracy per country.
-5. *Constructor*-style characters: named residents, complaints, a mayor with a face.
-6. Port to Godot when a port trigger is met: `core/` first (with its tests), then rendering and UI.
+1. **v0.10 — missions and events:** contracts from the characters that extend deadlines or add money, an official request for an extension, ~35 events including chained ones and cross-border events between settlements.
+2. Playtest v0.9: is the bar clear, is the ghost + confirm quick enough, is the run file a reason to play again? Tune XP per action, level curve and the rank of each perk.
+3. Member states with their own rule quirks: a bureaucracy per country.
+4. *Constructor*-style characters: named residents, complaints, a mayor with a face.
+5. Port to Godot when a port trigger is met: `core/` first (with its tests), then rendering and UI.
 
 ## Assets
 

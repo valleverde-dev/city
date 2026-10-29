@@ -1,6 +1,6 @@
 # EUROCRAT — Game Design Document
 
-*Living document. v0.8 · Oct 28, 2026. Working title. Available in English and Spanish.*
+*Living document. v0.9 · Oct 29, 2026. Working title. Available in English and Spanish.*
 
 > Every city builder is a dictatorship: you click, a house appears, people move in.
 > **Eurocrat** asks what building a new town would *really* take in contemporary Europe —
@@ -182,7 +182,7 @@ v0.3 deck (15): archaeological find, protected toad, municipal elections, neighb
 
 ## 9. Perks (roguelike build)
 
-Picked 1 of 3 after each completed directive and after every consolidated settlement, and kept for the whole run: *Friendly Notary* (cheaper land), *Fast-track Decree* (faster permits), *Prefab Supplier* (faster construction), *Extra Contractor*, *Cousin at the Ministry* (+1 agenda slot), *Translation Unit* (compliance decays slower), *Comms Agency* (neighbours improve monthly), *Local Fixer* (local support never drops below 30), *Golden Shovel* (one free construction)…
+Picked 1 of 3 after each completed directive and after every consolidated settlement, and kept for the whole run: *Friendly Notary* (cheaper land), *Fast-track Decree* (faster permits), *Prefab Supplier* (faster construction), *Extra Contractor*, *Cousin at the Ministry* (+1 agenda slot), *Translation Unit* (compliance decays slower), *Comms Agency* (neighbours improve monthly), *Local Fixer* (local support never drops below 30), *Golden Shovel* (one free construction)… Since v0.9 the pool grows with your rank (see §10b), with four more: *Cohesion Funds*, *Tax Adviser*, *Ombudsman*, *Revolving Doors*. They are always on show in the HUD.
 
 ## 10. Winning and losing
 
@@ -193,8 +193,9 @@ Picked 1 of 3 after each completed directive and after every consolidated settle
 ## 10b. The career (v0.8): why play again
 
 What carries over between runs, apart from the combo catalogue and the records:
-- **Experience** after every run, won or lost: 100 per consolidated settlement + 1 per 20 residents, plus each achievement's own XP.
-- **Rank** (8: Trainee → Director-General, at 0 / 250 / 700 / 1,400 / 2,500 / 4,000 / 6,000 / 9,000 XP). Each rank above the first adds +4% to every settlement's grant.
+- **Experience, as you play** (v0.9): buying land +2, a permit +3, an approval +3, a finished building +6 (a street +1), a good combo formed +8, a combo discovered for the first time +25, each month +1, a consolidated settlement +100, a plot sold +4, an agenda action +1, an urban plan +4; each achievement its own XP; at the end of a run, +1 per 20 residents of the region. "+5 XP" rises from the run file and its bar fills.
+- **Levels** (level n at 50·n·(n+1) XP: 100, 300, 600, 1,000…), announced with a banner, and **ranks** at levels 2, 4, 6, 8, 11, 14 and 18 (8 ranks: Trainee → Commissioner). Each rank above the first adds +4% to every settlement's grant.
+- **Perks by rank:** the six basic perks are always in the pool; the others join it as you rise (Comms Agency and Professional Lobbyist at rank 1, Local Fixer and Golden Shovel at 2, then four new ones: *Cohesion Funds* (+15% of every grant) at 3, *Tax Adviser* (+25% taxes) at 4, *Ombudsman* (neighbours never below 25) at 5, *Revolving Doors* (plots sell for 30% more) at 6). The rank you had when the run began decides the pool.
 - **26 achievements** (first stone, Kafka, Pelotazo, Bailout Denied, Mascot…), 8 of which unlock buildings (see §5). Banners announce them during play; the career file on the title screen lists them, with the condition of each locked one.
 - **The tutorial runs once.** After it, *New Euroregion* deals **three dossiers**: a settlement type, a perk to start with and a member state. The guide can be turned back on in Settings.
 - **Full-screen moments:** consolidation cuts a ribbon over confetti, then the *Union Gazette* reports it; game over stamps the dossier REJECTED and shreds it, then the Gazette and a summary of XP, promotions, achievements and unlocks.
@@ -240,15 +241,23 @@ English and Spanish, switchable at any time (HUD button, pause menu or Settings 
 
 Pixel-art frame in the imagery of a (fictional) Union portal: pixel fonts for titles, figures, buttons and stamps; a crisp system sans at 15–16px for everything you read.
 
-- **Full-screen map.** Top bar: month, funds, residents, agenda slots, a **bell** with the number of problems, language, music, menu. Meters appear only when their rule is in play (one compact row on phones; tap one for what it means and why it moved).
-- **Bottom tab bar:** Agenda · Town · **End month** · Inbox · Combos. Each opens a **sheet** on demand (bottom sheet on phones, floating card on the left on iPad/PC); tapping a parcel opens its sheet and nudges the map so the parcel stays visible.
-- Directive pill on the map; the mayor's guide bubble; event cards, notices and combos in the **centre of the screen**.
+**v0.9: everything on one screen, sideways, little text. No sheets.**
+- **The map fills the screen; the HUD floats over it.** First the goal: residents toward the target (with what holds growth back) and the months left as pips; then the money, the inbox and the menu. The meters sit below as five segments each (tap one for why it moved). The perks of the run are always on show, top right, like relics (tap one for what it does).
+- **One bar at the bottom** that never opens or closes, only changes what it shows: the **run file** on the left (experience bar and level), a **strip of cards** in the middle and **End month** on the right (with the agenda slots as pips). The strip shows:
+  - nothing selected → the **agenda** (urban plan, lunch with the mayor, consultation, report, repay) and the directive;
+  - a parcel → what you can do there: *Buy* for land; for your land, one card per building with its look on this very parcel, cost, months and a combo badge (+1, −1, ? for undiscovered); locked buildings appear dark with how to unlock them; *Sell*. A building under way shows its state; a finished one its name and the combos it makes;
+  - picking a building shows it as a **ghost on the map**, the neighbours it would make combos with are outlined (gold, red, or dashed for unknown) and labelled, and **Request permit** sits next to it on the map;
+  - choosing the next plot → the settlement type and one card per plot (side, region combos, what is on the land), plus *Acquire*;
+  - an **event** → the character, the headline and the choices as cards with their effects as chips; the full letter is one tap away (*Read the letter*). The outcome shows there too.
+- **The inbox** (top right) lists what needs attention (tap one to go there) and the latest news; after each month the important news lines appear on the map and fade.
+- **New combos are banners**, not letters; so are achievements, levels and promotions. Letters remain for the appointment, each settlement's card, directives and official notices, and they are shorter.
+- **The run file** ("Expediente", E key): full screen, four tabs, everything scrolls sideways. *Combos* — the collection, with filters; undiscovered ones show their two pieces as silhouettes. *Perks* — this run's hand and the whole pool, some locked by rank. *Career* — level, rank and grant bonus, the achievements and the 8 buildings to unlock, each with a progress bar. *Region* — the Euroregion map and this settlement in numbers.
 - **The map is the whole Euroregion**, and only that: it grows with every settlement. Consolidated settlements have a thin white outline, and a dashed yellow line marks the plot in play. Zoom out to see it all. **Combos glow, Kairosoft-style:** the buildings of a discovered combo get a pulsing outline, gold with sparkles for good combos and red for bad ones, including the neighbour's building across the edge. While choosing the next plot, the candidates are highlighted and numbered on the map and listed in a sheet (what each one borders, its region combos, what is on the land); a region minimap also appears in the Town sheet and on the consolidation and end-of-run cards.
 - **Title screen:** a full-screen scene — an animated diorama of the model town over an avenue of waving flags of the Union — with the logo and a classic vertical menu: **New Euroregion** (starts a run from the 2×2 hamlet; shows the best Euroregion so far) · **Continue** (disabled with no save, pre-selected when there is one) · **Settings** (language, music) · **Credits** (author, music and font rights, a satire disclaimer). Version bottom-left, copyright bottom-right. Arrow keys / W-S move, Enter picks, Esc goes back. The design canvas holds the reference mockups of the four views.
 
 ## 15. Controls (iPad first)
 
-Tap a parcel to open its sheet. **Drag** (one finger or mouse) to move the map; **pinch**, mouse wheel or the +/− buttons to zoom; rotate and centre buttons. On PC: **WASD / arrows** move, **+/−** zoom, **R** rotate, **C** centre, **Space** ends the month, **Esc** closes a sheet or pauses. Turn-based, so nothing is time-pressured on screen.
+Tap a parcel: the bottom bar shows what you can do there; tap it again (or empty ground) to let go. **Drag** (one finger or mouse) to move the map; **pinch**, mouse wheel or the +/− buttons to zoom; rotate and centre buttons. The bar scrolls sideways (the mouse wheel works on it too). On PC: **WASD / arrows** move, **+/−** zoom, **R** rotate, **C** centre, **Space** ends the month, **Enter** confirms the building picked, **E** opens the run file, **Esc** lets go, closes or pauses. Turn-based, so nothing is time-pressured on screen.
 
 ## 16. Open questions
 

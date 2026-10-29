@@ -9,7 +9,7 @@ import { closeDrama } from './drama.js';
 import { N, S, clamp, setState } from '../core/state.js';
 import { LANG, setLanguage, t } from '../i18n/index.js';
 import { FX, GX, MOTION, OX0, OY0, RISE_MS, bl, disc, drawBirds, drawCrane, drawEntry, drawRise, drawWalkers, unionFlag, kick, setPainter } from '../render/anim.js';
-import { TH, TW, centreOn, clampCam, defaultZoom, frameBox, FRX, FRY, isoOf, resize, setAttachSel, worldEl, setCam, setSelected, setViewRot, setZoom } from '../render/camera.js';
+import { TH, TW, centreOn, clampCam, defaultZoom, frameBox, FRX, FRY, isoOf, resize, scale, setAttachSel, worldEl, setCam, setSelected, setViewRot, setZoom } from '../render/camera.js';
 import { GROUNDS, riverTile, roadTile, skirt } from '../render/ground.js';
 import { gx, setMapSize, startSite } from '../render/map.js';
 import { C, dith, frac, hsh, sh } from '../render/pixel.js';
@@ -17,7 +17,8 @@ import { ARCH, BUILDINGS, P3, billboardSprite, fenceSprite, flagSprite, noticeSp
 import { btn, hideModal, letter, modal, notice, rerender, setRerender, showNext } from './cards.js';
 import { $, country } from './dom.js';
 import { refresh } from './guide.js';
-import { roman, setSheet } from './hud.js';
+import { roman, setRunTab } from './hud.js';
+import { clearSelection } from './dock.js';
 import { ic } from './icons.js';
 
 // --- Start / pause menu (with language switch) ---
@@ -323,11 +324,10 @@ export function setLang(l){
 export function frameView(){ resize();
   // choosing the next plot: show the whole region and the plots on offer
   if(S.pending==='attach' && S.region.cands && S.region.cands.length){ const all = [...S.region.blocks, ...S.region.cands];
-    // the sheet's layout size (not its on-screen rect: it may still be sliding in)
-    const sh = $('sheet'), wr = worldEl.getBoundingClientRect(), on = !sh.hidden, sw = sh.offsetWidth, shh = sh.offsetHeight;
-    const side = on && sw < wr.width*0.8, left = side ? sh.offsetLeft + sw : 0, bottom = on && !side ? Math.min(shh, wr.height) : 0;
-    frameBox(Math.min(...all.map(b=>b.x))-FRX, Math.min(...all.map(b=>b.y))-FRY, Math.max(...all.map(b=>b.x+b.n))-FRX, Math.max(...all.map(b=>b.y+b.n))-FRY, left, Math.min(bottom, wr.height*0.6)); return; }
-  setZoom(defaultZoom()); const [x,y] = isoOf((N-1)/2, (N-1)/2); setCam(x, y); clampCam(); }
+    frameBox(Math.min(...all.map(b=>b.x))-FRX, Math.min(...all.map(b=>b.y))-FRY, Math.max(...all.map(b=>b.x+b.n))-FRX, Math.max(...all.map(b=>b.y+b.n))-FRY, 0, 0, hudTop()); return; }
+  setZoom(defaultZoom()); const [x,y] = isoOf((N-1)/2, (N-1)/2); setCam(x, y - hudTop()/2/scale()); clampCam(); }
+// The floating HUD covers the top of the map: views are fitted below it
+export function hudTop(){ const h = $('hud'); return h ? Math.min(h.offsetHeight + 12, worldEl.clientHeight*0.35) : 0; }
 // A new Euroregion (or, for tests and the balance bot, a run that starts at settlement `stage`)
 export function startNew(seed, stage = 0, opts = {}){ closeDrama(); hideCover(); startSite(seed, stage, opts); enterSettlement(); }
 // The tutorial run: the 2×2 hamlet with the mayor's guide
@@ -336,5 +336,5 @@ export function startRun(){ draftOffer = null; startNew(undefined, 0, {bonus: ra
 let draftOffer = null;
 export function startQuick(d){ draftOffer = null; startNew(d.seed, 1, {ty:d.ty, perk:d.perk, country:d.country, bonus: rankBonus(), guide: career().guide}); }
 // Show the settlement in play: fit the map to it and open its cards
-export function enterSettlement(){ setAttachSel(-1); setSelected(-1); setSheet(null); setViewRot(0); setMapSize(); frameView(); save(); setMusic(gameTrack()); refresh(); showNext(); }
+export function enterSettlement(){ setAttachSel(-1); clearSelection(); setRunTab(null); setViewRot(0); setMapSize(); frameView(); save(); setMusic(gameTrack()); refresh(); showNext(); }
 export function afterLoad(){ hideCover(); enterSettlement(); }

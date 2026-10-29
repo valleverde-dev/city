@@ -74,7 +74,7 @@ export function syncMusic(){
 // track: 'menu' | 'level1'…'level4' | 'win'; level: 1 = full, <1 = ducked (pause screen)
 export function setMusic(track, level=1){ music.want = track; music.level = level; syncMusic(); }
 export function updateMusicBtn(){
-  document.getElementById('musicBtn').innerHTML = ic(music.on ? 'music_note' : 'music_off');
+  const hb = document.getElementById('musicBtn'); if(hb) hb.innerHTML = ic(music.on ? 'music_note' : 'music_off');
   const m = document.getElementById('btnMusic');
   if(m){ m.innerHTML = ic(music.on ? 'music_note' : 'music_off') + '<span class="label"></span>';
     m.querySelector('.label').textContent = t('menu.music', {s: t(music.on ? 'on' : 'off')}); }

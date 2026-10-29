@@ -5,7 +5,7 @@
 // It is deliberately decent but not clever: it always picks the first ("by the book") choice on event cards.
 window.__playOneRun = function(seed, opts){
   opts = opts || {};
-  const g = window.__eurocrat; g.newGame(seed, opts.level===undefined ? 3 : opts.level);
+  const g = window.__eurocrat; if(!opts.keepCareer && g.resetCareer) g.resetCareer(); g.newGame(seed, opts.level===undefined ? 3 : opts.level, opts.keepCareer && g.rankBonus ? {bonus: g.rankBonus()} : {});
   const start = g.S.stage, maxStage = opts.maxStage === undefined ? 12 : opts.maxStage;
   const S = () => g.S, side = () => Math.round(Math.sqrt(g.S.grid.length));   // the map grows with every settlement
   const PERK_PREF = ['contractor','cousin','prefab','fasttrack','translation','notary','fixer','lobbyist','comms','shovel'];

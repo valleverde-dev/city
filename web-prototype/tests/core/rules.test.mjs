@@ -49,6 +49,7 @@ test('the same seed plays the same game', () => {
   const a = JSON.stringify(playOneRun(7, { level: 3 }));
   const b = JSON.stringify(playOneRun(7, { level: 3 }));
   assert.equal(a, b);
+  playOneRun(5, { level: 0, run: true });   // warm-up: the combo catalogue (kept between runs) is what the bot knows
   assert.equal(JSON.stringify(playOneRun(5, { level: 0, run: true })), JSON.stringify(playOneRun(5, { level: 0, run: true })));
   g.newGame(9, 4); const s1 = JSON.stringify(core.S);
   g.newGame(9, 4); const s2 = JSON.stringify(core.S);
@@ -295,4 +296,46 @@ test('quick start: three different dossiers, and the run starts at 4×4 with tha
   assert.equal(S.stype, d[0].ty);
   assert.ok(S.perks.includes(d[0].perk) || (d[0].perk === 'shovel' && S.shovel));
   assert.equal(S.guideOff, true);
+});
+
+test('v0.9: experience is earned while playing, with levels and ranks', () => {
+  core.resetCareer();
+  const S = g.newGame(21, 1);
+  assert.equal(S.rs.xp, 0);
+  const i = S.grid.findIndex((p, k) => p.k === 'farm' && p.st === 'land' && core.hasAccess(...core.rc(k)));
+  S.slots = 3; S.funds = 100;
+  assert.ok(core.acquire(i).ok);
+  assert.equal(S.rs.xp, core.XP_FOR.acquire, 'buying land gives experience at once');
+  assert.equal(core.career().xp, core.XP_FOR.acquire, '…and it is in the career straight away');
+  S.cards = []; core.endMonth();
+  assert.ok(S.rs.xp >= core.XP_FOR.acquire + core.XP_FOR.month, 'ending a month too');
+  // levels: 100, 300, 600… ; ranks come at certain levels
+  assert.equal(core.levelOf(0), 0); assert.equal(core.levelOf(100), 1); assert.equal(core.levelOf(299), 1); assert.equal(core.levelOf(300), 2);
+  assert.deepEqual(core.RANKS.slice(0, 3), [0, 300, 1000]);
+  S.levelUps = []; S.rankUps = [];
+  core.saveCareer({ ...core.career(), xp: 95 }); core.gainXp('discover');   // 95 → 120: level 1, still rank 0
+  assert.deepEqual(S.levelUps, [1]); assert.deepEqual(S.rankUps, []);
+  core.saveCareer({ ...core.career(), xp: 290 }); core.gainXp('discover');  // 290 → 315: level 2 = rank 1 (said once, as a promotion)
+  assert.deepEqual(S.rankUps, [1]); assert.deepEqual(S.levelUps, [1]);
+  core.resetCareer();
+});
+
+test('v0.9: perks join the pool by rank, and the four new ones work', () => {
+  core.resetCareer();
+  let S = g.newGame(3, 1);
+  for (let k = 0; k < 30; k++) { core.offerPerks(); assert.ok(S.perkChoice.every(p => core.PERK_RANK[p] === 0), 'rank 0: only the basic perks'); }
+  S.perkChoice = null;
+  core.saveCareer({ ...core.career(), xp: core.RANKS[6] });
+  S = g.newGame(3, 3);
+  const seen = new Set(); for (let k = 0; k < 60; k++) { core.offerPerks(); S.perkChoice.forEach(p => seen.add(p)); }
+  assert.ok(seen.has('revolving') && seen.has('taxadvisor'), 'rank 6: the new perks can be offered');
+  // the effects
+  S.perkChoice = null; S.newcomers = 400;
+  const tax0 = core.taxIncome(); S.perks.push('taxadvisor'); assert.ok(core.taxIncome() > tax0, 'Tax Adviser: more taxes');
+  const p = S.grid.find(q => q.k === 'farm'); const v0 = core.plotValue(p); S.perks.push('revolving'); assert.ok(core.plotValue(p) > v0, 'Revolving Doors: plots sell for more');
+  S.perks.push('ombudsman'); S.neigh = 26; core.bump('neigh', -20, 'x'); assert.equal(S.neigh, 25, 'Ombudsman: neighbours never below 25');
+  S.perkChoice = ['cohesion']; const f0 = S.funds; core.choosePerk('cohesion');
+  assert.ok(S.funds > f0, 'Cohesion Funds: money for this settlement too');
+  assert.ok(core.career().perks.includes('cohesion'), 'the career remembers the perks you have taken');
+  core.resetCareer();
 });

@@ -3,7 +3,7 @@ import { offerPerks } from './directives.js';
 import { residents } from './economy.js';
 import { REGION_NAMES, STYPES, STYPE_FX, buildFrontier, candidates, cellCode, genPlot, regionCombosAt, setW, sumFx, wcode, RCOMBO_BY_ID } from './region.js';
 import { discover } from './combos.js';
-import { checkAch, seeType, tutorialDone } from './career.js';
+import { career, checkAch, rankOf, gainXp, seePerk, seeType, tutorialDone } from './career.js';
 import { log } from './rules.js';
 import { N, NB, S, clamp, idx, inside, pick, r1, ri, rnd, setSide, setState } from './state.js';
 
@@ -18,14 +18,14 @@ export function newGame(seed, stage, opts = {}){
   if(seed === undefined) seed = (Math.random()*2147483647)|0;
   stage = Math.max(0, stage|0);
   setState({
-    v:9, runSeed:seed, seed, rng:seed|0, debt:0, rate:CFG.interest, inflation:1, market:1, perks:[], shovel:false,
+    v:10, runSeed:seed, seed, rng:seed|0, debt:0, rate:CFG.interest, inflation:1, market:1, perks:[], shovel:false,
     refunds:[], directivesDone:0, guideOff:false, carry:0, stage:0, level:0,
     world:{cells:{}, v:0}, region:{name:'', blocks:[], active:null, next:null, cands:[]},
     grid:[], log:[], cards:[], trail:[], fx:[], frontier:[], rfx:{}, rcombos:[],
-    rs:{lunches:0, sold:0, ach:[]}, bonus: opts.bonus || 0, newAch:[], rankUps:[],
+    rs:{lunches:0, sold:0, ach:[], xp:0, xp0:career().xp, rank0:rankOf(career().xp)}, bonus: opts.bonus || 0, newAch:[], rankUps:[], levelUps:[],
   });
   if(opts.guide === false) S.guideOff = true;
-  if(opts.perk){ if(opts.perk==='shovel') S.shovel = true; else S.perks.push(opts.perk); }
+  if(opts.perk){ if(opts.perk==='shovel') S.shovel = true; else S.perks.push(opts.perk); seePerk(opts.perk); }
   S.region.name = pick(REGION_NAMES);
   const home = {x:0, y:0, n:2}; home.cells = genPlot(home, 0);
   // Made-up history when starting further in (each earlier settlement consolidated at its target)
@@ -70,7 +70,7 @@ export function startSettlement(stage, P, info){
   S.stage = stage; S.level = Math.min(stage, LEVELS.length-1);
   S.seed = (S.runSeed + stage*7919)|0;
   Object.assign(S, {
-    month:1, grant:r1(L.grant*(1+(S.bonus||0))), funds:r1(L.grant*(1+(S.bonus||0)) + (S.carry||0)), spent:0, slotPenalty:0, local:55, neigh:55, comp:60, strikes:0,
+    month:1, grant:r1(L.grant*(1+(S.bonus||0)+(S.perks.includes('cohesion')?0.15:0))), funds:r1(L.grant*(1+(S.bonus||0)+(S.perks.includes('cohesion')?0.15:0)) + (S.carry||0)), spent:0, slotPenalty:0, local:55, neigh:55, comp:60, strikes:0,
     grid:[], newcomers:0, qseq:0, directive:null, plan:null, reports:0, consults:0, lobbied:0, strike:0, electionDone:false, crashDone:false,
     log:[], cards:[], perkChoice:null, over:null, pending:null, bottleneck:'homes', trail:[], fx:[], focus:-1, base:0,
     stats:{lobby:0, plan:0, approved:0}, guide:0, comboSeen:[], carried:r1(S.carry||0), carry:0, lastTax:0,
@@ -111,6 +111,7 @@ export function snapshot(){ return {local:S.local, neigh:S.neigh, comp:S.comp, f
 // =====================================================================
 export function consolidate(){
   const A = S.region.active, res = residents();
+  gainXp('consolidate');
   const kept = Math.max(0, r1(S.funds*CFG.keepShare)), back = Math.max(0, r1(S.funds - kept));
   // what was built stays on the map, where it is
   S.grid.forEach((p,i)=>setW(A.y + Math.floor(i/A.n), A.x + i%A.n, cellCode(p)));

@@ -71,6 +71,14 @@ export function comboPreview(i, ty){
   frontierAround(r,c).forEach(k=>matchCombos(me, codeTokens(S.frontier[k].x)).forEach(cb=>seen.set(cb.id, cb)));
   return [...seen.values()];
 }
+// The same, with where each one would form (local r,c of the neighbour; frontier cells too): for the map preview
+export function comboPreviewAt(i, ty){
+  if(!on('combos')) return [];
+  const [r,c] = rc(i), me = [ty], out = [];
+  NB8.forEach(([dr,dc])=>{ if(!inside(r+dr,c+dc)) return; matchCombos(me, tokens(S.grid[idx(r+dr,c+dc)])).forEach(cb=>out.push({id:cb.id, good:cb.good, r:r+dr, c:c+dc})); });
+  frontierAround(r,c).forEach(k=>{ const f = S.frontier[k]; matchCombos(me, codeTokens(f.x)).forEach(cb=>out.push({id:cb.id, good:cb.good, r:f.r, c:f.c})); });
+  return out;
+}
 // The catalogue of discovered combos survives between runs (it is knowledge, not power)
 export function discovered(){ try{ return JSON.parse(storage.get('eurocrat_combos')||'[]'); }catch(e){ return []; } }
 export function discover(id){ const d = discovered(); if(d.includes(id)) return false; d.push(id); try{ storage.set('eurocrat_combos', JSON.stringify(d)); }catch(e){} return true; }

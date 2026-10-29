@@ -6,7 +6,7 @@ import { rollEvent } from './events.js';
 import { money } from './format.js';
 import { consolidate, snapshot } from './newgame.js';
 import { recordRun, save } from './persist.js';
-import { checkAch, endRun } from './career.js';
+import { checkAch, endRun, gainXp } from './career.js';
 import { activeSites, approvalChance, approves, buildCost, builtFx, buildMonths, bump, caps, contractors, count, fx, log, slotsPerMonth, spend } from './rules.js';
 import { S, clamp, has, pname, r1, ri, rnd } from './state.js';
 
@@ -17,7 +17,7 @@ export function endMonth(){
   S.grid.forEach((p,i)=>{
     if(p.st!=='review') return;
     if(--p.t > 0) return;
-    if(approves()){ p.st='approved'; p.q = ++S.qseq; S.stats.approved = (S.stats.approved||0) + 1; log('log.approved', {b:p.ty, at:pname(i)}, 'good'); fx(i,'fx.approved',{},'good'); }
+    if(approves()){ p.st='approved'; p.q = ++S.qseq; S.stats.approved = (S.stats.approved||0) + 1; gainXp('approved'); log('log.approved', {b:p.ty, at:pname(i)}, 'good'); fx(i,'fx.approved',{},'good'); }
     else { const r = Math.floor(rnd()*N_REJECTIONS); log('log.rejected', {b:p.ty, r}, 'bad'); fx(i,'fx.rejected',{},'bad');
       p.st='owned'; p.ty=null; p.flag={k:'rejected', until:S.month+1}; }
   });
@@ -45,6 +45,7 @@ export function endMonth(){
     spend(p.mcost);
     if(--p.t <= 0){ p.st='built';
       if(p.ty==='park') bump('neigh', 6, 'why.park');
+      gainXp(p.ty==='road' ? 'road' : 'built');
       log('log.completed', {b:p.ty, at:pname(i)}, 'good'); fx(i,'fx.completed',{b:p.ty},'good'); }
   });
   // 5. Private developers build at their own pace (and stop when the market is cold)
@@ -60,7 +61,8 @@ export function endMonth(){
   // 5b. Combos: newly formed pairs are announced (and discovered the first time ever)
   const combosNow = activeCombos(); S.comboSeen = S.comboSeen || [];
   combosNow.forEach(x=>{ const key = x.id+':'+x.i+':'+x.j; if(S.comboSeen.includes(key)) return; S.comboSeen.push(key);
-    if(discover(x.id)) S.cards.push({type:'combo', id:x.id, i:x.i, j:x.j});
+    if(discover(x.id)){ S.cards.push({type:'combo', id:x.id, i:x.i, j:x.j}); gainXp('discover'); }
+    if(x.good) gainXp('combo');
     else fx(x.good || x.j < 0 ? x.i : x.j, x.good ? 'fx.combo' : 'fx.comboBad', {c:x.id}, x.good ? 'good' : 'bad');   // j < 0: across the border
     log(x.good ? 'log.combo' : 'log.comboBad', {c:x.id}, x.good ? 'good' : 'bad'); });
   // 6. Upkeep, interest and the municipality's share of new taxes
@@ -124,6 +126,7 @@ export function endMonth(){
     log('log.loan', {x:money(loan)}, 'bad');
   }
   // 14. Next month
+  gainXp('month');
   S.month++; S.slots = Math.max(1, slotsPerMonth() - S.slotPenalty); S.slotPenalty = 0; S.lobbied = 0;
   S.grid.forEach(p=>{ if(p.flag && p.flag.until < S.month) p.flag = null; });
   // 15. Win / lose

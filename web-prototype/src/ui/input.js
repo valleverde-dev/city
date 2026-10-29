@@ -1,24 +1,24 @@
-import { toggleMusic } from '../audio/music.js';
 import { playSound } from '../audio/sfx.js';
 import { endMonth } from '../core/month.js';
 import { S } from '../core/state.js';
-import { LANG } from '../i18n/index.js';
 import { draw, present, startNight } from '../render/anim.js';
 import { FRX, FRY, centreOn, cvs, keepVisible, panBy, resize, selected, setSelected, setViewRot, tileAt, tileAtW, viewRot, worldEl, zoom, zoomAt } from '../render/camera.js';
 import { modal, showNext } from './cards.js';
 import { $, flushFx } from './dom.js';
+import { armed, clearSelection, deselect, eventOpen, selectPlot, setArmed } from './dock.js';
 import { refresh } from './guide.js';
-import { hidePop, setSheet, sheet, showMeterPop } from './hud.js';
-import { closeSheet, openSheet, selectPlot } from './sheets.js';
-import { coverKey, coverOpen, frameView, pauseMenu, setLang } from './title.js';
+import { hidePop, runTab, showMeterPop } from './hud.js';
+import { inboxOpen, showNews, toggleInbox } from './inbox.js';
+import { closeRun, openRun } from './run.js';
+import { coverKey, coverOpen, frameView, pauseMenu } from './title.js';
 
 // =====================================================================
 //  INPUT — tap to select · drag (one finger / mouse) to move · pinch / wheel / +− to zoom
-//  Keyboard: WASD or arrows move, + − zoom, R rotates, C centres, Space ends the month, Esc closes / pauses
+//  Keyboard: WASD or arrows move, + − zoom, R rotates, C centres, Space ends the month, E opens the run file, Esc closes / pauses
 // =====================================================================
 export const pointers = new Map(); export let pinchD=0, pinchZ=1, pinchMid=null, dragged=false, downAt=null, lastAt=null;
 cvs.addEventListener('pointerdown', e=>{
-  hidePop(); try{ cvs.setPointerCapture(e.pointerId); }catch(_){}
+  hidePop(); if(inboxOpen) toggleInbox(false); try{ cvs.setPointerCapture(e.pointerId); }catch(_){}
   pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(pointers.size===1){ downAt={x:e.clientX,y:e.clientY}; lastAt={...downAt}; dragged=false; }
   if(pointers.size===2){ const p=[...pointers.values()]; pinchD=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y)||1; pinchZ=zoom; dragged=true;
@@ -43,10 +43,10 @@ export function up(e){
     const k = w ? S.region.cands.findIndex(P=>y>=P.y && y<P.y+P.n && x>=P.x && x<P.x+P.n) : -1;
     if(k >= 0) selectPlot(k);
   }
-  else if(wasSingle && !dragged && downAt){
+  else if(wasSingle && !dragged && downAt && !eventOpen()){
     const r = cvs.getBoundingClientRect(); const i = tileAt(e.clientX-r.left, e.clientY-r.top);
-    if(i<0 || i===selected){ setSelected(-1); if(sheet==='parcel') setSheet(null); }
-    else { setSelected(i); setSheet('parcel'); }
+    if(i<0 || i===selected) clearSelection();
+    else { setSelected(i); setArmed(null); }
     playSound('click'); refresh(); if(selected>=0) keepVisible(selected);
   }
   if(!pointers.size){ downAt=null; }
@@ -55,6 +55,8 @@ cvs.addEventListener('pointerup', up); cvs.addEventListener('pointercancel', e=>
 cvs.addEventListener('wheel', e=>{ e.preventDefault(); const r = cvs.getBoundingClientRect();
   if(e.ctrlKey || Math.abs(e.deltaY) >= Math.abs(e.deltaX)*1.5 && !e.shiftKey) zoomAt(zoom*Math.exp(-e.deltaY*0.0015), e.clientX-r.left, e.clientY-r.top);
   else panBy(-e.deltaX, -e.deltaY); }, {passive:false});
+// The strip scrolls sideways with the wheel too (a mouse has no horizontal wheel)
+$('strip').addEventListener('wheel', e=>{ if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){ e.preventDefault(); $('strip').scrollLeft += e.deltaY; } }, {passive:false});
 // Keyboard: smooth movement while keys are held
 export const held = new Set(); export let keyLoop = 0;
 export const PAN_KEYS = {w:[0,1], arrowup:[0,1], s:[0,-1], arrowdown:[0,-1], a:[1,0], arrowleft:[1,0], d:[-1,0], arrowright:[-1,0]};
@@ -64,13 +66,16 @@ addEventListener('keydown', e=>{
   if(e.target.closest && e.target.closest('input,textarea')) return;
   const k = e.key.toLowerCase(), modalOpen = !modal.classList.contains('hidden');
   if(coverOpen()){ coverKey(e, k); return; }
-  if(k==='escape'){ if(sheet) closeSheet(); else if(!modalOpen && S && !S.over) pauseMenu(); return; }
+  if(k==='escape'){ if(runTab) closeRun(); else if(inboxOpen) toggleInbox(false); else if(modalOpen) return; else if(!deselect() && S && !S.over) pauseMenu(); return; }
   if(modalOpen) return;
+  if(k==='e' && S){ if(runTab) closeRun(); else openRun(); return; }
+  if(runTab) return;
   if(PAN_KEYS[k]){ e.preventDefault(); held.add(k); if(!keyLoop) keyLoop = requestAnimationFrame(keyStep); return; }
   if(k==='+' || k==='=') zoomAt(zoom*1.25); else if(k==='-' || k==='_') zoomAt(zoom/1.25);
   else if(k==='r'){ setViewRot((viewRot+1)%4); playSound('click'); draw(); }
   else if(k==='c') frameView(), present();
   else if(k===' ' && !e.repeat){ e.preventDefault(); $('endTurn').click(); }
+  else if(k==='enter' && armed){ e.preventDefault(); const b = document.querySelector('#confirm .ok'); if(b) b.click(); }
 });
 addEventListener('keyup', e=>{ held.delete(e.key.toLowerCase()); });
 addEventListener('blur', ()=>held.clear());
@@ -79,17 +84,16 @@ $('zoomInBtn').onclick = ()=>{ playSound('click'); zoomAt(zoom*1.3); };
 $('zoomOutBtn').onclick = ()=>{ playSound('click'); zoomAt(zoom/1.3); };
 $('centreBtn').onclick = ()=>{ playSound('click'); if(selected>=0) centreOn(selected); else frameView(); present(); };
 $('menuBtn').onclick = ()=>{ playSound('click'); pauseMenu(); };
-$('musicBtn').onclick = toggleMusic;
-$('langBtn').onclick = ()=> setLang(LANG==='es' ? 'en' : 'es');
-$('bellBtn').onclick = ()=>{ playSound('click'); sheet==='problems' ? closeSheet() : openSheet('problems'); };
-$('sheetClose').onclick = ()=>{ playSound('click'); closeSheet(); };
-$('dirPill').onclick = ()=>{ playSound('click'); openSheet('agenda'); };
-document.querySelectorAll('.tab[data-tab]').forEach(b=> b.onclick = ()=>{ playSound('click'); const tb = b.dataset.tab; if(sheet===tb) closeSheet(); else { setSelected(-1); openSheet(tb); } });
+$('inboxBtn').onclick = e=>{ e.stopPropagation(); playSound('click'); toggleInbox(); };
+$('runBtn').onclick = ()=>{ runTab ? closeRun() : openRun(); };
+$('dirPill').onclick = ()=>{ playSound('click'); clearSelection(); refresh(); };   // the bar shows the agenda and the directive
 $('endTurn').onclick = ()=>{
   if(S.over){ showNext(); return; }
   if(S.cards.length || S.perkChoice){ showNext(); return; }
-  playSound('turn'); startNight(); endMonth(); setSelected(-1); if(sheet==='parcel') setSheet(null); refresh(); flushFx(); showNext(); };
+  const n0 = S.logN || 0;
+  playSound('turn'); startNight(); endMonth(); clearSelection(); refresh(); flushFx(); showNews(n0); showNext(); };
 document.querySelectorAll('.meter').forEach(el=> el.addEventListener('click', ev=>{ ev.stopPropagation(); playSound('click'); showMeterPop(el.dataset.m); }));
-document.addEventListener('pointerdown', e=>{ if(!e.target.closest('#pop') && !e.target.closest('.meter')) hidePop(); });
+document.addEventListener('pointerdown', e=>{ if(!e.target.closest('#pop') && !e.target.closest('.meter') && !e.target.closest('.relic')) hidePop();
+  if(inboxOpen && !e.target.closest('#inbox') && !e.target.closest('#inboxBtn')) toggleInbox(false); });
 addEventListener('resize', resize);
 if(window.ResizeObserver) new ResizeObserver(resize).observe(worldEl);

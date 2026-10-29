@@ -9,7 +9,7 @@ export const g = {
   ...core,
   get S(){ return core.S; },
   // like the page's hook: start a level and drop the opening cards
-  newGame(seed, level = 3){ core.newGame(seed, level); core.S.cards = []; return core.S; },
+  newGame(seed, level = 3, opts = {}){ core.newGame(seed, level, opts); core.S.cards = []; return core.S; },
 };
 
 let bot = null;

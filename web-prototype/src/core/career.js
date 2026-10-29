@@ -9,7 +9,11 @@ import { storage } from './storage.js';
 //  experience raises your rank (and with it the grant of every settlement); achievements unlock new
 //  buildings for good. Stored apart from the run ('eurocrat_career').
 // =====================================================================
-export const RANKS = [0, 250, 700, 1400, 2500, 4000, 6000, 9000];   // experience needed for each rank
+// v0.9: levels. Level n needs 50·n·(n+1) experience in total (100, 300, 600, 1000…); every few levels comes a new rank.
+export const levelXp = n => 50*n*(n+1);
+export function levelOf(xp){ let n = 0; while(levelXp(n+1) <= xp) n++; return n; }
+export const RANK_LEVEL = [0, 2, 4, 6, 8, 11, 14, 18];             // the level at which each rank is reached
+export const RANKS = RANK_LEVEL.map(levelXp);                      // experience needed for each rank
 export const RANK_BONUS = 0.04;                                      // +4% of every grant per rank above the first
 // Achievements. when: the moment they are checked ('month' every month end, 'consolidate', 'over', 'mascot');
 // test(ctx) the condition; unlock: the building it unlocks (if any); xp: experience.
@@ -42,19 +46,37 @@ export const ACH = [
   {id:'tourist',     when:'month',       xp:100, test:()=>career().types.length>=5},
   {id:'diplomat',    when:'month',       xp:100, test:()=>discovered().filter(id=>REGION_COMBOS.some(c=>c.id===id)).length>=3},
 ];
+// v0.9 — experience is earned as you play, not only at the end: every useful step gives a little
+export const XP_FOR = {acquire:2, permit:3, approved:3, built:6, road:1, combo:8, discover:25, month:1, consolidate:100, sold:4, agenda:1, plan:4};
+// Perks join the pool of rewards as you rise through the ranks (rank needed for each)
+export const PERK_RANK = {notary:0, fasttrack:0, prefab:0, contractor:0, cousin:0, translation:0, comms:1, lobbyist:1, fixer:2, shovel:2, cohesion:3, taxadvisor:4, ombudsman:5, revolving:6};
 export const ACH_BY_ID = Object.fromEntries(ACH.map(a=>[a.id, a]));
 export const UNLOCKED_BY = Object.fromEntries(ACH.filter(a=>a.unlock).map(a=>[a.unlock, a.id]));
 
 const KEY = 'eurocrat_career';
-export function career(){ try{ const c = JSON.parse(storage.get(KEY)||'null'); if(c && Array.isArray(c.ach)) return {types:[], guide:false, tutorial:false, runs:0, xp:0, ...c}; }catch(e){}
-  return {xp:0, ach:[], types:[], runs:0, tutorial:false, guide:false}; }
+export function career(){ try{ const c = JSON.parse(storage.get(KEY)||'null'); if(c && Array.isArray(c.ach)) return {types:[], perks:[], guide:false, tutorial:false, runs:0, xp:0, ...c}; }catch(e){}
+  return {xp:0, ach:[], types:[], perks:[], runs:0, tutorial:false, guide:false}; }
+// A clean career file (tests and the balance bot: every run starts from the same pool of perks)
+export function resetCareer(){ try{ storage.set(KEY, ''); }catch(e){} }
 export function saveCareer(c){ try{ storage.set(KEY, JSON.stringify(c)); }catch(e){} }
 export function rankOf(xp){ let r = 0; RANKS.forEach((t,k)=>{ if(xp >= t) r = k; }); return r; }
 export function rankBonus(){ return rankOf(career().xp) * RANK_BONUS; }
 // A building can be ordered if it is one of the originals or its achievement has been earned
 export function unlocked(ty){ return BASE_TYPES.includes(ty) || career().ach.includes(UNLOCKED_BY[ty]); }
-export function addXp(n){ const c = career(), before = rankOf(c.xp); c.xp += n; saveCareer(c);
-  const after = rankOf(c.xp); if(after > before && S) (S.rankUps = S.rankUps || []).push(after); return after > before; }
+export function addXp(n){ const c = career(), before = rankOf(c.xp), lv0 = levelOf(c.xp); c.xp += n; saveCareer(c);
+  const after = rankOf(c.xp), lv1 = levelOf(c.xp);
+  if(S && lv1 > lv0 && after === before) (S.levelUps = S.levelUps || []).push(lv1);   // a promotion says it louder
+  if(after > before && S) (S.rankUps = S.rankUps || []).push(after); return after > before; }
+// Live experience: kind is a key of XP_FOR (n: how many). Counted for the run (S.rs.xp) and the career at once.
+export function gainXp(kind, n = 1){
+  if(!S || !S.rs || S.over) return 0;
+  const x = (XP_FOR[kind] || 0) * n; if(!x) return 0;
+  S.rs.xp = (S.rs.xp || 0) + x; addXp(x); return x;
+}
+export function rankNow(){ return rankOf(career().xp); }
+// Perks you can be offered: the rank you had when the run began decides (a promotion widens the pool from the next run)
+export function perkAvailable(k){ const r = S && S.rs && S.rs.rank0 !== undefined ? S.rs.rank0 : rankNow(); return r >= (PERK_RANK[k] || 0); }
+export function seePerk(k){ const c = career(); if(!c.perks.includes(k)){ c.perks.push(k); saveCareer(c); } }
 // Check the achievements of one moment. New ones are stored, give experience and are queued in S.newAch for the UI.
 export function checkAch(when, ctx = {}){
   if(!S || !S.rs) return [];
@@ -70,14 +92,15 @@ export function checkAch(when, ctx = {}){
 export function seeType(ty){ const c = career(); if(!c.types.includes(ty)){ c.types.push(ty); saveCareer(c); } }
 export function tutorialDone(){ const c = career(); if(!c.tutorial){ c.tutorial = true; saveCareer(c); } }
 // The end of a run: experience for what the region reached (achievements were paid when earned)
-export function runXp(){ const settled = S.region.blocks.length, pop = regionPop() + (S.region.active ? S.newcomers + (S.base||0) : 0);
-  return settled*100 + Math.floor(pop/20); }
+// At the end of a run, a bonus for the people the region houses (the rest was earned along the way)
+export function runXp(){ const pop = regionPop() + (S.region.active ? S.newcomers + (S.base||0) : 0);
+  return Math.floor(pop/20); }
 export function endRun(){
-  const c0 = career(), before = c0.xp, xp = runXp();
-  c0.runs++; saveCareer(c0); addXp(xp);
+  const c0 = career(), bonus = runXp(), live = S.rs.xp || 0, before = S.rs.xp0 !== undefined ? S.rs.xp0 : c0.xp - live;
+  c0.runs++; saveCareer(c0); addXp(bonus);
   checkAch('over'); tutorialDone();
   const c = career();
-  return {xp, before, after:c.xp, rank0: rankOf(before), rank1: rankOf(c.xp), ach: S.rs.ach.slice()};
+  return {xp: c.xp - before, bonus, before, after:c.xp, rank0: rankOf(before), rank1: rankOf(c.xp), ach: S.rs.ach.slice()};
 }
 // Quick start (after the tutorial): three dossiers to choose from — a settlement type, a perk, and money.
 // A small separate random generator, so the offer does not touch the run's own seed.

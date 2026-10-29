@@ -22,14 +22,19 @@ export let attachSel = -1;
 export function setAttachSel(k){ attachSel = k; }
 // Point the camera at a world rectangle and zoom so it fits the free part of the screen
 // left / bottom: screen pixels covered by an open sheet (the box is fitted into the rest)
-export function frameBox(x0, y0, x1, y1, left = 0, bottom = 0){
+export function frameBox(x0, y0, x1, y1, left = 0, bottom = 0, top = 0){
   const pts = [[y0,x0],[y0,x1],[y1,x1],[y1,x0]].map(([R,C])=>isoW(R,C)), xs = pts.map(p=>p[0]), ys = pts.map(p=>p[1]);
   const w = Math.max(...xs)-Math.min(...xs)+TW, h = Math.max(...ys)-Math.min(...ys)+TH*3;
-  zoom = clamp(Math.min((W-left-40)/w, (H-bottom-40)/h)/Math.max(fit,0.01), ...zoomLimits());
+  zoom = clamp(Math.min((W-left-40)/w, (H-bottom-top-40)/h)/Math.max(fit,0.01), ...zoomLimits());
   const s = scale();
-  MAPCX = (Math.max(...xs)+Math.min(...xs))/2 - left/2/s; MAPCY = (Math.max(...ys)+Math.min(...ys))/2 + bottom/2/s; clampCam(); }
+  MAPCX = (Math.max(...xs)+Math.min(...xs))/2 - left/2/s; MAPCY = (Math.max(...ys)+Math.min(...ys))/2 + (bottom-top)/2/s; clampCam(); }
 // Setters for the view state, for the UI modules
 export function setSelected(i){ selected = i; }
+// v0.9: the building picked in the bottom bar, shown as a ghost on its parcel with the combos it would make
+export let preview = null;   // {i, ty, combos:[{good, known, r, c}]}
+export function setPreview(p){ preview = p; }
+// Called after every frame is put on screen (the UI keeps its map-anchored buttons in place)
+export const viewHooks = [];
 export function setViewRot(r){ viewRot = r; }
 export function setZoom(z){ zoom = z; }
 export function setCam(x, y){ MAPCX = x; MAPCY = y; }
@@ -57,13 +62,10 @@ export function zoomAt(z, sx=W/2, sy=H/2){
   zoom = clamp(z, ...zoomLimits());
   const s1 = scale(); MAPCX = ix - (sx-W/2)/s1; MAPCY = iy - (sy-H/2)/s1; clampCam(); present();
 }
-// Move the camera so parcel i is not hidden behind the open sheet
+// Move the camera so parcel i is not hidden under the floating HUD (or off the edges)
 export function keepVisible(i){
-  const sh = $('sheet'); if(sh.hidden) return;
-  const wr = worldEl.getBoundingClientRect(), sr = sh.getBoundingClientRect(), [sx, sy] = toScreen(...isoOf(...rc(i)));
-  const px = wr.left + sx, py = wr.top + sy, wide = sr.width < wr.width*0.8;
-  if(!wide && py > sr.top - 40){ const freeMid = wr.top + (sr.top - wr.top)/2; panBy(0, freeMid - py); }
-  if(wide && px < sr.right + 40){ const freeMid = sr.right + (wr.right - sr.right)/2; panBy(freeMid - px, 0); }
+  const [sx, sy] = toScreen(...isoOf(...rc(i))), top = Math.min(H*0.4, W < 700 ? 150 : 130);
+  if(sy < top || sy > H - 40 || sx < 40 || sx > W - 40) panBy(W/2 - sx, (top + H)/2 - sy);
 }
 export function panBy(dx, dy){ const s = scale(); MAPCX -= dx/s; MAPCY -= dy/s; clampCam(); present(); }
 export function toScreen(ix,iy){ const s=scale(); return [W/2 + (ix-MAPCX)*s, H/2 + (iy-MAPCY)*s]; }

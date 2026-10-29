@@ -2,6 +2,7 @@
 // Same bot and same results as tests/balance.py, without a browser (about 2x faster).
 // Usage: node tests/balance.mjs [runs] [--level=1..N] [--sell]   one settlement, started directly (made-up earlier ones)
 //        node tests/balance.mjs [runs] --run [--sell]             whole Euroregion runs from the 2×2 hamlet
+//        add --career to keep the career between runs (a player who keeps playing)
 import { playOneRun } from './core/harness.mjs';
 
 const args = process.argv.slice(2);
@@ -9,9 +10,10 @@ const runs = Number(args.find(a => !a.startsWith('--')) || 60);
 const run = args.includes('--run');
 const level = run ? 0 : Number((args.find(a => a.startsWith('--level=')) || '--level=4').split('=')[1]) - 1;
 const sell = args.includes('--sell');
+const keepCareer = args.includes('--career');   // runs one after another: experience, ranks and the bigger perk pool carry over
 const t0 = performance.now();
 const results = [];
-for (let seed = 1; seed <= runs; seed++) results.push(playOneRun(seed, { sell, level, run }));
+for (let seed = 1; seed <= runs; seed++) results.push(playOneRun(seed, { sell, level, run, keepCareer }));
 const avg = k => Math.floor(results.reduce((a, r) => a + r[k], 0) / runs);
 const causes = {}; results.forEach(r => causes[r.why] = (causes[r.why] || 0) + 1);
 if (run) {

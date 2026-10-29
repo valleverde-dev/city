@@ -14,7 +14,9 @@ import { flushToasts } from './drama.js';
 import { $ } from './dom.js';
 import { applyStatic, updateHUD } from './hud.js';
 import { ic } from './icons.js';
-import { openSheet, renderSheet } from './sheets.js';
+import { clearSelection, eventOpen, renderDock } from './dock.js';
+import { renderInbox } from './inbox.js';
+import { renderRun } from './run.js';
 
 // --- The mayor's guide: a few steps per level, the current one shown on the map ---
 export const GUIDES = [
@@ -37,21 +39,24 @@ export const GUIDES = [
 export let guideAt = -1;
 export function guideStep(){ const g = GUIDES[S.stage||0] || []; const k = g.findIndex(s=>!s.done()); return k<0 ? null : {s:g[k], n:k+1, total:g.length}; }
 export function renderGuide(){
-  const el = $('guide'), cur = (S.guideOff || S.over || S.pending) ? null : guideStep();
+  const el = $('guide'), cur = (S.guideOff || S.over || S.pending || eventOpen()) ? null : guideStep();
   guideAt = -1; $('endTurn').classList.remove('nudge');
-  if(!cur){ el.hidden = true; $('hint').hidden = false; return; }
+  if(!cur){ el.hidden = true; el.dataset.k = ''; $('hint').hidden = false; return; }
   $('hint').hidden = true; el.hidden = false;
   if(cur.s.at){ const i = cur.s.at(); if(i>=0) guideAt = i; }
   if(cur.s.end && !S.cards.length) $('endTurn').classList.add('nudge');
-  const who = S.level>=2 ? 'brussels' : 'mayor';
+  // v0.9: rebuilt only when the step (or the language) changes, so it does not jump in again on every tap
+  const who = S.level>=2 ? 'brussels' : 'mayor', key = cur.s.k+':'+cur.n+':'+document.documentElement.lang;
+  if(el.dataset.k === key) return;
+  el.dataset.k = key; el.classList.remove('in'); void el.offsetWidth; el.classList.add('in');
   el.innerHTML = `${pxPortrait(who)}<div><div class="step">${t('ui.step',{n:cur.n, t:cur.total})}</div><p>${t(cur.s.k, {n:CFG.target, m:CFG.months})}</p></div>
     <button class="x" aria-label="${t('ui.close')}">${ic('close')}</button>`;
-  el.querySelector('.x').onclick = ()=>{ S.guideOff = true; save(); playSound('click'); refresh(); };
-  if(cur.s.tab) el.onclick = e=>{ if(!e.target.closest('.x')) openSheet(cur.s.tab); }; else el.onclick = null;
+  el.querySelector('.x').onclick = e=>{ e.stopPropagation(); S.guideOff = true; save(); playSound('click'); refresh(); };
+  el.onclick = cur.s.tab ? e=>{ if(!e.target.closest('.x')){ clearSelection(); refresh(); } } : null;   // 'agenda' steps: the bar shows the agenda
 }
 // Every building gets a style (its archetype) and a name, both fixed by the run's seed
 export function styleName(i){ const ty = S.grid[i].ty, A = archOf(i, ty), names = t('names.'+ty).split('|');
   return `${t('style.'+ty+'.'+A.id)} · «${names[Math.floor(hsh(worldIndex(i), S.runSeed & 0xffff, 404)*names.length)]}»`; }
-export function refresh(){ applyStatic(); updateHUD(); renderSheet(); renderGuide(); draw(); flushToasts(); }
+export function refresh(){ applyStatic(); updateHUD(); renderDock(); renderGuide(); renderInbox(); renderRun(); draw(); flushToasts(); }
 export let pulseUntil = 0;
 export function pulse(i){ S.focus = i; pulseUntil = performance.now()+2600; draw(); }

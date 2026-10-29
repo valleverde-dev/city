@@ -5,9 +5,9 @@ import { regionPop } from './region.js';
 // =====================================================================
 //  PERSISTENCE — the run in progress, and the records between runs
 // =====================================================================
-export const SAVE_KEY = 'eurocrat_v9';
+export const SAVE_KEY = 'eurocrat_v10';
 export function save(){ try{ storage.set(SAVE_KEY, JSON.stringify(S)); }catch(e){} }
-export function loadSave(){ try{ const raw=storage.get(SAVE_KEY); if(raw){ const s=JSON.parse(raw); if(s && s.v===9) return s; } }catch(e){} return null; }
+export function loadSave(){ try{ const raw=storage.get(SAVE_KEY); if(raw){ const s=JSON.parse(raw); if(s && s.v===10) return s; } }catch(e){} return null; }
 
 // Records: the best Euroregion so far (settlements consolidated, population) and the number of runs
 export function records(){ try{ const r = JSON.parse(storage.get('eurocrat_records')||'null'); if(r && r.best) return r; }catch(e){} return {best:{settlements:0, pop:0}, runs:0}; }

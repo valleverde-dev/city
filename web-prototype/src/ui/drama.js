@@ -1,6 +1,6 @@
 import { setMusic } from '../audio/music.js';
 import { playSound } from '../audio/sfx.js';
-import { ACH_BY_ID, RANKS, UNLOCKED_BY, career, rankOf } from '../core/career.js';
+import { ACH_BY_ID, RANKS, UNLOCKED_BY, XP_FOR, career, rankOf } from '../core/career.js';
 import { B, CFG, NEW_TYPES } from '../core/config.js';
 import { residents } from '../core/economy.js';
 import { money } from '../core/format.js';
@@ -125,11 +125,15 @@ export function dramaLose(buttons){
 
 // ---------- banners during play: achievements, new buildings, promotions ----------
 let queue = [], showing = false;
+// Any banner (combos, levels…): queued after the ones already showing
+export function toast(q){ queue.push(q); if(!showing) nextToast(); }
+export const pendingToasts = () => queue.map(q=>q.k);   // for the tests
 export function flushToasts(){
   if(!S) return;
-  if(S.over){ (S.newAch||[]).splice(0); (S.rankUps||[]).splice(0); return; }   // the end-of-run summary lists them
+  if(S.over){ (S.newAch||[]).splice(0); (S.rankUps||[]).splice(0); (S.levelUps||[]).splice(0); return; }   // the end-of-run summary lists them
   (S.newAch || []).splice(0).forEach(id=>{ queue.push({k:'ach', id}); const a = ACH_BY_ID[id]; if(a && a.unlock) queue.push({k:'unlock', ty:a.unlock}); });
   (S.rankUps || []).splice(0).forEach(r=>queue.push({k:'rank', r}));
+  (S.levelUps || []).splice(0).forEach(n=>queue.push({k:'level', n}));
   if(!showing) nextToast();
 }
 function nextToast(){
@@ -139,7 +143,10 @@ function nextToast(){
   if(q.k==='ach') bar.innerHTML = `${ic('workspace_premium')}<span><small>${t('toast.ach')} · +${ACH_BY_ID[q.id].xp} XP</small><b>${t('ach.'+q.id+'.t')}</b></span>`;
   if(q.k==='unlock') bar.innerHTML = `${ic(B[q.ty].icon)}<span><small>${t('sum.unlocked')}</small><b>${t('toast.unlock', {b:t('b.'+q.ty)})}</b></span>`;
   if(q.k==='rank') bar.innerHTML = `${ic('military_tech')}<span><small>${t('title.career')}</small><b>${t('toast.rank', {r:t('rank.'+q.r)})}</b></span>`;
-  playSound(q.k==='rank' ? 'win' : 'fanfare');
+  if(q.k==='level') bar.innerHTML = `${ic('trending_up')}<span><small>${t('file.t')}</small><b>${t('toast.level', {n:q.n})}</b></span>`;
+  if(q.k==='combo'){ bar.className = 'toast combo '+(q.good ? 'good' : 'bad');
+    bar.innerHTML = `${ic(q.good ? 'workspace_premium' : 'warning')}<span><small>${t(q.good ? 'toast.combo' : 'toast.comboBad')}${q.good ? ' · +'+XP_FOR.discover+' XP' : ''}</small><b>${t((q.region ? 'rcombo.' : 'combo.')+q.id)}</b><i>${t((q.region ? 'rcombod.' : 'combod.')+q.id).split('. ')[0]}</i></span>`; }
+  playSound(q.k==='rank' ? 'win' : q.k==='combo' ? (q.good ? 'fanfare' : 'crowd') : q.k==='level' ? 'ok' : 'fanfare');
   bar.classList.remove('in'); void bar.offsetWidth; bar.classList.add('in');
-  setTimeout(()=>{ bar.classList.remove('in'); setTimeout(nextToast, 350); }, 2600);
+  setTimeout(()=>{ bar.classList.remove('in'); setTimeout(nextToast, 350); }, q.k==='level' ? 1600 : q.k==='combo' ? 3200 : 2600);
 }

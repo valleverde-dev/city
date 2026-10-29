@@ -1,5 +1,5 @@
 import { B, CFG, on } from './config.js';
-import { unlocked } from './career.js';
+import { gainXp, unlocked } from './career.js';
 import { avail } from './economy.js';
 import { money } from './format.js';
 import { buildCost, bump, hasAccess, landPrice, log, nextToVillage, permitMonths, plotValue, spend } from './rules.js';
@@ -19,7 +19,7 @@ export function acquire(i){
   if(avail() < price) return fail(on('lose') ? 'err.funds' : 'err.committed');
   S.slots--;
   spend(price); p.st = 'owned';
-  log('log.acquired', {at:pname(i), x:money(price)});
+  log('log.acquired', {at:pname(i), x:money(price)}); gainXp('acquire');
   return {ok:true, msg:{k:'fx.money', p:{x:money(-price)}}};
 }
 export function requestPermit(i, ty){
@@ -38,7 +38,7 @@ export function requestPermit(i, ty){
   p.st = 'review'; p.ty = ty; p.t = permitMonths(ty); p.flag = null;
   if(ty==='factory') bump('neigh', -3, 'why.factory');
   if(nextToVillage(r,c) && ty!=='park'){ bump('neigh', -3, 'why.village'); log('log.village', {}, 'bad'); }
-  log('log.permit', {b:ty, at:pname(i), n:p.t});
+  log('log.permit', {b:ty, at:pname(i), n:p.t}); gainXp('permit');
   return {ok:true, msg:{k:'fx.filed'}, sfx:'stamp'};
 }
 export function sellPlot(i){
@@ -51,7 +51,7 @@ export function sellPlot(i){
   const price = plotValue(p);
   S.slots--; S.funds += price; if(S.rs) S.rs.sold++;
   Object.assign(p, {st:'private', ty:'housing', dev:{phase:'permit', t:ri(2,3)}, flag:null});
-  log('log.sold', {at:pname(i), x:money(price)}, 'good');
+  log('log.sold', {at:pname(i), x:money(price)}, 'good'); gainXp('sold');
   return {ok:true, msg:{k:'fx.money', p:{x:money(price)}}, cls:'good', sfx:'cash'};
 }
 export function submitPlan(){
@@ -62,7 +62,7 @@ export function submitPlan(){
   if(S.funds < CFG.planCost) return fail('err.funds');
   S.slots -= 2; spend(CFG.planCost);
   S.plan = {t: CFG.planMonths + (S.neigh<30?1:0), list}; S.stats.plan++;
-  log('log.planSubmitted', {n:list.length, m:S.plan.t});
+  log('log.planSubmitted', {n:list.length, m:S.plan.t}); gainXp('plan');
   return {ok:true, msg:{k:'fx.filed'}, sfx:'stamp'};
 }
 export function lobby(){
@@ -71,7 +71,7 @@ export function lobby(){
   S.slots--; spend(CFG.lobbyCost); if(S.rs) S.rs.lunches++;
   const g = has('lobbyist') ? 20 : (S.lobbied ? 6 : 12); S.lobbied++; S.stats.lobby++;
   bump('local', g, 'why.lobby');
-  log('log.lobby', {n:g}, 'good');
+  log('log.lobby', {n:g}, 'good'); gainXp('agenda');
   return {ok:true, msg:{k:'fx.local', p:{n:g}}, cls:'good'};
 }
 export function consult(){
@@ -81,14 +81,14 @@ export function consult(){
   bump('neigh', 15, 'why.consult');
   let delayed = 0; S.grid.forEach(p=>{ if(p.st==='review'){ p.t++; delayed++; } });
   if(S.plan) S.plan.t++;
-  log('log.consult', {n:delayed}, 'good');
+  log('log.consult', {n:delayed}, 'good'); gainXp('agenda');
   return {ok:true, msg:{k:'fx.neigh', p:{n:15}}, cls:'good', sfx:'crowd'};
 }
 export function fileReport(){
   if(!canAct()) return fail('err.slots');
   S.slots--; S.reports++;
   bump('comp', 22, 'why.report');
-  log('log.report', {}, 'good');
+  log('log.report', {}, 'good'); gainXp('agenda');
   return {ok:true, msg:{k:'fx.comp', p:{n:22}}, cls:'good', sfx:'stamp'};
 }
 export function repay(){

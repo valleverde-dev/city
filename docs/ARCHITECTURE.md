@@ -1,10 +1,10 @@
 # Architecture — web prototype
 
-*Living document. v0.8 · Oct 28, 2026.* How the code of `web-prototype/` is organised, why, and how it maps to the Godot port.
+*Living document. v0.9 · Oct 29, 2026.* How the code of `web-prototype/` is organised, why, and how it maps to the Godot port.
 
 ## The idea in one paragraph
 
-The game is **a set of rules over one JSON state**, plus a presentation that draws that state and turns taps into rule calls. The rules live in `src/core/` and know nothing about browsers: no DOM, canvas, audio or `localStorage`. They run unchanged in the browser, in Node (tests, balance bot) and are the specification for the Godot port. Everything else — pixel art, animation, sheets, cards, music — is presentation and may change freely without touching the rules.
+The game is **a set of rules over one JSON state**, plus a presentation that draws that state and turns taps into rule calls. The rules live in `src/core/` and know nothing about browsers: no DOM, canvas, audio or `localStorage`. They run unchanged in the browser, in Node (tests, balance bot) and are the specification for the Godot port. Everything else — pixel art, animation, the HUD and bottom bar, cards, music — is presentation and may change freely without touching the rules.
 
 Until v0.5 everything lived in one 4,600-line `src/index.html`. v0.5.1 split it into ES modules **without changing behaviour**: the 89-check smoke test passes, the balance bot gives identical results for the same seeds, the sprite sheet export is pixel-identical, and screenshots of the title, level card, sheets and month end (iPad and iPhone sizes) match the old build pixel for pixel.
 
@@ -49,7 +49,7 @@ Until v0.5 everything lived in one 4,600-line `src/index.html`. v0.5.1 split it 
 | `directives.js` | Brussels directives and perks | `Directives` |
 | `events.js` | Event cards: setup, choices, consequences | `Events` (+ data) |
 | `month.js` | `endMonth()`: the world resolves | `Turn` |
-| `career.js` | What carries over between runs (v0.8): experience, ranks and their grant bonus, the 26 achievements (`ACH`, `checkAch(when)`), unlocked buildings (`unlocked`), the quick-start drafts. Stored apart from the run (`eurocrat_career`) | `Career` (user://) |
+| `career.js` | What carries over between runs (v0.8): experience (earned live since v0.9: `XP_FOR`, `gainXp`), levels and ranks and their grant bonus, perks by rank (`PERK_RANK`), the 26 achievements (`ACH`, `checkAch(when)`), unlocked buildings (`unlocked`), the quick-start drafts. Stored apart from the run (`eurocrat_career`) | `Career` (user://) |
 | `persist.js` | Save / load of the run, records between runs | `SaveGame` (user://) |
 | `storage.js` | Key–value adapter: `localStorage` in the browser, memory in Node | `ConfigFile` / `FileAccess` |
 | `format.js` | `money()` in the current language | a helper |
@@ -65,7 +65,7 @@ The contract with the UI (also the contract the Godot port must honour):
 - Cards (`S.cards`), logs (`S.log`) and floating feedback (`S.fx`) are data in the state; the UI renders them.
 
 ### `src/i18n/`
-`strings.js` holds every player-facing string in English and Spanish (615 keys each); `index.js` has `t()`, the current language and `setLanguage()`.
+`strings.js` holds every player-facing string in English and Spanish (about 1,000 keys each); `index.js` has `t()`, the current language and `setLanguage()`.
 
 ### `src/render/` — isometric pixel art (≈ 1,000 lines)
 | File | What it draws |
@@ -78,7 +78,7 @@ The contract with the UI (also the contract the Godot port must honour):
 | `anim.js` | The ~15 fps animation layer, night, completions, birds, flags, traffic |
 
 ### `src/ui/`, `src/audio/`, `src/main.js`
-`dom.js` (helpers, floating feedback), `hud.js` (top bar, meters), `problems.js` (the bell), `sheets.js`, `guide.js` (the mayor's guide), `cards.js` (letters, event cards), `title.js` (title screen: the scene, the menu and its views — new game, settings, credits — keyboard navigation, starting a run), `input.js` (touch, mouse, keyboard), `icons.js` (66 pixel icons), `regionmap.js` (the Euroregion minimap), `drama.js` (full-screen consolidation and game over, banners). `audio/music.js` and `audio/sfx.js`. `main.js` boots the game and exposes `window.__eurocrat` for the tests.
+`dom.js` (helpers, floating feedback), `hud.js` (the floating HUD: goal, months, money, meters, perks as relics, the experience bar), `dock.js` (v0.9: the bottom bar — agenda, parcel, building cards with the ghost preview and on-map confirm, the next plot, events), `run.js` (the run file: combos, perks, career, region), `inbox.js` (what needs attention, the news), `problems.js`, `guide.js` (the mayor's guide), `cards.js` (letters, event cards), `title.js` (title screen: the scene, the menu and its views — new game, settings, credits — keyboard navigation, starting a run), `input.js` (touch, mouse, keyboard), `icons.js` (66 pixel icons), `regionmap.js` (the Euroregion minimap), `drama.js` (full-screen consolidation and game over, banners). `audio/music.js` and `audio/sfx.js`. `main.js` boots the game and exposes `window.__eurocrat` for the tests.
 
 ### `src/styles/` and `src/assets/`
 CSS split by area and imported in order by `styles/index.css` (order matters: `readability.css` and `layout.css` refine the earlier files). The three OFL fonts are real `.woff` files in `assets/fonts/`, and `assets/logo.svg` is the game logo (generated by `tools/make_logo.py`, which also writes `art/logo/`); the build inlines them all.
@@ -93,7 +93,7 @@ CSS split by area and imported in order by `styles/index.css` (order matters: `r
 |---|---|---|
 | `npm run check` | Layer check: the core stays portable | Node |
 | `npm run test:core` | Rules tests: settlements, rule flags, determinism, actions, a month passing, consolidation and attach, the border, region effects, records, save/load, the difficulty band | Node |
-| `npm run test:smoke` | 113 checks driving the real UI in Chromium (phone and iPad layouts, both languages) | Playwright |
+| `npm run test:smoke` | 121 checks driving the real UI in Chromium (phone and iPad layouts, both languages) | Playwright |
 | `npm test` | All of the above + build | both |
 | `npm run balance -- 150 --run` / `--level=4` | The greedy bot over whole Euroregion runs, or one settlement, in Node | Node |
 
@@ -108,12 +108,12 @@ CSS split by area and imported in order by `styles/index.css` (order matters: `r
   - a new rule or meter → `core/rules.js` / `core/month.js`, plus a test in `tests/core/`
   - a new event card → `core/events.js` (logic) + `i18n/strings.js` (texts, both languages)
   - a new building → `core/config.js` (`B`) + `render/sprites.js` (art) + strings
-  - a new screen or sheet → `ui/`
+  - a new screen or panel → `ui/` (the bottom bar is `ui/dock.js`)
 
 ## Known debts (deliberately left for later)
 
 1. **Logs store formatted money.** Rules write `money(x)` into log parameters, so old log lines keep the language they were written in. Fix: store numbers, format in the UI.
-2. **Presentation modules import each other in cycles** (`ui` ↔ `render`). It works (the bundle is one scope), but a `view` state object (selection, open sheet, camera) would make `ui/` and `render/` cleaner. Only worth doing if the UI keeps growing in the web version.
+2. **Presentation modules import each other in cycles** (`ui` ↔ `render`). It works (the bundle is one scope), but a `view` state object (selection, the building picked, the open run-file tab, camera) would make `ui/` and `render/` cleaner. Only worth doing if the UI keeps growing in the web version.
 3. **Event cards mix data and code** (`EVENTS` entries hold functions). For Godot, split each card into data (texts, chips, weights) and a small effect function.
 4. **`CFG` getters read the current level** (`CFG.months`, `CFG.target`). Convenient, but implicit; the port should pass the level explicitly.
 
