@@ -1,13 +1,24 @@
 /* --- Title screen: a full-screen scene, not a dialog --- */
 #cover{position:fixed; inset:0; z-index:25; display:grid; grid-template-rows:minmax(0,1fr) auto; background:var(--navy); color:#fff; overflow:hidden;
        -webkit-user-select:none; user-select:none;}
-#coverSky, #coverFlags{position:absolute; left:0; top:0; image-rendering:pixelated; z-index:0; pointer-events:none;}
+#coverSky, #coverRays, #coverFlags{position:absolute; left:0; top:0; image-rendering:pixelated; z-index:0; pointer-events:none;}
 .cv-clouds{position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden;}
 .cv-cloud{position:absolute; left:0; image-rendering:pixelated; animation:cv-drift linear infinite; will-change:transform;}
 @keyframes cv-drift{from{transform:translateX(-25vw);} to{transform:translateX(110vw);}}
 .cv-body{position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; min-height:0; overflow-y:auto;
          padding:clamp(18px, 7vh, 72px) 16px 8px;}
 .cv-logo{flex:0 0 auto; margin:0; width:518px; max-width:92vw;}   /* 7 css px per art pixel; smaller screens below */
+/* the logo floats in whole-pixel steps, its glow breathes, and a glint of light sweeps across the letters now and then */
+.cv-logo{animation:cv-float 4.8s steps(4, jump-none) infinite alternate, cv-glow 3.6s ease-in-out infinite alternate; will-change:transform, filter;}
+@keyframes cv-float{0%{transform:translateY(0);} 100%{transform:translateY(-8px);}}
+@keyframes cv-glow{
+  0%  {filter:drop-shadow(0 0 0 rgba(255,210,0,0)) drop-shadow(0 0 6px rgba(160,196,255,.25));}
+  100%{filter:drop-shadow(0 0 10px rgba(255,210,0,.28)) drop-shadow(0 0 22px rgba(160,196,255,.45));}}
+.cv-shine{position:absolute; inset:0; pointer-events:none;
+  -webkit-mask:url('../assets/logo-faces.svg') center/100% 100% no-repeat; mask:url('../assets/logo-faces.svg') center/100% 100% no-repeat;
+  background:linear-gradient(105deg, transparent 0 40%, rgba(255,240,170,.85) 40% 44%, transparent 44% 47%, rgba(255,240,170,.55) 47% 49%, transparent 49% 100%) no-repeat;
+  background-size:300% 100%; background-position:100% 0; animation:cv-shine 5.5s steps(30) infinite;}
+@keyframes cv-shine{0%, 55%{background-position:100% 0;} 85%, 100%{background-position:0 0;}}
 @media (max-width:1279px){ .cv-logo{width:444px;} }
 @media (max-width:900px){ .cv-logo{width:370px;} }
 .cv-dio{position:relative; flex:1 1 0; min-height:80px; width:100%; display:flex; align-items:center; justify-content:center; margin-top:6px;}
@@ -50,7 +61,7 @@
          font:400 13px/1 var(--f-ui); color:#e9edf8;
          text-shadow:-1px 0 0 var(--navy), 1px 0 0 var(--navy), 0 -1px 0 var(--navy), 0 1px 0 var(--navy), 2px 2px 0 var(--navy);}
 .cv-foot .ver{font:400 18px/1 var(--f-display); letter-spacing:.06em;}
-@media (prefers-reduced-motion: reduce){ .cv-cloud, .cv-dio canvas, .cv-ptr{animation:none !important;} }
+@media (prefers-reduced-motion: reduce){ .cv-cloud, .cv-dio canvas, .cv-ptr, .cv-logo, .cv-shine{animation:none !important;} .cv-shine{display:none;} }
 @media (max-width: 600px){
   .cv-logo{width:296px;}
   .cv-menu{margin-top:clamp(16px, 4vh, 32px);}

@@ -10,7 +10,7 @@ import { C, frac, hsh } from './pixel.js';
 import { ARCH, BUILDINGS, archOf, colourOf, CAR_COLS, P3, billboardSprite, carSprite, cones, fenceSprite, flagSprite, noticeSprite, ruinSprite, siteSprite, spr } from './sprites.js';
 import { modal } from '../ui/cards.js';
 import { guideAt, pulseUntil } from '../ui/guide.js';
-import { avenueFrame, coverOpen, dioFrame, drawCycleSite } from '../ui/title.js';
+import { avenueFrame, coverOpen, dioFrame, drawCycleSite, raysFrame } from '../ui/title.js';
 
 // ---------- animation clock, night and completions ----------
 export const MOTION = !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -296,7 +296,7 @@ export function compose(now){
 }
 // The animation loop: ~15 frames a second while the page is visible
 export function frame(){ animTimer = 0; if(document.hidden || !S) return; const now = performance.now();
-  if(coverOpen()){ dioFrame(now); avenueFrame(now); } else { compose(now); presentNow(); }
+  if(coverOpen()){ raysFrame(now); dioFrame(now); avenueFrame(now); } else { compose(now); presentNow(); }
   if(MOTION) animTimer = setTimeout(()=>{ animTimer = requestAnimationFrame(frame); }, 66); }
 export function kick(){ if(!animTimer && MOTION && !document.hidden) animTimer = requestAnimationFrame(frame); }
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) kick(); });

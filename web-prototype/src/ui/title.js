@@ -28,7 +28,8 @@ export function musicButton(){ const m = btn('', 'music_note', toggleMusic); m.i
 export const cover = $('cover');
 export const coverOpen = () => !cover.hidden;
 export function hideCover(){ cover.hidden = true; }
-// The sky: dithered institutional blue, faint rays behind the logo, blue hills with distant cranes. One art pixel = PS css px.
+// The sky: dithered institutional blue and blue hills with distant cranes. One art pixel = PS css px.
+// The rays behind the logo live on their own layer (raysFrame), so they can move.
 export let SKY = null;   // the sky's pixel grid and hill line, shared with the flag avenue
 export function paintSky(cv, Wc, Hc, cx, cy, hz){
   const PS = 4, w = Math.ceil(Wc/PS), h = Math.ceil(Hc/PS); cv.width = w; cv.height = h;
@@ -38,7 +39,7 @@ export function paintSky(cv, Wc, Hc, cx, cy, hz){
   const hy = Math.round(h*hz), rx = cx/PS, ry = cy/PS;
   const far = x => hy - 7 - 4*Math.sin(x*0.045+1.3) - 3*Math.sin(x*0.13) - (hsh(x>>2,3,5)<0.3 ? 1 : 0);
   const near = x => hy + 5 + 4*Math.sin(x*0.03+2.1) + 2*Math.sin(x*0.09+0.4);
-  SKY = {PS, w, h, near};
+  SKY = {PS, w, h, near, far, rx, ry, rays:null};
   const farC = C('#4d78c9'), farD = C('#4570c0'), nearC = C('#24489a'), nearD = C('#1f4190'), low = C('#173576'), low2 = C('#122b62');
   for(let y=0;y<h;y++) for(let x=0;x<w;x++){
     let c;
@@ -48,8 +49,6 @@ export function paintSky(cv, Wc, Hc, cx, cy, hz){
     else {
       const tt = clamp(y/Math.max(1,fY), 0, 0.999)*(pal.length-1), i = Math.floor(tt), f = tt-i;
       c = f > dith(x,y) ? pal[Math.min(i+1,pal.length-1)] : pal[i];
-      const ang = Math.atan2(y-ry, x-rx), ray = Math.floor((ang+Math.PI)/(2*Math.PI)*28) % 2;
-      if(ray && y < fY-2) c = sh(c, 1.07);
     }
     const o = (y*w+x)*4; d[o]=c[0]; d[o+1]=c[1]; d[o+2]=c[2]; d[o+3]=255;
   }
@@ -171,6 +170,41 @@ export function drawCycleSite(E, T, step){
     for(let q=0;q<14;q++){ const an = q/14*Math.PI*2, rr = 4 + d*18; disc(OX0+E.x + Math.cos(an)*rr, OY0+E.y - 10 + Math.sin(an)*rr*0.6 - d*6, 3 + d*3, '#e3d8c0'); }
     GX.globalAlpha = 1; }
 }
+// The rays behind the logo: a fan of light that sways, breathes and flickers ray by ray, plus a slow halo.
+// Drawn in art pixels with ordered dithering (three light levels), so it stays pixel art. Angles and distances
+// are computed once per layout; each frame only mixes them.
+const RAYS = 14, RAY_RGB = [196, 218, 255], RAY_LEVELS = [0, 0.09, 0.17, 0.27];
+function raysSetup(){
+  const {w, h, rx, ry, far} = SKY, n = w*h, ang = new Float32Array(n), rad = new Float32Array(n), on = new Uint8Array(n), th = new Float32Array(n);
+  const R = Math.hypot(Math.max(rx, w-rx), Math.max(ry, h-ry));
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const i = y*w+x, fy = far(x);
+    on[i] = y < fy - 1 ? 1 : 0; ang[i] = Math.atan2(y-ry, x-rx); rad[i] = Math.hypot((x-rx), (y-ry)*1.15)/R; th[i] = dith(x,y);
+    if(y >= fy - 6 && y < fy - 1) th[i] = 1 - (1-th[i])*((fy-1-y)/5); }   // fade out just above the hills
+  SKY.rays = {ang, rad, on, th};
+}
+export function raysFrame(now){
+  const cv = $('coverRays'); if(!cv || !SKY) return;
+  if(!SKY.rays) raysSetup();
+  const {w, h, PS} = SKY, {ang, rad, on, th} = SKY.rays;
+  if(cv.width !== w || cv.height !== h){ cv.width = w; cv.height = h; cv.style.width = w*PS+'px'; cv.style.height = h*PS+'px'; }
+  const T = MOTION ? now/1000 : 0, g = cv.getContext('2d'), img = g.createImageData(w, h), d = img.data;
+  // the fan sways back and forth and creeps round; each ray has its own width and brightness, beating out of step
+  const rot = 0.16*Math.sin(T*0.31) + 0.05*Math.sin(T*0.83 + 1.2) + T*0.025;
+  const wid = [], amp = [];
+  for(let r=0;r<RAYS;r++){ wid.push(0.30 + 0.12*Math.sin(T*0.9 + r*1.7)); amp.push(0.55 + 0.45*Math.sin(T*(0.7 + (r%3)*0.17) + r*2.3)); }
+  const halo = 0.82 + 0.18*Math.sin(T*1.3), k = RAYS/(2*Math.PI), [cr, cg, cb] = RAY_RGB;
+  for(let i=0, n=w*h; i<n; i++){
+    if(!on[i]) continue;
+    const u = (ang[i] + Math.PI + rot)*k, r = Math.floor(u), f = u - r - 0.5, ri = ((r % RAYS) + RAYS) % RAYS;
+    const ray = Math.max(0, 1 - Math.abs(f)/wid[ri]) * amp[ri];      // 1 in the middle of a ray, 0 at its edge
+    const q = rad[i], fall = Math.max(0, 1 - q*1.35);                   // rays fade with distance from the logo
+    let s = ray*fall*1.15 + Math.max(0, 1 - q*4.2)*halo*0.9;            // + the halo right behind the logo
+    s = s*3 + th[i] - 0.5; const lv = s <= 0 ? 0 : Math.min(3, Math.floor(s));
+    if(!lv) continue;
+    const o = i*4; d[o] = cr; d[o+1] = cg; d[o+2] = cb; d[o+3] = RAY_LEVELS[lv]*255;
+  }
+  g.putImageData(img, 0, 0);
+}
 // Fit the scene to the screen: sky, rays behind the logo, the diorama at a whole-pixel scale
 // An avenue of flagpoles along the hills behind the town, every flag of the Union waving out of step with the next
 export function avenueFrame(now){
@@ -199,6 +233,7 @@ export function layoutCover(){
   const dr = dio.getBoundingClientRect();
   const hz = clamp((dr.top + dr.height*0.42 - cr.top)/cr.height, 0.45, 0.85);
   paintSky(sky, cr.width, cr.height, lr.left + lr.width/2 - cr.left, lr.top + lr.height/2 - cr.top, hz);
+  raysFrame(performance.now());
   const fr = cover.querySelector('.cv-foot').getBoundingClientRect();   // the front row stands above the version and copyright
   SKY.fg = {top: Math.ceil((dr.bottom - cr.top)/SKY.PS) + 3, base: Math.floor((fr.top - cr.top)/SKY.PS) + 1};
   avenueFrame(performance.now());
@@ -285,9 +320,9 @@ export function coverKey(e, k){
   if((k==='enter' || k===' ') && i < 0){ e.preventDefault(); items[0].click(); }
 }
 function buildScene(){
-  cover.innerHTML = `<canvas id="coverSky" aria-hidden="true"></canvas><div class="cv-clouds" aria-hidden="true"></div><canvas id="coverFlags" aria-hidden="true"></canvas>
+  cover.innerHTML = `<canvas id="coverSky" aria-hidden="true"></canvas><canvas id="coverRays" aria-hidden="true"></canvas><div class="cv-clouds" aria-hidden="true"></div><canvas id="coverFlags" aria-hidden="true"></canvas>
     <div class="cv-body">
-      <h1 class="cv-logo logo-art"><span class="sr">Eurocrat</span></h1>
+      <h1 class="cv-logo logo-art"><span class="sr">Eurocrat</span><i class="cv-shine" aria-hidden="true"></i></h1>
       <nav class="cv-menu" aria-label="Menu"></nav>
       <div class="cv-dio"></div>
     </div>
