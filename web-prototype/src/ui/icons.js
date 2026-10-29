@@ -1,4 +1,17 @@
 export const PIXEL_ICONS = {
+  gear: [
+    '.....##.....',
+    '..#.####.#..',
+    '.##########.',
+    '..###..###..',
+    '.###....###.',
+    '####....####',
+    '####....####',
+    '.###....###.',
+    '..###..###..',
+    '.##########.',
+    '..#.####.#..',
+    '.....##.....'],
   stall: [
     '############',
     '#.#.#.#.#.#.',
@@ -962,7 +975,7 @@ export const ICON_ALIAS = {
   music_note:'note', music_off:'mute', pause:'pause', pause_circle:'pause', payments:'bills', money_off:'ban', percent:'percent', play_arrow:'play',
   skip_next:'next', real_estate_agent:'key', sell:'tag', replay:'replay', rotate_right:'rotate', report:'warn', warning:'warn', error:'warn',
   restaurant:'fork', savings:'pig', school:'school', smartphone:'phone', translate:'globe', view_in_ar:'cube', water:'water', work:'case',
-  workspace_premium:'medal', storefront:'stall', volunteer:'heart', menu_book:'book', local_police:'shield', solar_power:'sun', train:'tram', dns:'server', account_balance:'columns', military_tech:'medal', emoji_events:'medal', lock:'key', badge:'doccheck', schedule:'clock', hourglass_top:'hourglass', info:'info',
+  workspace_premium:'medal', storefront:'stall', volunteer:'heart', menu_book:'book', local_police:'shield', solar_power:'sun', train:'tram', dns:'server', account_balance:'columns', military_tech:'medal', emoji_events:'medal', lock:'key', badge:'doccheck', schedule:'clock', hourglass_top:'hourglass', info:'info', settings:'gear', edit:'pen', flag:'stop', keyboard:'cube',
 };
 export function bitmapPath(rows, ch='#'){ let d=''; rows.forEach((r,y)=>{ let x=0; while(x<r.length){ if(r[x]===ch){ const s=x; while(x<r.length && r[x]===ch) x++; d+=`M${s} ${y}h${x-s}v1h${s-x}z`; } else x++; } }); return d; }
 export const svgURL = s => `url("data:image/svg+xml,${encodeURIComponent(s)}")`;

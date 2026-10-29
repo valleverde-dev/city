@@ -5,6 +5,7 @@ import { monthlyCosts, nextMilestone, residents, taxIncome } from '../core/econo
 import { money } from '../core/format.js';
 import { snapshot } from '../core/newgame.js';
 import { save } from '../core/persist.js';
+import { TOWN_MAX, renameTown, suggestTown } from '../core/actions.js';
 import { caps, slotsPerMonth } from '../core/rules.js';
 import { S, clamp } from '../core/state.js';
 import { career, levelOf, levelXp, rankOf } from '../core/career.js';
@@ -44,7 +45,9 @@ export function setMeter(id, v, prev, warnBelow=40, badBelow=25){
 }
 let lastXp = null;
 export function updateHUD(){
-  $('townName').textContent = `${t('ui.settlement')} ${roman((S.stage||0)+1)} · ${S.town}`;
+  // v0.10: the town's name, whole and editable; the settlement number sits with the goal it belongs to
+  if(!$('townName').classList.contains('editing')){ $('townName').querySelector('.nm').textContent = S.town; $('townName').title = t('ui.rename'); }
+  $('stageTag').textContent = `${t('ui.settlement')} ${roman((S.stage||0)+1)}`;
   // the goal: residents toward the target, months left as pips
   const res = residents(), left = Math.max(0, CFG.months - Math.min(S.month, CFG.months) + 1);
   $('residents').textContent = res; $('target').textContent = CFG.target;
@@ -118,7 +121,7 @@ export function showRelicPop(btn){
   pop.dataset.m = 'perk:'+k;
   placePop(`<h4>${ic(PERKS[k])}${t('perk.'+k)}</h4><p>${t('perkd.'+k)}</p>`, btn);
 }
-function placePop(html, el){
+export function placePop(html, el){
   const pop = $('pop'); pop.innerHTML = html; pop.classList.remove('hidden');
   const r = el.getBoundingClientRect(); pop.style.top = (r.bottom+6)+'px'; pop.style.left = clamp(r.left, 10, innerWidth-pop.offsetWidth-10)+'px';
 }
@@ -129,4 +132,18 @@ export function doAction(res, i){
   playSound(res.sfx || (res.ok ? 'ok' : 'fail'));
   floatAt(i, t(res.msg.k, P(res.msg.p)), res.ok ? (res.cls||'') : 'bad', res.ok ? 'check_circle' : 'block');
   save(); refresh();
+}
+// v0.10: tap the town's name to rename it (Enter or ✓ keeps it, Esc cancels; the dice suggests another one)
+export function editTownName(){
+  const el = $('townName'); if(!S || el.classList.contains('editing')) return;
+  el.classList.add('editing'); playSound('click');
+  el.innerHTML = `<input type="text" maxlength="${TOWN_MAX}" aria-label="${t('ui.rename')}" spellcheck="false"><span class="tn-b dice" role="button" title="${t('ui.renameRandom')}">${ic('casino')}</span><span class="tn-b ok" role="button" title="${t('ui.renameOk')}">${ic('check')}</span>`;
+  const inp = el.querySelector('input'); inp.value = S.town; inp.focus(); inp.select();
+  const close = keep => { if(!el.classList.contains('editing')) return;
+    if(keep){ const r = renameTown(inp.value); if(r.ok){ save(); playSound('stamp'); } }
+    el.classList.remove('editing'); el.innerHTML = `<span class="nm"></span>${ic('edit')}`; refresh(); };
+  inp.addEventListener('keydown', e=>{ e.stopPropagation(); if(e.key==='Enter'){ e.preventDefault(); close(true); } else if(e.key==='Escape'){ e.preventDefault(); close(false); } });
+  inp.addEventListener('blur', ()=>setTimeout(()=>{ if(document.activeElement !== inp) close(true); }, 150));
+  el.querySelector('.dice').addEventListener('pointerdown', e=>{ e.preventDefault(); e.stopPropagation(); inp.value = suggestTown((Math.random()*1e6)|0); inp.focus(); playSound('click'); });
+  el.querySelector('.ok').addEventListener('pointerdown', e=>{ e.preventDefault(); e.stopPropagation(); close(true); });
 }

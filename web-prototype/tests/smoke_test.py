@@ -88,7 +88,8 @@ with sync_playwright() as p:
     check(page.is_visible("text=Pilot Project") and page.locator("#notice .rules li").count() >= 3 and page.is_visible("#notice .stype"), "the settlement card explains its type, the goal and the new rules")
     page.click("text=Get to work")
     check(S("Math.sqrt(S.grid.length)") == 2 and S("S.stage") == 0 and S("S.stype") == "hamlet", "settlement I is a 2×2 hamlet")
-    check("settlement i ·" in page.locator("#townName").inner_text().lower(), "the header names the settlement")
+    check("settlement i" in page.locator("#stageTag").inner_text().lower() and page.locator("#townName").inner_text().strip() == S("S.town"),
+          "the header shows the whole town name; the settlement number sits with the goal")
     check(page.locator("#meters").is_hidden(), "settlement I shows no meters (none of those rules are in play)")
     check(S("g.dock") == "agenda" and page.locator("#strip .tile.act").count() == 0 and page.locator("#strip .tile").count() >= 1, "settlement I: the bottom bar shows the goal, no agenda yet")
     check(page.is_visible("#guide") and "step 1 of" in page.locator("#guide").inner_text().lower(), "the mayor's guide shows step 1")
@@ -147,12 +148,18 @@ with sync_playwright() as p:
     check("Settlement II" in page.locator("#cover .cv-item.cont").inner_text(), "the menu offers to continue the run at settlement II")
     check(page.evaluate("!!document.querySelector('#toast') && document.querySelector('#toast').textContent.length > 5") and "firstStone" in page.evaluate("localStorage.getItem('eurocrat_career')"), "achievements pop up as banners during play, and stay in the career")
     page.click("#cover .cv-item.career"); page.wait_for_timeout(60)
-    check(page.locator(".cv-career li").count() == 8 + S("Object.keys(g.ACH_BY_ID).length") and page.locator(".cv-career li.on").count() >= 2,
-          "the career file lists the 8 unlockable buildings and every achievement (market unlocked already)")
+    check(page.locator(".cv-career li").count() == 8 + S("Object.keys(g.ACH_BY_ID).length") and page.locator(".cv-career li.on").count() >= 1
+          and "level" in page.locator(".cv-career").inner_text().lower(),
+          "the career file lists the 8 buildings (each with its level) and every achievement")
     page.keyboard.press("Escape")
-    page.click("#cover .cv-item.new"); page.wait_for_timeout(60)
-    check(page.locator("#cover .cv-item.draft").count() == 3 and page.locator("#cover .cv-item.tut").count() == 1, "after the tutorial, New Euroregion offers three dossiers (or the tutorial again)")
-    page.keyboard.press("Escape"); page.keyboard.press("Escape")
+    page.click("#cover >> text=Settings"); page.wait_for_timeout(60)
+    check(page.locator("#cover .cv-item.tut").count() == 1, "the tutorial can be played again from Settings")
+    page.keyboard.press("Escape")
+    page.click("#cover .cv-item.new"); page.wait_for_timeout(200)
+    check(page.locator("#cover").is_hidden() and S("S.stage") == 1 and S("S.perks.length") == 1 and S("S.stype") != "hamlet" and page.locator("#notice .perkrow .relicc").count() >= 1,
+          "after the tutorial, New Euroregion starts a random run at once (no dossier to choose): type, perk and country revealed on its screen")
+    check(page.locator("#notice .col-a .speaker").count() == 1 and page.locator("#notice .col-b .rules").count() == 1, "the settlement letter is a screen: the speaker on the left, the facts on the right")
+    clear_cards(); ev(f"{G}.hideModal()")
 
     # --- Full rules: settlement IV (16×16, with made-up neighbours), deterministic; its type's bonuses switched off
     ev(f"{G}.newGame(42, 3)"); clear_cards(); S("(S.rfx={}, g.refresh(), 0)")
@@ -279,8 +286,14 @@ with sync_playwright() as p:
     nb = page.locator("#notice").bounding_box(); vw = page.viewport_size
     check(abs((nb["x"] + nb["width"]/2) - vw["width"]/2) < 40, "letters appear in the middle of the screen")
     clear_cards(); ev(f"{G}.hideModal()"); S("(g.refresh(), 0)")
-    page.keyboard.press("e"); page.wait_for_timeout(60)
-    check(S("g.runTab") == "combos" and page.locator("#run .ccard").count() == S("g.COMBOS.length + Object.keys(g.RCOMBO_BY_ID).length"), "E opens the run file on the combo collection (adjacency and region combos)")
+    page.keyboard.press("Tab"); page.wait_for_timeout(60)
+    check(S("g.runTab") == "combos" and page.locator("#run .ccard").count() == S("g.COMBOS.length + Object.keys(g.RCOMBO_BY_ID).length"), "Tab opens the run file on the combo collection (adjacency and region combos)")
+    cols = page.evaluate("getComputedStyle(document.querySelector('#run .cgrid')).gridTemplateColumns.split(' ').length")
+    hs = page.evaluate("[...document.querySelectorAll('#run .ccard')].map(e=>Math.round(e.getBoundingClientRect().height))")
+    check(cols >= 8 and len(set(hs)) == 1 and page.evaluate("document.querySelector('#run .run-body').scrollWidth <= document.querySelector('#run .run-body').clientWidth + 1"),
+          f"the collection is a grid that fits the screen ({cols} a row), every card the same size, no sideways scroll")
+    page.locator("#run .ccard").first.click(); page.wait_for_timeout(60)
+    check(page.is_visible("#pop") and len(page.locator("#pop").inner_text()) > 10, "tapping a card shows its whole text"); page.mouse.click(5, 5)
     page.click("#run .rtab[data-t=perks]"); page.wait_for_timeout(40)
     check(page.locator("#run .qcard").count() == 14 and page.locator("#run .pcard").count() >= 1, "Perks: this run's hand and the whole pool (some locked by rank)")
     page.click("#run .rtab[data-t=career]"); page.wait_for_timeout(40)
@@ -308,6 +321,58 @@ with sync_playwright() as p:
     page.locator("#inbox .problems li.bad.go").first.click()
     check(S("g.dock") == "parcel" and S("g.selected") == site and page.locator("#inbox").is_hidden(), "tapping a problem jumps to its parcel")
     page.keyboard.press("Escape")
+
+    # --- v0.10: the playtest feedback of v0.9
+    ev("localStorage.setItem('eurocrat_career', JSON.stringify({xp:0, ach:[], types:[], perks:[], runs:1, tutorial:true, guide:false}))")
+    ev(f"{G}.newGame(42, 3)"); clear_cards(); S("(g.refresh(), 0)")
+    own = S("(()=>{ const i=S.grid.findIndex((p,k)=>p.k==='farm' && p.st==='land' && g.hasAccess(Math.floor(k/16), k%16)); Object.assign(S.grid[i],{st:'owned', urban:true}); S.funds=200; S.slots=3; return i; })()")
+    S(f"(g.centreOn({own}), 0)"); tap(own)
+    check(page.locator("#strip .tile.build").count() == 6 and page.locator("#strip .tile.locked").count() == 0, "a new career: only the buildings you can build are in the bar (no locked cards)")
+    check(page.locator("#strip .tile.build[data-k=road] .art img").count() == 1, "the Road card shows the road tile itself, not an icon")
+    db = page.locator("#dock").bounding_box(); tiles = page.locator("#strip .tile.build").first.bounding_box(); ct = page.locator("#ctxHead").bounding_box()
+    top_gap = ct["y"] - (db["y"] + 4); bottom_gap = (db["y"] + db["height"]) - (tiles["y"] + tiles["height"] + 4)
+    check(abs(top_gap - bottom_gap) <= 6, f"the bar has the same margin above and below its cards ({top_gap:.0f} / {bottom_gap:.0f} px)")
+    clip = page.evaluate("[...document.querySelectorAll('#strip .tile')].filter(t=>{ const s=t.querySelector('small'); if(!s) return false; const a=t.getBoundingClientRect(), b=s.getBoundingClientRect(); return b.bottom > a.bottom - 2; }).length")
+    check(clip == 0, "the cost line is inside every card")
+    page.keyboard.press("Escape")
+    land = S("S.grid.findIndex(p=>p.k==='farm' && p.st==='land')"); S(f"(g.centreOn({land}), 0)"); tap(land)
+    check(page.locator("#strip .tile[data-k=buy] .i-payments").count() == 1, "Buy shows banknotes, not a key")
+    page.keyboard.press("Escape")
+    vil = S("S.grid.findIndex(p=>p.k==='village')")
+    if vil >= 0:
+        S(f"(g.centreOn({vil}), 0)"); tap(vil)
+        check(page.locator("#strip .tile.land").count() == 1 and page.locator("#strip .tile.combo-of").count() >= 2, "the old village says what it is, what it does and the combos it makes")
+        page.keyboard.press("Escape")
+    # a consolidated settlement: tap it on the map
+    b0 = S("S.region.blocks[0]")
+    x, y = S(f"g.screenOfW({b0['y']}+({b0['n']}-1)/2, {b0['x']}+({b0['n']}-1)/2)"); box = page.locator("#map").bounding_box()
+    if 0 < x < box["width"] and 0 < y < box["height"]:
+        page.mouse.click(box["x"] + x, box["y"] + y); page.wait_for_timeout(80)
+        check(S("g.dock") == "block" and b0["town"] in page.locator("#ctxHead").inner_text(), "tapping a consolidated settlement shows it in the bar (type, residents, dividend, ties)")
+        page.keyboard.press("Escape")
+    # Q and E orbit the map; Tab opens the run file
+    r0v = S("g.viewRot"); page.keyboard.press("e"); page.wait_for_timeout(300)
+    r1v = S("g.viewRot"); page.keyboard.press("q"); page.wait_for_timeout(300)
+    check(r1v == (r0v + 1) % 4 and S("g.viewRot") == r0v, "E turns the map a quarter, Q turns it back")
+    # banners go away on their own
+    S("(S.levelUps=[3], 0)"); ev("window.__eurocrat.refresh()"); page.wait_for_timeout(4200)
+    check(page.locator("#toast.in").count() == 0, "a banner leaves on its own")
+    # rename the town
+    page.click("#townName"); page.fill("#townName input", "Villa Burocracia"); page.keyboard.press("Enter"); page.wait_for_timeout(80)
+    check(S("S.town") == "Villa Burocracia" and "Villa Burocracia" in page.locator("#townName").inner_text(), "the town's name can be edited")
+    # the pause screen: five options, Settings, and Abandon asks first
+    page.keyboard.press("Escape"); page.wait_for_timeout(250)
+    opts = [x.strip() for x in page.locator("#notice .popt span").all_inner_texts()]
+    check(opts == ["Continue", "Settings", "Restart", "Abandon", "Main menu"], f"the pause screen has five options and nothing else ({opts})")
+    page.click(".popt[data-k=settings]")
+    check(page.locator(".popt[data-k=music]").count() == 1 and page.locator(".pause-screen .controls dt").count() >= 6, "Settings: music, language, the guide and the controls")
+    page.keyboard.press("Escape")
+    check(page.locator(".popt[data-k=continue]").count() == 1, "Esc goes back from Settings to the pause screen")
+    page.click(".popt[data-k=abandon]")
+    check(not S("!!S.over") and page.locator(".popt[data-k=yes]").count() == 1, "Abandon asks before ending the run")
+    page.click(".popt[data-k=yes]"); page.wait_for_timeout(200)
+    check(S("S.over && S.over.why") == "abandoned" and S("!!S.over.career"), "abandoning ends the run as a loss, and the career is settled")
+    ev("document.getElementById('drama') && (document.getElementById('drama').hidden = true)")
 
     # --- Every card, level and guide step renders in both languages without raw keys
     raw = []
@@ -342,7 +407,7 @@ with sync_playwright() as p:
         if re.search(r"\b(toast|rcombo|rcombod)\.\w|\{\w+\}", page.evaluate("document.getElementById('toast').innerText")): raw.append(f"{lang}:rcombo")
         S("(S.perkChoice=null, 0)"); S("g.showNext()"); S("(g.refresh(), 0)")
         if re.search(r"\b(att|side|st|std|rcombo|land|d)\.\w|\{\w+\}", page.locator("#dock").inner_text()): raw.append(f"{lang}:attach")
-        for why in ("timeout", "bankrupt", "audit", "suspended", "court"):
+        for why in ("timeout", "bankrupt", "audit", "suspended", "court", "abandoned"):
             S(f"(S.pending=null, S.over={{win:false, why:'{why}', dramaPlayed:true}}, 0)"); S("g.showNext()")
             if re.search(r"\b(over|run|ui|news|sum|rank|ach)\.\w|\{\w+\}", page.locator("#drama").inner_text()): raw.append(f"{lang}:over-{why}")
         S("(S.over=null, 0)")

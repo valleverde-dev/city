@@ -144,3 +144,13 @@ export function endMonth(){
   save();
   return {ok:true};
 }
+// v0.10: the player gives up the run (Abandon or Restart in the pause screen). It counts as a lost run:
+// the records and the career are settled exactly as for any other ending.
+export function abandonRun(){
+  if(!S || S.over) return {ok:false};
+  S.cards = []; S.perkChoice = null; S.pending = null;
+  S.over = {win:false, why:'abandoned'};
+  S.over.beat = recordRun(); S.over.career = endRun();
+  save();
+  return {ok:true};
+}

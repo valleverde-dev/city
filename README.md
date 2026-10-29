@@ -12,7 +12,7 @@ Web prototype playable on iPad, iPhone and desktop; a Godot port is planned for 
 - Plan and status: [ROADMAP.md](ROADMAP.md)
 - Code organisation: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
-## How to play (v0.9)
+## How to play (v0.10)
 
 - A run is one **Euroregion**. It starts with a 2×2 hamlet; each settlement has a resident target and a deadline. The settlement card and the mayor's guide tell you what to do.
 - Each turn is **one month**. Tap a parcel: the bar at the bottom shows what you can do (buy; for your land, a card per building — pick one, see it as a ghost on the map with its combos, confirm). Nothing selected, the bar is your agenda. Press **End month** to let time pass.
@@ -21,9 +21,9 @@ Web prototype playable on iPad, iPhone and desktop; a Godot port is planned for 
 - Permits are approved when political support is at least 50: the game tells you in advance. Stubborn owners (+80%) are marked on the map.
 - Each settlement has a **type** (farming, industrial, spa…). Neighbouring types form **region combos**, good and bad, and the parcels along the border give access and combos to your side.
 - Buildings next to each other form **combos**, good and bad: they glow gold or red. From settlement III, crises arrive as **cards** and Brussels sends **directives**.
-- **Controls:** drag to move the map, pinch / wheel / +− to zoom. PC: WASD / arrows, + −, R rotate, C centre, Space end month, Esc close / pause.
-- **Run file** (bottom left, or E): your combo collection, the perks of this run and the pool, your career and the region.
-- **Career:** experience comes with every step (levels and ranks during play), even in a lost run. Higher ranks add perks to the pool. Ranks raise every grant; 26 achievements, 8 of which unlock new buildings for good (market, social housing, library, police, solar farm, station, data centre, town hall). After the first, guided run, *New Euroregion* offers three dossiers to draft from.
+- **Controls:** drag to move the map, pinch / wheel / +− to zoom. PC: WASD / arrows, + −, Q / E turn the map, C centre, Space end month, Tab run file, Esc close / pause. Tap the town's name to rename it.
+- **Run file** (bottom left, or Tab): your combo collection, the perks of this run and the pool, your career and the region.
+- **Career:** experience comes with every step (levels and ranks during play), even in a lost run. Higher ranks add perks to the pool. Ranks raise every grant; career levels unlock 8 new buildings for good (market at level 2 … data centre at 18); 26 achievements give experience. After the first, guided run, every *New Euroregion* is random: settlement type, starting perk and member state are drawn for you.
 - **Language:** English / Español (top bar or menus).
 
 ## Structure

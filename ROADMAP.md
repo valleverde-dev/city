@@ -6,7 +6,28 @@ Living project document · update it as the prototype evolves. The game design l
 
 **Eurocrat** (working title): a satirical, turn-based roguelike city builder. You are a Brussels programme officer who must deliver a model European town with plenty of money and no power — buy the land, file the permits, survive the neighbours, spend the funds before they expire. Tone and references: *Constructor* (1997), with a hyper-realistic, comic look at how building actually works in contemporary Europe. The plan: validate the loop in the web/iPad prototype, then port to Godot to ship on the App Store and Steam.
 
-## Current status — v0.9.1 (Oct 29, 2026) · a livelier title screen
+## Current status — v0.10.0 (Oct 29, 2026) · playtest polish: a random start, screens instead of cards, progression that takes time
+
+Playtest feedback on v0.9 (19 points), applied:
+- **No dossier to choose.** After the tutorial, *New Euroregion* starts a random run at once: settlement type, starting perk (from your rank's pool) and member state are drawn and revealed on the settlement screen. The tutorial can be played again from *Settings*.
+- **Buildings unlock by career level, not by achievements** (the old achievements were met in the first run, so almost everything was unlocked at once): market 2, library 3, police station 5, social housing 7, town hall 9, solar farm 11, station 14, data centre 18. The level curve is steeper (level n at 350·n·(n+1) XP): about one level per run, level ~6 after 5 runs, ~15 after 20. Achievements still give XP. A level-up or promotion banner says what it brings (building, perks, grant bonus).
+- **Locked buildings are no longer in the bar**; their level and progress are in *Run file → Career*.
+- **Screens, not cards.** Letters (appointment, settlement, directives, notices) are wide screens read left to right — speaker, title and what they say on the left; goal, type, rules and perks on the right; buttons bottom right — and stack on narrow screens. They **fade** in and out. (The tilt was a bug: three CSS animations shared the name `slam`, and the stamp's rotation won.)
+- **Pause screen:** *Continue · Settings · Restart · Abandon · Main menu*, nothing else. *Settings* holds music, language, the mayor's guide and the controls. *Restart* and *Abandon* ask first; both count as a lost run (career settled, records kept).
+- **Banners fade out on their own** (or on tap) and sit below the HUD. (Bug: they slid up by only 140% of their height from 150 px, so they stayed on screen over the HUD.)
+- **The bottom bar:** same margin above and below the cards, no scrollbar eating it; every card has the cost line anchored at the bottom, never cut; **Buy** shows banknotes; the **Road** card shows the road tile, joined as it would be on that parcel.
+- **Map labels** (months under review / building / developers) are drawn crisp in screen pixels with a clock instead of "m", so a 2 never reads as an 8. The plot's dashed border and the consolidated settlements' outlines are painted on the ground, under the buildings.
+- **Land that is not yours explains itself:** the old village (not for sale, gives access, its 10 old residents count toward the goal, building beside it annoys its residents, and its combos with their signs), the regional road, protected land.
+- **Consolidated settlements:** tap one to see it in the bar (type, residents, dividend, region combos and combos across the edge); with a mouse, hover for its name and dividend.
+- **The town's name** is shown whole under the logo and can be **renamed** (tap it; a dice suggests another). The settlement number moved next to the goal.
+- **Run file:** one grid that fits the screen (10–12 cards a row on a desktop, fewer on smaller screens), scrolling down; every card the same size, the whole text on tap. The tabs no longer leave the screen.
+- **Controls:** **Q / E** turn the map a quarter (with a short fade; R still works), **Tab** opens the run file.
+- Balance (bot, 200 runs): a brand-new career averages ~3.5 settlements per run (unchanged); a career that keeps playing ~5.2 (v0.9: 5.3, ranks now come later).
+- Tests: 20 rules tests, 139 browser checks (+ random start, unlock levels, bar margins, road art, land and consolidated cards, Q/E, Tab, banners leaving, rename, pause screen, abandon).
+
+**Pending from that playtest:** whether settlement types keep fixed traits or get procedural ones. First step: an *atlas of settlement types* (traits, region combos, audit), like the events atlas, to decide with it in front of us.
+
+## Previous — v0.9.1 (Oct 29, 2026) · a livelier title screen
 
 A small update on top of v0.9.0, no rule changes:
 - **Dancing rays.** The light rays behind the logo have their own layer now: the fan sways and slowly turns, each ray breathes and flickers out of step with the others, and a halo pulses behind the logo. Still pixel art (three dithered light levels).
@@ -126,11 +147,18 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 
 ## Next steps
 
-1. **v0.10 — missions and events:** contracts from the characters that extend deadlines or add money, an official request for an extension, ~35 events including chained ones and cross-border events between settlements.
-2. Playtest v0.9: is the bar clear, is the ghost + confirm quick enough, is the run file a reason to play again? Tune XP per action, level curve and the rank of each perk.
-3. Member states with their own rule quirks: a bureaucracy per country.
-4. *Constructor*-style characters: named residents, complaints, a mayor with a face.
-5. Port to Godot when a port trigger is met: `core/` first (with its tests), then rendering and UI.
+1. **Atlas of settlement types**, then decide: fixed traits or procedural ones.
+2. **v0.11 — missions and events:** contracts from the characters that extend deadlines or add money, an official request for an extension, ~35 events including chained ones and cross-border events between settlements.
+3. Playtest v0.10: are the screens readable on a desktop, does one level per run feel right, is the random start a good surprise?
+4. Member states with their own rule quirks: a bureaucracy per country.
+5. *Constructor*-style characters: named residents, complaints, a mayor with a face.
+6. Port to Godot when a port trigger is met: `core/` first (with its tests), then rendering and UI.
+
+### Ideas for later (no decision yet)
+
+- **The old village as a living neighbour:** its own events and characters (Remedios Quintana is its voice: the patron saint's fiesta, the neighbour who will not sell the vegetable plot, the bar against the works), more combos (school, station), it **grows** onto free land next to it when relations are good or services are near (more residents, but it can take land you wanted and raise prices), empties and leaves ruins when things go badly, and perhaps is absorbed into the model town once connected to your services.
+- **Consolidated settlements with a life of their own:** their own events (the first mayor complains all the money goes to the new town, a factory closes, a transport strike between two settlements), more region combos, also between consolidated settlements.
+- **Accumulated, playable territory:** keep building on the whole region instead of freezing consolidated settlements. Then each settlement could add a plot of a **fixed size** (6×6 or 8×8, to test) instead of doubling (2×2 → 16×16); consolidating becomes a milestone that releases the next grant; the target is the whole region's population; difficulty comes from targets, rules and accumulated chaos, not area. Open: whether the 2×2 hamlet stays as the tutorial. Big change: prototype it apart first.
 
 ## Assets
 

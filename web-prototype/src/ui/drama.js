@@ -1,6 +1,6 @@
 import { setMusic } from '../audio/music.js';
 import { playSound } from '../audio/sfx.js';
-import { ACH_BY_ID, RANKS, UNLOCKED_BY, XP_FOR, career, rankOf } from '../core/career.js';
+import { ACH_BY_ID, PERK_RANK, RANKS, RANK_BONUS, UNLOCK_LEVEL, XP_FOR, career, levelOf, rankOf } from '../core/career.js';
 import { B, CFG, NEW_TYPES } from '../core/config.js';
 import { residents } from '../core/economy.js';
 import { money } from '../core/format.js';
@@ -91,7 +91,8 @@ export function dramaLose(buttons){
   const pop = regionPop() + (S.region.active ? residents() : 0), beat = S.over.beat || {};
   const next = RANKS[res.rank1+1], prevT = RANKS[res.rank1];
   const pct = x => next ? Math.max(0, Math.min(100, (x - prevT)/(next - prevT)*100)) : 100;
-  const unlockedNow = res.ach.map(id=>ACH_BY_ID[id]).filter(a=>a && a.unlock).map(a=>a.unlock);
+  const lv0 = levelOf(res.before), lv1 = levelOf(res.after);
+  const unlockedNow = Object.keys(UNLOCK_LEVEL).filter(ty=>UNLOCK_LEVEL[ty] > lv0 && UNLOCK_LEVEL[ty] <= lv1);
   const achList = res.ach.length ? `<ul class="medals">${res.ach.map(id=>`<li>${ic('workspace_premium')}<b>${t('ach.'+id+'.t')}</b><small>+${ACH_BY_ID[id].xp} XP</small></li>`).join('')}</ul>` : `<p class="hint">${t('sum.none')}</p>`;
   d.innerHTML = `<div class="dossier"><div class="tab">${t('ui.dg')}</div><b>${S.town}</b><small>HUF/${(S.runSeed||0)%10000}/${S.stage+1}</small><div class="stamp-big">${t('over.'+w+'.s')}</div></div>
     <div class="shredder"><i></i></div><div class="strips"></div>
@@ -130,10 +131,15 @@ export function toast(q){ queue.push(q); if(!showing) nextToast(); }
 export const pendingToasts = () => queue.map(q=>q.k);   // for the tests
 export function flushToasts(){
   if(!S) return;
-  if(S.over){ (S.newAch||[]).splice(0); (S.rankUps||[]).splice(0); (S.levelUps||[]).splice(0); return; }   // the end-of-run summary lists them
-  (S.newAch || []).splice(0).forEach(id=>{ queue.push({k:'ach', id}); const a = ACH_BY_ID[id]; if(a && a.unlock) queue.push({k:'unlock', ty:a.unlock}); });
-  (S.rankUps || []).splice(0).forEach(r=>queue.push({k:'rank', r}));
-  (S.levelUps || []).splice(0).forEach(n=>queue.push({k:'level', n}));
+  if(S.over){ (S.newAch||[]).splice(0); (S.rankUps||[]).splice(0); (S.levelUps||[]).splice(0); (S.unlocks||[]).splice(0); return; }   // the end-of-run summary lists them
+  (S.newAch || []).splice(0).forEach(id=>queue.push({k:'ach', id}));
+  // v0.10: a level or a promotion says in the same banner what it brings (buildings, perks, grant)
+  const ul = (S.unlocks || []).splice(0), lvOf = ty => UNLOCK_LEVEL[ty];
+  const ranks = (S.rankUps || []).splice(0), levels = (S.levelUps || []).splice(0);
+  ranks.forEach(r=>queue.push({k:'rank', r}));
+  levels.forEach(n=>queue.push({k:'level', n}));
+  ul.forEach(ty=>{ const host = queue.find(q=>q.k==='level' && q.n===lvOf(ty)) || queue.find(q=>q.k==='rank');
+    if(host) (host.ul = host.ul || []).push(ty); else queue.push({k:'unlock', ty}); });
   if(!showing) nextToast();
 }
 function nextToast(){
@@ -142,11 +148,18 @@ function nextToast(){
   bar.className = 'toast '+q.k;
   if(q.k==='ach') bar.innerHTML = `${ic('workspace_premium')}<span><small>${t('toast.ach')} · +${ACH_BY_ID[q.id].xp} XP</small><b>${t('ach.'+q.id+'.t')}</b></span>`;
   if(q.k==='unlock') bar.innerHTML = `${ic(B[q.ty].icon)}<span><small>${t('sum.unlocked')}</small><b>${t('toast.unlock', {b:t('b.'+q.ty)})}</b></span>`;
-  if(q.k==='rank') bar.innerHTML = `${ic('military_tech')}<span><small>${t('title.career')}</small><b>${t('toast.rank', {r:t('rank.'+q.r)})}</b></span>`;
-  if(q.k==='level') bar.innerHTML = `${ic('trending_up')}<span><small>${t('file.t')}</small><b>${t('toast.level', {n:q.n})}</b></span>`;
+  const gives = (q.ul||[]).length ? t('toast.unlocks', {b:q.ul.map(ty=>t('b.'+ty)).join(', ')}) : '';
+  if(q.k==='rank'){ const perks = Object.keys(PERK_RANK).filter(k=>PERK_RANK[k]===q.r).map(k=>t('perk.'+k));
+    const line = [t('toast.grant', {p:Math.round(q.r*RANK_BONUS*100)}), perks.length ? t('toast.perks', {p:perks.join(', ')}) : '', gives].filter(Boolean).join(' · ');
+    bar.innerHTML = `${ic('military_tech')}<span><small>${t('title.career')}</small><b>${t('toast.rank', {r:t('rank.'+q.r)})}</b><i>${line}</i></span>`; }
+  if(q.k==='level') bar.innerHTML = `${ic('trending_up')}<span><small>${t('file.t')}</small><b>${t('toast.level', {n:q.n})}</b>${gives ? `<i>${gives}</i>` : ''}</span>`;
   if(q.k==='combo'){ bar.className = 'toast combo '+(q.good ? 'good' : 'bad');
     bar.innerHTML = `${ic(q.good ? 'workspace_premium' : 'warning')}<span><small>${t(q.good ? 'toast.combo' : 'toast.comboBad')}${q.good ? ' · +'+XP_FOR.discover+' XP' : ''}</small><b>${t((q.region ? 'rcombo.' : 'combo.')+q.id)}</b><i>${t((q.region ? 'rcombod.' : 'combod.')+q.id).split('. ')[0]}</i></span>`; }
   playSound(q.k==='rank' ? 'win' : q.k==='combo' ? (q.good ? 'fanfare' : 'crowd') : q.k==='level' ? 'ok' : 'fanfare');
+  // v0.10: below the HUD, never over it; it fades out on its own (or when tapped) and the next one follows
+  const hud = document.getElementById('hud'); if(hud) bar.style.setProperty('--toastTop', Math.round(hud.getBoundingClientRect().bottom + 12)+'px');
   bar.classList.remove('in'); void bar.offsetWidth; bar.classList.add('in');
-  setTimeout(()=>{ bar.classList.remove('in'); setTimeout(nextToast, 350); }, q.k==='level' ? 1600 : q.k==='combo' ? 3200 : 2600);
+  let done = false; const leave = () => { if(done) return; done = true; clearTimeout(timer); bar.classList.remove('in'); bar.onclick = null; setTimeout(nextToast, 380); };
+  const timer = setTimeout(leave, q.k==='level' ? 2200 : q.k==='combo' ? 3200 : (q.ul || q.k==='rank') ? 3600 : 2600);
+  bar.onclick = leave;
 }

@@ -39,8 +39,8 @@
 #drama .dossier b{display:block; font:400 30px/1 var(--f-display);} #drama .dossier small{font:400 10px/1 var(--f-tag);}
 #drama .stamp-big{position:absolute; left:6%; right:6%; top:38%; border:5px solid #c62f28; color:#c62f28; font:400 clamp(30px, 7vw, 44px)/1 var(--f-display); text-align:center; padding:8px 4px;
   transform:rotate(-14deg) scale(4); opacity:0; mix-blend-mode:multiply;}
-#drama.stamped .stamp-big{animation:slam .28s cubic-bezier(.5,0,.7,1) forwards;}
-@keyframes slam{to{transform:rotate(-14deg) scale(1); opacity:.92}}
+#drama.stamped .stamp-big{animation:stampSlam .28s cubic-bezier(.5,0,.7,1) forwards;}
+@keyframes stampSlam{to{transform:rotate(-14deg) scale(1); opacity:.92}}
 @keyframes dropIn{from{transform:translateY(-120vh) rotate(-12deg)}}
 #drama .shredder{position:fixed; left:50%; bottom:-80px; width:min(360px, 90vw); height:70px; margin-left:calc(min(360px, 90vw) / -2); background:linear-gradient(#5b616b,#3a3f47); border:3px solid #1b1d22; z-index:2; transition:bottom .4s;}
 #drama .shredder i{position:absolute; left:8%; right:8%; top:8px; height:6px; background:#0b0b0d;}

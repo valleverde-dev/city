@@ -252,7 +252,7 @@ test('difficulty curve stays in its band (bot, 60 seeded runs per settlement, 60
   assert.ok(avg >= 2.5 && avg <= 6, `settlements per run ${avg}`);
 });
 
-test('the career: locked buildings, achievements unlock them, experience and ranks carry over', () => {
+test('the career: buildings unlock by level (v0.10), achievements give experience, the career carries over', () => {
   core.storage.set('eurocrat_career', JSON.stringify({ xp: 0, ach: [], types: [], runs: 0, tutorial: false, guide: false }));
   const S = g.newGame(12, 1);
   assert.equal(core.unlocked('housing'), true);
@@ -260,14 +260,22 @@ test('the career: locked buildings, achievements unlock them, experience and ran
   const i = S.grid.findIndex((p, k) => p.k === 'farm' && core.hasAccess(...core.rc(k)));
   Object.assign(S.grid[i], { st: 'owned', urban: true }); S.slots = 3;
   assert.equal(core.requestPermit(i, 'market').msg.k, 'err.locked');
-  // finishing the first housing block earns 'firstStone', which unlocks the market
+  // an achievement gives experience but no longer unlocks anything by itself
   const j = S.grid.findIndex((p, k) => k !== i && p.k === 'farm');
   Object.assign(S.grid[j], { st: 'built', ty: 'housing' }); S.cards = [];
   core.endMonth();
   assert.ok(core.career().ach.includes('firstStone'));
   assert.ok(S.newAch.includes('firstStone'));
+  assert.ok(!core.ACH.some(a => a.unlock), 'no achievement unlocks a building');
+  // reaching the market's level unlocks it, and the level-up says so (S.unlocks)
+  S.unlocks = [];
+  core.saveCareer({ ...core.career(), xp: core.levelXp(core.UNLOCK_LEVEL.market) - 1 }); core.gainXp('month');
   assert.equal(core.unlocked('market'), true);
-  assert.ok(core.career().xp >= 50);
+  assert.deepEqual(S.unlocks, ['market']);
+  assert.equal(core.unlocked('data'), false, 'the last ones need many more levels');
+  // every new building has its own level, spread along the curve
+  assert.deepEqual(Object.keys(core.UNLOCK_LEVEL).sort(), core.NEW_TYPES.slice().sort());
+  assert.equal(new Set(Object.values(core.UNLOCK_LEVEL)).size, core.NEW_TYPES.length);
   S.slots = 3; S.local = 70; S.cards = [];
   assert.equal(core.requestPermit(i, 'market').ok, true);
   // the new buildings count in the numbers
@@ -285,16 +293,19 @@ test('the career: locked buildings, achievements unlock them, experience and ran
   assert.equal(core.S.grant, Math.round(plain * 1.08 * 10) / 10);
 });
 
-test('quick start: three different dossiers, and the run starts at 4×4 with that type and perk', () => {
-  const d = core.drafts(77);
-  assert.equal(d.length, 3);
-  assert.equal(new Set(d.map(x => x.ty)).size, 3);
-  assert.deepEqual(core.drafts(77), d, 'the same offer for the same seed');
-  core.newGame(d[0].seed, 1, { ty: d[0].ty, perk: d[0].perk, country: d[0].country, guide: false });
+test('v0.10: no dossier to choose — every run after the tutorial starts from a random draw', () => {
+  core.resetCareer();
+  const d = core.randomStart(77);
+  assert.deepEqual(core.randomStart(77), d, 'the same draw for the same seed');
+  assert.ok(core.STYPES.includes(d.ty));
+  assert.ok((core.PERK_RANK[d.perk] || 0) <= core.rankNow(), 'the starting perk comes from the pool of your rank');
+  const seen = new Set(); for (let s = 1; s <= 40; s++) seen.add(core.randomStart(s).ty);
+  assert.ok(seen.size >= 4, 'different runs, different settlement types');
+  core.newGame(d.seed, 1, { ty: d.ty, perk: d.perk, country: d.country, guide: false });
   const S = core.S;
   assert.equal(S.stage, 1); assert.equal(core.N, 4);
-  assert.equal(S.stype, d[0].ty);
-  assert.ok(S.perks.includes(d[0].perk) || (d[0].perk === 'shovel' && S.shovel));
+  assert.equal(S.stype, d.ty);
+  assert.ok(S.perks.includes(d.perk));
   assert.equal(S.guideOff, true);
 });
 
@@ -309,13 +320,14 @@ test('v0.9: experience is earned while playing, with levels and ranks', () => {
   assert.equal(core.career().xp, core.XP_FOR.acquire, '…and it is in the career straight away');
   S.cards = []; core.endMonth();
   assert.ok(S.rs.xp >= core.XP_FOR.acquire + core.XP_FOR.month, 'ending a month too');
-  // levels: 100, 300, 600… ; ranks come at certain levels
-  assert.equal(core.levelOf(0), 0); assert.equal(core.levelOf(100), 1); assert.equal(core.levelOf(299), 1); assert.equal(core.levelOf(300), 2);
-  assert.deepEqual(core.RANKS.slice(0, 3), [0, 300, 1000]);
+  // levels: K·n·(n+1) (v0.10: K = 350 → 700, 2100, 4200…); ranks come at certain levels
+  const L = core.levelXp;
+  assert.equal(core.levelOf(0), 0); assert.equal(core.levelOf(L(1)), 1); assert.equal(core.levelOf(L(2)-1), 1); assert.equal(core.levelOf(L(2)), 2);
+  assert.deepEqual(core.RANKS.slice(0, 3), [0, L(2), L(4)]);
   S.levelUps = []; S.rankUps = [];
-  core.saveCareer({ ...core.career(), xp: 95 }); core.gainXp('discover');   // 95 → 120: level 1, still rank 0
+  core.saveCareer({ ...core.career(), xp: L(1) - 5 }); core.gainXp('discover');   // → level 1, still rank 0
   assert.deepEqual(S.levelUps, [1]); assert.deepEqual(S.rankUps, []);
-  core.saveCareer({ ...core.career(), xp: 290 }); core.gainXp('discover');  // 290 → 315: level 2 = rank 1 (said once, as a promotion)
+  core.saveCareer({ ...core.career(), xp: L(2) - 5 }); core.gainXp('discover');  // → level 2 = rank 1 (said once, as a promotion)
   assert.deepEqual(S.rankUps, [1]); assert.deepEqual(S.levelUps, [1]);
   core.resetCareer();
 });

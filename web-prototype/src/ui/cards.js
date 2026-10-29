@@ -16,7 +16,7 @@ import { $, P, country, portrait } from './dom.js';
 import { pulse, refresh } from './guide.js';
 import { hidePop, roman } from './hud.js';
 import { ic } from './icons.js';
-import { enterSettlement, frameView, startMenu, startRun } from './title.js';
+import { enterSettlement, frameView, startMenu, startNewEuroregion } from './title.js';
 import { regionCanvas } from './regionmap.js';
 import { closeDrama, dramaLose, dramaWin, toast } from './drama.js';
 
@@ -27,14 +27,24 @@ export const modal = $('modal'), notice = $('notice');
 let attachKey = '';
 export let rerender = null;
 export function setRerender(f){ rerender = f; }
-export function letter({icon, title, stamp, cls, body, buttons, dock, speaker}){
-  notice.className = 'notice'; modal.classList.remove('title');
+// v0.10: a letter is a SCREEN, laid out to be read left to right (desktop first): the speaker, the title and what they
+// say on the left; the facts (goal, rules, chips…) on the right; the buttons in a row at the bottom right.
+// On narrow screens the two columns stack. It appears with a fade (no slide, no tilt).
+export function letter({icon, title, stamp, cls, body, buttons, dock, speaker, wide}){
+  notice.className = 'notice'; modal.classList.remove('title', 'pause');
   notice.innerHTML = `<div class="letterhead"><i class="emblem" aria-hidden="true"></i><div class="org">${t('ui.union')}<i>${t('ui.dg')}</i></div>
       ${S ? `<div class="date">${t('ui.dateline', {m:Math.min(S.month, CFG.months)})}</div>` : ''}</div>
     <div class="sheet">${stamp?`<div class="stamp ${cls||'info'}">${stamp}</div>`:''}
-    ${speaker?`<div class="speaker">${pxPortrait(speaker)}<div><b>${CHARS[speaker].name}</b><small>${t('char.'+speaker,{town:S.town})}</small></div></div>`:''}
-    <h2>${ic(icon)}${title}</h2>${body}<div class="btns"></div></div>`;
-  notice.classList.toggle('stamped', !!stamp && !speaker);
+      <div class="col-a">${speaker?`<div class="speaker">${pxPortrait(speaker)}<div><b>${CHARS[speaker].name}</b><small>${t('char.'+speaker,{town:S.town})}</small></div></div>`:''}
+        <h2>${ic(icon)}${title}</h2></div>
+      <div class="col-b">${body||''}</div><div class="btns"></div></div>`;
+  // the first quote (what the speaker says) belongs with the speaker
+  const a = notice.querySelector('.col-a'), b = notice.querySelector('.col-b'), q = b.querySelector(':scope > .quote');
+  if(q && speaker) a.appendChild(q);
+  if(!b.textContent.trim() && !b.querySelector('img,canvas,.rmap-slot')) b.remove();
+  notice.classList.toggle('single', !notice.querySelector('.col-b'));
+  notice.classList.toggle('wide', !!wide);
+  notice.classList.toggle('stamped', !!stamp);
   const box = notice.querySelector('.btns'); buttons.forEach(b=>box.appendChild(b));
   modal.classList.remove('hidden'); modal.classList.toggle('dock', !!dock); notice.scrollTop = 0;
   notice.style.animation = 'none'; void notice.offsetWidth; notice.style.animation = '';
@@ -70,7 +80,7 @@ export function makePixelPortrait(id){
 }
 makePixelPortrait.busy = {};
 export function btn(label, icon, fn, primary){ const b=document.createElement('button'); b.className='btn'+(primary?' primary':''); b.innerHTML=`${ic(icon)}${label}`; b.onclick=fn; return b; }
-export function hideModal(){ modal.classList.add('hidden'); modal.classList.remove('title'); rerender = null; }
+export function hideModal(){ modal.classList.add('hidden'); modal.classList.remove('title', 'pause'); rerender = null; }
 export const CHIP_ICON = {money:'euro', local:'how_to_vote', neigh:'diversity_3', comp:'fact_check', delay:'schedule', risk:'casino', slot:'event_busy', lose:'block', land:'add_location', debt:'account_balance_wallet', cost:'trending_up', later:'schedule', rate:'percent', market:'trending_down'};
 export function chip([type, v]){
   let cls = '', txt = '';
@@ -116,7 +126,8 @@ export const CARD = {
     if(!c.played){ c.played = true; playSound(E.sfx); } refresh(); },
   level: c => { const L = LV(), k = S.stage||0, n = Math.min(k, LEVELS.length-1), more = k >= LEVELS.length;
     const rules = (more ? t('stl.more.rules', {n:L.target}) : t('lvl.'+(n+1)+'.rules')).split('|').map(x=>`<li>${ic('check')}<span>${x}</span></li>`).join('');
-    const perks = S.perks.length || S.shovel ? `<p class="hint">${t('stl.perks', {p:S.perks.map(k=>t('perk.'+k)).concat(S.shovel?[t('perk.shovel')]:[]).join(', ')})}</p>` : '';
+    const mine = S.perks.concat(S.shovel ? ['shovel'] : []);
+    const perks = mine.length ? `<div class="perkrow"><span class="lbl">${t('stl.perksLbl')}</span>${mine.map(p=>`<span class="relicc"><span class="rc-ico">${ic(PERKS[p])}</span><span><b>${t('perk.'+p)}</b><small>${t('perkd.'+p)}</small></span></span>`).join('')}</div>` : '';
     const carried = S.carried > 0 ? `<p class="hint">${t('stl.carry', {x:money(S.carried)})}</p>` : '';
     letter({icon:'map', title:`<span class="lvl-tag">${t('ui.settlement')} ${roman(k+1)}</span>${more ? S.town : t('lvl.'+(n+1)+'.name')}`, speaker: n>=2 ? 'brussels' : 'mayor',
       body:`<div class="quote">${more ? t('stl.more.x', {region:regionName()}) : t('lvl.'+(n+1)+'.x', {town:S.town})}</div>
@@ -124,7 +135,7 @@ export const CARD = {
         <div class="goal">${t('lvl.goal', {n:L.target, m:L.months, s:L.n})}</div>
         <p class="hint">${t('lvl.newRules')}</p><ul class="rules">${rules}</ul>${carried}${perks}
         ${k===0 ? `<p class="keys">${t('lvl.keys')}</p>` : ''}`,
-      buttons:[btn(t('lvl.go'),'play_arrow', ()=>nextCard('stamp'), true)]}); },
+      buttons:[btn(t('lvl.go'),'play_arrow', ()=>nextCard('stamp'), true)], wide:true}); },
   consolidated: c => { hideModal(); dramaWin(c, ()=>nextCard('click')); },
   // v0.9: a new combo is a banner, not a letter (the game goes on)
   rcombo: c => { const cb = RCOMBO_BY_ID[c.id], B = S.region.blocks[c.b];
@@ -164,6 +175,6 @@ export function mountMap(opts){ const slot = notice.querySelector('.rmap-slot');
 export function gameOver(){
   if(!S.over) return showNext();
   hideModal(); refresh();
-  dramaLose([btn(t('run.new'),'replay', ()=>{ closeDrama(); startRun(); }, true), btn(t('menu.main'),'logout', ()=>{ closeDrama(); startMenu(); }),
+  dramaLose([btn(t('run.new'),'replay', ()=>{ closeDrama(); startNewEuroregion(); }, true), btn(t('menu.main'),'logout', ()=>{ closeDrama(); startMenu(); }),
     btn(t('ui.lookMap'),'map', ()=>{ closeDrama(); hideModal(); refresh(); })]);
 }

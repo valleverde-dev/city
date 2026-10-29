@@ -3,7 +3,7 @@ import { approves, buildMonths, hasAccess } from '../core/rules.js';
 import { N, S, clamp, idx, rc } from '../core/state.js';
 import { cellPos, wid } from '../core/region.js';
 import { t } from '../i18n/index.js';
-import { FRX, FRY, H, MAPCX, MAPCY, OX, OY, TH, TW, W, WN, attachSel, ctx, cvs, dpr, isoOf, isoW, preview, rotateCoord, scale, selected, viewHooks, viewRot, worldEl } from './camera.js';
+import { FRX, FRY, H, MAPCX, MAPCY, OX, OY, TH, TW, W, WN, attachSel, selBlock, ctx, cvs, dpr, isoOf, isoW, preview, rotateCoord, scale, selected, viewHooks, viewRot, worldEl } from './camera.js';
 import { GROUNDS, riverTile, roadTile, skirt, wedgeTile } from './ground.js';
 import { AH, AOX, AOY, AW, OWNER, VEIL, art, computeOwner, inW, drawTile, drawWorldTile, gctx, groundCv, gx, planThing, staticKey, setStaticKey, variant, veil, worldThing } from './map.js';
 import { C, frac, hsh } from './pixel.js';
@@ -290,6 +290,7 @@ export function compose(now){
     for(const [rx,ry,al] of [[11,5,0.07],[7,3,0.09]]){ gx.globalAlpha = al*step;
       LAMPS.forEach(([x,y])=>{ for(let j=-ry;j<=ry;j++){ const w = Math.round(rx*Math.sqrt(1-(j/(ry+0.5))**2)); gx.fillRect(Math.round(AOX+x)-w, Math.round(AOY+y+2)+j, w*2+1, 1); } }); }
     gx.globalAlpha = 1; }
+  drawOutlines(gx);
   for(const E of PLAN) if(seen(E)) drawEntry(E, T, step, now);
   if(MOTION) drawBirds(T, step);
   worldEl.classList.toggle('night', step >= 2);
@@ -335,10 +336,21 @@ export function bigBadge(x, y, text, on){
   ctx.fillStyle = on ? '#e8762b' : '#ffd200'; ctx.fillRect(X-r, Y-r, 2*r, 2*r);
   ctx.fillStyle = on ? '#ffffff' : '#0b1f4d'; ctx.font = '400 26px Jersey, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(text, X, Y+1); ctx.restore(); }
-export function badge(x,y,text,col){ ctx.font='700 8px Pixel, sans-serif'; const w=Math.ceil(ctx.measureText(text).width)+6, x0=Math.round(x-w/2), y0=Math.round(y)-5;
-  ctx.fillStyle='#0b1f4d'; ctx.fillRect(x0-1,y0-1,w+2,11); ctx.fillRect(x0,y0+10,w+1,1);
-  ctx.fillStyle=col; ctx.fillRect(x0,y0,w,9); ctx.fillStyle='rgba(255,255,255,.28)'; ctx.fillRect(x0,y0,w,1);
-  ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(text,x0+w/2,y0+5); }
+// v0.10: small map badges are drawn in screen pixels at a fixed size, like the plot numbers, so their digits
+// never blur together at any zoom (a "2" read as an "8"). Months get a clock instead of an ambiguous "m".
+const CLOCK = ['..###..','.#...#.','#..#..#','#..#..#','#..##.#','.#...#.','..###..'];
+export function badge(x,y,text,col,clock){
+  const m = ctx.getTransform(), z = dpr, X = (m.a*x + m.e)/z, Y = (m.d*y + m.f)/z;
+  ctx.save(); ctx.setTransform(z,0,0,z,0,0);
+  ctx.font = '400 22px Jersey, system-ui, sans-serif';
+  const tw = Math.ceil(ctx.measureText(text).width), iw = clock ? 18 : 0, w = tw + iw + 10, h = 22;
+  const x0 = Math.round(X - w/2), y0 = Math.round(Y - h/2);
+  ctx.fillStyle = '#0b1f4d'; ctx.fillRect(x0-2, y0-2, w+4, h+4); ctx.fillRect(x0, y0+h+2, w+2, 2);
+  ctx.fillStyle = col; ctx.fillRect(x0, y0, w, h); ctx.fillStyle = 'rgba(255,255,255,.28)'; ctx.fillRect(x0, y0, w, 2);
+  ctx.fillStyle = '#fff';
+  if(clock) CLOCK.forEach((row,r)=>[...row].forEach((ch,c)=>{ if(ch==='#') ctx.fillRect(x0+5+c*2, y0+4+r*2, 2, 2); }));
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(text, x0 + 5 + iw, y0 + h/2 + 1);
+  ctx.restore(); }
 // Combo pairs: a dotted link between the two parcels with a small medal (good) or warning (bad) in the middle
 export function drawComboLinks(){
   const known = discovered();
@@ -351,20 +363,34 @@ export function drawComboLinks(){
     ctx.restore(); });
 }
 // The edge of the settlement in play, when consolidated neighbours surround it
-export function drawBorder(){
-  if(!S.region.active) return;
-  const e = N-0.5, pts = [[-0.5,-0.5],[-0.5,e],[e,e],[e,-0.5]].map(([r,c])=>isoOf(r,c));
-  ctx.save(); ctx.strokeStyle = 'rgba(255,210,0,.85)'; ctx.lineWidth = 1.2; ctx.setLineDash([4,3]);
-  ctx.beginPath(); pts.forEach(([x,y],k)=>k ? ctx.lineTo(x,y) : ctx.moveTo(x,y)); ctx.closePath(); ctx.stroke(); ctx.restore();
+// v0.10: the outlines of the plot in play (dashed yellow) and of the consolidated settlements (thin white) are painted
+// on the ground of the art canvas, before the buildings, so they run under the sprites instead of across them.
+// Stepped pixel lines: one art pixel thick, dashes 4 on / 3 off along the diamond's edges.
+function groundLine(g, pts, col, dash){
+  g.fillStyle = col;
+  for(let k = 0; k < pts.length; k++){ const [x0,y0] = pts[k], [x1,y1] = pts[(k+1)%pts.length];
+    const n = Math.max(Math.abs(x1-x0), Math.abs(y1-y0)); let on = 0;
+    for(let j = 0; j <= n; j++){ if(dash && (on++ % 7) >= 4) continue;
+      const X = Math.round(AOX + x0 + (x1-x0)*j/n), Y = Math.round(AOY + y0 + (y1-y0)*j/n);
+      if(dash){ g.fillStyle = 'rgba(11,31,77,.55)'; g.fillRect(X, Y+1, 1, 1); g.fillStyle = col; }   // a dark pixel under each dash: readable on yellow fields
+      g.fillRect(X, Y, 1, 1); } } }
+function drawOutlines(g){
+  if(!S.region) return;
+  S.region.blocks.forEach(P=>{ const y = P.y-FRY, x = P.x-FRX;
+    groundLine(g, [[y-0.5,x-0.5],[y-0.5,x+P.n-0.5],[y+P.n-0.5,x+P.n-0.5],[y+P.n-0.5,x-0.5]].map(([R,C])=>isoW(R,C)), 'rgba(255,255,255,.6)', false); });
+  if(S.region.active){ const e = N-0.5;
+    groundLine(g, [[-0.5,-0.5],[-0.5,e],[e,e],[e,-0.5]].map(([r,c])=>isoOf(r,c)), 'rgba(255,210,0,.95)', true); }
 }
+export function drawBorder(){}   // kept for callers: the border is now part of the ground (drawOutlines)
 // A world rectangle as an iso diamond path
 function plotPath(P){ const y = P.y-FRY, x = P.x-FRX;   // map → frame coordinates
   const pts = [[y-0.5,x-0.5],[y-0.5,x+P.n-0.5],[y+P.n-0.5,x+P.n-0.5],[y+P.n-0.5,x-0.5]].map(([R,C])=>isoW(R,C));
   ctx.beginPath(); pts.forEach(([x,y],k)=>k ? ctx.lineTo(x,y) : ctx.moveTo(x,y)); ctx.closePath(); }
 // The consolidated settlements (thin outlines) and, while choosing, the plots on offer (numbered)
 export function drawRegion(){
-  ctx.save(); ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.setLineDash([]);
-  S.region.blocks.forEach(B=>{ plotPath(B); ctx.stroke(); });
+  ctx.save(); ctx.lineWidth = 1;   // (the consolidated settlements' outlines are on the ground now, v0.10)
+  const sb = S.region.blocks[selBlock];   // the consolidated settlement tapped on the map
+  if(sb){ plotPath(sb); ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#ffd200'; ctx.stroke(); ctx.lineWidth = 1; }
   if(S.pending==='attach' && S.region.cands && modal.classList.contains('hidden')){
     const ph = (performance.now()%1400)/1400;
     S.region.cands.forEach((P,k)=>{ const on = k===attachSel;
@@ -378,12 +404,12 @@ export function drawRegion(){
 export const MARK = {rejected:['✕','#d64545'], event:['!','#e8442e'], toad:['!','#2e7d32'], holdout:['+%','#d98a00'], paused:['II','#d98a00'], ruin:['!','#6b6b6b'], halt:null};
 export function drawLabels(i){
   const p = S.grid[i], r=Math.floor(i/N), c=i%N, [x,y] = isoOf(r,c);
-  if(p.st==='review') badge(x+10,y-24,t('map.m',{n:p.t}), approves() ? '#1d3c78' : '#d64545');
+  if(p.st==='review') badge(x+10,y-24,t('map.m',{n:p.t}), approves() ? '#1d3c78' : '#d64545', true);
   if(p.st==='land' && p.hold && hasAccess(r,c)) badge(x+12,y-10,'+%','#d98a00');   // only where you would buy
   if(p.st==='approved') badge(x,y-12,t('map.queue'),'#e8762b');
   if(p.st==='building'){ const hh = p.ty==='road' ? 2 : 6 + Math.round((1-p.t/buildMonths(p.ty))*5)*5;
-    badge(x-12,y-hh-14, p.halt ? t('map.halt',{n:p.halt}) : t('map.m',{n:p.t}), p.halt ? '#d64545' : '#d0571b'); }
-  if(p.st==='private' && p.dev) badge(x-12,y-30, t('map.m',{n:p.dev.t}), '#8a6d1f');
+    badge(x-12,y-hh-14, p.halt ? t('map.halt',{n:p.halt}) : t('map.m',{n:p.t}), p.halt ? '#d64545' : '#d0571b', true); }
+  if(p.st==='private' && p.dev) badge(x-12,y-30, t('map.m',{n:p.dev.t}), '#8a6d1f', true);
   if(S.plan && S.plan.list.includes(i) && p.st==='owned') badge(x,y-6,t('map.plan'),'#2d5bb5');
   const mk = p.flag && MARK[p.flag.k]; if(mk) badge(x+14,y-40,mk[0],mk[1]);
   if(p.st==='owned' && !hasAccess(r,c)) badge(x,y-14,'?','#7a8599');

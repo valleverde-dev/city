@@ -72,6 +72,11 @@ export function wedgeMask(R,C){ const [r2,c2]=rotateCoord(R,C,viewRot);
   if(Q(r2+1,c2)&&Q(r2,c2+1)&&!Q(r2+1,c2+1)) m|=4;
   if(Q(r2,c2-1)&&Q(r2+1,c2)&&!Q(r2+1,c2-1)) m|=8;
   return m; }
+// v0.10: the road a parcel would get, as the bar's card shows it (joined to the roads around it, as on the map)
+export function roadPreviewKey(i){
+  if(i < 0 || !S.grid[i]) return ['road5', ()=>roadTile(5, false)];
+  const R = OY+Math.floor(i/N), Cc = OX+i%N, m = connMask(R, Cc, (r,c)=>(r===R && c===Cc) || roadW(r,c), ()=>false, true);
+  return ['road'+m, ()=>roadTile(m, false)]; }
 const offRoad = (dr,dc) => true;    // roads and the river run on past the edge of the world
 export function groundKey(i){
   const p = S.grid[i], R = OY+Math.floor(i/N), Cc = OX+i%N;

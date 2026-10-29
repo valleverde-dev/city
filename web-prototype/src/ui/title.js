@@ -2,7 +2,8 @@ import { gameTrack, music, setMusic, toggleMusic, updateMusicBtn } from '../audi
 import { playSound } from '../audio/sfx.js';
 import { CFG, VERSION } from '../core/config.js';
 import { loadSave, records, save } from '../core/persist.js';
-import { ACH, RANKS, RANK_BONUS, UNLOCKED_BY, career, drafts, rankBonus, rankOf, saveCareer, unlocked } from '../core/career.js';
+import { abandonRun } from '../core/month.js';
+import { ACH, RANKS, RANK_BONUS, UNLOCK_LEVEL, career, randomStart, rankBonus, rankOf, saveCareer, unlocked } from '../core/career.js';
 import { B, NEW_TYPES } from '../core/config.js';
 import { STYPE_ICON } from '../core/region.js';
 import { closeDrama } from './drama.js';
@@ -260,29 +261,22 @@ function renderMenu(fresh){
   let first = null;
   if(view === 'main'){
     const car = career();
-    add(item(t('title.new'), ()=> car.tutorial ? go('draft') : startRun(), {sub: car.tutorial ? t('title.newSubQuick', {rank:t('rank.'+rankOf(car.xp))}) : t('title.newSubTut'), cls:'new'}));
+    // v0.10: no dossier to choose. After the tutorial, New Euroregion starts a random run straight away.
+    add(item(t('title.new'), startNewEuroregion, {sub: car.tutorial ? t('title.newSubQuick', {rank:t('rank.'+rankOf(car.xp))}) : t('title.newSubTut'), cls:'new'}));
     const c = add(item(t('title.continue'), ()=>{ setState(saved); afterLoad(); },
       {sub: cont ? t('title.contSub',{l:roman((saved.stage||0)+1), town:saved.town, m:saved.month}) : t('title.noSave'), disabled:!cont, cls:'cont'}));
     add(item(t('title.career'), ()=>go('career'), {sub: t('title.careerSub', {rank:t('rank.'+rankOf(car.xp)), n:car.ach.length, t:ACH.length}), cls:'career'}));
     add(item(t('title.settings'), ()=>go('settings')));
     add(item(t('title.credits'), ()=>go('credits')));
     first = cont ? c : menu.querySelector('.cv-item');
-  } else if(view === 'draft'){
-    // Quick start: three dossiers (a settlement type, a starting perk, a country), or the tutorial
-    head(t('draft.t'));
-    if(!draftOffer) draftOffer = drafts((Math.random()*2147483647)|0);
-    draftOffer.forEach((d,k)=>{ const b = add(item(`${ic(STYPE_ICON[d.ty])} ${t('st.'+d.ty)}`, ()=>startQuick(d),
-      {sub: `${t('std.'+d.ty)} · ${t('draft.perk', {p:t('perk.'+d.perk)})} · ${t('country.'+d.country)}`, cls:'draft'})); if(!k) first = b; });
-    add(item(t('draft.tutorial'), ()=>startRun(), {cls:'tut'}));
-    add(item(t('title.back'), ()=>go('main'), {cls:'back'}));
   } else if(view === 'career'){
     const c = career(), r = rankOf(c.xp), next = RANKS[r+1], prev = RANKS[r], rec = records();
     const box = document.createElement('div'); box.className = 'cv-career';
     const pct = next ? Math.round((c.xp-prev)/(next-prev)*100) : 100;
     const achs = ACH.map(a=>{ const on = c.ach.includes(a.id);
-      return `<li class="${on?'on':'off'}">${ic(on?'workspace_premium':'lock')}<span><b>${t('ach.'+a.id+'.t')}</b>${t('ach.'+a.id+'.x')} <small>+${a.xp} XP${a.unlock ? ' · '+t('car.unlocks', {b:t('b.'+a.unlock)}) : ''}</small></span></li>`; }).join('');
+      return `<li class="${on?'on':'off'}">${ic(on?'workspace_premium':'lock')}<span><b>${t('ach.'+a.id+'.t')}</b>${t('ach.'+a.id+'.x')} <small>+${a.xp} XP</small></span></li>`; }).join('');
     const blds = NEW_TYPES.map(ty=>{ const on = unlocked(ty);
-      return `<li class="${on?'on':'off'}">${ic(B[ty].icon)}<span><b>${t('b.'+ty)}</b>${t('bd.'+ty)} <small>${on ? '' : t('car.lockedBy', {a:t('ach.'+UNLOCKED_BY[ty]+'.t')})}</small></span></li>`; }).join('');
+      return `<li class="${on?'on':'off'}">${ic(B[ty].icon)}<span><b>${t('b.'+ty)}</b>${t('bd.'+ty)} <small>${on ? '' : t('car.lockedBy', {n:UNLOCK_LEVEL[ty]})}</small></span></li>`; }).join('');
     box.innerHTML = `<div class="rank">${t('rank.'+r)}</div><div class="xpbar"><i style="width:${pct}%"></i></div>
       <small>${next ? t('car.xp', {x:c.xp, n:next}) : t('car.xpMax', {x:c.xp})} · ${t('car.bonus', {p:Math.round(r*RANK_BONUS*100)})}</small><br>
       <small>${t('car.runs', {n:c.runs, s:rec.best.settlements, p:rec.best.pop})}</small>
@@ -295,6 +289,7 @@ function renderMenu(fresh){
     first = add(item(t('title.lang', {l: t('lang.'+LANG)}), ()=>setLang(other), {silent:true, cls:'lang'}));
     add(item(t('title.guide', {s: t(career().guide ? 'on' : 'off')}), ()=>{ const c = career(); c.guide = !c.guide; saveCareer(c); renderMenu(); }, {cls:'guide'}));
     add(item(t('title.music', {s: t(music.on ? 'on' : 'off')}), ()=>{ toggleMusic(); renderMenu(); }, {cls:'music'}));
+    add(item(t('title.tutorial'), ()=>startRun(), {sub:t('title.tutorialSub'), cls:'tut'}));
     add(item(t('title.back'), ()=>go('main'), {cls:'back'}));
   } else if(view === 'credits'){
     const c = document.createElement('div'); c.className = 'cv-credits';
@@ -345,13 +340,56 @@ export function startMenu(){
   updateMusicBtn(); setRerender(()=>{ renderMenu(); requestAnimationFrame(layoutCover); });
 }
 addEventListener('resize', ()=>{ if(coverOpen()) layoutCover(); });
-export function pauseMenu(){
-  setMusic(gameTrack(), 0.4);
-  letter({icon:'pause', title:t('pause.t'), body:`<p>${t('pause.x',{town:S.town, country:country(), m:Math.min(S.month,CFG.months), n:CFG.months})}</p><p class="keys">${t('lvl.keys')}</p>`,
-    buttons:[btn(t('pause.back'),'play_arrow', ()=>{ setMusic(gameTrack()); hideModal(); }, true), musicButton(), ...langButtons(),
-      btn(t('pause.abandon'),'replay', ()=>startRun()), btn(t('menu.main'),'logout', ()=>{ startMenu(); })]});
-  updateMusicBtn(); setRerender(pauseMenu);
+// v0.10: the pause SCREEN — five options in a row and nothing else: Continue · Settings · Restart · Abandon · Main menu.
+// Settings holds music, language, the mayor's guide and the controls; Restart and Abandon ask first (they cannot be undone).
+export let pauseView = 'main';
+export const pauseOpen = () => !modal.classList.contains('hidden') && modal.classList.contains('pause');
+function popt(label, icon, fn, {sub = '', cls = '', k = ''} = {}){
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'popt' + (cls ? ' '+cls : ''); if(k) b.dataset.k = k;
+  b.innerHTML = `${ic(icon)}<span>${label}</span>${sub ? `<small>${sub}</small>` : ''}`;
+  b.onclick = () => { playSound('click'); fn(); }; return b;
 }
+export function resumeGame(){ setMusic(gameTrack()); pauseView = 'main'; hideModal(); }
+export function pauseBack(){ if(pauseView === 'main') resumeGame(); else pauseMenu('main'); }
+export function pauseMenu(view = 'main'){
+  if(!S) return;
+  pauseView = view; setMusic(gameTrack(), 0.4);
+  notice.className = 'notice'; modal.classList.remove('title', 'dock'); modal.classList.add('pause');
+  const box = document.createElement('div'); box.className = 'pause-screen';
+  const head = (icon, txt) => { const h = document.createElement('h2'); h.innerHTML = `${ic(icon)}${txt}`; box.appendChild(h); };
+  const row = items => { const r = document.createElement('div'); r.className = 'pause-row n'+items.length; items.forEach(b=>r.appendChild(b)); box.appendChild(r); return r; };
+  if(view === 'main'){
+    head('pause', t('pause.t'));
+    row([popt(t('pause.continue'), 'play_arrow', resumeGame, {cls:'primary', k:'continue'}),
+         popt(t('pause.settings'), 'settings', ()=>pauseMenu('settings'), {k:'settings'}),
+         popt(t('pause.restart'), 'replay', ()=>pauseMenu('restart'), {k:'restart'}),
+         popt(t('pause.abandon'), 'flag', ()=>pauseMenu('abandon'), {cls:'danger', k:'abandon'}),
+         popt(t('menu.main'), 'logout', ()=>{ save(); startMenu(); }, {k:'menu'})]);
+  } else if(view === 'settings'){
+    head('settings', t('pause.settings'));
+    const other = LANG === 'es' ? 'en' : 'es';
+    row([popt(t('title.music', {s:t(music.on ? 'on' : 'off')}), music.on ? 'music_note' : 'music_off', ()=>{ toggleMusic(); pauseMenu('settings'); }, {k:'music'}),
+         popt(t('title.lang', {l:t('lang.'+LANG)}), 'translate', ()=>{ setLang(other); }, {k:'lang'}),
+         popt(t('title.guide', {s:t(career().guide ? 'on' : 'off')}), 'school', ()=>{ const c = career(); c.guide = !c.guide; saveCareer(c); pauseMenu('settings'); }, {k:'guide'}),
+         popt(t('title.back'), 'close', ()=>pauseMenu('main'), {k:'back'})]);
+    const d = document.createElement('dl'); d.className = 'controls';
+    d.innerHTML = ['move','zoom','orbit','centre','file','end','esc'].map(k=>`<dt>${t('keys.'+k+'.k')}</dt><dd>${t('keys.'+k)}</dd>`).join('');
+    box.appendChild(d);
+  } else {   // 'restart' or 'abandon': confirm first
+    head(view === 'restart' ? 'replay' : 'flag', t('pause.'+view+'Q'));
+    const p = document.createElement('p'); p.className = 'ask'; p.textContent = t('pause.'+view+'X'); box.appendChild(p);
+    row([popt(t('pause.'+view+'Yes'), view === 'restart' ? 'replay' : 'flag', view === 'restart' ? doRestart : doAbandon, {cls:'danger', k:'yes'}),
+         popt(t('pause.no'), 'play_arrow', ()=>pauseMenu('main'), {cls:'primary', k:'no'})]);
+  }
+  notice.innerHTML = ''; notice.appendChild(box);
+  modal.classList.remove('hidden'); notice.style.animation = 'none'; void notice.offsetWidth; notice.style.animation = '';
+  const first = box.querySelector('.popt.primary') || box.querySelector('.popt'); if(first) first.focus({preventScroll:true});
+  updateMusicBtn(); setRerender(()=>pauseMenu(pauseView));
+}
+// Restart: the run counts as given up, and a new one of the same kind starts at once (the tutorial restarts as the tutorial)
+function doRestart(){ const tut = S.stage === 0 && !S.region.blocks.length && !career().tutorial; abandonRun(); pauseView = 'main'; hideModal(); tut ? startRun() : startRandom(); }
+// Abandon: the run ends here — the end-of-run screen (XP, achievements), then back to the menu
+function doAbandon(){ abandonRun(); pauseView = 'main'; hideModal(); refresh(); showNext(); }
 export function setLang(l){
   setLanguage(l);
   playSound('click'); refresh(); if(rerender && (!modal.classList.contains('hidden') || coverOpen())) rerender();
@@ -366,10 +404,13 @@ export function hudTop(){ const h = $('hud'); return h ? Math.min(h.offsetHeight
 // A new Euroregion (or, for tests and the balance bot, a run that starts at settlement `stage`)
 export function startNew(seed, stage = 0, opts = {}){ closeDrama(); hideCover(); startSite(seed, stage, opts); enterSettlement(); }
 // The tutorial run: the 2×2 hamlet with the mayor's guide
-export function startRun(){ draftOffer = null; startNew(undefined, 0, {bonus: rankBonus(), guide: true}); }
-// Quick start from a dossier: straight into a 4×4 town of that type, with its perk
-let draftOffer = null;
-export function startQuick(d){ draftOffer = null; startNew(d.seed, 1, {ty:d.ty, perk:d.perk, country:d.country, bonus: rankBonus(), guide: career().guide}); }
+export function startRun(){ startNew(undefined, 0, {bonus: rankBonus(), guide: true}); }
+// Every run after the tutorial: a random settlement type, starting perk and member state, straight into a 4×4 town
+export function startQuick(d){ startNew(d.seed, 1, {ty:d.ty, perk:d.perk, country:d.country, bonus: rankBonus(), guide: career().guide}); }
+export function startRandom(){ startQuick(randomStart((Math.random()*2147483647)|0)); }
+// "New Euroregion" anywhere (title, end of a run): the tutorial the first time, a random run after that
+export function startNewEuroregion(){ career().tutorial ? startRandom() : startRun(); }
+
 // Show the settlement in play: fit the map to it and open its cards
 export function enterSettlement(){ setAttachSel(-1); clearSelection(); setRunTab(null); setViewRot(0); setMapSize(); frameView(); save(); setMusic(gameTrack()); refresh(); showNext(); }
 export function afterLoad(){ hideCover(); enterSettlement(); }

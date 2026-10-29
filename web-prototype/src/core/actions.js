@@ -1,4 +1,4 @@
-import { B, CFG, on } from './config.js';
+import { B, CFG, TOWN_A, TOWN_B, on } from './config.js';
 import { gainXp, unlocked } from './career.js';
 import { avail } from './economy.js';
 import { money } from './format.js';
@@ -99,3 +99,15 @@ export function repay(){
   log('log.repaid', {x:money(x)}, 'good');
   return {ok:true, msg:{k:'fx.money', p:{x:money(-x)}}, sfx:'cash'};
 }
+// v0.10: the player names the town (free: no agenda slot). Up to 24 characters; empty keeps the old name.
+export const TOWN_MAX = 24;
+export function renameTown(name){
+  const v = String(name || '').replace(/\s+/g, ' ').trim().slice(0, TOWN_MAX);
+  if(!S || !v) return fail('err.townEmpty');
+  if(v === S.town) return {ok:true, msg:{k:'log.townSame'}};
+  const old = S.town; S.town = v; if(S.region && S.region.active) S.region.active.town = v;
+  log('log.renamed', {a:old, b:v}, 'good');
+  return {ok:true, msg:{k:'log.renamed', p:{a:old, b:v}}};
+}
+// A name suggestion in the house style (k: any integer — the UI passes a random one, so the run's own seed is untouched)
+export function suggestTown(k){ const a = TOWN_A[Math.abs(k) % TOWN_A.length], b = TOWN_B[Math.abs(Math.floor(k / 7)) % TOWN_B.length]; return a.endsWith('-') ? a+b : a+' '+b; }

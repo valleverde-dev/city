@@ -1,24 +1,27 @@
 import { playSound } from '../audio/sfx.js';
 import { acquire, consult, fileReport, lobby, repay, requestPermit, sellPlot, submitPlan } from '../core/actions.js';
-import { COMBO_BY_ID, activeCombos, comboPreviewAt, discovered } from '../core/combos.js';
+import { COMBOS, COMBO_BY_ID, activeCombos, comboPreviewAt, discovered } from '../core/combos.js';
 import { B, BUILD_TYPES, CFG, KIND, NEW_TYPES, stageCfg, on } from '../core/config.js';
-import { UNLOCKED_BY, unlocked } from '../core/career.js';
+import { unlocked } from '../core/career.js';
 import { DIRECTIVE_ICON } from '../core/directives.js';
 import { EVENTS, choicesFor, resolveEvent } from '../core/events.js';
 import { money } from '../core/format.js';
 import { attach } from '../core/newgame.js';
 import { save } from '../core/persist.js';
 import { RCOMBO_BY_ID, STYPE_ICON, attachPreview } from '../core/region.js';
+import { residents } from '../core/economy.js';
 import { approves, buildCost, buildMonths, hasAccess, landPrice, permitMonths, plotValue, support } from '../core/rules.js';
 import { S, has, pname, r1, rc } from '../core/state.js';
 import { t } from '../i18n/index.js';
 import { present } from '../render/anim.js';
-import { attachSel, isoOf, keepVisible, preview, scale, selected, setAttachSel, setPreview, setSelected, toScreen, viewHooks, TW } from '../render/camera.js';
-import { ARCH, archOf, colourOf, spr } from '../render/sprites.js';
+import { attachSel, isoOf, keepVisible, preview, scale, selBlock, selected, setAttachSel, setPreview, setSelBlock, setSelected, toScreen, viewHooks, TW } from '../render/camera.js';
+import { GROUNDS, riverTile, roadTile } from '../render/ground.js';
+import { ARCH, BUILDINGS, archOf, colourOf, spr } from '../render/sprites.js';
+import { roadPreviewKey } from '../render/map.js';
 import { CARD, chip, hideModal, letter, btn, pxPortrait, showNext } from './cards.js';
 import { $, P } from './dom.js';
 import { pulse, refresh, styleName } from './guide.js';
-import { agendaAvailable, doAction, hidePop } from './hud.js';
+import { agendaAvailable, doAction, hidePop, roman } from './hud.js';
 import { ic } from './icons.js';
 import { enterSettlement } from './title.js';
 
@@ -34,7 +37,7 @@ export function setArmed(ty){
     setPreview({i:selected, ty, combos: comboPreviewAt(selected, ty).map(c=>({...c, known: known.includes(c.id)}))}); }
   else setPreview(null);
 }
-export function clearSelection(){ setSelected(-1); setArmed(null); }
+export function clearSelection(){ setSelected(-1); setArmed(null); setSelBlock(-1); }
 // Which content the strip shows
 export function dockMode(){
   if(!S) return 'none';
@@ -42,15 +45,31 @@ export function dockMode(){
   if(S.over) return 'over';
   if(S.pending==='attach') return 'attach';
   if(selected >= 0) return 'parcel';
+  if(selBlock >= 0 && S.region.blocks[selBlock]) return 'block';
   return 'agenda';
 }
 export const eventOpen = () => dockMode()==='event';
 // Building art for the cards: the very style this parcel would get (cached as an image)
 const ART = new Map();
 export function buildingArt(ty, i = -1){
+  if(ty==='road'){ const [k, make] = roadPreviewKey(i);   // v0.10: the real road tile, joined like it would be on this parcel
+    if(!ART.has(k)){ const g = spr('g:'+k, make), cv = document.createElement('canvas'); cv.width = 64; cv.height = 112;
+      cv.getContext('2d').drawImage(g.c, 32 - g.ox, 74 - g.oy);   // placed where the card's window shows it (building sprites stand at y 96)
+      ART.set(k, cv.toDataURL()); }
+    return ART.get(k); }
   if(!ARCH[ty]) return null;
   const A = i>=0 ? archOf(i, ty) : ARCH[ty][0], v = i>=0 ? colourOf(i) : 1, key = ty+':'+A.id+':'+v;
   if(!ART.has(key)) ART.set(key, spr(key, ()=>A.make(v)).c.toDataURL());
+  return ART.get(key);
+}
+// v0.10: land that is not a building (the old village, the river, the regional road, protected land) as it looks on the map
+const LAND_GROUND = {village:()=>GROUNDS.village(0), flood:()=>riverTile(5), river:()=>riverTile(5), regional:()=>roadTile(5, true), habitat:()=>GROUNDS.habitat(0), farm:()=>GROUNDS.farm(0,0)};
+export function landArt(k){
+  if(!LAND_GROUND[k]) return null; const key = 'land:'+k;
+  if(!ART.has(key)){ const g = spr('g:land'+k, LAND_GROUND[k]), cv = document.createElement('canvas'); cv.width = 64; cv.height = 112; const c2 = cv.getContext('2d');
+    const top = k==='village' ? 96 : 74; c2.drawImage(g.c, 32 - g.ox, top - g.oy);
+    if(k==='village'){ const b = spr('village0', ()=>BUILDINGS.village(0)); c2.drawImage(b.c, 32 - b.ox, 96 - b.oy); }
+    ART.set(key, cv.toDataURL()); }
   return ART.get(key);
 }
 // One card of the strip
@@ -68,7 +87,7 @@ const tag = (txt, cls) => `<span class="tag ${cls||''}">${txt}</span>`;
 let lastKey = '';
 export function renderDock(){
   const dock = $('dock'), head = $('ctxHead'), strip = $('strip'), mode = dockMode();
-  const key = mode + ':' + (mode==='parcel' ? selected : '');
+  const key = mode + ':' + (mode==='parcel' ? selected : mode==='block' ? selBlock : '');
   const keep = key === lastKey ? strip.scrollLeft : 0; lastKey = key;
   dock.dataset.mode = mode; document.body.dataset.dock = mode;
   head.innerHTML = ''; strip.innerHTML = '';
@@ -77,6 +96,7 @@ export function renderDock(){
   else if(mode==='over') renderOver(head, strip);
   else if(mode==='attach') renderAttach(head, strip);
   else if(mode==='parcel') renderParcel(head, strip);
+  else if(mode==='block') renderBlock(head, strip);
   else renderAgenda(head, strip);
   strip.scrollLeft = keep;
   placeOverlays();
@@ -95,13 +115,40 @@ function renderAgenda(head, strip){
   if(on('comp')) act('description', t('act.report'), t('d.reportSub'), fileReport, off||S.slots<1, '', 'report');
   if(S.debt>0) act('account_balance_wallet', t('act.repay',{x:money(Math.min(CFG.loanStep,S.debt))}), t('d.repaySub'), repay, off||S.funds<Math.min(CFG.loanStep,S.debt), 'money', 'repay');
 }
+// ---------- land that is not yours: what it is, what it does, the combos it makes (v0.10) ----------
+function renderLand(p, pt, add){
+  const k = p.k, known = discovered();
+  const sub = k==='village' ? t('pcs.villageX', {n:10}) : t('pcs.'+k);
+  add({art:landArt(k), name:pt, sub, cls:'info wide land'});
+  const piece = k==='regional' ? 'regional' : k;
+  COMBOS.filter(cb=>cb.a===piece || cb.b===piece).forEach(cb=>{ const other = cb.a===piece ? cb.b : cb.a, kn = known.includes(cb.id);
+    if(B[other] && !unlocked(other)) return;
+    add({art: B[other] ? buildingArt(other) : landArt(other), name: kn ? t('combo.'+cb.id) : t('d.withPiece', {p:t('piece.'+other)}),
+      sub: kn ? t('combod.'+cb.id).split('. ')[0] : t('d.comboUnknown'), badge:[kn ? (cb.good ? '+' : '−') : '?', kn ? (cb.good ? 'good' : 'bad') : 'mystery'], cls:'combo-of '+(kn ? (cb.good ? 'good' : 'bad') : 'unknown')}); });
+  if(k==='village') add({icon:'warning', name:t('d.villageNear'), sub:t('d.villageNearX'), cls:'info wide'});
+}
+// ---------- a consolidated settlement tapped on the map (v0.10) ----------
+function renderBlock(head, strip){
+  const b = S.region.blocks[selBlock], add = o => strip.appendChild(tile(o)), known = discovered();
+  head.innerHTML = `<h3>${ic(STYPE_ICON[b.ty] || 'cottage')}${b.town}</h3>${tag(t('st.'+b.ty),'blue')}${tag(t('d.consolidated'),'ok')}<span class="ref">${t('d.settlementN', {n:roman(selBlock+1)})}</span>`;
+  add({icon:STYPE_ICON[b.ty] || 'cottage', name:t('st.'+b.ty), sub:t('std.'+b.ty), cls:'info wide'});
+  add({icon:'groups', name:String(b.res || 0), sub:t('d.blockRes'), cls:'stat'});
+  add({icon:'euro', name:'+'+money(b.tax || 0), sub:t('d.blockDiv'), cls:'stat money'});
+  const rc = (S.rcombos || []).filter(c=>c.b===selBlock);
+  rc.forEach(c=>{ const cb = RCOMBO_BY_ID[c.id], kn = known.includes(c.id);
+    add({icon: cb.good ? 'workspace_premium' : 'warning', name: kn ? t('rcombo.'+c.id) : t('rcombo.possible'), sub: kn ? t('rcombod.'+c.id).split('. ')[0] : t('d.withTown', {town:S.town}),
+      badge:[kn ? (cb.good ? '+' : '−') : '?', kn ? (cb.good ? 'good' : 'bad') : 'mystery'], cls:'combo '+(cb.good ? 'good' : 'bad')}); });
+  const edge = activeCombos().filter(x=>x.j < 0 && S.frontier[-1-x.j] && S.frontier[-1-x.j].b === selBlock && known.includes(x.id));
+  const seen = new Set(); edge.forEach(x=>{ if(seen.has(x.id)) return; seen.add(x.id); const cb = COMBO_BY_ID[x.id];
+    add({icon: cb.good ? 'workspace_premium' : 'warning', name:t('combo.'+x.id), sub:t('d.acrossEdge'), badge:[cb.good ? '+' : '−', cb.good ? 'good' : 'bad'], cls:'combo '+(cb.good ? 'good' : 'bad')}); });
+  if(!rc.length && !edge.length) add({icon:'info', name:t('d.noTies'), sub:t('d.noTiesX'), cls:'info wide'});
+}
 // ---------- a parcel ----------
 export function parcelTitle(i){
   const p = S.grid[i], isB = p.ty && p.k!=='regional';
   const title = isB ? t('b.'+p.ty) : (p.k==='farm' && !on('rustic')) ? t('k.farmU') : (p.urban && p.st==='owned' && p.k!=='muni') ? t('k.serviced') : t('k.'+p.k);
   return [isB ? B[p.ty].icon : KIND[p.k], title];
 }
-const LOCK_COND = ty => t('lock.'+ty);
 function renderParcel(head, strip){
   const i = selected, p = S.grid[i], [r,c] = rc(i), [pi, pt] = parcelTitle(i), isB = p.ty && p.k!=='regional', acc = hasAccess(r,c);
   const slotsOk = !S.over && S.slots >= 1;
@@ -111,10 +158,10 @@ function renderParcel(head, strip){
   if(p.st==='land' && p.hold) tags += tag(t('tag.hold'),'warn');
   head.innerHTML = `<h3>${ic(pi)}${pt}</h3>${tags}<span class="ref">${t('ui.parcel',{at:pname(i)})}</span>`;
   const add = o => strip.appendChild(tile(o));
-  if(p.k==='habitat' || p.k==='village' || p.k==='regional'){ add({icon:pi, name:pt, sub:t('pcs.'+p.k), cls:'info wide'}); return; }
+  if(p.k==='habitat' || p.k==='village' || p.k==='regional'){ renderLand(p, pt, add); return; }
   if(p.st==='land'){
     const price = landPrice(p), mayor = p.k==='muni' && on('local') && S.local < 40;
-    add({icon:'real_estate_agent', name:t('d.buy'), sub:`${money(price)} · ${t('d.slot1')}`, cls:'act primary', k:'buy',
+    add({icon:'payments', name:t('d.buy'), sub:`${money(price)} · ${t('d.slot1')}`, cls:'act primary', k:'buy',
       disabled: !slotsOk || mayor, why: mayor ? t('dw.mayor') : !slotsOk ? t('dw.slots') : '', click:()=>doAction(acquire(i), i)});
     add({icon:pi, name:t('d.about'), sub:t(p.k==='muni'?'pcs.muni':p.k==='flood'?'pcs.flood':p.hold?'pcs.hold':'pcs.farm'), cls:'info wide'});
     return; }
@@ -122,7 +169,7 @@ function renderParcel(head, strip){
     const inPlay = ty => (ty!=='road' || on('access')) && (ty!=='factory' || on('jobs')) && ((ty!=='school' && ty!=='clinic') || on('services')) && (!B[ty].flag || on(B[ty].flag));
     const known = discovered();
     BUILD_TYPES.filter(inPlay).forEach(ty=>{
-      if(!unlocked(ty)){ add({art:buildingArt(ty), name:t('b.'+ty), sub:LOCK_COND(ty), cls:'locked', badge:[ic('lock'),'lock'], disabled:true}); return; }
+      if(!unlocked(ty)) return;   // v0.10: only what you can build; what is still locked lives in the run file (Career)
       const bt = B[ty], taken = bt.unique && S.grid.some(q=>q.ty===ty && !['land','owned'].includes(q.st));
       const why = !acc ? t('dw.noAccess') : (bt.urban && !p.urban) ? t('dw.urban') : taken ? t('dw.unique') : !slotsOk ? t('dw.slots') : '';
       const cb = comboPreviewAt(i, ty), good = cb.filter(x=>known.includes(x.id) && x.good).length, bad = cb.filter(x=>known.includes(x.id) && !x.good).length, unk = cb.filter(x=>!known.includes(x.id)).length;
@@ -142,7 +189,7 @@ function renderParcel(head, strip){
   else if(p.st==='approved') status('engineering', t('d.queue', {b:t('b.'+p.ty)}), t('d.queueSub'));
   else if(p.st==='building') status('engineering', t('d.building', {b:t('b.'+p.ty)}), p.halt ? t('d.halted', {n:p.halt}) : t('d.buildSub', {n:p.t, x:money(p.mcost)}), p.halt ? ['II','bad'] : null, p.halt ? 'alert' : '');
   else if(p.st==='private') status('apartment', t('d.private'), t(p.dev.phase==='permit' ? 'd.privPermit' : 'd.privBuild', {n:p.dev.t}) + (S.market<CFG.devMinMarket ? ' · '+t('d.paused') : ''));
-  else if(p.st==='ruin') add({icon:'real_estate_agent', name:t('d.buyBack'), sub:`${money(r1(p.price*1.5))} · ${t('d.slot1')}`, cls:'act primary', disabled:!slotsOk, click:()=>doAction(acquire(i), i)});
+  else if(p.st==='ruin') add({icon:'payments', name:t('d.buyBack'), sub:`${money(r1(p.price*1.5))} · ${t('d.slot1')}`, cls:'act primary', disabled:!slotsOk, click:()=>doAction(acquire(i), i)});
   else if(p.st==='built' && isB && p.ty!=='road'){
     add({art:buildingArt(p.ty, i), name:t('b.'+p.ty), sub:styleName(i), cls:'built wide', badge: p.priv ? [t('d.privTag'),''] : [`−${money(B[p.ty].upkeep)}/${t('ui.mo')}`, '']});
     if(on('combos')) activeCombos().filter(x=>x.i===i || x.j===i).forEach(x=>{ const cb = COMBO_BY_ID[x.id];
@@ -223,4 +270,4 @@ function renderOver(head, strip){
   strip.appendChild(tile({icon:'description', name:t('d.summary'), cls:'act primary', click:()=>showNext()}));
 }
 // Escape / tapping the map again: let go of whatever is selected
-export function deselect(){ if(armed){ setArmed(null); refresh(); return true; } if(selected>=0){ clearSelection(); hidePop(); refresh(); return true; } return false; }
+export function deselect(){ if(armed){ setArmed(null); refresh(); return true; } if(selected>=0 || selBlock>=0){ clearSelection(); hidePop(); refresh(); return true; } return false; }

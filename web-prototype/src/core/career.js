@@ -9,24 +9,27 @@ import { storage } from './storage.js';
 //  experience raises your rank (and with it the grant of every settlement); achievements unlock new
 //  buildings for good. Stored apart from the run ('eurocrat_career').
 // =====================================================================
-// v0.9: levels. Level n needs 50·n·(n+1) experience in total (100, 300, 600, 1000…); every few levels comes a new rank.
-export const levelXp = n => 50*n*(n+1);
+// Levels. Level n needs LEVEL_K·n·(n+1) experience in total; every few levels comes a new rank.
+// v0.10: LEVEL_K 50 → 350. With 50 a first run reached level 7 and unlocked almost everything; now a first run
+// gives about one level, then roughly one level per run (bot, career kept: level ~6 after 5 runs, ~15 after 20).
+export const LEVEL_K = 350;
+export const levelXp = n => LEVEL_K*n*(n+1);
 export function levelOf(xp){ let n = 0; while(levelXp(n+1) <= xp) n++; return n; }
 export const RANK_LEVEL = [0, 2, 4, 6, 8, 11, 14, 18];             // the level at which each rank is reached
 export const RANKS = RANK_LEVEL.map(levelXp);                      // experience needed for each rank
 export const RANK_BONUS = 0.04;                                      // +4% of every grant per rank above the first
 // Achievements. when: the moment they are checked ('month' every month end, 'consolidate', 'over', 'mascot');
-// test(ctx) the condition; unlock: the building it unlocks (if any); xp: experience.
+// test(ctx) the condition; xp: experience. (Until v0.9 eight of them unlocked buildings; since v0.10 levels do.)
 const cnt = ty => S.grid.filter(p=>p.st==='built' && p.ty===ty).length;
 export const ACH = [
-  {id:'firstStone',  when:'month',       xp:50,  unlock:'market',   test:()=>cnt('housing')>=1},
-  {id:'expansion',   when:'consolidate', xp:100, unlock:'social',   test:()=>S.region.blocks.length>=2},
-  {id:'comboHunter', when:'month',       xp:100, unlock:'library',  test:()=>discovered().length>=5},
-  {id:'firstLoss',   when:'over',        xp:50,  unlock:'police',   test:()=>S.over && !S.over.win},
-  {id:'greenFingers',when:'month',       xp:100, unlock:'solar',    test:()=>cnt('park')>=3},
-  {id:'region3',     when:'consolidate', xp:150, unlock:'station',  test:()=>S.region.blocks.length>=3},
-  {id:'survivor',    when:'consolidate', xp:150, unlock:'data',     test:()=>S.debt>0},
-  {id:'kafka',       when:'month',       xp:100, unlock:'townhall', test:()=>(S.stats.approved||0)>=5},
+  {id:'firstStone',  when:'month',       xp:50,   test:()=>cnt('housing')>=1},
+  {id:'expansion',   when:'consolidate', xp:100,  test:()=>S.region.blocks.length>=2},
+  {id:'comboHunter', when:'month',       xp:100,  test:()=>discovered().length>=5},
+  {id:'firstLoss',   when:'over',        xp:50,   test:()=>S.over && !S.over.win},
+  {id:'greenFingers',when:'month',       xp:100,  test:()=>cnt('park')>=3},
+  {id:'region3',     when:'consolidate', xp:150,  test:()=>S.region.blocks.length>=3},
+  {id:'survivor',    when:'consolidate', xp:150,  test:()=>S.debt>0},
+  {id:'kafka',       when:'month',       xp:100,  test:()=>(S.stats.approved||0)>=5},
   {id:'noRefund',    when:'consolidate', xp:100, test:()=>S.carry < 0.5},
   {id:'early',       when:'consolidate', xp:100, test:c=>c.left>=3},
   {id:'lunches',     when:'month',       xp:50,  test:()=>(S.rs.lunches||0)>=10},
@@ -51,7 +54,10 @@ export const XP_FOR = {acquire:2, permit:3, approved:3, built:6, road:1, combo:8
 // Perks join the pool of rewards as you rise through the ranks (rank needed for each)
 export const PERK_RANK = {notary:0, fasttrack:0, prefab:0, contractor:0, cousin:0, translation:0, comms:1, lobbyist:1, fixer:2, shovel:2, cohesion:3, taxadvisor:4, ombudsman:5, revolving:6};
 export const ACH_BY_ID = Object.fromEntries(ACH.map(a=>[a.id, a]));
-export const UNLOCKED_BY = Object.fromEntries(ACH.filter(a=>a.unlock).map(a=>[a.unlock, a.id]));
+// v0.10: the new buildings are unlocked by career level, spread along the curve so they arrive over many runs
+export const UNLOCK_LEVEL = {market:2, library:3, police:5, social:7, townhall:9, solar:11, station:14, data:18};
+// The buildings a level unlocks (for the level-up banner)
+export const unlocksAt = lv => Object.keys(UNLOCK_LEVEL).filter(ty=>UNLOCK_LEVEL[ty]===lv);
 
 const KEY = 'eurocrat_career';
 export function career(){ try{ const c = JSON.parse(storage.get(KEY)||'null'); if(c && Array.isArray(c.ach)) return {types:[], perks:[], guide:false, tutorial:false, runs:0, xp:0, ...c}; }catch(e){}
@@ -61,11 +67,12 @@ export function resetCareer(){ try{ storage.set(KEY, ''); }catch(e){} }
 export function saveCareer(c){ try{ storage.set(KEY, JSON.stringify(c)); }catch(e){} }
 export function rankOf(xp){ let r = 0; RANKS.forEach((t,k)=>{ if(xp >= t) r = k; }); return r; }
 export function rankBonus(){ return rankOf(career().xp) * RANK_BONUS; }
-// A building can be ordered if it is one of the originals or its achievement has been earned
-export function unlocked(ty){ return BASE_TYPES.includes(ty) || career().ach.includes(UNLOCKED_BY[ty]); }
+// A building can be ordered if it is one of the originals or your career level has reached its level
+export function unlocked(ty){ return BASE_TYPES.includes(ty) || levelOf(career().xp) >= (UNLOCK_LEVEL[ty] ?? Infinity); }
 export function addXp(n){ const c = career(), before = rankOf(c.xp), lv0 = levelOf(c.xp); c.xp += n; saveCareer(c);
   const after = rankOf(c.xp), lv1 = levelOf(c.xp);
   if(S && lv1 > lv0 && after === before) (S.levelUps = S.levelUps || []).push(lv1);   // a promotion says it louder
+  if(S) for(let lv = lv0+1; lv <= lv1; lv++) unlocksAt(lv).forEach(ty=>(S.unlocks = S.unlocks || []).push(ty));
   if(after > before && S) (S.rankUps = S.rankUps || []).push(after); return after > before; }
 // Live experience: kind is a key of XP_FOR (n: how many). Counted for the run (S.rs.xp) and the career at once.
 export function gainXp(kind, n = 1){
@@ -102,12 +109,11 @@ export function endRun(){
   const c = career();
   return {xp: c.xp - before, bonus, before, after:c.xp, rank0: rankOf(before), rank1: rankOf(c.xp), ach: S.rs.ach.slice()};
 }
-// Quick start (after the tutorial): three dossiers to choose from — a settlement type, a perk, and money.
-// A small separate random generator, so the offer does not touch the run's own seed.
-export function drafts(seed){
+// v0.10: no more choosing. After the tutorial every run starts from one random draw — a settlement type,
+// a starting perk and a member state — revealed on the settlement screen. A small separate random generator,
+// so the draw does not touch the run's own seed.
+export function randomStart(seed){
   let x = seed|0; const r = () => { x = (x + 0x6D2B79F5)|0; let t = Math.imul(x ^ (x>>>15), x|1); t ^= t + Math.imul(t ^ (t>>>7), t|61); return ((t ^ (t>>>14))>>>0)/4294967296; };
-  const pick = a => a[Math.floor(r()*a.length)], perks = Object.keys(PERKS).filter(k=>k!=='shovel'), out = [], used = new Set();
-  while(out.length < 3){ const ty = pick(STYPES); if(used.has(ty)) continue; used.add(ty);
-    out.push({ty, perk: pick(perks), country: Math.floor(r()*N_COUNTRIES), seed: (r()*2147483647)|0}); }
-  return out;
+  const pick = a => a[Math.floor(r()*a.length)], perks = Object.keys(PERKS).filter(k=>k!=='shovel' && (PERK_RANK[k]||0) <= rankNow());
+  return {ty: pick(STYPES), perk: pick(perks), country: Math.floor(r()*N_COUNTRIES), seed: (r()*2147483647)|0};
 }
