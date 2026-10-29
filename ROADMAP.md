@@ -6,7 +6,14 @@ Living project document · update it as the prototype evolves. The game design l
 
 **Eurocrat** (working title): a satirical, turn-based roguelike city builder. You are a Brussels programme officer who must deliver a model European town with plenty of money and no power — buy the land, file the permits, survive the neighbours, spend the funds before they expire. Tone and references: *Constructor* (1997), with a hyper-realistic, comic look at how building actually works in contemporary Europe. The plan: validate the loop in the web/iPad prototype, then port to Godot to ship on the App Store and Steam.
 
-## Current status — v0.9.0 (Oct 29, 2026) · a new interface: everything on one screen, sideways; live experience
+## Current status — v0.9.1 (Oct 29, 2026) · a livelier title screen
+
+A small update on top of v0.9.0, no rule changes:
+- **Dancing rays.** The light rays behind the logo have their own layer now: the fan sways and slowly turns, each ray breathes and flickers out of step with the others, and a halo pulses behind the logo. Still pixel art (three dithered light levels).
+- **Animated logo.** It floats in whole-pixel steps, its glow breathes, and every few seconds a warm glint sweeps across the letters (masked to the letter faces, so the outline stays clean).
+- Reduced motion: static rays, still logo.
+
+## Previous — v0.9.0 (Oct 29, 2026) · a new interface: everything on one screen, sideways; live experience
 
 Playtest feedback on v0.8: the UI was ugly and vertical (cards stacked in a side "sheet"), too much text, a glitch every time a sheet appeared (it closed and slid in again on every tap, and the guide bubble jumped in again on every action), and no place to see combos, experience and perks the roguelike way. Designed first as a mockup (iPad and iPhone), approved, then built:
 - **No more sheets.** The map fills the screen and the **HUD floats over it**: the goal (residents, what holds growth back, months as pips) and the money first, the meters as segments, the perks always on show as **relics**.
