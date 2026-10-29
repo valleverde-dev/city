@@ -15,6 +15,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 FONT = ROOT / 'web-prototype/src/assets/fonts/jersey10.woff'
 OUT = ROOT / 'art/logo'
 GAME_SVG = ROOT / 'web-prototype/src/assets/logo.svg'
+FACES_SVG = ROOT / 'web-prototype/src/assets/logo-faces.svg'   # just the letter faces: the mask for the title-screen glint
 
 UNIT = 75             # font units per pixel in Jersey 10
 TRACK = 1             # extra pixels between letters, so the outlines just meet
@@ -91,5 +92,6 @@ if __name__ == '__main__':
     OUT.mkdir(parents=True, exist_ok=True)
     svg = to_svg(px, W, H)
     (OUT / 'eurocrat-logo.svg').write_text(svg); GAME_SVG.write_text(svg)
+    FACES_SVG.write_text(to_svg({p: (WHITE, 1) for p, (c, a) in px.items() if c in (WHITE, YELLOW)}, W, H))
     for k in (1, 4, 8): to_png(px, W, H, k).save(OUT / f'eurocrat-logo@{k}x.png')
     print(f'logo {W}x{H} px -> {OUT} and {GAME_SVG}')
