@@ -355,8 +355,13 @@ with sync_playwright() as p:
     r1v = S("g.viewRot"); page.keyboard.press("q"); page.wait_for_timeout(300)
     check(r1v == (r0v + 1) % 4 and S("g.viewRot") == r0v, "E turns the map a quarter, Q turns it back")
     # banners go away on their own
-    S("(S.levelUps=[3], 0)"); ev("window.__eurocrat.refresh()"); page.wait_for_timeout(4200)
-    check(page.locator("#toast.in").count() == 0, "a banner leaves on its own")
+    S("(S.levelUps=[3], 0)"); ev("window.__eurocrat.refresh()"); page.wait_for_timeout(300)
+    shown = page.locator("#toast.in").count() == 1
+    try:   # every queued banner (earlier ones too) leaves on its own, one after another
+        page.wait_for_function("!document.querySelector('#toast.in') && window.__eurocrat.toasts.length === 0", timeout=30000); gone = True
+    except Exception:
+        gone = False
+    check(shown and gone, "a banner leaves on its own")
     # rename the town
     page.click("#townName"); page.fill("#townName input", "Villa Burocracia"); page.keyboard.press("Enter"); page.wait_for_timeout(80)
     check(S("S.town") == "Villa Burocracia" and "Villa Burocracia" in page.locator("#townName").inner_text(), "the town's name can be edited")
