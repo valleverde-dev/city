@@ -261,7 +261,7 @@ function renderMenu(fresh){
   let first = null;
   if(view === 'main'){
     const car = career();
-    // v0.10: no dossier to choose. After the tutorial, New Euroregion starts a random run straight away.
+    // v0.9.2: no dossier to choose. After the tutorial, New Euroregion starts a random run straight away.
     add(item(t('title.new'), startNewEuroregion, {sub: car.tutorial ? t('title.newSubQuick', {rank:t('rank.'+rankOf(car.xp))}) : t('title.newSubTut'), cls:'new'}));
     const c = add(item(t('title.continue'), ()=>{ setState(saved); afterLoad(); },
       {sub: cont ? t('title.contSub',{l:roman((saved.stage||0)+1), town:saved.town, m:saved.month}) : t('title.noSave'), disabled:!cont, cls:'cont'}));
@@ -340,7 +340,7 @@ export function startMenu(){
   updateMusicBtn(); setRerender(()=>{ renderMenu(); requestAnimationFrame(layoutCover); });
 }
 addEventListener('resize', ()=>{ if(coverOpen()) layoutCover(); });
-// v0.10: the pause SCREEN — five options in a row and nothing else: Continue · Settings · Restart · Abandon · Main menu.
+// v0.9.2: the pause SCREEN — five options in a row and nothing else: Continue · Settings · Restart · Abandon · Main menu.
 // Settings holds music, language, the mayor's guide and the controls; Restart and Abandon ask first (they cannot be undone).
 export let pauseView = 'main';
 export const pauseOpen = () => !modal.classList.contains('hidden') && modal.classList.contains('pause');

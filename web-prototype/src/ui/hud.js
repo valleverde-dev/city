@@ -45,7 +45,7 @@ export function setMeter(id, v, prev, warnBelow=40, badBelow=25){
 }
 let lastXp = null;
 export function updateHUD(){
-  // v0.10: the town's name, whole and editable; the settlement number sits with the goal it belongs to
+  // v0.9.2: the town's name, whole and editable; the settlement number sits with the goal it belongs to
   if(!$('townName').classList.contains('editing')){ $('townName').querySelector('.nm').textContent = S.town; $('townName').title = t('ui.rename'); }
   $('stageTag').textContent = `${t('ui.settlement')} ${roman((S.stage||0)+1)}`;
   // the goal: residents toward the target, months left as pips
@@ -133,7 +133,7 @@ export function doAction(res, i){
   floatAt(i, t(res.msg.k, P(res.msg.p)), res.ok ? (res.cls||'') : 'bad', res.ok ? 'check_circle' : 'block');
   save(); refresh();
 }
-// v0.10: tap the town's name to rename it (Enter or ✓ keeps it, Esc cancels; the dice suggests another one)
+// v0.9.2: tap the town's name to rename it (Enter or ✓ keeps it, Esc cancels; the dice suggests another one)
 export function editTownName(){
   const el = $('townName'); if(!S || el.classList.contains('editing')) return;
   el.classList.add('editing'); playSound('click');

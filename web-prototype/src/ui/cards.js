@@ -27,7 +27,7 @@ export const modal = $('modal'), notice = $('notice');
 let attachKey = '';
 export let rerender = null;
 export function setRerender(f){ rerender = f; }
-// v0.10: a letter is a SCREEN, laid out to be read left to right (desktop first): the speaker, the title and what they
+// v0.9.2: a letter is a SCREEN, laid out to be read left to right (desktop first): the speaker, the title and what they
 // say on the left; the facts (goal, rules, chips…) on the right; the buttons in a row at the bottom right.
 // On narrow screens the two columns stack. It appears with a fade (no slide, no tilt).
 export function letter({icon, title, stamp, cls, body, buttons, dock, speaker, wide}){

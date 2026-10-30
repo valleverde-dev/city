@@ -99,7 +99,7 @@ export function repay(){
   log('log.repaid', {x:money(x)}, 'good');
   return {ok:true, msg:{k:'fx.money', p:{x:money(-x)}}, sfx:'cash'};
 }
-// v0.10: the player names the town (free: no agenda slot). Up to 24 characters; empty keeps the old name.
+// v0.9.2: the player names the town (free: no agenda slot). Up to 24 characters; empty keeps the old name.
 export const TOWN_MAX = 24;
 export function renameTown(name){
   const v = String(name || '').replace(/\s+/g, ' ').trim().slice(0, TOWN_MAX);

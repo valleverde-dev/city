@@ -1,6 +1,6 @@
 # Architecture — web prototype
 
-*Living document. v0.10 · Oct 29, 2026.* How the code of `web-prototype/` is organised, why, and how it maps to the Godot port.
+*Living document. v0.9.2 · Oct 29, 2026.* How the code of `web-prototype/` is organised, why, and how it maps to the Godot port.
 
 ## The idea in one paragraph
 
@@ -45,11 +45,11 @@ Until v0.5 everything lived in one 4,600-line `src/index.html`. v0.5.1 split it 
 | `rules.js` | Meters (`bump`), money (`spend`), access, prices, permit/build times, approval chance, capacities (`caps`), `log` and `fx` | `Rules` |
 | `economy.js` | Residents, taxes, monthly costs, committed money, milestones | `Rules` |
 | `combos.js` | Adjacency combos and their effects; the discovered catalogue | `Combos` |
-| `actions.js` | Player actions: acquire, permit, sell, plan, lobby, consult, report, repay; `renameTown` and `suggestTown` (v0.10) | `Actions` |
+| `actions.js` | Player actions: acquire, permit, sell, plan, lobby, consult, report, repay; `renameTown` and `suggestTown` (v0.9.2) | `Actions` |
 | `directives.js` | Brussels directives and perks | `Directives` |
 | `events.js` | Event cards: setup, choices, consequences | `Events` (+ data) |
-| `month.js` | `endMonth()`: the world resolves; `abandonRun()` (v0.10: Abandon / Restart end the run as a loss) | `Turn` |
-| `career.js` | What carries over between runs (v0.8): experience (earned live since v0.9: `XP_FOR`, `gainXp`), levels (`LEVEL_K`) and ranks and their grant bonus, perks by rank (`PERK_RANK`), the 26 achievements (`ACH`, `checkAch(when)`), buildings unlocked by level (v0.10: `UNLOCK_LEVEL`, `unlocked`, level-ups queue their buildings in `S.unlocks`), the random start of a run (`randomStart`, replacing the v0.8 drafts). Stored apart from the run (`eurocrat_career`) | `Career` (user://) |
+| `month.js` | `endMonth()`: the world resolves; `abandonRun()` (v0.9.2: Abandon / Restart end the run as a loss) | `Turn` |
+| `career.js` | What carries over between runs (v0.8): experience (earned live since v0.9: `XP_FOR`, `gainXp`), levels (`LEVEL_K`) and ranks and their grant bonus, perks by rank (`PERK_RANK`), the 26 achievements (`ACH`, `checkAch(when)`), buildings unlocked by level (v0.9.2: `UNLOCK_LEVEL`, `unlocked`, level-ups queue their buildings in `S.unlocks`), the random start of a run (`randomStart`, replacing the v0.8 drafts). Stored apart from the run (`eurocrat_career`) | `Career` (user://) |
 | `persist.js` | Save / load of the run, records between runs | `SaveGame` (user://) |
 | `storage.js` | Key–value adapter: `localStorage` in the browser, memory in Node | `ConfigFile` / `FileAccess` |
 | `format.js` | `money()` in the current language | a helper |
@@ -78,10 +78,10 @@ The contract with the UI (also the contract the Godot port must honour):
 | `anim.js` | The ~15 fps animation layer, night, completions, birds, flags, traffic |
 
 ### `src/ui/`, `src/audio/`, `src/main.js`
-`dom.js` (helpers, floating feedback), `hud.js` (the floating HUD: the town's name — editable —, goal, months, money, meters, perks as relics, the experience bar), `dock.js` (v0.9: the bottom bar — agenda, parcel, building cards with the ghost preview and on-map confirm, land that is not yours, a consolidated settlement, the next plot, events; v0.10: `landArt` draws land as it looks on the map), `run.js` (the run file: combos, perks, career, region), `inbox.js` (what needs attention, the news), `problems.js`, `guide.js` (the mayor's guide), `cards.js` (letters — v0.10: two-column screens —, event cards), `title.js` (title screen: the scene, the menu and its views — new game, settings, credits — keyboard navigation, starting a run; v0.10: the pause screen and its views — settings, restart, abandon), `input.js` (touch, mouse, keyboard), `icons.js` (66 pixel icons), `regionmap.js` (the Euroregion minimap), `drama.js` (full-screen consolidation and game over, banners). `audio/music.js` and `audio/sfx.js`. `main.js` boots the game and exposes `window.__eurocrat` for the tests.
+`dom.js` (helpers, floating feedback), `hud.js` (the floating HUD: the town's name — editable —, goal, months, money, meters, perks as relics, the experience bar), `dock.js` (v0.9: the bottom bar — agenda, parcel, building cards with the ghost preview and on-map confirm, land that is not yours, a consolidated settlement, the next plot, events; v0.9.2: `landArt` draws land as it looks on the map), `run.js` (the run file: combos, perks, career, region), `inbox.js` (what needs attention, the news), `problems.js`, `guide.js` (the mayor's guide), `cards.js` (letters — v0.9.2: two-column screens —, event cards), `title.js` (title screen: the scene, the menu and its views — new game, settings, credits — keyboard navigation, starting a run; v0.9.2: the pause screen and its views — settings, restart, abandon), `input.js` (touch, mouse, keyboard), `icons.js` (66 pixel icons), `regionmap.js` (the Euroregion minimap), `drama.js` (full-screen consolidation and game over, banners). `audio/music.js` and `audio/sfx.js`. `main.js` boots the game and exposes `window.__eurocrat` for the tests.
 
 ### `src/styles/` and `src/assets/`
-CSS split by area and imported in order by `styles/index.css` (order matters: `readability.css` and `layout.css` refine the earlier files, and `screens.css` — v0.10: letters as screens, the pause screen, fades, banners — comes last). Keyframe names are global in the bundle: v0.9 had three different `slam` animations and the last one (a stamp's rotation) tilted every letter; give each animation its own name. The three OFL fonts are real `.woff` files in `assets/fonts/`, and `assets/logo.svg` is the game logo (generated by `tools/make_logo.py`, which also writes `art/logo/`); the build inlines them all.
+CSS split by area and imported in order by `styles/index.css` (order matters: `readability.css` and `layout.css` refine the earlier files, and `screens.css` — v0.9.2: letters as screens, the pause screen, fades, banners — comes last). Keyframe names are global in the bundle: v0.9 had three different `slam` animations and the last one (a stamp's rotation) tilted every letter; give each animation its own name. The three OFL fonts are real `.woff` files in `assets/fonts/`, and `assets/logo.svg` is the game logo (generated by `tools/make_logo.py`, which also writes `art/logo/`); the build inlines them all.
 
 ## Build
 

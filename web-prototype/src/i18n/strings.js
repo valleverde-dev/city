@@ -579,14 +579,14 @@ en: {
   'meterS.neigh':"Neighbours",
   'meterS.comp':"Rules",
   'meterS.spent':"Spent",
-  // --- v0.10 ---
+  // --- v0.9.2 ---
   'title.tutorial':"Play the tutorial",
   'title.tutorialSub':"The 2×2 hamlet, with the mayor’s guide",
   'lock.level':"Level {n}",
   'toast.unlocks':"New building: {b}",
   'toast.grant':"+{p}% grant",
   'toast.perks':"new perks: {p}",
-  // --- v0.10 ---
+  // --- v0.9.2 ---
   'pause.continue':"Continue",
   'pause.settings':"Settings",
   'pause.restart':"Restart",
@@ -618,7 +618,7 @@ en: {
   'news.abandoned.h':"Programme officer leaves {town} mid-term",
   'news.abandoned.s':"Brussels speaks of an “orderly transition”. The mayor speaks of “desertion”.",
   'stl.perksLbl':"Perks in this run",
-  // --- v0.10 ---
+  // --- v0.9.2 ---
   'pcs.villageX':"Not yours: you cannot buy it or build on it. It gives access to its neighbours, and its {n} old residents count toward your goal.",
   'd.withPiece':"Next to: {p}",
   'd.comboUnknown':"A combo you have not found yet: good or bad?",
@@ -632,7 +632,7 @@ en: {
   'd.acrossEdge':"Across the edge, with what you built",
   'd.noTies':"No ties with this settlement yet",
   'd.noTiesX':"Build along its edge to make combos with it.",
-  // --- v0.10 ---
+  // --- v0.9.2 ---
   'ui.rename':"Rename the town",
   'ui.renameRandom':"Suggest another name",
   'ui.renameOk':"Keep this name",
@@ -1220,14 +1220,14 @@ es: {
   'meterS.neigh':"Vecinos",
   'meterS.comp':"Normas",
   'meterS.spent':"Gastado",
-  // --- v0.10 ---
+  // --- v0.9.2 ---
   'title.tutorial':"Jugar el tutorial",
   'title.tutorialSub':"La aldea de 2×2, con la guía del alcalde",
   'lock.level':"Nivel {n}",
   'toast.unlocks':"Nuevo edificio: {b}",
   'toast.grant':"+{p}% de subvención",
   'toast.perks':"perks nuevos: {p}",
-  // --- v0.10 ---
+  // --- v0.9.2 ---
   'pause.continue':"Continuar",
   'pause.settings':"Ajustes",
   'pause.restart':"Reiniciar",
@@ -1259,7 +1259,7 @@ es: {
   'news.abandoned.h':"El responsable del programa deja {town} a mitad de mandato",
   'news.abandoned.s':"Bruselas habla de «transición ordenada». El alcalde, de «deserción».",
   'stl.perksLbl':"Perks de esta partida",
-  // --- v0.10 ---
+  // --- v0.9.2 ---
   'pcs.villageX':"No es tuyo: no se compra ni se construye. Da acceso a sus vecinos, y sus {n} vecinos de siempre cuentan para tu objetivo.",
   'd.withPiece':"Junto a: {p}",
   'd.comboUnknown':"Un combo que aún no has descubierto: ¿bueno o malo?",
@@ -1273,7 +1273,7 @@ es: {
   'd.acrossEdge':"A través del borde, con lo que has construido",
   'd.noTies':"Aún sin lazos con este asentamiento",
   'd.noTiesX':"Construye junto a su borde para hacer combos con él.",
-  // --- v0.10 ---
+  // --- v0.9.2 ---
   'ui.rename':"Cambiar el nombre del pueblo",
   'ui.renameRandom':"Proponer otro nombre",
   'ui.renameOk':"Quedarse con este nombre",

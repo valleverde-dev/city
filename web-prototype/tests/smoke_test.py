@@ -322,7 +322,7 @@ with sync_playwright() as p:
     check(S("g.dock") == "parcel" and S("g.selected") == site and page.locator("#inbox").is_hidden(), "tapping a problem jumps to its parcel")
     page.keyboard.press("Escape")
 
-    # --- v0.10: the playtest feedback of v0.9
+    # --- v0.9.2: the playtest feedback of v0.9
     ev("localStorage.setItem('eurocrat_career', JSON.stringify({xp:0, ach:[], types:[], perks:[], runs:1, tutorial:true, guide:false}))")
     ev(f"{G}.newGame(42, 3)"); clear_cards(); S("(g.refresh(), 0)")
     own = S("(()=>{ const i=S.grid.findIndex((p,k)=>p.k==='farm' && p.st==='land' && g.hasAccess(Math.floor(k/16), k%16)); Object.assign(S.grid[i],{st:'owned', urban:true}); S.funds=200; S.slots=3; return i; })()")

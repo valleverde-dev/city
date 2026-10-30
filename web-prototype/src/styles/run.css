@@ -127,7 +127,7 @@
 }
 
 /* =====================================================================
-   v0.10 — the collections are one grid that fits the screen: 12, 11 or 10 cards a row on a desktop,
+   v0.9.2 — the collections are one grid that fits the screen: 12, 11 or 10 cards a row on a desktop,
    fewer as the screen narrows; it scrolls down, never sideways. Every card has the same size and the
    same bottom margin: the effect is clipped to a few lines and shown whole on tap.
    ===================================================================== */

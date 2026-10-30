@@ -133,7 +133,7 @@ export function flushToasts(){
   if(!S) return;
   if(S.over){ (S.newAch||[]).splice(0); (S.rankUps||[]).splice(0); (S.levelUps||[]).splice(0); (S.unlocks||[]).splice(0); return; }   // the end-of-run summary lists them
   (S.newAch || []).splice(0).forEach(id=>queue.push({k:'ach', id}));
-  // v0.10: a level or a promotion says in the same banner what it brings (buildings, perks, grant)
+  // v0.9.2: a level or a promotion says in the same banner what it brings (buildings, perks, grant)
   const ul = (S.unlocks || []).splice(0), lvOf = ty => UNLOCK_LEVEL[ty];
   const ranks = (S.rankUps || []).splice(0), levels = (S.levelUps || []).splice(0);
   ranks.forEach(r=>queue.push({k:'rank', r}));
@@ -156,7 +156,7 @@ function nextToast(){
   if(q.k==='combo'){ bar.className = 'toast combo '+(q.good ? 'good' : 'bad');
     bar.innerHTML = `${ic(q.good ? 'workspace_premium' : 'warning')}<span><small>${t(q.good ? 'toast.combo' : 'toast.comboBad')}${q.good ? ' · +'+XP_FOR.discover+' XP' : ''}</small><b>${t((q.region ? 'rcombo.' : 'combo.')+q.id)}</b><i>${t((q.region ? 'rcombod.' : 'combod.')+q.id).split('. ')[0]}</i></span>`; }
   playSound(q.k==='rank' ? 'win' : q.k==='combo' ? (q.good ? 'fanfare' : 'crowd') : q.k==='level' ? 'ok' : 'fanfare');
-  // v0.10: below the HUD, never over it; it fades out on its own (or when tapped) and the next one follows
+  // v0.9.2: below the HUD, never over it; it fades out on its own (or when tapped) and the next one follows
   const hud = document.getElementById('hud'); if(hud) bar.style.setProperty('--toastTop', Math.round(hud.getBoundingClientRect().bottom + 12)+'px');
   bar.classList.remove('in'); void bar.offsetWidth; bar.classList.add('in');
   let done = false; const leave = () => { if(done) return; done = true; clearTimeout(timer); bar.classList.remove('in'); bar.onclick = null; setTimeout(nextToast, 380); };

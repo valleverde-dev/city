@@ -17,7 +17,7 @@ import { coverKey, coverOpen, frameView, pauseBack, pauseMenu, pauseOpen } from 
 // =====================================================================
 //  INPUT — tap to select · drag (one finger / mouse) to move · pinch / wheel / +− to zoom
 //  Keyboard: WASD or arrows move, + − zoom, Q / E orbit the map (R too), C centres, Space ends the month,
-//  Tab opens the run file, Esc closes / pauses (v0.10: E moved from the run file to the orbit)
+//  Tab opens the run file, Esc closes / pauses (v0.9.2: E moved from the run file to the orbit)
 // =====================================================================
 export const pointers = new Map(); export let pinchD=0, pinchZ=1, pinchMid=null, dragged=false, downAt=null, lastAt=null;
 cvs.addEventListener('pointerdown', e=>{
@@ -49,7 +49,7 @@ export function up(e){
   else if(wasSingle && !dragged && downAt && !eventOpen()){
     const r = cvs.getBoundingClientRect(); const i = tileAt(e.clientX-r.left, e.clientY-r.top);
     const k = i < 0 ? blockAtScreen(e.clientX-r.left, e.clientY-r.top) : -1;
-    if(k >= 0 && k !== selBlock){ clearSelection(); setSelBlock(k); }   // v0.10: a consolidated settlement: what it is and what it brings
+    if(k >= 0 && k !== selBlock){ clearSelection(); setSelBlock(k); }   // v0.9.2: a consolidated settlement: what it is and what it brings
     else if(i<0 || i===selected) clearSelection();
     else { setSelected(i); setArmed(null); setSelBlock(-1); }
     playSound('click'); refresh(); if(selected>=0) keepVisible(selected);
@@ -62,7 +62,7 @@ export function blockAtScreen(x, y){
   const Y = w[0]+FRY, X = w[1]+FRX;
   return S.region.blocks.findIndex(B=>Y>=B.y && Y<B.y+B.n && X>=B.x && X<B.x+B.n);
 }
-// v0.10: with a mouse, hovering a consolidated settlement shows its name and what it pays the region
+// v0.9.2: with a mouse, hovering a consolidated settlement shows its name and what it pays the region
 const tip = document.createElement('div'); tip.id = 'maptip'; tip.hidden = true; worldEl.appendChild(tip);
 cvs.addEventListener('pointermove', e=>{
   if(e.pointerType !== 'mouse' || pointers.size || !S || S.pending){ tip.hidden = true; return; }

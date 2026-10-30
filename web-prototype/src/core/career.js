@@ -10,7 +10,7 @@ import { storage } from './storage.js';
 //  buildings for good. Stored apart from the run ('eurocrat_career').
 // =====================================================================
 // Levels. Level n needs LEVEL_K·n·(n+1) experience in total; every few levels comes a new rank.
-// v0.10: LEVEL_K 50 → 350. With 50 a first run reached level 7 and unlocked almost everything; now a first run
+// v0.9.2: LEVEL_K 50 → 350. With 50 a first run reached level 7 and unlocked almost everything; now a first run
 // gives about one level, then roughly one level per run (bot, career kept: level ~6 after 5 runs, ~15 after 20).
 export const LEVEL_K = 350;
 export const levelXp = n => LEVEL_K*n*(n+1);
@@ -19,7 +19,7 @@ export const RANK_LEVEL = [0, 2, 4, 6, 8, 11, 14, 18];             // the level 
 export const RANKS = RANK_LEVEL.map(levelXp);                      // experience needed for each rank
 export const RANK_BONUS = 0.04;                                      // +4% of every grant per rank above the first
 // Achievements. when: the moment they are checked ('month' every month end, 'consolidate', 'over', 'mascot');
-// test(ctx) the condition; xp: experience. (Until v0.9 eight of them unlocked buildings; since v0.10 levels do.)
+// test(ctx) the condition; xp: experience. (Until v0.9 eight of them unlocked buildings; since v0.9.2 levels do.)
 const cnt = ty => S.grid.filter(p=>p.st==='built' && p.ty===ty).length;
 export const ACH = [
   {id:'firstStone',  when:'month',       xp:50,   test:()=>cnt('housing')>=1},
@@ -54,7 +54,7 @@ export const XP_FOR = {acquire:2, permit:3, approved:3, built:6, road:1, combo:8
 // Perks join the pool of rewards as you rise through the ranks (rank needed for each)
 export const PERK_RANK = {notary:0, fasttrack:0, prefab:0, contractor:0, cousin:0, translation:0, comms:1, lobbyist:1, fixer:2, shovel:2, cohesion:3, taxadvisor:4, ombudsman:5, revolving:6};
 export const ACH_BY_ID = Object.fromEntries(ACH.map(a=>[a.id, a]));
-// v0.10: the new buildings are unlocked by career level, spread along the curve so they arrive over many runs
+// v0.9.2: the new buildings are unlocked by career level, spread along the curve so they arrive over many runs
 export const UNLOCK_LEVEL = {market:2, library:3, police:5, social:7, townhall:9, solar:11, station:14, data:18};
 // The buildings a level unlocks (for the level-up banner)
 export const unlocksAt = lv => Object.keys(UNLOCK_LEVEL).filter(ty=>UNLOCK_LEVEL[ty]===lv);
@@ -109,7 +109,7 @@ export function endRun(){
   const c = career();
   return {xp: c.xp - before, bonus, before, after:c.xp, rank0: rankOf(before), rank1: rankOf(c.xp), ach: S.rs.ach.slice()};
 }
-// v0.10: no more choosing. After the tutorial every run starts from one random draw — a settlement type,
+// v0.9.2: no more choosing. After the tutorial every run starts from one random draw — a settlement type,
 // a starting perk and a member state — revealed on the settlement screen. A small separate random generator,
 // so the draw does not touch the run's own seed.
 export function randomStart(seed){

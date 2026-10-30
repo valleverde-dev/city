@@ -52,7 +52,7 @@ export const eventOpen = () => dockMode()==='event';
 // Building art for the cards: the very style this parcel would get (cached as an image)
 const ART = new Map();
 export function buildingArt(ty, i = -1){
-  if(ty==='road'){ const [k, make] = roadPreviewKey(i);   // v0.10: the real road tile, joined like it would be on this parcel
+  if(ty==='road'){ const [k, make] = roadPreviewKey(i);   // v0.9.2: the real road tile, joined like it would be on this parcel
     if(!ART.has(k)){ const g = spr('g:'+k, make), cv = document.createElement('canvas'); cv.width = 64; cv.height = 112;
       cv.getContext('2d').drawImage(g.c, 32 - g.ox, 74 - g.oy);   // placed where the card's window shows it (building sprites stand at y 96)
       ART.set(k, cv.toDataURL()); }
@@ -62,7 +62,7 @@ export function buildingArt(ty, i = -1){
   if(!ART.has(key)) ART.set(key, spr(key, ()=>A.make(v)).c.toDataURL());
   return ART.get(key);
 }
-// v0.10: land that is not a building (the old village, the river, the regional road, protected land) as it looks on the map
+// v0.9.2: land that is not a building (the old village, the river, the regional road, protected land) as it looks on the map
 const LAND_GROUND = {village:()=>GROUNDS.village(0), flood:()=>riverTile(5), river:()=>riverTile(5), regional:()=>roadTile(5, true), habitat:()=>GROUNDS.habitat(0), farm:()=>GROUNDS.farm(0,0)};
 export function landArt(k){
   if(!LAND_GROUND[k]) return null; const key = 'land:'+k;
@@ -115,7 +115,7 @@ function renderAgenda(head, strip){
   if(on('comp')) act('description', t('act.report'), t('d.reportSub'), fileReport, off||S.slots<1, '', 'report');
   if(S.debt>0) act('account_balance_wallet', t('act.repay',{x:money(Math.min(CFG.loanStep,S.debt))}), t('d.repaySub'), repay, off||S.funds<Math.min(CFG.loanStep,S.debt), 'money', 'repay');
 }
-// ---------- land that is not yours: what it is, what it does, the combos it makes (v0.10) ----------
+// ---------- land that is not yours: what it is, what it does, the combos it makes (v0.9.2) ----------
 function renderLand(p, pt, add){
   const k = p.k, known = discovered();
   const sub = k==='village' ? t('pcs.villageX', {n:10}) : t('pcs.'+k);
@@ -127,7 +127,7 @@ function renderLand(p, pt, add){
       sub: kn ? t('combod.'+cb.id).split('. ')[0] : t('d.comboUnknown'), badge:[kn ? (cb.good ? '+' : '−') : '?', kn ? (cb.good ? 'good' : 'bad') : 'mystery'], cls:'combo-of '+(kn ? (cb.good ? 'good' : 'bad') : 'unknown')}); });
   if(k==='village') add({icon:'warning', name:t('d.villageNear'), sub:t('d.villageNearX'), cls:'info wide'});
 }
-// ---------- a consolidated settlement tapped on the map (v0.10) ----------
+// ---------- a consolidated settlement tapped on the map (v0.9.2) ----------
 function renderBlock(head, strip){
   const b = S.region.blocks[selBlock], add = o => strip.appendChild(tile(o)), known = discovered();
   head.innerHTML = `<h3>${ic(STYPE_ICON[b.ty] || 'cottage')}${b.town}</h3>${tag(t('st.'+b.ty),'blue')}${tag(t('d.consolidated'),'ok')}<span class="ref">${t('d.settlementN', {n:roman(selBlock+1)})}</span>`;
@@ -169,7 +169,7 @@ function renderParcel(head, strip){
     const inPlay = ty => (ty!=='road' || on('access')) && (ty!=='factory' || on('jobs')) && ((ty!=='school' && ty!=='clinic') || on('services')) && (!B[ty].flag || on(B[ty].flag));
     const known = discovered();
     BUILD_TYPES.filter(inPlay).forEach(ty=>{
-      if(!unlocked(ty)) return;   // v0.10: only what you can build; what is still locked lives in the run file (Career)
+      if(!unlocked(ty)) return;   // v0.9.2: only what you can build; what is still locked lives in the run file (Career)
       const bt = B[ty], taken = bt.unique && S.grid.some(q=>q.ty===ty && !['land','owned'].includes(q.st));
       const why = !acc ? t('dw.noAccess') : (bt.urban && !p.urban) ? t('dw.urban') : taken ? t('dw.unique') : !slotsOk ? t('dw.slots') : '';
       const cb = comboPreviewAt(i, ty), good = cb.filter(x=>known.includes(x.id) && x.good).length, bad = cb.filter(x=>known.includes(x.id) && !x.good).length, unk = cb.filter(x=>!known.includes(x.id)).length;

@@ -6,7 +6,7 @@ Living project document · update it as the prototype evolves. The game design l
 
 **Eurocrat** (working title): a satirical, turn-based roguelike city builder. You are a Brussels programme officer who must deliver a model European town with plenty of money and no power — buy the land, file the permits, survive the neighbours, spend the funds before they expire. Tone and references: *Constructor* (1997), with a hyper-realistic, comic look at how building actually works in contemporary Europe. The plan: validate the loop in the web/iPad prototype, then port to Godot to ship on the App Store and Steam.
 
-## Current status — v0.10.0 (Oct 29, 2026) · playtest polish: a random start, screens instead of cards, progression that takes time
+## Current status — v0.9.2 (Oct 29, 2026) · playtest polish: a random start, screens instead of cards, progression that takes time
 
 Playtest feedback on v0.9 (19 points), applied:
 - **No dossier to choose.** After the tutorial, *New Euroregion* starts a random run at once: settlement type, starting perk (from your rank's pool) and member state are drawn and revealed on the settlement screen. The tutorial can be played again from *Settings*.
@@ -148,8 +148,8 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 ## Next steps
 
 1. **Atlas of settlement types**, then decide: fixed traits or procedural ones.
-2. **v0.11 — missions and events:** contracts from the characters that extend deadlines or add money, an official request for an extension, ~35 events including chained ones and cross-border events between settlements.
-3. Playtest v0.10: are the screens readable on a desktop, does one level per run feel right, is the random start a good surprise?
+2. **v0.10 — missions and events:** contracts from the characters that extend deadlines or add money, an official request for an extension, ~35 events including chained ones and cross-border events between settlements.
+3. Playtest v0.9.2: are the screens readable on a desktop, does one level per run feel right, is the random start a good surprise?
 4. Member states with their own rule quirks: a bureaucracy per country.
 5. *Constructor*-style characters: named residents, complaints, a mayor with a face.
 6. Port to Godot when a port trigger is met: `core/` first (with its tests), then rendering and UI.

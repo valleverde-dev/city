@@ -12,7 +12,7 @@ Web prototype playable on iPad, iPhone and desktop; a Godot port is planned for 
 - Plan and status: [ROADMAP.md](ROADMAP.md)
 - Code organisation: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
-## How to play (v0.10)
+## How to play (v0.9.2)
 
 - A run is one **Euroregion**. It starts with a 2×2 hamlet; each settlement has a resident target and a deadline. The settlement card and the mayor's guide tell you what to do.
 - Each turn is **one month**. Tap a parcel: the bar at the bottom shows what you can do (buy; for your land, a card per building — pick one, see it as a ghost on the map with its combos, confirm). Nothing selected, the bar is your agenda. Press **End month** to let time pass.

@@ -19,7 +19,7 @@ export let WN = 4, OX = 0, OY = 0, FRX = 0, FRY = 0;
 export function setWorld(n, ox, oy, fx = FRX, fy = FRY){ WN = n; OX = ox; OY = oy; FRX = fx; FRY = fy; }
 // While choosing the next plot: which of the plots on offer is selected (-1: none)
 export let attachSel = -1;
-export let selBlock = -1;   // v0.10: a consolidated settlement tapped on the map (its index in S.region.blocks)
+export let selBlock = -1;   // v0.9.2: a consolidated settlement tapped on the map (its index in S.region.blocks)
 export function setSelBlock(k){ selBlock = k; }
 export function setAttachSel(k){ attachSel = k; }
 // Point the camera at a world rectangle and zoom so it fits the free part of the screen

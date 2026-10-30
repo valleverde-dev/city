@@ -1,5 +1,5 @@
 /* =====================================================================
-   v0.10 SCREENS — letters, the settlement card and the pause menu are screens, not cards:
+   v0.9.2 SCREENS — letters, the settlement card and the pause menu are screens, not cards:
    wide, laid out to be read left to right (desktop first), and they appear and leave with a fade.
    No slide, no tilt. Loaded last: it refines modal.css, readability.css and layout.css.
    ===================================================================== */
@@ -57,7 +57,7 @@
   .notice .btns{flex-direction:column;} .notice .btns .btn{min-width:0;}
 }
 
-/* --- the pause screen (v0.10): five options in a row, nothing else --- */
+/* --- the pause screen (v0.9.2): five options in a row, nothing else --- */
 #modal.pause{background:rgba(11,31,77,.82); flex-direction:column; gap:28px;}
 #modal.pause .notice{background:none; border:0; box-shadow:none; max-width:min(1180px, 100%); overflow:visible;}
 .pause-screen{display:flex; flex-direction:column; align-items:center; gap:26px; color:#fff;}
@@ -86,14 +86,14 @@
   .popt{min-height:96px; font-size:22px;} .pause-screen h2{font-size:40px;}
 }
 
-/* --- banners (v0.10): their own zone under the goal, never over the HUD; they leave with a fade --- */
+/* --- banners (v0.9.2): their own zone under the goal, never over the HUD; they leave with a fade --- */
 /* The old banner slid up by 140% of its own height from top:150px — not enough to leave the screen, so it stayed over the HUD. */
 #toast{top:var(--toastTop, 132px); opacity:0; visibility:hidden; transform:translate(-50%, -10px); pointer-events:none;
        transition:opacity .35s ease-out, transform .35s ease-out, visibility 0s linear .35s;}
 #toast.in{opacity:1; visibility:visible; transform:translate(-50%, 0); pointer-events:auto; cursor:pointer; transition:opacity .3s ease-out, transform .3s ease-out, visibility 0s;}
 @media (max-width:700px){ #toast{top:var(--toastTop, 120px);} }
 #world.turning #map{opacity:.15; transition:opacity .11s ease-in;} #map{transition:opacity .12s ease-out;}
-/* --- v0.10: the map tooltip (consolidated settlements, mouse only) and land cards in the bar --- */
+/* --- v0.9.2: the map tooltip (consolidated settlements, mouse only) and land cards in the bar --- */
 #maptip{position:absolute; z-index:5; pointer-events:none; display:flex; flex-direction:column; gap:2px; padding:6px 10px; background:var(--navy); color:#fff; border:2px solid var(--yellow); box-shadow:3px 3px 0 rgba(11,31,77,.35);}
 #maptip b{font:400 20px/1 var(--f-display);} #maptip span{font:400 13px/1.2 var(--f-ui); color:#c7d6ee;}
 #maptip[hidden]{display:none;}
@@ -102,7 +102,7 @@
 .tile.combo-of.good{border-color:var(--ok);} .tile.combo-of.bad{border-color:var(--bad);} .tile.combo-of.unknown .art img{filter:brightness(0); opacity:.5;}
 .tile.stat{cursor:default;} .tile.stat b{font-size:26px;} .tile.stat.money .art{background:var(--okbg);} .tile.stat.money .art .ico{color:var(--ok);}
 .tile.wide.land .art{align-items:flex-end; overflow:hidden;} .tile.wide.land .art img{width:56px; height:98px; margin-bottom:-14px;}
-/* --- v0.10: the town's name, whole and editable; the settlement number beside the goal --- */
+/* --- v0.9.2: the town's name, whole and editable; the settlement number beside the goal --- */
 #hud .brand .town-name{align-self:flex-start; display:flex; align-items:center; gap:8px; max-width:min(340px, 28vw); padding:5px 8px 4px; background:var(--navy); color:#fff;
   border:2px solid var(--navy); cursor:pointer; font:400 24px/1 var(--f-display); text-align:left;}
 #hud .brand .town-name .nm{min-width:0; overflow-wrap:anywhere; line-height:.95;}

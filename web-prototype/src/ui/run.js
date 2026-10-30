@@ -19,7 +19,7 @@ import { regionCanvas } from './regionmap.js';
 // =====================================================================
 //  THE RUN FILE ("Expediente", v0.9) — the roguelike screen: the combos you know, the perks of this run
 //  and the ones you can still meet, your career (level, rank, achievements, buildings to unlock), the region.
-//  Full screen, tabs on top. v0.10: the collections are a grid that fits the screen (10–12 cards a row on a
+//  Full screen, tabs on top. v0.9.2: the collections are a grid that fits the screen (10–12 cards a row on a
 //  desktop, fewer on narrower screens) and scrolls down; every card has the same size, the full text on tap.
 // =====================================================================
 export const TABS = ['combos', 'perks', 'career', 'region'];
@@ -80,7 +80,7 @@ function perksTab(body, c){
     <div class="cgrid pool">${Object.keys(PERKS).map(k=>{ const need = PERK_RANK[k] || 0, open = rank >= need, seen = c.perks.includes(k);
       return `<div class="qcard ${!open ? 'locked' : seen ? 'seen' : 'new'}" title="${open ? t('perkd.'+k) : ''}">${ic(open ? PERKS[k] : 'lock')}<b>${open ? t('perk.'+k) : t('file.rankN', {r:t('rank.'+need)})}</b>${open && !seen ? `<em>${t('file.notYet')}</em>` : ''}</div>`; }).join('')}</div>`;
 }
-// ---------- Career: level and rank, achievements, the buildings still to unlock (by level, v0.10) ----------
+// ---------- Career: level and rank, achievements, the buildings still to unlock (by level, v0.9.2) ----------
 function careerTab(body, c){
   const lv = levelOf(c.xp), a = levelXp(lv), b = levelXp(lv+1), r = rankOf(c.xp), nextR = RANK_LEVEL[r+1];
   const got = c.ach.length;

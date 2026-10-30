@@ -252,7 +252,7 @@ test('difficulty curve stays in its band (bot, 60 seeded runs per settlement, 60
   assert.ok(avg >= 2.5 && avg <= 6, `settlements per run ${avg}`);
 });
 
-test('the career: buildings unlock by level (v0.10), achievements give experience, the career carries over', () => {
+test('the career: buildings unlock by level (v0.9.2), achievements give experience, the career carries over', () => {
   core.storage.set('eurocrat_career', JSON.stringify({ xp: 0, ach: [], types: [], runs: 0, tutorial: false, guide: false }));
   const S = g.newGame(12, 1);
   assert.equal(core.unlocked('housing'), true);
@@ -293,7 +293,7 @@ test('the career: buildings unlock by level (v0.10), achievements give experienc
   assert.equal(core.S.grant, Math.round(plain * 1.08 * 10) / 10);
 });
 
-test('v0.10: no dossier to choose — every run after the tutorial starts from a random draw', () => {
+test('v0.9.2: no dossier to choose — every run after the tutorial starts from a random draw', () => {
   core.resetCareer();
   const d = core.randomStart(77);
   assert.deepEqual(core.randomStart(77), d, 'the same draw for the same seed');
@@ -320,7 +320,7 @@ test('v0.9: experience is earned while playing, with levels and ranks', () => {
   assert.equal(core.career().xp, core.XP_FOR.acquire, '…and it is in the career straight away');
   S.cards = []; core.endMonth();
   assert.ok(S.rs.xp >= core.XP_FOR.acquire + core.XP_FOR.month, 'ending a month too');
-  // levels: K·n·(n+1) (v0.10: K = 350 → 700, 2100, 4200…); ranks come at certain levels
+  // levels: K·n·(n+1) (v0.9.2: K = 350 → 700, 2100, 4200…); ranks come at certain levels
   const L = core.levelXp;
   assert.equal(core.levelOf(0), 0); assert.equal(core.levelOf(L(1)), 1); assert.equal(core.levelOf(L(2)-1), 1); assert.equal(core.levelOf(L(2)), 2);
   assert.deepEqual(core.RANKS.slice(0, 3), [0, L(2), L(4)]);

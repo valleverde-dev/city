@@ -336,7 +336,7 @@ export function bigBadge(x, y, text, on){
   ctx.fillStyle = on ? '#e8762b' : '#ffd200'; ctx.fillRect(X-r, Y-r, 2*r, 2*r);
   ctx.fillStyle = on ? '#ffffff' : '#0b1f4d'; ctx.font = '400 26px Jersey, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(text, X, Y+1); ctx.restore(); }
-// v0.10: small map badges are drawn in screen pixels at a fixed size, like the plot numbers, so their digits
+// v0.9.2: small map badges are drawn in screen pixels at a fixed size, like the plot numbers, so their digits
 // never blur together at any zoom (a "2" read as an "8"). Months get a clock instead of an ambiguous "m".
 const CLOCK = ['..###..','.#...#.','#..#..#','#..#..#','#..##.#','.#...#.','..###..'];
 export function badge(x,y,text,col,clock){
@@ -363,7 +363,7 @@ export function drawComboLinks(){
     ctx.restore(); });
 }
 // The edge of the settlement in play, when consolidated neighbours surround it
-// v0.10: the outlines of the plot in play (dashed yellow) and of the consolidated settlements (thin white) are painted
+// v0.9.2: the outlines of the plot in play (dashed yellow) and of the consolidated settlements (thin white) are painted
 // on the ground of the art canvas, before the buildings, so they run under the sprites instead of across them.
 // Stepped pixel lines: one art pixel thick, dashes 4 on / 3 off along the diamond's edges.
 function groundLine(g, pts, col, dash){
@@ -388,7 +388,7 @@ function plotPath(P){ const y = P.y-FRY, x = P.x-FRX;   // map → frame coordin
   ctx.beginPath(); pts.forEach(([x,y],k)=>k ? ctx.lineTo(x,y) : ctx.moveTo(x,y)); ctx.closePath(); }
 // The consolidated settlements (thin outlines) and, while choosing, the plots on offer (numbered)
 export function drawRegion(){
-  ctx.save(); ctx.lineWidth = 1;   // (the consolidated settlements' outlines are on the ground now, v0.10)
+  ctx.save(); ctx.lineWidth = 1;   // (the consolidated settlements' outlines are on the ground now, v0.9.2)
   const sb = S.region.blocks[selBlock];   // the consolidated settlement tapped on the map
   if(sb){ plotPath(sb); ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#ffd200'; ctx.stroke(); ctx.lineWidth = 1; }
   if(S.pending==='attach' && S.region.cands && modal.classList.contains('hidden')){
