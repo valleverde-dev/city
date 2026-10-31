@@ -18,8 +18,8 @@ const avg = k => Math.floor(results.reduce((a, r) => a + r[k], 0) / runs);
 const causes = {}; results.forEach(r => causes[r.why] = (causes[r.why] || 0) + 1);
 if (run) {
   const dist = {}; results.forEach(r => dist[r.settled] = (dist[r.settled] || 0) + 1);
-  console.log(`Euroregion runs: ${runs} · settlements consolidated per run: ${JSON.stringify(dist)}`);
-  console.log('ended by:', JSON.stringify(causes), '| avg settlements:', (results.reduce((a, r) => a + r.settled, 0) / runs).toFixed(2), '| avg region population:', avg('pop'));
+  console.log(`Euroregion runs: ${runs} · milestones per run: ${JSON.stringify(dist)}`);
+  console.log('ended by:', JSON.stringify(causes), '| avg milestones:', (results.reduce((a, r) => a + r.settled, 0) / runs).toFixed(2), '| avg region population:', avg('pop'));
 } else {
   const wins = results.filter(r => r.win);
   console.log(`settlement ${level + 1} · runs: ${runs}  wins: ${wins.length} (${Math.floor(100 * wins.length / runs)}%)`);

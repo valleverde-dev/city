@@ -1,6 +1,6 @@
 # EUROCRAT — Game Design Document
 
-*Living document. v0.9.3 · Oct 31, 2026. Working title. Available in English and Spanish.*
+*Living document. v0.10.0 · Oct 31, 2026. Working title. Available in English and Spanish.*
 
 > Every city builder is a dictatorship: you click, a house appears, people move in.
 > **Eurocrat** asks what building a new town would *really* take in contemporary Europe —
@@ -24,39 +24,44 @@ References: *Constructor* (1997) for the humour, characters and dirty tricks; *I
 
 ## 4. The Euroregion: one run, one region, one map that grows with it
 
-v0.5 had four separate levels, which played like a campaign rather than a roguelike. Since v0.6 **a run is a single Euroregion** that grows. In v0.7 **the map grows with it**: there is no map waiting to be bought. The map is only the land the region has. Every new settlement **adds land onto the map**, next to the region, and you choose where, directly on the map. (v0.6.0 generated each settlement as a separate site; v0.6.1 tried a fixed *Cities: Skylines*-style world. Neither felt right.)
+v0.5 had four separate levels, which played like a campaign rather than a roguelike. Since v0.6 **a run is a single Euroregion** that grows, and since v0.7 **the map grows with it**: the map is only the land the region has, and every step adds land next to it, where you choose, directly on the map. **v0.10 keeps the whole region in play** (until v0.9 each finished settlement was frozen and you only built on the newest one).
 
-- The run starts with a **2×2 hamlet**: four parcels floating on the cadastral grid.
-- Every time a settlement meets its target it is **consolidated**, and you add the next, bigger one: 4×4, 8×8, 16×16, then 16×16 again and again, each with a higher target. Any failure ends the run. There is no size limit.
-- **New land continues the old one.** A regional road that reaches the edge of the region goes on across the new plot, and so does the river. Each plot from 4×4 up also brings its own regional road if none arrives, so there is always a way in. From 8×8 up it can also have a river, woods and wetlands (protected), and every plot from 4×4 has an old village by its road.
+- The run starts with **one 8×8 plot** (v0.10; until v0.9 it was a 2×2 hamlet, then 4×4, 8×8 and 16×16 settlements).
+- Every time the region meets its target it reaches a **milestone**: you choose a reward and **add another 8×8 plot** next to the region. Everything you built stays in play, its people stay, and you can keep building anywhere in the region. Any failure ends the run. There is no size limit.
+- **New land continues the old one.** A regional road that reaches the edge of the region goes on across the new plot, and so does the river. Each plot brings its own regional road if none arrives, so there is always a way in; it can have a river, woods and wetlands (protected), and it has an old village by its road.
 
-| Settlement | Plot | Goal | New rules | Can you lose? |
-|---|---|---|---|---|
-| I · Pilot Project (always a hamlet) | 2×2 | 100 residents in 8 months | Buy a parcel, build housing, end months | Only by running out of time |
-| II · Expansion Phase | 4×4 | 250 in 14 months | Access (roads / built neighbours, also across the edge of the plot), permits can be rejected, the Mayor meter, jobs, combos, farmers holding out | Only by running out of time |
-| III · Partial Plan | 8×8 | 420 in 24 months | Rustic land + urban plans, event cards, directives, neighbours, compliance, school and health, the bank | Yes |
-| IV · Model Town | 16×16 | 1,100 in 36 months | Use-it-or-lose-it milestones, developers, property market | Yes |
-| V, VI, … | 16×16 | +30% target each time (1,430 · 1,760 · …) | None: the same bureaucracy, harder | Yes |
+**The target grows by one visible rule: land × density.** The target is the population of the whole region: *parcels × residents per parcel*, and the density goes up one step at each milestone (4, 5, 6, 7…). So each phase asks for the land you add plus a little more on the land you already have:
 
-**Consolidating** (target met):
-- What you built is written into the world map. It stays exactly where it was, as part of the region, but you no longer build there.
-- It keeps paying the region **half of the taxes it paid in play** (the regional dividend, added to every later month).
-- **Brussels recovers 50% of the unspent funds**; the other half comes with you, on top of the next grant. Debt also comes with you.
-- Then you get a **perk** (1 of 3). Perks last for the whole run.
-- Finally you **choose where the new land goes, on the map.** Four plots are offered around the settlement you just finished, with their terrain already visible under a blue veil and numbered: north, east, south and west, in a pinwheel so they never overlap (each flush with a different corner, pushed further out if something is in the way). Tap one (on the map or in the list), see what it borders and what is on it (road, river, village, protected land), and acquire it: that land joins the map.
+| Phase | Plots | Parcels | Density | Target | Months | Agenda | New rules | Can you lose? |
+|---|---|---|---|---|---|---|---|---|
+| I · Pilot Project | 1 | 64 | 4 | 256 | 8 | 2 | Buy a parcel, build housing, end months | Only by running out of time |
+| II · Expansion Phase | 2 | 128 | 5 | 640 | 14 | 3 | Access (roads / built neighbours), permits can be rejected, the Mayor meter, jobs, combos, farmers holding out | Only by running out of time |
+| III · Partial Plan | 3 | 192 | 6 | 1,152 | 18 | 3 | Rustic land + urban plans, event cards, directives and deals, neighbours, compliance, school and health, the bank, extensions | Yes |
+| IV · Model Town | 4 | 256 | 7 | 1,792 | 18 | 3 | Use-it-or-lose-it milestones (25% of the tranche by month 8, 60% by 14), developers, property market | Yes |
+| V, VI, … | 5, 6… | 320, 384… | 8, 9… | 2,560 · 3,456 · … | 18 | 3 | None: the same bureaucracy, more land, denser | Yes |
 
-**Settlement types.** Every new settlement has a random type with its own trait: Farming town (land −25%), Industrial town (+80 jobs, neighbours −1/month), Commuter town (+60 homes), Spa town (faster move-ins, +taxes), University town (+200 school places, +taxes), Historic town (Mayor +1/month, permits +1 month), Logistics hub (+50 jobs, +taxes, neighbours −1/month). The first settlement is always a Hamlet.
+The phase screen and *Run file → Region* always show **the targets ahead** (this phase and the next two, with the land × density behind each), so the growth is never a surprise.
+
+**Money comes in tranches.** Each phase releases a new grant tranche sized to what it asks for (*10% of the new residents in €M + 8* in phase I, 12% in II, 18% in III, 12% from IV on), and gives the phase its months. Rules switch on phase by phase, so the learning curve stays.
+
+**A milestone** (target met):
+- **Brussels recovers 60% of the unspent money**; 40% comes with you, on top of the next tranche. Debt also comes with you.
+- **A reward** (§9): three offers, each brought by a character (four for a perfect milestone).
+- Then you **choose where the next plot goes, on the map.** Up to four plots are offered around the region, with their terrain visible under a blue veil and numbered. Tap one (on the map or in the bar), see what it borders and what is on it (road, river, village, protected land), and acquire it.
+
+**Technically** the grid in play is the region's bounding square; the cells of that square that are not land are *void* (not drawn, not playable), so every rule applies to the whole region at once. Save format v11.
+
+**Plot types.** Every plot has a random type with its own trait: Farming town (land −25%), Industrial town (+80 jobs, neighbours −1/month), Commuter town (+60 homes), Spa town (faster move-ins, +taxes), University town (+200 school places, +taxes), Historic town (Mayor +1/month, permits +1 month), Logistics hub (+50 jobs, +taxes, neighbours −1/month). **All the plots' traits add up** (v0.10). The tutorial's first plot is always a farming town.
 
 **Where you attach matters, twice:**
-1. **Region combos** between the type of the new settlement and the type of each settlement it touches. Good ones include Commuter Belt (commuter + industrial), Technology Transfer, Heritage Trail, Farm to Table, Campus Town, Freight Hub, Market Town and Rural Roots. Bad ones include Smokestack View (industrial + spa), Lorries in the Old Town, Slurry Season (farming + commuter), Rust Belt (two industrial towns), Sleeper Sprawl, Freshers' Week and The Hamlet Objects. They are **discovered** like building combos: the attach card shows "region combo?" until you have seen one. The catalogue persists between runs.
-2. **The edge is real.** The parcels of the region around your plot are its neighbours. Regional roads, villages, any built land and the streets of the consolidated region **give access**, and they **form ordinary adjacency combos** with what you build on your side: their factory next to your housing is still "Smoke in the Living Room".
-3. **The land itself.** Where the road runs, where the river and the woods are: you see it before you choose.
+1. **Region combos** between the types of plots that touch (all of them, since the whole region is in play). Good ones include Commuter Belt (commuter + industrial), Technology Transfer, Heritage Trail, Farm to Table, Campus Town, Freight Hub, Market Town. Bad ones include Smokestack View (industrial + spa), Lorries in the Old Town, Slurry Season (farming + commuter), Rust Belt (two industrial towns), Sleeper Sprawl, Freshers' Week. They are **discovered** like building combos; the catalogue persists between runs.
+2. **The land itself.** Where the road runs, where the river and the woods are: you see it before you choose. Buildings form ordinary adjacency combos and give access **across plot edges** — it is one map.
 
-- Every settlement opens with a **settlement card** (its type, its region combos, the goal and "what is new") and, up to settlement IV, the **guide**.
+- Every phase opens with a **phase screen** (its type, region combos, the targets ahead and "what is new") and, up to phase IV, the **guide** (the mayor's hints, one rule at a time as it switches on).
 - Rules that are not in play are **invisible**: no meter, tab or button for them.
-- In settlements I–II you cannot order works you cannot pay for (money already promised to works is reserved), so there is no debt and no loan.
-- **Between runs:** the combo catalogue (buildings and region) and the **records** (most settlements consolidated, largest Euroregion population). The title screen shows the best Euroregion.
-- **Difficulty curve.** A greedy test bot plays 150 seeded runs. Settlements consolidated per run: 2 → 24% · 3 → 17% · 4 → 17% · 5 → 18% · 6 → 16% · 7+ → 8%, an average of about 4.1; most runs end in bankruptcy in the 16×16 settlements (debt carries over). Starting a settlement directly, with no perks: I 100% · II 100% · III ~59% · IV ~54%.
+- In phases I–II you cannot order works you cannot pay for, so there is no debt and no loan.
+- **Between runs:** the combo catalogue (buildings and region) and the **records** (most milestones, largest Euroregion population).
+- **Difficulty curve (v0.10).** A greedy test bot, 60 seeded runs: milestones per run 1 → 7% · 2 → 20% · 3 → 25% · 4 → 22% · 5 → 13% · 6+ → 13%, an average of about **3.7** (4.9 when it keeps its career, ranks and perks between runs). Starting a phase directly, with no perks: I 100% · II ~98% · III ~72% · IV ~42% · V ~13%.
 
 ### Fair, not random (v0.7)
 
@@ -155,9 +160,9 @@ Buildings next to each other (8 neighbours) form **combos** — and some combos 
 
 | Resource | Meaning | Pressure |
 |---|---|---|
-| **Funds (€M)** | The programme grant (€130M), plus land sales and the tax share. | **Use it or lose it:** spending milestones at months 12 and 24 (20% / 50%); half of any shortfall is *decommitted*. Out of money → bridge loan. |
+| **Funds (€M)** | A grant tranche per phase (sized to its target), plus land sales and the region's taxes. | **Use it or lose it** (from phase IV): spend 25% of the tranche by month 8 and 60% by month 14; half of any shortfall is *decommitted*. Out of money → bridge loan. |
 | **Debt** | The regional bank's bridge loans. | 2%/month interest; above €35M → game over. |
-| **Agenda slots** | Your time: 3 per month. | Everything costs slots; politics competes with building. |
+| **Agenda slots** | Your time: 2 per month in phase I, 3 after (more with perks and rewards). | Everything costs slots; politics competes with building. |
 | **Local support** | The mayor and council. | Municipal land and permit approvals. Elections can reset it. |
 | **Neighbours** | Public opinion in the area. | Slower permits, lawsuits; below 15 a court may annul the plan → game over. |
 | **Compliance** | How happy the Commission is with your reporting. | Decays every month. Reports restore it. 0 → audit → game over. |
@@ -165,7 +170,11 @@ Buildings next to each other (8 neighbours) form **combos** — and some combos 
 
 ## 7. Directives (random missions)
 
-Every few months the Commission issues a **directive**: an objective, a deadline and consequences. Examples: *"Absorption rate: spend €10M more within 5 months"*, *"Green Transition: deliver a park within 4 months"*, *"Stakeholder Engagement: hold a public consultation"*, *"KPI 3.2.b: 150 registered residents by month 18"*. Success → choose **1 of 3 perks**. Failure → a penalty (funds clawed back, compliance hit). **Fail 2 directives → programme suspended** (game over).
+Every few months the Commission issues a **directive**: an objective, a deadline and consequences. Examples: *"Absorption rate: spend €10M more within 5 months"*, *"Green Transition: deliver a park within 4 months"*, *"Stakeholder Engagement: hold a public consultation"*, *"KPI 3.2.b: 150 registered residents by month 18"*. Success → choose **1 of 3 perks**. Failure → a penalty (funds clawed back, compliance hit). **Fail 2 directives in a phase → programme suspended** (game over).
+
+**Deals with the characters (v0.10).** Some event cards are offers, not problems: *build 2 more housing blocks by month 9 and I'll get Brussels to give us more time* (the mayor), *file 2 reports by month 6 and I'll sign an extension* (Brussels), *a park by month 7 and the association pays the benches* (the neighbours), *3 works at once and my lads do overtime* (the union), *sell me a plot* (the developer), *stay out of debt* (the bank). Accept or decline; an accepted deal shows in the agenda with its progress. Kept: **more months for this phase** or money. Broken: that character's meter pays.
+
+**Asking for an extension (v0.10).** From phase III the agenda has *Request an extension*: two slots and compliance −10, once per phase. Brussels grants **+3 months** if compliance is still 45 or more afterwards — no dice, the meter is on screen — and refuses otherwise.
 
 ## 8. Event cards (dilemmas, not punishments)
 
@@ -175,6 +184,12 @@ Example — *Archaeological find* (Dr. Ottilie Steinbach, Heritage Office): **ca
 
 v0.3 deck (15): archaeological find, protected toad, municipal elections, neighbours' lawsuit, cost inflation, construction strike, Brussels delegation, delayed co-financing, premature inauguration, viral video, inheritance sale, new reporting template, developer offer, property crash, bank calls the loan, village fiesta.
 
+v0.10 adds 26 more (42 in all):
+- **Between the plots of the region** (from two plots): the old district complains all the money goes to the new plot, a bus strike between towns, a shared health centre, the regional derby, a boundary dispute (the map is in crayon), town twinning.
+- **Chained**: a decision now brings a second card months later — hire the consultants (their roadmap comes back), the mayor's cousin (the jacuzzi scandal), a journalist calls (the front page depends on whether you talked), the e-scooter pilot (scooters in the fountain), a heritage survey (a medieval oven and a phone box of great sentimental value).
+- **Standalone**: potholes, heatwave, a film crew, a surprise audit (clean only if compliance is 50+).
+- **The six deals** (§7).
+
 **Characters:** Mayor Gilberto Plaza · Remedios Quintana (neighbours' association) · Dr. Ottilie Steinbach (Heritage) · Joost van der Formulier (DG HUF, Brussels) · Bruno Ladrillo (Ladrillo Holdings) · Konrad Grüngeld (Regional Savings Bank) · Paco Hormigón (construction union) · Benito Terrón (landowner).
 
 ### Making problems visible
@@ -182,31 +197,43 @@ v0.3 deck (15): archaeological find, protected toad, municipal elections, neighb
 - Problem markers on the map (rejected permit, halted site, no access, paused developer, ruin).
 - Tap a **meter** to see what it does and *why* it moved (last changes with their causes); ▲▼ shows last month's change.
 
-## 9. Perks (roguelike build)
+## 9. Milestone rewards and perks (roguelike build)
 
-Picked 1 of 3 after each completed directive and after every consolidated settlement, and kept for the whole run: *Friendly Notary* (cheaper land), *Fast-track Decree* (faster permits), *Prefab Supplier* (faster construction), *Extra Contractor*, *Cousin at the Ministry* (+1 agenda slot), *Translation Unit* (compliance decays slower), *Comms Agency* (neighbours improve monthly), *Local Fixer* (local support never drops below 30), *Golden Shovel* (one free construction)… Since v0.9 the pool grows with your rank (see §10b), with four more: *Cohesion Funds*, *Tax Adviser*, *Ombudsman*, *Revolving Doors*. They are always on show in the HUD.
+**Milestone rewards (v0.10).** Every milestone brings **three offers, each from a character**; you take one:
+- a **perk** (Brussels; 1 of 3, or 1 of 4 when gold) — always on offer;
+- **bridge funding** for the next tranche (the bank);
+- **a deputy mayor**: +1 agenda slot every month, for good (the mayor; at most two);
+- **pre-approved permits**: the next 2 permits skip the review (the developer);
+- **land in the next plot**: 3 parcels of it are already yours, as building land (the farmer);
+- **a good press day**: all meters +15 (the neighbours);
+- **debt restructuring**: half the debt forgiven (the bank, only in debt);
+- **an expert report**: reveals an undiscovered combo (Heritage).
+
+Some offers come as a **deal, with a catch**: more of the good thing, and a meter pays (more money but neighbours −15; two slots but compliance −12; five parcels but the mayor −12). A milestone reached **ahead of schedule** (a quarter of the months left), **with no debt** or **with three or more combos** this run turns one offer **gold** (bigger) per reason; all three at once add a fourth offer.
+
+**Perks.** Picked 1 of 3 after each completed directive and from the perk reward, and kept for the whole run: *Friendly Notary* (cheaper land), *Fast-track Decree* (faster permits), *Prefab Supplier* (faster construction), *Extra Contractor*, *Cousin at the Ministry* (+1 agenda slot), *Translation Unit* (compliance decays slower), *Comms Agency* (neighbours improve monthly), *Local Fixer* (local support never drops below 30), *Golden Shovel* (one free construction)… Since v0.9 the pool grows with your rank (see §10b), with four more: *Cohesion Funds*, *Tax Adviser*, *Ombudsman*, *Revolving Doors*. They are always on show in the HUD.
 
 ## 10. Winning and losing
 
-- **A settlement is won** by reaching its resident target before its deadline: it is consolidated and the region grows. There is no final victory. The question is how big your Euroregion gets, measured in settlements consolidated and total population.
-- **The run is lost** when: debt goes above the bank's limit · compliance hits 0 (audit) · a court annuls the plan · 2 directives fail · time runs out on a settlement ("The programme will be evaluated"). The end-of-run card shows the region map, what it reached and the records.
+- **A phase is won** by reaching the region's resident target before its deadline: a milestone, a reward and a new plot. There is no final victory. The question is how big your Euroregion gets, measured in milestones and total population.
+- **The run is lost** when: debt goes above the bank's limit · compliance hits 0 (audit) · a court annuls the plan · 2 directives fail · time runs out on a phase ("The programme will be evaluated"). The end-of-run card shows the region map, what it reached and the records.
 - **Difficulty:** hard but fair. Every loss should be traceable to a decision. See §4 for the bot's curve.
 
 ## 10b. The career (v0.8): why play again
 
 What carries over between runs, apart from the combo catalogue and the records:
-- **Experience, as you play** (v0.9): buying land +2, a permit +3, an approval +3, a finished building +6 (a street +1), a good combo formed +8, a combo discovered for the first time +25, each month +1, a consolidated settlement +100, a plot sold +4, an agenda action +1, an urban plan +4; each achievement its own XP; at the end of a run, +1 per 20 residents of the region. "+5 XP" rises from the run file and its bar fills.
-- **Levels** (v0.9.2: level n at 350·n·(n+1) XP: 700, 2,100, 4,200…; it was 50·n·(n+1) and a first run reached level 7), announced with a banner that also says what the level brings, and **ranks** at levels 2, 4, 6, 8, 11, 14 and 18 (8 ranks: Trainee → Commissioner). Each rank above the first adds +4% to every settlement's grant. The bot, keeping its career: about one level per run, level ~6 after 5 runs, ~15 after 20. The new buildings arrive with levels (§5).
+- **Experience, as you play** (v0.9): buying land +2, a permit +3, an approval +3, a finished building +6 (a street +1), a good combo formed +8, a combo discovered for the first time +25, each month +1, a milestone +100, a plot sold +4, an agenda action +1, an urban plan +4; each achievement its own XP; at the end of a run, +1 per 20 residents of the region. "+5 XP" rises from the run file and its bar fills.
+- **Levels** (v0.9.2: level n at 350·n·(n+1) XP: 700, 2,100, 4,200…; it was 50·n·(n+1) and a first run reached level 7), announced with a banner that also says what the level brings, and **ranks** at levels 2, 4, 6, 8, 11, 14 and 18 (8 ranks: Trainee → Commissioner). Each rank above the first adds +4% to every grant tranche. The bot, keeping its career: about one level per run, level ~6 after 5 runs, ~15 after 20. The new buildings arrive with levels (§5).
 - **Perks by rank:** the six basic perks are always in the pool; the others join it as you rise (Comms Agency and Professional Lobbyist at rank 1, Local Fixer and Golden Shovel at 2, then four new ones: *Cohesion Funds* (+15% of every grant) at 3, *Tax Adviser* (+25% taxes) at 4, *Ombudsman* (neighbours never below 25) at 5, *Revolving Doors* (plots sell for 30% more) at 6). The rank you had when the run began decides the pool.
 - **26 achievements** (first stone, Kafka, Pelotazo, Bailout Denied, Mascot…): experience, and a line in the career. Banners announce them during play; the career file on the title screen lists them, with the condition of each locked one.
-- **The tutorial runs once** (it can be played again from Settings). After it, **every run is random** (v0.9.2): *New Euroregion* starts at once with a drawn settlement type, a starting perk from your rank's pool and a member state, revealed on the settlement screen. There is nothing to choose before playing (v0.8–v0.9 dealt three dossiers to pick from). The guide can be turned back on in Settings.
+- **The tutorial runs once** (it can be played again from Settings): since v0.10 it is a normal first plot (a farming town, no perk) with the mayor's hints. After it, **every run is random** (v0.9.2): *New Euroregion* starts at once at phase I with a drawn plot type, a starting perk from your rank's pool and a member state, revealed on the phase screen. There is nothing to choose before playing (v0.8–v0.9 dealt three dossiers to pick from). The guide can be turned back on in Settings.
 - **Full-screen moments:** consolidation cuts a ribbon over confetti, then the *Union Gazette* reports it; game over stamps the dossier REJECTED and shreds it, then the Gazette and a summary of XP, promotions, achievements and unlocks.
 
 ## 11. Roguelike variety
 
 Every run is a new **Euroregion**: a name, a chain of settlements with random types, member states and town names, procedural sites (farmland, municipal plots, protected habitat, a river with its flood zone, the old village by the regional road), the shape that your attach choices give the region, a random stream of events and directives, and a different set of perks.
 
-Later: member states with their own rule quirks; more settlement types and region combos; cross-border events (a joint Interreg project, a border dispute between two of your settlements); missions that extend deadlines and chained events (v0.9).
+Later: member states with their own rule quirks; more plot types and region combos; an atlas of plot types. (Events between plots, chained events and deals that extend deadlines arrived in v0.10.)
 
 ## 12. Art direction
 
@@ -255,10 +282,11 @@ Pixel-art frame in the imagery of a (fictional) Union portal: pixel fonts for ti
   - an **event** → the character, the headline and the choices as cards with their effects as chips; the full letter is one tap away (*Read the letter*). The outcome shows there too.
 - **The inbox** (top right) lists what needs attention (tap one to go there) and the latest news; after each month the important news lines appear on the map and fade.
 - **New combos are banners**, not letters; so are achievements, levels and promotions. Banners sit below the HUD and fade out on their own (or on tap). Letters remain for the appointment, each settlement's card, directives and official notices: since v0.9.2 they are **wide screens** (v0.9.3: the settlement's comes as slides — your goal, where you are, what is new, your perks — with Next, Back and Skip), speaker and message on the left, the facts (type, goal, rules in two columns, perks) on the right, buttons bottom right; they stack on narrow screens.
-- **The town's name** is shown whole under the logo and can be renamed (tap it; a dice suggests another name). The settlement number sits next to the goal.
+- **Screens build up (v0.10).** On every screen (the phase slides, the appointment, directives, notices, rewards, the pause screen, achievements and their grids) each element fades in with a slight rise about 70 ms after the previous one (long grids speed up); no rotation, no bounce. A tap or a key shows everything at once — it never makes you wait — and with *reduce motion* nothing animates. The mayor's hint bubble hides while any screen is open and comes back when it closes.
+- **The town's name** is shown whole under the logo and can be renamed (tap it; a dice suggests another name). The phase number sits next to the goal.
 - **Pause screen** (Esc or the menu button): *Continue · Settings · Restart · Abandon · Main menu*, in a row, nothing else. *Settings*: music, language, the mayor's guide and the controls. *Restart* and *Abandon* ask first and count as a lost run; *Abandon* shows the end-of-run summary.
 - **The run file** ("Expediente", Tab key): full screen, four tabs. v0.9.2: each collection is a grid that fits the screen (10–12 cards a row on a desktop, fewer on narrower screens) and scrolls down; every card the same size, its whole text on tap. *Combos* — the collection, with filters; undiscovered ones show their two pieces as silhouettes. *Perks* — this run's hand and the whole pool, some locked by rank. *Career* — level, rank and grant bonus, the achievements and the 8 buildings to unlock, each with a progress bar. *Region* — the Euroregion map and this settlement in numbers.
-- **The map is the whole Euroregion**, and only that: it grows with every settlement. Consolidated settlements have a thin white outline, and a dashed yellow line marks the plot in play; both are painted on the ground, under the buildings (v0.9.2). Months on the map (permits, works, developers) are crisp labels with a clock. Zoom out to see it all. **Combos glow, Kairosoft-style:** the buildings of a discovered combo get a pulsing outline, gold with sparkles for good combos and red for bad ones, including the neighbour's building across the edge. While choosing the next plot, the candidates are highlighted and numbered on the map and listed in a sheet (what each one borders, its region combos, what is on the land); a region minimap also appears in the Town sheet and on the consolidation and end-of-run cards.
+- **The map is the whole Euroregion**, and only that: it grows with every phase, and all of it is in play (v0.10). Every plot has a thin white outline, and a dashed yellow line marks the plot this phase added; both are painted on the ground, under the buildings (v0.9.2). Months on the map (permits, works, developers) are crisp labels with a clock. Zoom out to see it all. **Combos glow, Kairosoft-style:** the buildings of a discovered combo get a pulsing outline, gold with sparkles for good combos and red for bad ones, including the neighbour's building across the edge. While choosing the next plot, the candidates are highlighted and numbered on the map and listed in a sheet (what each one borders, its region combos, what is on the land); a region minimap also appears in the Town sheet and on the consolidation and end-of-run cards.
 - **Title screen:** a full-screen scene — an animated diorama of the model town over an avenue of waving flags of the Union — with the logo and a classic vertical menu: **New Game** (the first time, the tutorial from the 2×2 hamlet; after that a random run) · **Continue** (disabled with no save, pre-selected when there is one) · **Achievements** (v0.9.3: a full screen of grids — rank, level, XP and records in a band; the achievements and the buildings to unlock, the ones not earned yet as ???) · **Settings** (language, music, the mayor's hints, play the tutorial again) · **Credits**. No subtitles · **Credits** (author, music and font rights, a satire disclaimer). Version bottom-left, copyright bottom-right. Arrow keys / W-S move, Enter picks, Esc goes back. The design canvas holds the reference mockups of the four views.
 
 ## 15. Controls (iPad first)

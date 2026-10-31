@@ -6,7 +6,18 @@ Living project document · update it as the prototype evolves. The game design l
 
 **Eurocrat** (working title): a satirical, turn-based roguelike city builder. You are a Brussels programme officer who must deliver a model European town with plenty of money and no power — buy the land, file the permits, survive the neighbours, spend the funds before they expire. Tone and references: *Constructor* (1997), with a hyper-realistic, comic look at how building actually works in contemporary Europe. The plan: validate the loop in the web/iPad prototype, then port to Godot to ship on the App Store and Steam.
 
-## Current status — v0.9.3 (Oct 31, 2026) · UX fixes from the iPad playtest
+## Current status — v0.10.0 (Oct 31, 2026) · the region you keep building
+
+The feedback from the v0.9 playtest, in one version:
+- **Accumulated territory.** A run starts with **one 8×8 plot** (no 2×2 hamlet). Each milestone adds **another 8×8 plot** next to the region, chosen on the map, and **the whole region stays in play**: you keep building anywhere, the people and taxes stay. The target is one visible rule, **parcels × density** (density 4, 5, 6, 7… → 256, 640, 1,152, 1,792, 2,560…), and the phase screen and *Run file → Region* show the next three targets. Each phase releases its own **grant tranche** and months; a milestone keeps 40% of the unspent money. Technically the grid is the region's bounding square, with *void* cells outside the plots; save format v11.
+- **Milestone rewards (A).** Three offers, each brought by a character: a perk, bridge funding, a deputy mayor (+1 agenda slot for good), pre-approved permits, land in the next plot, a good press day, debt restructuring, an expert report that reveals a combo. Some come as **deals with a catch** (more, and a meter pays). Reaching the milestone early, without debt or with 3+ combos makes offers **gold**; all three add a fourth offer.
+- **No tutorial hamlet (B).** The first run is a normal first plot (a farming town, no perk) with the mayor's hints, which introduce each rule as it switches on. Every run starts at phase I; phases are numbered from I.
+- **Deals, extensions and 26 new events.** The characters offer **deals** (build 2 housing blocks, file 2 reports, a park, 3 works at once, sell a plot, stay out of debt) that give **more months** or money, or cost goodwill if broken. From phase III you can **ask Brussels for an extension** (2 slots, compliance −10; +3 months if compliance stays ≥45; once per phase). New events **between plots** (the old district complains, bus strike, shared health centre, derby, boundary dispute, twinning), **chained** ones (consultants → their roadmap, the mayor's cousin → the jacuzzi, a journalist → the front page, e-scooters → chaos, a heritage survey → its findings) and a few standalone (potholes, heatwave, film crew, audit): 42 in all.
+- **Screens build up (C).** On every screen each element fades in with a slight rise ~70 ms after the previous one; a tap or a key shows all at once; nothing animates with *reduce motion*.
+- **Fix:** the mayor's hint bubble no longer peeks out behind open screens.
+- Balance (bot, 60 runs): about 3.7 milestones per run with a new career, 4.9 with a career that keeps playing. Tests: 22 rules tests, 153 browser checks.
+
+## Previous — v0.9.3 (Oct 31, 2026) · UX fixes from the iPad playtest
 
 Interface only; the rules do not change (gameplay goes to v0.10):
 - **Bottom bar on iPad:** the home-indicator area was added twice (by the page and by the bar), leaving a band under it; now the bar takes the larger of its own margin and the safe area, never both.
@@ -159,30 +170,6 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 - [ ] Balance needs human playtesting (the bot is a sanity check, not a player).
 
 ## Next steps
-
-### v0.10 — the region you keep building (plan, agreed Oct 31, 2026)
-
-One version, built in this order so each step can be tested on its own:
-
-**1. Accumulated, playable territory (the core change).** Consolidated settlements no longer freeze: the whole region stays in play and keeps growing.
-- A run starts with **one 8×8 plot** (no 2×2 hamlet). Each time the region meets its target it reaches a **milestone**: you pick a reward and add **one more 8×8 plot** next to the region, chosen on the map as today (it continues the roads and the river, has its own village and its own settlement type).
-- **The target is the population of the whole region**, and it grows by one visible rule: *target = residents per parcel × parcels*, with the density going up one step per milestone (proposed: 4, 5, 6, 7… residents per parcel → 256, 640, 1,152, 1,792…; to tune with the bot). The next three targets are always on show (phase screen and *Run file → Region*), so the growth is never a surprise.
-- Each milestone **releases a new grant tranche** and gives **N more months** (one clock for the run, extendable by missions, below); *use it or lose it* applies per tranche.
-- Rules still switch on phase by phase (phase I the basics; II access, jobs, combos, permits; III rustic land, cards, directives, services; IV milestones and market), so the learning curve stays.
-- Taxes come from the whole region (no more "regional dividend"); region combos now form between neighbouring plots of the region, including across plot edges.
-- Technically: the grid becomes the region's bounding box (non-land cells are void), so every rule already written applies everywhere. Save format v11. Prototyped with the bot first (targets, months, money), then the UI.
-
-**2. More varied rewards at each milestone (A).** Three offers instead of one perk out of three, each brought by a character: a perk; money for the next tranche; a permanent extra agenda slot; a building already approved; a free urban plot; a meter boosted; debt cut in half; an undiscovered combo revealed; a perk you have upgraded. Some come **with a catch** (+money, neighbours −15). Better offers (a 4th card or a "gold" tier) for reaching the milestone early, without debt or with many combos.
-
-**3. No tutorial hamlet (B).** The first run is a normal first plot with the mayor's hints and no random draw; the hints introduce each rule when it switches on. Phases renumbered from I.
-
-**4. Missions and events.** Contracts from the characters (build a library before month X, keep the neighbours above 50…) that **extend the deadline** or add money; an **official extension request** (costs slots and compliance, Brussels may say no); about 35 events, some **chained** (a decision now brings a second card later) and some **between plots** of the region (a district that complains all the money goes to the new one, a transport strike, a shared hospital).
-
-**5. Screens that build up (C).** On every screen (phase slides, appointment, directives, notices, pause, achievements) each element fades in a little after the previous one (about 60–80 ms apart, a short fade with a slight rise, no rotation or bounce; under half a second for five rules). A tap or a key shows everything at once; it never makes you wait. No animation with *reduce motion*.
-
-**6. Fix:** the mayor's hint bubble peeks out behind open screens; it hides while a screen is open and comes back after.
-
-Then: tests (rules + browser), balance with the bot (a new career and a career that keeps playing), docs, release.
 
 ### After v0.10
 
