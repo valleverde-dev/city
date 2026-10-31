@@ -105,7 +105,7 @@ export function renameTown(name){
   const v = String(name || '').replace(/\s+/g, ' ').trim().slice(0, TOWN_MAX);
   if(!S || !v) return fail('err.townEmpty');
   if(v === S.town) return {ok:true, msg:{k:'log.townSame'}};
-  const old = S.town; S.town = v; if(S.region && S.region.active) S.region.active.town = v;
+  const old = S.town; S.town = v; if(S.region && S.region.blocks[0]) S.region.blocks[0].town = v;
   log('log.renamed', {a:old, b:v}, 'good');
   return {ok:true, msg:{k:'log.renamed', p:{a:old, b:v}}};
 }

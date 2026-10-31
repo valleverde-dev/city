@@ -24,11 +24,11 @@ export const RANK_BONUS = 0.04;                                      // +4% of e
 const cnt = ty => S.grid.filter(p=>p.st==='built' && p.ty===ty).length;
 export const ACH = [
   {id:'firstStone',  when:'month',       xp:50,   test:()=>cnt('housing')>=1},
-  {id:'expansion',   when:'consolidate', xp:100,  test:()=>S.region.blocks.length>=2},
+  {id:'expansion',   when:'consolidate', xp:100,  test:()=>(S.done||0)>=2},
   {id:'comboHunter', when:'month',       xp:100,  test:()=>discovered().length>=5},
   {id:'firstLoss',   when:'over',        xp:50,   test:()=>S.over && !S.over.win},
   {id:'greenFingers',when:'month',       xp:100,  test:()=>cnt('park')>=3},
-  {id:'region3',     when:'consolidate', xp:150,  test:()=>S.region.blocks.length>=3},
+  {id:'region3',     when:'consolidate', xp:150,  test:()=>(S.done||0)>=3},
   {id:'survivor',    when:'consolidate', xp:150,  test:()=>S.debt>0},
   {id:'kafka',       when:'month',       xp:100,  test:()=>(S.stats.approved||0)>=5},
   {id:'noRefund',    when:'consolidate', xp:100, test:()=>S.carry < 0.5},
@@ -37,8 +37,8 @@ export const ACH = [
   {id:'nimby',       when:'month',       xp:50,  test:()=>on('neigh') && S.neigh<=10},
   {id:'pelotazo',    when:'month',       xp:100, test:()=>(S.rs.sold||0)>=3},
   {id:'mascot',      when:'mascot',      xp:50,  test:()=>true},
-  {id:'region5',     when:'consolidate', xp:200, test:()=>S.region.blocks.length>=5},
-  {id:'region8',     when:'consolidate', xp:400, test:()=>S.region.blocks.length>=8},
+  {id:'region5',     when:'consolidate', xp:200, test:()=>(S.done||0)>=5},
+  {id:'region8',     when:'consolidate', xp:400, test:()=>(S.done||0)>=8},
   {id:'metro',       when:'month',       xp:150, test:()=>regionPop() + S.newcomers + (S.base||0) >= 2000},
   {id:'mega',        when:'month',       xp:400, test:()=>regionPop() + S.newcomers + (S.base||0) >= 10000},
   {id:'creative',    when:'month',       xp:50,  test:()=>activeCombos().filter(x=>!x.good).length>=3},
@@ -101,7 +101,7 @@ export function seeType(ty){ const c = career(); if(!c.types.includes(ty)){ c.ty
 export function tutorialDone(){ const c = career(); if(!c.tutorial){ c.tutorial = true; saveCareer(c); } }
 // The end of a run: experience for what the region reached (achievements were paid when earned)
 // At the end of a run, a bonus for the people the region houses (the rest was earned along the way)
-export function runXp(){ const pop = regionPop() + (S.region.active ? S.newcomers + (S.base||0) : 0);
+export function runXp(){ const pop = S.newcomers + (S.base||0);
   return Math.floor(pop/20); }
 export function endRun(){
   const c0 = career(), bonus = runXp(), live = S.rs.xp || 0, before = S.rs.xp0 !== undefined ? S.rs.xp0 : c0.xp - live;

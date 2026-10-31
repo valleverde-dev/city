@@ -4,33 +4,40 @@ import { S } from './state.js';
 //  CONFIG — tuning knobs (see docs/GDD.md)
 // =====================================================================
 // =====================================================================
-//  LEVELS — the settlements of a Euroregion run. Each one doubles the map side and switches on new
-//  rules (f), so the player learns the bureaucracy one layer at a time. After the fourth, every new
-//  settlement is 16×16 with a higher target (stageCfg).
+//  PHASES (v0.10) — a run is ONE region that keeps growing and stays in play. It starts with one 8×8 plot;
+//  every time the region's population reaches the target there is a MILESTONE: a reward, a new 8×8 plot next
+//  to the region, a new grant tranche and more months. The rules switch on phase by phase (f), so the
+//  bureaucracy is learnt one layer at a time.
+//  The target follows one visible rule: residents per parcel × parcels, and the density goes up one step
+//  per milestone (4, 5, 6… residents per parcel → 256, 640, 1,152, 1,792…).
 //    access: buildings need a road/built neighbour · permits: reviews can be rejected · local: the mayor matters
 //    jobs: residents need jobs · combos · holdout: farmers raise prices · rustic: farmland needs an urban plan
 //    events: crisis cards · directives · neigh/comp: neighbours and compliance meters · services: school + health
 //    lose: you can actually lose · milestones: use-it-or-lose-it · market: developers, property market
 // =====================================================================
-export const VERSION = '0.9.3';   // keep in step with package.json (the build checks it)
+export const VERSION = '0.10.0';   // keep in step with package.json (the build checks it)
 export const BASE_F = {access:1, permits:1, local:1, jobs:1, combos:1, holdout:1};
 export const FULL_F = {...BASE_F, rustic:1, events:1, directives:1, neigh:1, comp:1, services:1, lose:1};
-export const LEVELS = [
-  {n:2,  months:8,  grant:12,  target:100,  slots:2, f:{}},
-  {n:4,  months:14, grant:40,  target:250,  slots:3, f:{...BASE_F}},
-  {n:8,  months:24, grant:90,  target:420,  slots:3, f:{...FULL_F}},
-  {n:16, months:36, grant:200, target:1100, slots:3, f:{...FULL_F, milestones:1, market:1}},
+export const PLOT = 8;                     // every plot of the region is PLOT × PLOT parcels
+export const DENSITY0 = 4;                 // residents per parcel asked in the first phase (+1 per milestone)
+export const PHASES = [                    // per phase: rules, months, agenda slots, grant per new resident asked (€M)
+  {months:8,  slots:2, per:0.10, f:{}},
+  {months:14, slots:3, per:0.12, f:{...BASE_F}},
+  {months:18, slots:3, per:0.18, f:{...FULL_F}},
+  {months:18, slots:3, per:0.12, f:{...FULL_F, milestones:1, market:1}},
 ];
-// Settlement k of a run (0-based): the level template, and past the last one a rising target
+// Phase k of a run (0-based): its plot size, the parcels of the whole region, the density and the target
 export function stageCfg(k){
-  const L = LEVELS[Math.min(k, LEVELS.length-1)], extra = Math.max(0, k-(LEVELS.length-1));
-  return extra ? {...L, target: Math.round(L.target*(1+CFG_STAGE.targetStep*extra)/10)*10} : L;
+  const P = PHASES[Math.min(k, PHASES.length-1)], parcels = PLOT*PLOT*(k+1), density = DENSITY0 + k, target = parcels*density;
+  const prev = k > 0 ? PLOT*PLOT*k*(DENSITY0 + k - 1) : 0, inc = target - prev;
+  return {n:PLOT, k, parcels, density, target, inc, months:P.months, slots:P.slots, f:P.f, grant: Math.round(inc*P.per + 8)};
 }
-export const CFG_STAGE = { targetStep: 0.3 };
+export const LEVELS = PHASES.map((_,k)=>stageCfg(k));   // the four phase templates (the rules stop changing after the fourth)
+export const CFG_STAGE = { plot: PLOT, density0: DENSITY0 };
 export const LV = () => stageCfg(S ? (S.stage ?? S.level ?? 0) : 0);
 export const on = flag => !!LV().f[flag];
 export const METER_FLAG = {local:'local', neigh:'neigh', comp:'comp'};
-export const MILESTONES = { 12: 0.20, 24: 0.50 };   // share of the grant that must be spent by then (level IV)
+export const MILESTONES = { 8: 0.25, 14: 0.60 };   // share of the tranche that must be spent by then (phase IV on)
 export const CFG = {
   contractors: 3,
   permitFee: 0.2, lobbyCost: 0.3, consultCost: 0.2, planCost: 0.5, planMonths: 2,
@@ -41,13 +48,12 @@ export const CFG = {
   devMinMarket: 0.8,                       // developers only buy when the market is at least this hot
   taxShare: 0.5, taxPerFactory: 0.25, taxPerResident: 0.0008,
   loanStep: 5, debtCap: 35, interest: 0.02,
-  worldN: 48,                              // the world map is worldN × worldN parcels (3×3 plots of 16×16)
   approveAt: 50,                           // a permit is approved if political support is at least this when it is decided
-  keepShare: 0.5,                          // share of unspent funds a consolidated settlement keeps (the rest goes back to Brussels)
-  dividendShare: 0.5,                      // a consolidated settlement pays the region half of the taxes it paid while in play
+  keepShare: 0.4,                          // share of unspent funds kept at a milestone (the rest goes back to Brussels)
 };
 Object.defineProperties(CFG, {
-  months:{get:()=>LV().months}, grant:{get:()=>LV().grant}, target:{get:()=>LV().target}, slots:{get:()=>LV().slots},
+  months:{get:()=>LV().months + ((S && S.ext) || 0)},   // v0.10: + months won by missions and extensions
+  grant:{get:()=>LV().grant}, target:{get:()=>LV().target}, slots:{get:()=>LV().slots},
   milestones:{get:()=> on('milestones') ? MILESTONES : {}},
 });
 export const B = {

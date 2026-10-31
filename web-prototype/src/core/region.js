@@ -2,8 +2,8 @@ import { N, NB, NB8, S, inside, pick, ri, rnd } from './state.js';
 
 // =====================================================================
 //  EUROREGION — one run is one region that grows, and its map grows with it. The map is only the land
-//  that exists (S.world.cells, a sparse "y,x" → code map): it starts as a 2×2 hamlet, and every new
-//  settlement adds a plot of land next to the region. The terrain of a new plot is generated when it is
+//  that exists (S.world.cells, a sparse "y,x" → code map): it starts as one 8×8 plot, and every milestone
+//  adds another 8×8 plot of land next to the region (v0.10: the whole region stays in play, see newgame.js). The terrain of a new plot is generated when it is
 //  offered, CONTINUING what is next to it (a regional road or the river that reaches the edge goes on),
 //  plus its own road, river, woods and village. The plot in play is expanded into S.grid (local
 //  coordinates); when it meets its target it is CONSOLIDATED: what was built is written into the map,
@@ -193,8 +193,10 @@ export function frontierAround(r, c){ const out = [];
   return out; }
 
 // ---------- totals ----------
-export function regionPop(){ return S.region.blocks.reduce((a,b)=>a+b.res, 0); }
-export function regionDividend(){ return Math.round(S.region.blocks.reduce((a,b)=>a+(b.tax||0), 0)*100)/100; }
+// v0.10: the whole region is in play, so its people and taxes are counted in the grid (residents(), taxIncome());
+// these stay for older callers and add nothing
+export function regionPop(){ return 0; }
+export function regionDividend(){ return 0; }
 // Effects of the active settlement's type and its region combos (applied with the adjacency combos)
 export function regionFx(){ return S.rfx || {}; }
 export function sumFx(list){ const f = {}; list.forEach(e=>{ for(const k in e) f[k] = Math.round(((f[k]||0) + e[k])*1000)/1000; }); return f; }

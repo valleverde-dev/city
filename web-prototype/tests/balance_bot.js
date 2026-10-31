@@ -6,7 +6,7 @@
 window.__playOneRun = function(seed, opts){
   opts = opts || {};
   const g = window.__eurocrat; if(!opts.keepCareer && g.resetCareer) g.resetCareer(); g.newGame(seed, opts.level===undefined ? 3 : opts.level, opts.keepCareer && g.rankBonus ? {bonus: g.rankBonus()} : {});
-  const start = g.S.stage, maxStage = opts.maxStage === undefined ? 12 : opts.maxStage;
+  const start = g.S.stage, done0 = g.S.done||0, maxStage = opts.maxStage === undefined ? 12 : opts.maxStage;
   const S = () => g.S, side = () => Math.round(Math.sqrt(g.S.grid.length));   // the map grows with every settlement
   const PERK_PREF = ['contractor','cousin','prefab','fasttrack','translation','notary','fixer','lobbyist','comms','shovel'];
   const planned = ty => S().grid.filter(p=>p.ty===ty && p.k!=='regional' && ['review','approved','building','built','private'].includes(p.st)).length;
@@ -65,7 +65,7 @@ window.__playOneRun = function(seed, opts){
     if(S().perkChoice) continue;
     g.endMonth();
   }
-  const s = S(), settled = s.region.blocks.length - start;   // settlements this bot consolidated itself
+  const s = S(), settled = (s.done||0) - done0;   // milestones this bot reached itself
   return {seed, level: start, win: settled > 0, settled, stage: s.stage, why: s.over ? s.over.why : (s.pending ? 'target' : 'none'), month: s.month,
           residents: g.residents(), pop: g.regionPop() + (s.pending ? 0 : g.residents()), funds: Math.round(s.funds*10)/10, debt: s.debt, perks: s.perks.length};
 };

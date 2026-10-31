@@ -15,14 +15,15 @@ import { choicesFor, resolveEvent } from './events.js';
 // State, RNG and grid helpers
 export { S, N, setState, rnd, ri, pick, r1, clamp, idx, rc, inside, NB, NB8, has, pname } from './state.js';
 // Data and tuning: levels, buildings, perks, characters
-export { LEVELS, LV, stageCfg, on, CFG, B, BUILD_TYPES, BASE_TYPES, NEW_TYPES, KIND, PERKS, CHARS, METER_FLAG, MILESTONES, N_COUNTRIES, N_REJECTIONS } from './config.js';
+export { LEVELS, PHASES, PLOT, DENSITY0, LV, stageCfg, on, CFG, B, BUILD_TYPES, BASE_TYPES, NEW_TYPES, KIND, PERKS, CHARS, METER_FLAG, MILESTONES, N_COUNTRIES, N_REJECTIONS } from './config.js';
 // Starting a run; consolidating a settlement and attaching the next one
 export { newGame, snapshot, consolidate, attach } from './newgame.js';
 // The Euroregion: settlement types, region combos, placement, frontier
 export { SIZES, STYPES, STYPE_ICON, STYPE_FX, REGION_COMBOS, RCOMBO_BY_ID, DIRS, DIR_KEYS, candidates, attachPreview, neighboursOf,
          regionCombosAt, regionBounds, regionPop, regionDividend, regionFx, frontAt, cellPos, codeTokens, wcode, blockAt, worldIndex } from './region.js';
 export { genPlot, wid, setW } from './region.js';
-export { writePlot } from './newgame.js';
+export { writePlot, rebuildGrid, regionEffects, plotParcels } from './newgame.js';
+export { cellCode } from './region.js';
 // Derived values (read-only questions about the state)
 export { count, caps, hasAccess, isRoad, givesAccess, nextToVillage, landPrice, plotValue, buildCost, permitMonths, buildMonths,
          contractors, slotsPerMonth, approvalChance, support, approves, activeSites, builtFx, bump } from './rules.js';
