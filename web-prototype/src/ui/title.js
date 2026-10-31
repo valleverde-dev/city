@@ -395,7 +395,7 @@ export function pauseMenu(view = 'main'){
   updateMusicBtn(); setRerender(()=>pauseMenu(pauseView));
 }
 // Restart: the run counts as given up, and a new one of the same kind starts at once (the tutorial restarts as the tutorial)
-function doRestart(){ const tut = S.stage === 0 && !S.region.blocks.length && !career().tutorial; abandonRun(); pauseView = 'main'; hideModal(); tut ? startRun() : startRandom(); }
+function doRestart(){ const tut = !career().tutorial; abandonRun(); pauseView = 'main'; hideModal(); tut ? startRun() : startRandom(); }
 // Abandon: the run ends here — the end-of-run screen (XP, achievements), then back to the menu
 function doAbandon(){ abandonRun(); pauseView = 'main'; hideModal(); refresh(); showNext(); }
 export function setLang(l){
@@ -411,10 +411,10 @@ export function frameView(){ resize();
 export function hudTop(){ const h = $('hud'); return h ? Math.min(h.offsetHeight + 12, worldEl.clientHeight*0.35) : 0; }
 // A new Euroregion (or, for tests and the balance bot, a run that starts at settlement `stage`)
 export function startNew(seed, stage = 0, opts = {}){ closeDrama(); hideCover(); startSite(seed, stage, opts); enterSettlement(); }
-// The tutorial run: the 2×2 hamlet with the mayor's guide
-export function startRun(){ startNew(undefined, 0, {bonus: rankBonus(), guide: true}); }
-// Every run after the tutorial: a random settlement type, starting perk and member state, straight into a 4×4 town
-export function startQuick(d){ startNew(d.seed, 1, {ty:d.ty, perk:d.perk, country:d.country, bonus: rankBonus(), guide: career().guide}); }
+// The tutorial run (v0.10): a normal first plot, always a farming town, no starting perk, with the mayor's hints
+export function startRun(){ startNew(undefined, 0, {bonus: rankBonus(), guide: true, tutorial: true}); }
+// Every run after the tutorial: a random plot type, starting perk and member state; every run starts at phase I (v0.10)
+export function startQuick(d){ startNew(d.seed, 0, {ty:d.ty, perk:d.perk, country:d.country, bonus: rankBonus(), guide: career().guide}); }
 export function startRandom(){ startQuick(randomStart((Math.random()*2147483647)|0)); }
 // "New Euroregion" anywhere (title, end of a run): the tutorial the first time, a random run after that
 export function startNewEuroregion(){ career().tutorial ? startRandom() : startRun(); }

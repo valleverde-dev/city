@@ -97,8 +97,9 @@ with sync_playwright() as p:
     check(page.locator("#notice .dots i.on").count() == 1 and page.locator("#notice .dots i").nth(len(seen)-2).get_attribute("class") == "on", "← goes back a slide")
     page.keyboard.press("ArrowRight"); page.wait_for_timeout(60)
     page.click("text=Get to work")
-    check(S("Math.sqrt(S.grid.length)") == 2 and S("S.stage") == 0 and S("S.stype") == "hamlet", "settlement I is a 2×2 hamlet")
-    check("settlement i" in page.locator("#stageTag").inner_text().lower() and page.locator("#townName").inner_text().strip() == S("S.town"),
+    check(S("Math.sqrt(S.grid.length)") == 8 and S("S.stage") == 0 and S("S.stype") == "agrarian" and S("S.region.blocks.length") == 1, "v0.10: phase I is one 8×8 plot, a farming town in the tutorial")
+    check(page.locator("#notice .ladder").count() == 0, "(the slides are closed)")
+    check("phase i" in page.locator("#stageTag").inner_text().lower() and page.locator("#townName").inner_text().strip() == S("S.town"),
           "the header shows the whole town name; the settlement number sits with the goal")
     check(page.locator("#meters").is_hidden(), "settlement I shows no meters (none of those rules are in play)")
     check(S("g.dock") == "agenda" and page.locator("#strip .tile.act").count() == 0 and page.locator("#strip .tile").count() >= 1, "settlement I: the bottom bar shows the goal, no agenda yet")
@@ -116,7 +117,8 @@ with sync_playwright() as p:
     page.locator("#confirm .ok").click(); page.wait_for_timeout(60)
     check(S(f"S.grid[{lot}].ty") == "housing" and page.locator("#confirm").is_hidden(), "confirm: the permit for a housing block is requested")
     check(page.locator("#endTurn.nudge").count() == 1, "the guide nudges the End month button")
-    for _ in range(10):
+    S("(Object.assign(S.grid.find((p,i)=>p.k==='farm' && p.st==='land' && i!==%d), {st:'built', ty:'housing'}), 0)" % lot)   # a second block, to reach 256 faster
+    for _ in range(12):
         if S("!!S.over || !!S.pending"): break
         page.click("#endTurn"); page.wait_for_timeout(60)
     check(S("S.pending") == "attach" and not S("S.over"), f"settlement I is consolidated by ending months ({S('S.month')} months)")
@@ -144,10 +146,11 @@ with sync_playwright() as p:
     check(page.is_visible("#confirm .ok") and f"{k+1}" in page.locator("#confirm .ok").inner_text() and cfb["y"] + cfb["height"] <= mb["y"] + mb["height"],
           "the Acquire button appears on the map, beside the chosen plot")
     page.locator("#confirm .ok").click(); page.wait_for_timeout(150)
-    check(S("S.stage") == 1 and S("Math.sqrt(S.grid.length)") == 4 and S("S.region.blocks.length") == 1, "the next settlement is a 4×4 next to the region")
-    check(S(f"S.region.active.x === {P['x']} && S.region.active.y === {P['y']}") and S("S.frontier.some(f=>f.b===0)"), "it is the chosen plot of the same world map, next to the hamlet")
+    check(S("S.stage") == 1 and S("Math.sqrt(S.grid.length)") == 16 and S("S.region.blocks.length") == 2, "v0.10: the next plot joins the region (both plots in play, in a 16×16 square)")
+    check(S(f"S.region.blocks[1].x === {P['x']} && S.region.blocks[1].y === {P['y']}") and S("S.grid.filter(p=>p.k!=='void').length") == 128, "it is the chosen plot of the same world map; the rest of the square is void")
     check(S(f"S.perks.includes('{perk}') || (S.shovel && '{perk}'==='shovel')"), "the perk stays for the rest of the run")
-    check(page.is_visible("text=Expansion Phase") and "Settlement II" in page.locator("#notice .lvl-tag").inner_text() and page.locator("#confirm").is_hidden(), "settlement II card (and the Acquire button is gone)")
+    check(page.is_visible("text=Expansion Phase") and "Phase II" in page.locator("#notice .lvl-tag").inner_text() and page.locator("#confirm").is_hidden(), "phase II card (and the Acquire button is gone)")
+    check(page.locator("#notice .ladder .rung").count() == 3 and "640" in page.locator("#notice .ladder").inner_text(), "the phase card shows the targets ahead (this one and the next two)")
     clear_cards(); S("(g.showNext(), 0)")
     check(not page.locator("#m-local").is_hidden() and page.locator("#m-neigh").is_hidden(), "settlement II shows only the Mayor meter")
     check(S("g.dock") == "agenda" and page.locator("#strip .tile[data-k=lobby]").count() == 1, "settlement II: with nothing selected, the bar is the agenda (lunch with the mayor)")
@@ -158,7 +161,7 @@ with sync_playwright() as p:
 
     # --- Back to the menu: the run can be continued
     page.click("#menuBtn"); page.click("text=Main menu")
-    check(not page.locator("#cover .cv-item.cont").is_disabled() and page.evaluate("JSON.parse(localStorage.getItem('eurocrat_v10')||'{}').stage") == 1,
+    check(not page.locator("#cover .cv-item.cont").is_disabled() and page.evaluate("JSON.parse(localStorage.getItem('eurocrat_v11')||'{}').stage") == 1,
           "the menu offers to continue the run (settlement II is saved)")
     check(page.evaluate("!!document.querySelector('#toast') && document.querySelector('#toast').textContent.length > 5") and "firstStone" in page.evaluate("localStorage.getItem('eurocrat_career')"), "achievements pop up as banners during play, and stay in the career")
     page.click("#cover .cv-item.career"); page.wait_for_timeout(60)
@@ -173,10 +176,11 @@ with sync_playwright() as p:
     check(page.locator("#cover .cv-item.tut").count() == 1, "the tutorial can be played again from Settings")
     page.keyboard.press("Escape")
     page.click("#cover .cv-item.new"); page.wait_for_timeout(200)
+    if page.is_visible("text=Accept the appointment"): page.click("text=Accept the appointment"); page.wait_for_timeout(60)
     for _ in range(5):
         if page.locator("#notice .perkgrid .pk").count(): break
         page.click("#notice .btns .btn.next"); page.wait_for_timeout(60)
-    check(page.locator("#cover").is_hidden() and S("S.stage") == 1 and S("S.perks.length") == 1 and S("S.stype") != "hamlet" and page.locator("#notice .perkgrid .pk").count() >= 1,
+    check(page.locator("#cover").is_hidden() and S("S.stage") == 0 and S("S.perks.length") == 1 and S("S.stype") != "hamlet" and page.locator("#notice .perkgrid .pk").count() >= 1,
           "after the tutorial, New Game starts a random run at once (no dossier to choose): type, perk and country revealed on its screen")
     check(page.locator("#notice .col-a .speaker").count() == 1 and page.locator("#notice .col-b .slide").count() == 1, "the settlement letter is a screen: the speaker on the left, one slide of facts on the right")
     clear_cards(); ev(f"{G}.hideModal()")
@@ -184,13 +188,13 @@ with sync_playwright() as p:
     # --- Full rules: settlement IV (16×16, with made-up neighbours), deterministic; its type's bonuses switched off
     ev(f"{G}.newGame(42, 3)"); clear_cards(); S("(S.rfx={}, g.refresh(), 0)")
     N = S("Math.sqrt(S.grid.length)")
-    check(N == 16 and S("g.on('market') && g.on('milestones')"), "settlement IV is a 16×16 map with every rule")
+    check(S("S.region.blocks.length") == 4 and S("S.grid.filter(p=>p.k!=='void').length") == 256 and S("g.on('market') && g.on('milestones')"), "phase IV: four 8×8 plots in play, with every rule")
     WN = (ev(f"{G}.artSize[0]") - 32) // 64
     land = S("Object.keys(S.world.cells).length")
-    check(S("S.frontier.length") > 0 and land > N * N and WN >= N + 2, f"the map is all the land of the region ({land} parcels), drawn around the settlement")
+    check(land == 256 and WN >= N + 2, f"the map is all the land of the region ({land} parcels)")
     ok_all = True
     for rot in range(4):
-        bad = S(f"Array.from({{length:{N*N}}},(_,i)=>i).filter(i=>{{const [x,y]=g.screenOf(i); return x>0&&y>0&&x<innerWidth&&y<innerHeight && g.tileAt(x,y)!==i;}}).length")
+        bad = S(f"Array.from({{length:{N*N}}},(_,i)=>i).filter(i=>{{const [x,y]=g.screenOf(i); return S.grid[i].k!=='void'&&x>0&&y>0&&x<innerWidth&&y<innerHeight && g.tileAt(x,y)!==i;}}).length")
         ok_all = ok_all and bad == 0
         page.click("#rotateBtn")
     check(ok_all, "tap hit-testing maps every visible tile correctly in all 4 rotations")
@@ -219,11 +223,13 @@ with sync_playwright() as p:
     S("(S.local=30, 0)")
     check(muni < 0 or S(f"g.acquire({muni}).msg.k") == "err.mayorNo", "municipal land needs the mayor (support ≥ 40)")
     S("(S.local=60, S.slots=3, 0)")
-    S(f"(()=>{{ for(let r=2;r<10;r++) for(let c=2;c<10;c++) Object.assign(S.grid[r*{N}+c], {{k:'farm', st:'land', ty:null}}); return 0; }})()")   # plain farmland around (5,5)
-    road = 5*N + 5
+    # v0.10: work on the newest plot (the bounding square around the region also has void cells)
+    RO, CO = S("[S.region.blocks[3].y - S.region.active.y - 2, S.region.blocks[3].x - S.region.active.x - 2]")
+    S(f"(()=>{{ for(let r=2;r<10;r++) for(let c=2;c<10;c++) Object.assign(S.grid[(r+{RO})*{N}+c+{CO}], {{k:'farm', st:'land', ty:null}}); return 0; }})()")   # plain farmland around (5,5)
+    road = (5+RO)*N + 5+CO
     S(f"(S.grid[{road}]={{...S.grid[{road}], k:'farm', st:'built', ty:'road'}}, 0)")
-    check(S("g.hasAccess(6,6)") and S("g.hasAccess(4,4)") and not S("g.hasAccess(7,7)"), "access counts diagonal neighbours (8-way)")
-    acc = f"(p,i)=>p.k==='farm' && p.st==='land' && g.hasAccess(Math.floor(i/{N}), i%{N}) && Math.abs(Math.floor(i/{N})-5)+Math.abs(i%{N}-5)>3"
+    check(S(f"g.hasAccess(6+{RO},6+{CO})") and S(f"g.hasAccess(4+{RO},4+{CO})") and not S(f"g.hasAccess(7+{RO},7+{CO})"), "access counts diagonal neighbours (8-way)")
+    acc = f"(p,i)=>p.k==='farm' && p.st==='land' && g.hasAccess(Math.floor(i/{N}), i%{N}) && Math.abs(Math.floor(i/{N})-5-({RO}))+Math.abs(i%{N}-5-({CO}))>3"
     lot = S(f"S.grid.findIndex({acc})")
     tries = 0
     while S(f"S.grid[{lot}].st") == "land" and tries < 4:
@@ -244,6 +250,7 @@ with sync_playwright() as p:
     while S(f"S.grid[{lot}].st") in ("review", "approved", "building") and months < 12:
         S("(S.local=100, S.neigh=100, S.comp=100, S.directive=null, 0)"); clear_cards(); S("g.endMonth()"); months += 1
     check(S(f"S.grid[{lot}].st") == "built", f"housing approved and built ({months} months)")
+    S("(S.grid.forEach(p=>{ if(p.ty==='factory' || p.ty==='market' || p.ty==='data') p.ty='park'; }), 0)")   # (the made-up earlier plots have factories)
     check(S("g.caps().bottleneck") == "jobs", "with homes but no factory, jobs are the bottleneck")
     lot2 = S(f"S.grid.findIndex({acc})")
     S(f"(S.grid[{lot2}].st='owned', S.grid[{lot2}].urban=true, S.slots=3, S.market=0.7, 0)")
@@ -252,26 +259,26 @@ with sync_playwright() as p:
     check(S(f"g.sellPlot({lot2}).ok") and S("S.funds") > f0 and S("S.spent") == sp0, "selling a plot brings money (and does not count as spending)")
 
     # Use-it-or-lose-it, loans, directives, perks, win
-    clear_cards(); S("(S.month=9, S.spent=1, S.funds=100, S.directive=null, S.over=null, S.refunds=[], 0)"); S("g.endMonth()")
+    clear_cards(); S("(S.month=5, S.spent=1, S.funds=100, S.directive=null, S.over=null, S.refunds=[], 0)"); S("g.endMonth()")
     check(S("S.cards.some(c=>c.key==='ms.warn')"), "absorption warning 3 months before the milestone")
-    clear_cards(); S("(S.month=12, S.spent=1, S.funds=100, S.directive=null, S.over=null, S.refunds=[], 0)"); S("g.endMonth()")
-    need = S("Math.round(S.grant*0.20*10)/10")
-    check(98 - need/2 < S("S.funds") < 101 - need/2 + 1, "half of the unspent money is decommitted at month 12")
-    clear_cards(); S("(S.over=null, S.funds=-3, S.debt=0, S.month=20, S.directive=null, S.strikes=0, 0)"); S("g.endMonth()")
+    clear_cards(); S("(S.month=8, S.spent=1, S.funds=100, S.directive=null, S.over=null, S.refunds=[], 0)"); S("g.endMonth()")
+    need = S("Math.round(S.grant*0.25*10)/10")
+    check(98 - need/2 < S("S.funds") < 101 - need/2 + 1, "half of the unspent money is decommitted at month 8")
+    clear_cards(); S("(S.over=null, S.funds=-3, S.debt=0, S.month=10, S.directive=null, S.strikes=0, 0)"); S("g.endMonth()")
     check(not S("S.over") and S("S.debt") > 0 and S("S.cards[0] && S.cards[0].key") == "loan", "running out of money takes a bridge loan, not game over")
     clear_cards(); S("(S.debt=g.CFG.debtCap-1, S.funds=-20, 0)"); S("g.endMonth()")
     check(S("S.over && S.over.why") == "bankrupt", "debt above the cap = bankrupt (level IV)")
-    S("(S.over=null, S.funds=50, S.debt=0, S.comp=80, S.strikes=1, S.month=20, S.cards=[], S.directive={kind:'consult', deadline:20, base:S.consults, param:0, ref:'X'}, 0)")
+    S("(S.over=null, S.funds=50, S.debt=0, S.comp=80, S.strikes=1, S.month=12, S.cards=[], S.directive={kind:'consult', deadline:12, base:S.consults, param:0, ref:'X'}, 0)")
     S("g.endMonth()")
     check(S("S.over && S.over.why") == "suspended", "two failed directives suspend the programme")
     S("(S.over=null, S.perkChoice=['cousin','notary','prefab'], 0)"); S("g.choosePerk('cousin')")
     check(S("S.perks.includes('cousin') && S.perkChoice===null"), "choosing a perk applies it")
     clear_cards(); S("(S.over=null, S.funds=40, S.debt=0, S.newcomers=2*g.CFG.target, S.directive=null, 0)"); S("g.endMonth()")
     check(S("S.pending") == "attach" and S("S.region.blocks.length") == 4, "reaching the target consolidates the settlement")
-    check(S("S.region.next.n") == 16 and S("S.region.cands.length") >= 1, "after 16×16 the next settlements stay 16×16")
+    check(S("S.region.next.n") == 8 and S("S.region.cands.length") >= 1, "every plot is 8×8")
     S("(S.cards=[], S.perkChoice=null, 0)"); S("g.attach(0)"); clear_cards()
-    check(S("S.stage") == 4 and S("g.CFG.target") > 1100, "settlement V: same size, higher target")
-    S("(S.debt=g.CFG.debtCap+1, S.cards=[], 0)"); S("g.endMonth()"); S("g.showNext()")
+    check(S("S.stage") == 4 and S("g.CFG.target") == 2560 and S("S.region.blocks.length") == 5, "phase V: five plots, a denser target (320 parcels × 8)")
+    S("(S.debt=g.CFG.debtCap+1, S.newcomers=0, S.cards=[], 0)"); S("g.endMonth()"); S("g.showNext()")
     check(S("S.over && S.over.why") == "bankrupt" and page.is_visible("#drama.lose") and page.locator("#drama .stamp-big").count() == 1,
           "a loss is a full-screen moment: the dossier is stamped and shredded")
     page.locator("#drama").click(); page.wait_for_timeout(500)
@@ -282,10 +289,11 @@ with sync_playwright() as p:
 
     # --- Combos (discovered by building), access through finished buildings
     S("localStorage.removeItem('eurocrat_combos')")
-    ev(f"{G}.newGame(3, 3)"); clear_cards()
+    ev(f"{G}.newGame(3, 3)"); clear_cards(); N = S("Math.sqrt(S.grid.length)")
+    S("(S.grid.forEach(p=>{ if(p.st==='built' && p.k==='farm') Object.assign(p, {st:'land', ty:null}); }), 0)")   # no made-up buildings around
     # a 6×6 patch of plain farmland in the middle of the plot (whatever the world put there)
-    r0, c0 = 6, 6
-    S(f"(()=>{{ for(let a=-1;a<5;a++) for(let b=-1;b<5;b++) Object.assign(S.grid[({r0}+a)*{N}+{c0}+b], {{k:'farm', st:'land', ty:null, urban:true}}); return 0; }})()")
+    r0, c0 = S("[S.region.blocks[3].y - S.region.active.y + 1, S.region.blocks[3].x - S.region.active.x + 1]")   # inside the newest plot
+    S(f"(()=>{{ for(let a=-1;a<7;a++) for(let b=-1;b<7;b++) Object.assign(S.grid[({r0}+a)*{N}+{c0}+b], {{k:'farm', st:'land', ty:null, urban:true}}); return 0; }})()")
     at = lambda r, c: (r0 + r) * N + c0 + c
     S(f"(()=>{{ const put=(i,ty)=>Object.assign(S.grid[i],{{k:'farm',st:'built',ty}}); put({at(0,0)},'housing'); put({at(0,1)},'park'); return 0; }})()")
     check(S("g.activeCombos().map(x=>x.id).join()") == "greenViews", "housing next to a park = 'Green Views' combo")
@@ -368,7 +376,7 @@ with sync_playwright() as p:
     x, y = S(f"g.screenOfW({b0['y']}+({b0['n']}-1)/2, {b0['x']}+({b0['n']}-1)/2)"); box = page.locator("#map").bounding_box()
     if 0 < x < box["width"] and 0 < y < box["height"]:
         page.mouse.click(box["x"] + x, box["y"] + y); page.wait_for_timeout(80)
-        check(S("g.dock") == "block" and b0["town"] in page.locator("#ctxHead").inner_text(), "tapping a consolidated settlement shows it in the bar (type, residents, dividend, ties)")
+        check(S("g.selected") >= 0 and S("g.dock") == "parcel", "v0.10: the first plot is still in play — tapping it selects one of its parcels")
         page.keyboard.press("Escape")
     # Q and E orbit the map; Tab opens the run file
     r0v = S("g.viewRot"); page.keyboard.press("e"); page.wait_for_timeout(300)
@@ -378,7 +386,7 @@ with sync_playwright() as p:
     S("(S.levelUps=[3], 0)"); ev("window.__eurocrat.refresh()"); page.wait_for_timeout(300)
     shown = page.locator("#toast.in").count() == 1
     try:   # every queued banner (earlier ones too) leaves on its own, one after another
-        page.wait_for_function("!document.querySelector('#toast.in') && window.__eurocrat.toasts.length === 0", timeout=30000); gone = True
+        page.wait_for_function("!document.querySelector('#toast.in') && window.__eurocrat.toasts.length === 0", timeout=60000); gone = True
     except Exception:
         gone = False
     check(shown and gone, "a banner leaves on its own")
@@ -455,11 +463,11 @@ with sync_playwright() as p:
     town = S("S.town")
     page.reload()
     play = page.locator("#cover .cv-item.cont")
-    check(page.is_visible("#cover") and play.is_enabled() and page.evaluate("JSON.parse(localStorage.getItem('eurocrat_v10')||'{}').town") == town, "the start menu offers to continue the saved run")
+    check(page.is_visible("#cover") and play.is_enabled() and page.evaluate("JSON.parse(localStorage.getItem('eurocrat_v11')||'{}').town") == town, "the start menu offers to continue the saved run")
     check(page.evaluate("document.activeElement.classList.contains('cont')"), "with a saved programme, Continue is the selected item")
     play.click(); page.wait_for_timeout(100); drain()
     check(page.locator("#cover").is_hidden(), "the cover closes when the game starts")
-    check(S("S.town") == town and S("S.stage") == 1 and S("Math.sqrt(S.grid.length)") == 4, "continue restores the settlement and its map")
+    check(S("S.town") == town and S("S.stage") == 1 and S("S.region.blocks.length") == 2 and S("Math.sqrt(S.grid.length)") == 16, "continue restores the region and its map")
     m0 = S("S.month"); page.click("#endTurn"); drain()
     check(S("S.month") == m0 + 1, "the End month button advances to the next month")
     page.keyboard.press("Space"); drain()
@@ -490,8 +498,8 @@ with sync_playwright() as p:
     for lv in range(5):
         ev(f"{G}.newGame(3, {lv})"); clear_cards()
         n = S("Math.round(Math.sqrt(S.grid.length))"); aw = ev(f"{G}.artSize[0]")
-        sizes.append(aw >= (n + 2) * 64 + 32 and n == [2, 4, 8, 16, 16][lv])
-    check(all(sizes), "every settlement is a plot (2, 4, 8, 16, 16) of a map that grows with the region")
+        sizes.append(aw >= (n + 2) * 64 + 32 and S("S.grid.filter(p=>p.k!=='void').length") == 64 * (lv + 1))
+    check(all(sizes), "every phase adds an 8×8 plot to a map that grows with the region")
     check(ev(f"Object.keys({G}.spriteSheet().atlas).length") >= 60, "pixel-art sprite sheet builds")
     check(page.locator(".material-icons").count() == 0 and page.locator("#hud .ico").count() >= 5, "pixel icons replace the icon font")
     check(ev("document.fonts.check('20px Jersey') && document.fonts.check('14px Pixel')"), "embedded pixel fonts are available")

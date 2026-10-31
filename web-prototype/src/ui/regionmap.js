@@ -30,7 +30,8 @@ export function regionCanvas({maxW = 320, maxH = 170} = {}){
   cands.forEach(P=>P.cells.forEach((c,i)=>{ g.fillStyle = PALE[c] || PALE.farm; diamond(P.x + i%P.n, P.y + Math.floor(i/P.n), 1); g.fill(); }));
   g.lineWidth = 1;
   S.region.blocks.forEach(B=>{ diamond(B.x, B.y, B.n); g.strokeStyle = 'rgba(11,31,77,.85)'; g.stroke(); });
-  if(A){ diamond(A.x, A.y, A.n); g.strokeStyle = '#ffd200'; g.lineWidth = 2; g.stroke(); g.lineWidth = 1; }
+  const L = S.region.blocks[S.region.blocks.length-1];   // v0.10: the plot this phase added
+  if(A && L && !cands.length){ diamond(L.x, L.y, L.n); g.strokeStyle = '#ffd200'; g.lineWidth = 2; g.stroke(); g.lineWidth = 1; }
   cands.forEach((P,k)=>{ diamond(P.x, P.y, P.n); g.setLineDash([3,2]); g.strokeStyle = '#1d3c78'; g.stroke(); g.setLineDash([]);
     const [cx, cy] = at(P.x + P.n/2, P.y + P.n/2); g.font = '700 12px system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillStyle = '#0b1f4d'; g.fillText(String(k+1), cx, cy); });

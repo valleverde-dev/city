@@ -32,7 +32,7 @@ export function newGame(seed, stage, opts = {}){
   if(opts.perk){ if(opts.perk==='shovel') S.shovel = true; else S.perks.push(opts.perk); seePerk(opts.perk); }
   S.region.name = pick(REGION_NAMES);
   const first = {x:0, y:0, n:PLOT}; first.cells = genPlot(first, 0);
-  const ty0 = opts.tutorial ? 'hamlet' : (opts.ty || pick(STYPES));
+  const ty0 = opts.tutorial ? 'agrarian' : (opts.ty || pick(STYPES));
   // Made-up history when starting further in: the earlier plots, built up to the previous target
   for(let k=0; k<=stage; k++){
     const P = k===0 ? first : pick(candidates(PLOT, k));

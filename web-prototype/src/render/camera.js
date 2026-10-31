@@ -1,4 +1,4 @@
-import { N, clamp, idx, inside, rc } from '../core/state.js';
+import { N, S, clamp, idx, inside, rc } from '../core/state.js';
 import { draw, present } from './anim.js';
 import { $ } from '../ui/dom.js';
 
@@ -83,7 +83,7 @@ export function tileAtW(sx,sy){
 export function tileAt(sx,sy){
   const w = tileAtW(sx,sy); if(!w) return -1;
   const r = w[0]-OY, c = w[1]-OX;
-  return inside(r,c) ? idx(r,c) : -1;
+  if(!inside(r,c)) return -1; const i = idx(r,c); return S.grid[i] && S.grid[i].k!=='void' ? i : -1;   // v0.10: void is not land
 }
 export function resize(){
   const rc = worldEl.getBoundingClientRect(); dpr = window.devicePixelRatio||1;

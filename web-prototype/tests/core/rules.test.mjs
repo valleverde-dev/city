@@ -330,12 +330,16 @@ test('v0.9.2: no dossier to choose — every run after the tutorial starts from 
   assert.ok((core.PERK_RANK[d.perk] || 0) <= core.rankNow(), 'the starting perk comes from the pool of your rank');
   const seen = new Set(); for (let s = 1; s <= 40; s++) seen.add(core.randomStart(s).ty);
   assert.ok(seen.size >= 4, 'different runs, different settlement types');
-  core.newGame(d.seed, 1, { ty: d.ty, perk: d.perk, country: d.country, guide: false });
+  core.newGame(d.seed, 0, { ty: d.ty, perk: d.perk, country: d.country, guide: false });
   const S = core.S;
-  assert.equal(S.stage, 1); assert.equal(S.region.blocks.length, 2);
+  assert.equal(S.stage, 0, 'v0.10: every run starts at phase I'); assert.equal(S.region.blocks.length, 1);
   assert.equal(S.stype, d.ty);
   assert.ok(S.perks.includes(d.perk));
   assert.equal(S.guideOff, true);
+  // v0.10: the tutorial is a normal first plot — always a farming town, no perk, the mayor's hints on
+  const T = core.newGame(5, 0, { tutorial: true, guide: true });
+  assert.equal(T.region.blocks[0].ty, 'agrarian'); assert.equal(T.region.blocks[0].n, 8);
+  assert.equal(T.perks.length, 0); assert.equal(T.guideOff, false);
 });
 
 test('v0.9: experience is earned while playing, with levels and ranks', () => {

@@ -69,7 +69,7 @@ export function dramaWin(c, done){
     <h1 class="big">${t('drama.win')}</h1>
     <div class="page" hidden>${gazette(t('news.win.h', {town:c.town, n:c.res}), t('news.win.s'),
       `<div class="rmap-slot"></div><p>${t('cons.money', {back:money(c.back), kept:money(c.kept)})}</p>
-       <dl class="kv"><dt>${t('ui.settlements')}</dt><dd>${S.region.blocks.length}</dd><dt>${t('ui.regionPop')}</dt><dd>${regionPop()}</dd><dt>${t('ui.dividend')}</dt><dd>${money(B0 ? B0.tax : 0)}/${t('ui.mo')}</dd></dl>
+       <dl class="kv"><dt>${t('ui.settlements')}</dt><dd>${S.region.blocks.length}</dd><dt>${t('ui.regionPop')}</dt><dd>${residents()}</dd></dl>
        ${nx ? `<p class="hint">${t('cons.next', {type:t('st.'+nx.ty), s:nx.n})}</p>` : ''}`)}
       <button class="btn primary go">${ic('play_arrow')}${t('drama.continue')}</button></div>
     <p class="tap">${t('drama.tap')}</p>`;
@@ -88,7 +88,7 @@ export function dramaWin(c, done){
 export function dramaLose(buttons){
   clear(); const d = root(); d.hidden = false; d.className = 'lose';
   const w = S.over.why, res = S.over.career || {xp:0, before:career().xp, after:career().xp, rank0:rankOf(career().xp), rank1:rankOf(career().xp), ach:[]}, rec = records();
-  const pop = regionPop() + (S.region.active ? residents() : 0), beat = S.over.beat || {};
+  const pop = residents(), beat = S.over.beat || {};
   const next = RANKS[res.rank1+1], prevT = RANKS[res.rank1];
   const pct = x => next ? Math.max(0, Math.min(100, (x - prevT)/(next - prevT)*100)) : 100;
   const lv0 = levelOf(res.before), lv1 = levelOf(res.after);

@@ -169,7 +169,7 @@ export const CARD = {
     slideLetter({icon:'map', title:`<span class="lvl-tag">${t('ui.settlement')} ${roman(k+1)}</span>${more ? S.town : t('lvl.'+(n+1)+'.name')}`, speaker: n>=2 ? 'brussels' : 'mayor',
       quote: more ? t('stl.more.x', {region:regionName()}) : t('lvl.'+(n+1)+'.x', {town:S.town}),
       slides:[
-        {label:t('slide.goal'), html:`<div class="goal big"><b>${L.target}</b><span>${t('slide.goalX', {m:L.months, s:L.n})}</span></div>${k===0 ? `<p class="keys">${t('lvl.keys')}</p>` : ''}`},
+        {label:t('slide.goal'), html:`<div class="goal big"><b>${L.target}</b><span>${t('slide.goalX', {m:CFG.months})}</span></div>${ladderHtml()}${k===0 ? `<p class="keys">${t('lvl.keys')}</p>` : ''}`},
         {label:t('slide.where'), html:`${stypeBlock(S.stype)}${rc}${S.carried > 0 ? `<p class="hint">${t('stl.carry', {x:money(S.carried)})}</p>` : ''}`},
         {label:t('lvl.newRules'), html:`<ul class="rules">${rules}</ul>`},
         {label:t('stl.perksLbl'), html: mine.length ? `<div class="perkgrid">${mine.map(p=>`<div class="pk">${ic(PERKS[p])}<b>${t('perk.'+p)}</b><small>${t('perkd.'+p)}</small></div>`).join('')}</div>` : ''},
@@ -198,6 +198,10 @@ export function perkCard(){
   letter({icon:'workspace_premium', title:t('perk.title'), body:`<p class="hint">${t('perk.x2')}</p>`, buttons:wrap});
   notice.classList.add('perks');
 }
+// v0.10: the target is the region's land times its density — this phase's and the next two, so the growth is never a surprise
+export function ladderHtml(){ const k = S.stage||0;
+  return `<div class="ladder"><h4>${t('ui.ladder')}</h4>${[k, k+1, k+2].map(j=>{ const L = stageCfg(j);
+    return `<div class="rung${j===k ? ' now' : ''}"><span class="ph">${roman(j+1)}</span><b>${L.target}</b><small>${t('ui.ladderRow', {p:L.parcels, d:L.density})}</small>${j===k ? `<em>${t('ui.ladderNow')}</em>` : ''}</div>`; }).join('')}</div>`; }
 // --- The Euroregion in the cards ---
 export const regionName = () => t('region.name', {n:S.region.name});
 export function stypeBlock(ty){ return `<div class="stype">${ic(STYPE_ICON[ty])}<span><b>${t('st.'+ty)}</b><small>${t('std.'+ty)}</small></span></div>`; }

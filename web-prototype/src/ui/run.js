@@ -4,11 +4,11 @@ import { B, CFG, NEW_TYPES, PERKS, on } from '../core/config.js';
 import { ACH, PERK_RANK, RANK_BONUS, RANK_LEVEL, UNLOCK_LEVEL, career, levelOf, levelXp, rankOf, unlocked } from '../core/career.js';
 import { residents, taxIncome } from '../core/economy.js';
 import { money } from '../core/format.js';
-import { REGION_COMBOS, STYPE_ICON, regionDividend, regionPop } from '../core/region.js';
+import { REGION_COMBOS, STYPE_ICON } from '../core/region.js';
 import { activeSites, caps, contractors, count } from '../core/rules.js';
 import { S, clamp } from '../core/state.js';
 import { t } from '../i18n/index.js';
-import { regionName } from './cards.js';
+import { ladderHtml, regionName } from './cards.js';
 import { $ } from './dom.js';
 import { buildingArt } from './dock.js';
 import { refresh } from './guide.js';
@@ -33,7 +33,7 @@ export function renderRun(){
   const scroller = el.querySelector('.run-body'), keep = scroller && el.dataset.k === runTab+filter ? scroller.scrollTop : 0;
   el.hidden = false; el.dataset.k = runTab+filter;
   const c = career(), known = discovered(), nCombos = COMBOS.length + REGION_COMBOS.length, nKnown = known.length;
-  const badge = {combos:`${nKnown}/${nCombos}`, perks:String(S.perks.length + (S.shovel?1:0)), career:t('xp.lvShort', {n:levelOf(c.xp)}), region:String(S.region.blocks.length + (S.region.active?1:0))};
+  const badge = {combos:`${nKnown}/${nCombos}`, perks:String(S.perks.length + (S.shovel?1:0)), career:t('xp.lvShort', {n:levelOf(c.xp)}), region:String(S.region.blocks.length)};
   el.innerHTML = `<div class="run-head">${ic('work')}<div class="ttl"><h2>${t('file.t')}</h2><small>${regionName()} · ${t('ui.settlement')} ${roman((S.stage||0)+1)} · ${t('ui.month')} ${Math.min(S.month, CFG.months)}</small></div>
       <nav class="run-tabs">${TABS.map(k=>`<button class="rtab${k===runTab?' on':''}" data-t="${k}">${ic(TAB_ICON[k])}<span>${t('file.'+k)}</span><em>${badge[k]}</em></button>`).join('')}</nav>
       <button class="run-x" aria-label="${t('ui.close')}">${ic('close')}</button></div>
@@ -99,7 +99,7 @@ function careerTab(body, c){
 function regionTab(body){
   const cp = caps(), row = (k, v) => `<dt>${t(k)}</dt><dd>${v}</dd>`;
   body.innerHTML = `<div class="row reg"><div class="rbox map"><h3>${ic('map')}${regionName()}</h3><div class="rmap-slot"></div>
-        <dl class="kv">${row('ui.settlements', S.region.blocks.length)}${row('ui.regionPop', regionPop() + residents())}${S.region.blocks.length ? row('ui.dividend', money(regionDividend())+'/'+t('ui.mo')) : ''}</dl></div>
+        <dl class="kv">${row('ui.settlements', S.region.blocks.length)}${row('ui.parcels', S.grid.filter(p=>p.k!=='void').length)}${row('ui.regionPop', residents())}</dl>${ladderHtml()}</div>
       <div class="rbox town"><h3>${ic(STYPE_ICON[S.stype] || 'cottage')}${S.town}<small>${t('st.'+S.stype)}</small></h3><p>${t('std.'+S.stype)}</p>
         <dl class="kv">${row('ui.residents', residents()+' / '+CFG.target)}${row('ui.homes', cp.homes)}${on('jobs') ? row('ui.jobs', t('ui.jobsN',{n:cp.jobs})) : ''}
           ${on('services') ? row('ui.schoolPl', cp.school) + row('ui.health', cp.health) : ''}${row('ui.construction', t('ui.sites',{a:activeSites(), c:contractors()}))}

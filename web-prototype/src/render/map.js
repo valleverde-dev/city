@@ -41,7 +41,7 @@ export function setMapSize(){
 export function startSite(seed, stage, opts){ newGame(seed, stage, opts); setMapSize(); }
 // ---------- frame coordinates: the plot in play is S.grid, the rest of the land is S.world (+ plots on offer) ----------
 // local parcel index of frame cell (R,C), or -1 (outside the plot in play, or no plot in play)
-export const localAt = (R,C) => { if(!S.region || !S.region.active) return -1; const r = R-OY, c = C-OX; return inside(r,c) ? idx(r,c) : -1; };
+export const localAt = (R,C) => { if(!S.region || !S.region.active) return -1; const r = R-OY, c = C-OX; if(!inside(r,c)) return -1; const i = idx(r,c); return S.grid[i] && S.grid[i].k!=='void' ? i : -1; };   // void: not the region's land
 // terrain / building code of frame cell (R,C), or null where there is no land
 export const codeW = (R,C) => { const k = (R+FRY)+','+(C+FRX), w = S.world.cells[k]; return w !== undefined ? w : (CAND[k] !== undefined ? CAND[k] : null); };
 export const isCand = (R,C) => S.world.cells[(R+FRY)+','+(C+FRX)] === undefined && CAND[(R+FRY)+','+(C+FRX)] !== undefined;

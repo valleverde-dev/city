@@ -161,3 +161,13 @@
 .tile:not(.wide):not(.choice) > b{grid-row:2; overflow:hidden;}
 .tile:not(.wide):not(.choice) > .why{grid-row:3; align-self:start;}
 .tile:not(.wide):not(.choice) > small{grid-row:4; align-self:end; margin-top:0;}
+/* v0.10: the targets ahead — this phase's and the next two (land × density) */
+.ladder{margin:12px 0 0; display:flex; flex-direction:column; gap:4px;}
+.ladder h4{margin:0 0 4px; font:700 13px/1.2 var(--f-body, system-ui); color:var(--navy);}
+.ladder .rung{display:grid; grid-template-columns:34px 64px 1fr auto; align-items:baseline; gap:8px; padding:4px 8px; border:1px solid rgba(29,60,120,.25); background:rgba(255,255,255,.5);}
+.ladder .rung .ph{font:400 12px/1 var(--f-display); color:#5b6b8c;}
+.ladder .rung b{font:400 18px/1 var(--f-display); color:var(--navy);}
+.ladder .rung small{font-size:12px; color:#3d4a66;}
+.ladder .rung em{font:700 10px/1 var(--f-display); text-transform:uppercase; color:var(--navy); background:#ffd200; padding:3px 5px; font-style:normal;}
+.ladder .rung.now{border-color:var(--navy); background:#fff6c9;}
+.rbox .ladder{margin-top:10px;}

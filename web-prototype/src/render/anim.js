@@ -5,7 +5,7 @@ import { cellPos, wid } from '../core/region.js';
 import { t } from '../i18n/index.js';
 import { FRX, FRY, H, MAPCX, MAPCY, OX, OY, TH, TW, W, WN, attachSel, selBlock, ctx, cvs, dpr, isoOf, isoW, preview, rotateCoord, scale, selected, viewHooks, viewRot, worldEl } from './camera.js';
 import { GROUNDS, riverTile, roadTile, skirt, wedgeTile } from './ground.js';
-import { AH, AOX, AOY, AW, OWNER, VEIL, art, computeOwner, inW, drawTile, drawWorldTile, gctx, groundCv, gx, planThing, staticKey, setStaticKey, variant, veil, worldThing } from './map.js';
+import { AH, AOX, AOY, AW, OWNER, VEIL, art, computeOwner, inW, localAt, drawTile, drawWorldTile, gctx, groundCv, gx, planThing, staticKey, setStaticKey, variant, veil, worldThing } from './map.js';
 import { C, frac, hsh } from './pixel.js';
 import { ARCH, BUILDINGS, archOf, colourOf, CAR_COLS, P3, billboardSprite, carSprite, cones, fenceSprite, flagSprite, noticeSprite, ruinSprite, siteSprite, spr } from './sprites.js';
 import { modal } from '../ui/cards.js';
@@ -177,7 +177,7 @@ function buildStatic(){
   gctx.setTransform(1,0,0,1,0,0); gctx.clearRect(0,0,AW,AH); gctx.imageSmoothingEnabled = false;
   const order = [];
   for(let R=0;R<WN;R++) for(let C=0;C<WN;C++){
-    if(A && R>=OY && R<OY+A.n && C>=OX && C<OX+A.n) continue;   // the plot in play is drawn on top
+    if(A && localAt(R,C) >= 0) continue;                        // the region's land in play is drawn on top (void cells: whatever the map has, e.g. a plot on offer)
     if(!inW(R,C)) continue;                                      // no land there
     const [r2,c2] = rotateCoord(R,C,viewRot); order.push([r2+c2, c2, R*WN+C]); }
   order.sort((a,b)=>a[0]-b[0] || a[1]-b[1]);
@@ -193,7 +193,7 @@ export function draw(){
   buildStatic();
   gctx.setTransform(1,0,0,1,0,0); gctx.imageSmoothingEnabled = false; groundStamp++;
   const A = S.region.active, order = [];
-  if(A && S.grid.length === N*N) for(let r=0;r<N;r++) for(let c=0;c<N;c++){ const [r2,c2]=rotateCoord(r+OY,c+OX,viewRot); order.push([r2+c2, c2, idx(r,c)]); }
+  if(A && S.grid.length === N*N) for(let r=0;r<N;r++) for(let c=0;c<N;c++){ if(S.grid[idx(r,c)].k==='void') continue; const [r2,c2]=rotateCoord(r+OY,c+OX,viewRot); order.push([r2+c2, c2, idx(r,c)]); }
   order.sort((a,b)=>a[0]-b[0] || a[1]-b[1]);
   WATER = []; LAMPS = []; TOPS = new Map();
   order.forEach(o=>drawTile(o[2]));   // the plot in play, painted over the static layer
@@ -378,8 +378,10 @@ function drawOutlines(g){
   if(!S.region) return;
   S.region.blocks.forEach(P=>{ const y = P.y-FRY, x = P.x-FRX;
     groundLine(g, [[y-0.5,x-0.5],[y-0.5,x+P.n-0.5],[y+P.n-0.5,x+P.n-0.5],[y+P.n-0.5,x-0.5]].map(([R,C])=>isoW(R,C)), 'rgba(255,255,255,.6)', false); });
-  if(S.region.active){ const e = N-0.5;
-    groundLine(g, [[-0.5,-0.5],[-0.5,e],[e,e],[e,-0.5]].map(([r,c])=>isoOf(r,c)), 'rgba(255,210,0,.95)', true); }
+  // v0.10: the whole region is in play; the dashed line marks the plot this phase added
+  const L = S.region.blocks[S.region.blocks.length-1];
+  if(S.region.active && L && S.region.blocks.length > 1 && !S.pending){ const y = L.y-FRY, x = L.x-FRX;
+    groundLine(g, [[y-0.5,x-0.5],[y-0.5,x+L.n-0.5],[y+L.n-0.5,x+L.n-0.5],[y+L.n-0.5,x-0.5]].map(([R,C])=>isoW(R,C)), 'rgba(255,210,0,.95)', true); }
 }
 export function drawBorder(){}   // kept for callers: the border is now part of the ground (drawOutlines)
 // A world rectangle as an iso diamond path
