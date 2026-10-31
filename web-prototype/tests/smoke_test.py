@@ -128,7 +128,10 @@ with sync_playwright() as p:
     check(page.is_visible("#drama .gazette") and page.locator("#drama canvas.regionmap").count() == 1, "then the Union Gazette's front page, with the region map")
     page.locator("#drama .go").click(); page.wait_for_timeout(60)
     check(page.locator("#drama").is_hidden(), "Continue closes the full-screen moment")
-    check(page.locator("#notice .perk").count() == 3, "then choose 1 of 3 perks")
+    check(page.locator("#notice .perk.reward").count() >= 3 and page.locator("#notice .perk.reward .pxp").count() >= 3 and page.locator("#notice .perk.reward[data-k=perk]").count() == 1,
+          "then a milestone reward: three offers, each from a character (one of them a perk)")
+    page.locator("#notice .perk.reward[data-k=perk]").click(); page.wait_for_timeout(100)
+    check(page.locator("#notice .perk:not(.reward)").count() >= 3, "the perk offer: choose 1 of 3 perks (4 when gold)")
     perk = S("S.perkChoice[0]")
     page.locator("#notice .perk").first.click(); page.wait_for_timeout(100)
     nc = S("S.region.cands.length")

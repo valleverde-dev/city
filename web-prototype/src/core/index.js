@@ -24,6 +24,8 @@ export { SIZES, STYPES, STYPE_ICON, STYPE_FX, REGION_COMBOS, RCOMBO_BY_ID, DIRS,
 export { genPlot, wid, setW } from './region.js';
 export { writePlot, rebuildGrid, regionEffects, plotParcels } from './newgame.js';
 export { cellCode } from './region.js';
+export { REWARDS, DEAL, offerRewards, chooseReward, rewardValue, goldReasons } from './rewards.js';
+import { chooseReward } from './rewards.js';
 // Derived values (read-only questions about the state)
 export { count, caps, hasAccess, isRoad, givesAccess, nextToVillage, landPrice, plotValue, buildCost, permitMonths, buildMonths,
          contractors, slotsPerMonth, approvalChance, support, approves, activeSites, builtFx, bump } from './rules.js';
@@ -48,6 +50,7 @@ export { money, setNumberLang } from './format.js';
 // other cards are just acknowledged. Used by the tests and the balance bot.
 export function resolveCard(k){
   const c = S.cards[0]; if(!c) return null;
+  if(c.type==='reward') return chooseReward(k|0).ok;
   if(c.type==='event'){ const ch = k || choicesFor(c)[0].k; S.cards.shift(); const r = resolveEvent(c, ch); if(r) S.cards.unshift({type:'result', id:c.id, res:r, v:c.v}); return r; }
   S.cards.shift(); return true;
 }

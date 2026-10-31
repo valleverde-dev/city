@@ -36,6 +36,7 @@ export function requestPermit(i, ty){
   if(!on('lose') && avail() < CFG.permitFee + buildCost(p, ty)) return fail('err.fundsBuild');
   S.slots--; spend(CFG.permitFee);
   p.st = 'review'; p.ty = ty; p.t = permitMonths(ty); p.flag = null;
+  if(S.fast > 0){ S.fast--; p.st = 'approved'; p.q = ++S.qseq; p.t = 0; log('log.fast', {b:ty, at:pname(i)}, 'good'); }   // a milestone reward: already approved
   if(ty==='factory') bump('neigh', -3, 'why.factory');
   if(nextToVillage(r,c) && ty!=='park'){ bump('neigh', -3, 'why.village'); log('log.village', {}, 'bad'); }
   log('log.permit', {b:ty, at:pname(i), n:p.t}); gainXp('permit');

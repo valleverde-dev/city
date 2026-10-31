@@ -4,6 +4,7 @@ import { COMBO_BY_ID, discovered } from '../core/combos.js';
 import { CFG, CHARS, LEVELS, LV, PERKS, on, stageCfg } from '../core/config.js';
 import { RCOMBO_BY_ID, STYPE_ICON, regionPop } from '../core/region.js';
 import { DIRECTIVE_ICON, choosePerk } from '../core/directives.js';
+import { DEAL, REWARDS, chooseReward, rewardValue } from '../core/rewards.js';
 import { residents } from '../core/economy.js';
 import { EVENTS, choicesFor, resolveEvent } from '../core/events.js';
 import { money } from '../core/format.js';
@@ -176,6 +177,8 @@ export const CARD = {
       ],
       doneLabel:t('lvl.go'), onDone:()=>nextCard('stamp')}); },
   consolidated: c => { hideModal(); dramaWin(c, ()=>nextCard('click')); },
+  // v0.10: the milestone's reward — three offers (four for a perfect milestone), each brought by a character
+  reward: c => { rewardCard(c); },
   // v0.9: a new combo is a banner, not a letter (the game goes on)
   rcombo: c => { const cb = RCOMBO_BY_ID[c.id], B = S.region.blocks[c.b];
     letter({icon: cb.good?'workspace_premium':'warning', title: t(cb.good?'rcombo.new.t':'rcombo.newBad.t'), stamp: t(cb.good?'stamp.combo':'stamp.comboBad'), cls: cb.good?'ok':'bad',
@@ -191,6 +194,18 @@ export const CARD = {
     if(!c.played){ c.played = true; playSound(cb.good ? 'fanfare' : 'crowd'); } },
   result: c => { hideModal(); refresh(); },
 };
+export function rewardCard(c){
+  const wrap = c.offers.map((o,k)=>{ const b = document.createElement('button'), v = rewardValue(o), p = {...v, x: v.x !== undefined ? money(v.x) : ''};
+    b.className = 'perk reward' + (o.gold ? ' gold' : '') + (o.deal ? ' deal' : ''); b.dataset.k = o.id;
+    const dl = o.deal && DEAL[o.id] ? `<span class="chip bad">${ic(CHIP_ICON[DEAL[o.id][0]])}${t('meter.'+DEAL[o.id][0])} ${DEAL[o.id][1]}</span>` : '';
+    b.innerHTML = `${pxPortrait(o.char)}${o.gold ? `<em class="gold-tag">${t('rw.gold')}</em>` : ''}<b>${ic(REWARDS[o.id].icon)}${t('rw.'+o.id+'.t')}</b><small>${t('rw.'+o.id+'.x', p)}</small>
+      <i class="who">${CHARS[o.char].name}</i>${dl ? `<span class="catch">${t('rw.catch')} ${dl}</span>` : ''}`;
+    b.onclick = ()=>{ const r = chooseReward(k); if(!r.ok) return; playSound(o.deal ? 'cash' : 'ok'); save(); refresh(); showNext(); };
+    return b; });
+  const why = c.gold && c.gold.length ? `<p class="gold-why">${ic('workspace_premium')}${c.gold.map(g=>t('rw.why.'+g)).join(' · ')}</p>` : '';
+  letter({icon:'emoji_events', title:t('rw.title'), body:`<p class="hint">${t('rw.x')}</p>${why}`, buttons:wrap});
+  notice.classList.add('perks', 'rewards'); notice.classList.toggle('four', c.offers.length > 3);
+}
 export function perkCard(){
   const wrap = S.perkChoice.map(k=>{ const b=document.createElement('button'); b.className='perk';
     b.innerHTML=`${ic(PERKS[k])}<b>${t('perk.'+k)}</b><small>${t('perkd.'+k)}</small>`;

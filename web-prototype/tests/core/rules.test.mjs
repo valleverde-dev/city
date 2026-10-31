@@ -117,14 +117,17 @@ test('v0.10: a milestone keeps 40% of the money and the region; the next plot jo
   S.grid.forEach((p, k) => assert.equal(core.wcode(A0.y + Math.floor(k / A0.n), A0.x + k % A0.n), core.cellCode(p)));
   assert.ok(S.region.cands.length >= 1 && S.region.cands.length <= 4 && S.region.cands.every(P => P.n === 8));
   assert.ok(S.cards.some(c => c.type === 'consolidated'));
-  assert.ok(Array.isArray(S.perkChoice) && S.perkChoice.length === 3);
+  const rw = S.cards.find(c => c.type === 'reward');
+  assert.ok(rw && rw.offers.length >= 3 && rw.offers.some(o => o.id === 'perk'), 'three offers, one of them a perk');
   const kept = S.funds;
   assert.ok(kept > 0 && kept < 10);
   // nothing can be done until the next plot is attached
   assert.equal(core.endMonth().ok, false);
   assert.equal(core.lobby().msg.k, 'err.slots');
   assert.equal(core.attach(0).ok, false, 'cards and the perk come first');
-  while (S.cards.length) core.resolveCard();
+  while (S.cards.length && S.cards[0].type !== 'reward') core.resolveCard();
+  core.chooseReward(rw.offers.findIndex(o => o.id === 'perk'));
+  assert.equal(core.attach(0).ok, false, 'the perk first');
   core.choosePerk(S.perkChoice[0]);
   const P = S.region.cands[0], parcel = S.grid[i], nc = S.newcomers;
   assert.equal(core.attach(9).ok, false, 'only a plot on offer');
@@ -146,6 +149,33 @@ test('v0.10: a milestone keeps 40% of the money and the region; the next plot jo
   // the new plot is the one with stubborn owners and municipal land; void is never land
   const v = S.grid.findIndex(p => p.k === 'void');
   S.slots = 3; assert.equal(core.acquire(v).ok, false);
+});
+
+test('v0.10: milestone rewards — offers from the characters, deals with a catch, gold for a good milestone', () => {
+  const offer = (seed, setup) => { const S = g.newGame(seed, 1); setup && setup(S); S.cards = []; core.offerRewards(S.leftForTest || 0); return S.cards[0]; };
+  // plain: three offers, a perk among them, none gold (late, in debt, no combos)
+  let c = offer(5, S => { S.debt = 5; S.comboSeen = []; });
+  assert.equal(c.offers.length, 3); assert.ok(c.offers.some(o => o.id === 'perk')); assert.ok(c.offers.every(o => !o.gold));
+  // every reason makes one offer gold; all three add a fourth offer
+  c = offer(5, S => { S.debt = 0; S.comboSeen = ['a:1:2', 'b:3:4', 'c:5:6']; S.leftForTest = 99; });
+  assert.deepEqual(c.gold.sort(), ['combos', 'early', 'nodebt']); assert.equal(c.offers.length, 4); assert.equal(c.offers.filter(o => o.gold).length, 3);
+  // each reward does what it says
+  const take = (id, extra = {}) => { const S = core.S; S.cards = [{ type: 'reward', offers: [{ id, char: 'x', gold: false, deal: false, ...extra }] }]; return core.chooseReward(0); };
+  let S = g.newGame(6, 2);
+  const carry0 = S.carry || 0, r = take('money'); assert.ok(r.ok && S.carry > carry0);
+  take('slot'); assert.equal(core.slotsPerMonth(), CFG.slots + 1);
+  S.debt = 10; take('debt'); assert.equal(S.debt, 5);
+  S.neigh = 50; take('money', { deal: true }); assert.equal(S.neigh, 35, 'a deal: more money, the neighbours pay');
+  take('fast'); const lot = S.grid.findIndex((p, k) => p.k === 'farm' && p.st === 'land' && core.hasAccess(...core.rc(k)));
+  Object.assign(S.grid[lot], { st: 'owned', urban: true }); S.slots = 3; S.funds = 50;
+  assert.ok(core.requestPermit(lot, 'housing').ok); assert.equal(S.grid[lot].st, 'approved', 'a permit already approved'); assert.equal(S.fast, 1);
+  take('perk'); assert.ok(Array.isArray(S.perkChoice) && S.perkChoice.length >= 1);
+  S.perkChoice = null;
+  // free land waits for the next plot
+  S = g.newGame(7, 0); S.cards = []; S.gifts = { land: 3 };
+  consolidateNow(); S.cards = []; S.perkChoice = null; core.attach(0);
+  const L = S.region.blocks[1], mine = core.plotParcels(L);
+  assert.ok(mine.filter(i => S.grid[i].st === 'owned' && S.grid[i].urban).length >= 3, 'three parcels of the new plot are already yours');
 });
 
 test('the plots on offer are new land next to the region, never overlapping', () => {

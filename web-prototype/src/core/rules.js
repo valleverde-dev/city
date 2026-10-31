@@ -41,7 +41,7 @@ export function permitMonths(ty){
 }
 export function buildMonths(ty){ return Math.max(1, B[ty].build - (has('prefab')?1:0)); }
 export function contractors(){ return CFG.contractors + (has('contractor')?1:0); }
-export function slotsPerMonth(){ return CFG.slots + (has('cousin')?1:0); }
+export function slotsPerMonth(){ return CFG.slots + (has('cousin')?1:0) + (S.extraSlots||0); }
 // Political support for a permit (0–100). No dice: a permit is APPROVED if support is at least
 // CFG.approveAt when it is decided — the player sees it coming and can lobby or consult in time.
 export function approvalChance(){

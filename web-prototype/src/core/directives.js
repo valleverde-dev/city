@@ -38,10 +38,10 @@ export function issueDirective(){
   S.cards.push({type:'directive', d});
   log('log.directiveNew', {d:d.kind, m:d.deadline});
 }
-export function offerPerks(){
+export function offerPerks(n = 3){
   const free = Object.keys(PERKS).filter(k=>(!S.perks.includes(k) || k==='shovel') && perkAvailable(k));
   const choice = [];
-  while(choice.length < 3 && free.length){ choice.push(free.splice(Math.floor(rnd()*free.length),1)[0]); }
+  while(choice.length < n && free.length){ choice.push(free.splice(Math.floor(rnd()*free.length),1)[0]); }
   S.perkChoice = choice.length ? choice : null;   // nothing left to offer at this rank: no card
 }
 export function choosePerk(k){

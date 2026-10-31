@@ -4,8 +4,9 @@ import { residents } from './economy.js';
 import { REGION_NAMES, STYPES, STYPE_FX, buildFrontier, candidates, cellCode, genPlot, matchRegion, setW, sumFx, touching, wcode, RCOMBO_BY_ID } from './region.js';
 import { discover } from './combos.js';
 import { career, checkAch, rankOf, gainXp, seePerk, seeType, tutorialDone } from './career.js';
-import { log } from './rules.js';
-import { N, NB, S, clamp, idx, inside, pick, r1, ri, rnd, setSide, setState } from './state.js';
+import { hasAccess, log } from './rules.js';
+import { offerRewards } from './rewards.js';
+import { N, NB, S, clamp, idx, inside, pick, r1, rc, ri, rnd, setSide, setState } from './state.js';
 
 // =====================================================================
 //  NEW RUN (v0.10) — a Euroregion that starts as ONE 8×8 plot and keeps growing: every milestone adds another
@@ -127,7 +128,7 @@ export function beginPhase(stage, fresh){
     stype:last.ty, reports: S.reports||0, consults: S.consults||0, strike: S.strike||0,
   });
   if(fresh){ S.log = []; S.trail = []; }
-  S.slots = L.slots + (S.perks.includes('cousin') ? 1 : 0);
+  S.slots = L.slots + (S.perks.includes('cousin') ? 1 : 0) + (S.extraSlots||0);
   S.region.next = null; S.region.cands = [];
   // the new plot: stubborn owners (from phase II) and the municipal land reserve
   const mine = plotParcels(last);
@@ -136,6 +137,11 @@ export function beginPhase(stage, fresh){
     const set = (r,c)=>{ if(r<0||c<0||r>=n||c>=n) return false; const p = S.grid[idx(oy+r, ox+c)]; if(p.k!=='farm' || p.st!=='land') return false; Object.assign(p, {k:'muni', price:0.6, urban:true}); return true; };
     let r=ri(0,n-1), c=ri(0,n-1), k=0, guard=0;
     while(k<4 && guard++<50){ if(set(r,c)) k++; const d=pick(NB); r=clamp(r+d[0],0,n-1); c=clamp(c+d[1],0,n-1); } }
+  // a milestone reward (v0.10): free building land on the new plot, next to a road where possible
+  if(S.gifts && S.gifts.land){ const free = mine.filter(i=>{ const p = S.grid[i]; return p.k==='farm' && p.st==='land'; });
+    free.sort((a,b)=>(hasAccess(...rc(b))?1:0) - (hasAccess(...rc(a))?1:0) || a-b);
+    free.slice(0, S.gifts.land).forEach(i=>{ Object.assign(S.grid[i], {st:'owned', urban:true, hold:false}); });
+    S.gifts.land = 0; }
   regionEffects();
   S.prev = snapshot();
   seeType(last.ty);
@@ -172,8 +178,9 @@ export function consolidate(){
   S.pending = 'attach';
   S.cards.push({type:'consolidated', res, kept, back, town:S.town, stage:S.stage});
   log('log.consolidated', {town:S.town, n:res}, 'good');
-  checkAch('consolidate', {left: CFG.months - (S.month-1)}); tutorialDone();
-  offerPerks();
+  const left = CFG.months - (S.month-1);
+  checkAch('consolidate', {left}); tutorialDone();
+  offerRewards(left);   // v0.10: three offers from the characters (one of them a perk)
 }
 export const milestone = consolidate;
 // Add plot k of the ones on offer to the region, and start the next phase

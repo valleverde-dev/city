@@ -5,6 +5,7 @@ import { choosePerk } from './core/directives.js';
 import { residents } from './core/economy.js';
 import { EVENTS, choicesFor, resolveEvent } from './core/events.js';
 import { resolveCard } from './core/index.js';
+import { offerRewards, chooseReward } from './core/rewards.js';
 import { endMonth } from './core/month.js';
 import { records } from './core/persist.js';
 import { ACH_BY_ID, career, resetCareer, levelOf } from './core/career.js';
@@ -34,7 +35,7 @@ import './ui/input.js';   // pointer, wheel and keyboard listeners
 // =====================================================================
 window.__eurocrat = {
   get S(){ return S; }, CFG, B, EVENTS, LEVELS, newGame:(seed, stage=3, opts={})=>{ startNew(seed, stage, opts); S.cards=[]; hideModal(); return S; },
-  startRun, records, regionPop, get ACH_BY_ID(){ return ACH_BY_ID; }, career, resetCareer, levelOf, attachPreview, DIR_KEYS, RCOMBO_BY_ID, cellPos, attach:(d)=>{ const r = attach(d); if(r.ok) enterSettlement(); return r; },
+  startRun, records, regionPop, offerRewards, get ACH_BY_ID(){ return ACH_BY_ID; }, career, resetCareer, levelOf, attachPreview, DIR_KEYS, RCOMBO_BY_ID, cellPos, attach:(d)=>{ const r = attach(d); if(r.ok) enterSettlement(); return r; },
   openRun, closeRun, get runTab(){ return runTab; }, get dock(){ return dockMode(); }, get armed(){ return armed; }, get toasts(){ return pendingToasts(); }, setArmed, confirmArmed, toggleInbox, guideStep, get zoom(){ return zoom; }, get cam(){ return [MAPCX, MAPCY]; },
   panBy, zoomAt, centreOn, on,
   acquire, requestPermit, sellPlot, submitPlan, lobby, consult, fileReport, repay, endMonth, choosePerk, caps, residents, hasAccess,
