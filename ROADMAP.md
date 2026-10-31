@@ -173,6 +173,7 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 
 ### After v0.10
 
+0. **A minimal HUD for more map** (requested Oct 31, 2026): shrink the HUD and hide the bottom bar; it opens when you tap a contextual icon (build, events, agenda…), so the map takes almost the whole screen.
 1. **Atlas of settlement types**, then decide: fixed traits or procedural ones.
 2. Member states with their own rule quirks: a bureaucracy per country.
 3. *Constructor*-style characters: named residents, complaints, a mayor with a face.
