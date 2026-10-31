@@ -160,18 +160,41 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 
 ## Next steps
 
+### v0.10 — the region you keep building (plan, agreed Oct 31, 2026)
+
+One version, built in this order so each step can be tested on its own:
+
+**1. Accumulated, playable territory (the core change).** Consolidated settlements no longer freeze: the whole region stays in play and keeps growing.
+- A run starts with **one 8×8 plot** (no 2×2 hamlet). Each time the region meets its target it reaches a **milestone**: you pick a reward and add **one more 8×8 plot** next to the region, chosen on the map as today (it continues the roads and the river, has its own village and its own settlement type).
+- **The target is the population of the whole region**, and it grows by one visible rule: *target = residents per parcel × parcels*, with the density going up one step per milestone (proposed: 4, 5, 6, 7… residents per parcel → 256, 640, 1,152, 1,792…; to tune with the bot). The next three targets are always on show (phase screen and *Run file → Region*), so the growth is never a surprise.
+- Each milestone **releases a new grant tranche** and gives **N more months** (one clock for the run, extendable by missions, below); *use it or lose it* applies per tranche.
+- Rules still switch on phase by phase (phase I the basics; II access, jobs, combos, permits; III rustic land, cards, directives, services; IV milestones and market), so the learning curve stays.
+- Taxes come from the whole region (no more "regional dividend"); region combos now form between neighbouring plots of the region, including across plot edges.
+- Technically: the grid becomes the region's bounding box (non-land cells are void), so every rule already written applies everywhere. Save format v11. Prototyped with the bot first (targets, months, money), then the UI.
+
+**2. More varied rewards at each milestone (A).** Three offers instead of one perk out of three, each brought by a character: a perk; money for the next tranche; a permanent extra agenda slot; a building already approved; a free urban plot; a meter boosted; debt cut in half; an undiscovered combo revealed; a perk you have upgraded. Some come **with a catch** (+money, neighbours −15). Better offers (a 4th card or a "gold" tier) for reaching the milestone early, without debt or with many combos.
+
+**3. No tutorial hamlet (B).** The first run is a normal first plot with the mayor's hints and no random draw; the hints introduce each rule when it switches on. Phases renumbered from I.
+
+**4. Missions and events.** Contracts from the characters (build a library before month X, keep the neighbours above 50…) that **extend the deadline** or add money; an **official extension request** (costs slots and compliance, Brussels may say no); about 35 events, some **chained** (a decision now brings a second card later) and some **between plots** of the region (a district that complains all the money goes to the new one, a transport strike, a shared hospital).
+
+**5. Screens that build up (C).** On every screen (phase slides, appointment, directives, notices, pause, achievements) each element fades in a little after the previous one (about 60–80 ms apart, a short fade with a slight rise, no rotation or bounce; under half a second for five rules). A tap or a key shows everything at once; it never makes you wait. No animation with *reduce motion*.
+
+**6. Fix:** the mayor's hint bubble peeks out behind open screens; it hides while a screen is open and comes back after.
+
+Then: tests (rules + browser), balance with the bot (a new career and a career that keeps playing), docs, release.
+
+### After v0.10
+
 1. **Atlas of settlement types**, then decide: fixed traits or procedural ones.
-2. **v0.10 — gameplay:** more varied rewards when a settlement is consolidated (not only 1 perk out of 3: money, an extra agenda slot, a building already approved, a free plot, a meter up, debt cut, a combo revealed; rewards with a catch; better offers for consolidating early, debt-free or with many combos; upgrading a perk you have; each reward offered by a character) · drop the 2×2 tutorial hamlet: the first run is a normal 4×4 with the mayor's hints and no random draw, the hints introduce each rule as it switches on, settlements renumbered (decide together with the accumulated-territory idea) · **missions and events:** contracts from the characters that extend deadlines or add money, an official request for an extension, ~35 events including chained ones and cross-border events between settlements.
-3. Playtest v0.9.2: are the screens readable on a desktop, does one level per run feel right, is the random start a good surprise?
-4. Member states with their own rule quirks: a bureaucracy per country.
-5. *Constructor*-style characters: named residents, complaints, a mayor with a face.
-6. Port to Godot when a port trigger is met: `core/` first (with its tests), then rendering and UI.
+2. Member states with their own rule quirks: a bureaucracy per country.
+3. *Constructor*-style characters: named residents, complaints, a mayor with a face.
+4. Port to Godot when a port trigger is met: `core/` first (with its tests), then rendering and UI.
 
 ### Ideas for later (no decision yet)
 
 - **The old village as a living neighbour:** its own events and characters (Remedios Quintana is its voice: the patron saint's fiesta, the neighbour who will not sell the vegetable plot, the bar against the works), more combos (school, station), it **grows** onto free land next to it when relations are good or services are near (more residents, but it can take land you wanted and raise prices), empties and leaves ruins when things go badly, and perhaps is absorbed into the model town once connected to your services.
 - **Consolidated settlements with a life of their own:** their own events (the first mayor complains all the money goes to the new town, a factory closes, a transport strike between two settlements), more region combos, also between consolidated settlements.
-- **Accumulated, playable territory:** keep building on the whole region instead of freezing consolidated settlements. Then each settlement could add a plot of a **fixed size** (6×6 or 8×8, to test) instead of doubling (2×2 → 16×16); consolidating becomes a milestone that releases the next grant; the target is the whole region's population; difficulty comes from targets, rules and accumulated chaos, not area. Open: whether the 2×2 hamlet stays as the tutorial. Big change: prototype it apart first.
 
 ## Assets
 
