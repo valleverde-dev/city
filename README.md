@@ -12,7 +12,7 @@ Web prototype playable on iPad, iPhone and desktop; a Godot port is planned for 
 - Plan and status: [ROADMAP.md](ROADMAP.md)
 - Code organisation: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
-## How to play (v0.9.2)
+## How to play (v0.9.3)
 
 - A run is one **Euroregion**. It starts with a 2×2 hamlet; each settlement has a resident target and a deadline. The settlement card and the mayor's guide tell you what to do.
 - Each turn is **one month**. Tap a parcel: the bar at the bottom shows what you can do (buy; for your land, a card per building — pick one, see it as a ghost on the map with its combos, confirm). Nothing selected, the bar is your agenda. Press **End month** to let time pass.
@@ -23,7 +23,7 @@ Web prototype playable on iPad, iPhone and desktop; a Godot port is planned for 
 - Buildings next to each other form **combos**, good and bad: they glow gold or red. From settlement III, crises arrive as **cards** and Brussels sends **directives**.
 - **Controls:** drag to move the map, pinch / wheel / +− to zoom. PC: WASD / arrows, + −, Q / E turn the map, C centre, Space end month, Tab run file, Esc close / pause. Tap the town's name to rename it.
 - **Run file** (bottom left, or Tab): your combo collection, the perks of this run and the pool, your career and the region.
-- **Career:** experience comes with every step (levels and ranks during play), even in a lost run. Higher ranks add perks to the pool. Ranks raise every grant; career levels unlock 8 new buildings for good (market at level 2 … data centre at 18); 26 achievements give experience. After the first, guided run, every *New Euroregion* is random: settlement type, starting perk and member state are drawn for you.
+- **Career:** experience comes with every step (levels and ranks during play), even in a lost run. Higher ranks add perks to the pool. Ranks raise every grant; career levels unlock 8 new buildings for good (market at level 2 … data centre at 18); 26 achievements give experience. After the first, guided run, every *New Game* is random: settlement type, starting perk and member state are drawn for you.
 - **Language:** English / Español (top bar or menus).
 
 ## Structure

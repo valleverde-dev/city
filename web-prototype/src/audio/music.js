@@ -8,8 +8,12 @@ import { ic } from '../ui/icons.js';
 export let actx;
 export function ensureAudio(){
   if(!actx){ actx = new (window.AudioContext||window.webkitAudioContext)(); }
-  if(actx.state==='suspended') actx.resume();
+  if(actx.state !== 'running') actx.resume().catch(()=>{});
 }
+// v0.9.3: on iOS, Web Audio is treated as a system sound and the silent mode mutes it. Declaring the session as
+// media playback (Safari 16.4+) makes the game sound like a video does. Harmless elsewhere.
+try{ if(navigator.audioSession) navigator.audioSession.type = 'playback'; }catch(e){}
+export const audioRunning = () => !!actx && actx.state === 'running';
 // --- Music: looping soundtrack via Web Audio (gapless loops, crossfades) ---
 // Ogg Vorbis where supported, AAC (.m4a) fallback for older Safari/iOS.
 export const music = {
@@ -84,16 +88,20 @@ export function toggleMusic(){
   try{ localStorage.setItem('citybuilder_music', music.on ? 'on' : 'off'); }catch(e){}
   ensureAudio(); updateMusicBtn(); syncMusic();
 }
-// iOS/Safari only allow audio after a user gesture: unlock on the first touch/click
+// iOS/Safari only allow audio inside a complete gesture (touchend / click — not pointerdown). v0.9.3: unlock there,
+// play a silent buffer (WebKit's own unlock trick) and keep trying on every gesture until the context really runs.
+const UNLOCK_EVENTS = ['touchend', 'click', 'keydown'];
 export function unlockAudio(){
-  try{ ensureAudio(); syncMusic(); }catch(e){}
-  removeEventListener('pointerdown', unlockAudio, true);
-  removeEventListener('keydown', unlockAudio, true);
+  try{
+    ensureAudio();
+    const b = actx.createBuffer(1, 1, 22050), src = actx.createBufferSource(); src.buffer = b; src.connect(actx.destination); src.start(0);
+    const done = () => { if(audioRunning()){ UNLOCK_EVENTS.forEach(ev=>removeEventListener(ev, unlockAudio, true)); syncMusic(); document.dispatchEvent(new Event('audiounlocked')); } };
+    if(actx.state === 'running') done(); else actx.resume().then(done, ()=>{});
+  }catch(e){}
 }
-addEventListener('pointerdown', unlockAudio, true);
-addEventListener('keydown', unlockAudio, true);
+UNLOCK_EVENTS.forEach(ev=>addEventListener(ev, unlockAudio, true));
 // Silence everything while the app is in the background
 document.addEventListener('visibilitychange', ()=>{
   if(!actx) return;
-  if(document.hidden) actx.suspend(); else actx.resume();
+  if(document.hidden) actx.suspend(); else actx.resume().then(()=>syncMusic(), ()=>{});   // back from the background: the music goes on
 });

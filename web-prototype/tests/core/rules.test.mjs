@@ -254,6 +254,7 @@ test('difficulty curve stays in its band (bot, 60 seeded runs per settlement, 60
 
 test('the career: buildings unlock by level (v0.9.2), achievements give experience, the career carries over', () => {
   core.storage.set('eurocrat_career', JSON.stringify({ xp: 0, ach: [], types: [], runs: 0, tutorial: false, guide: false }));
+  core.storage.set('eurocrat_records', '');
   const S = g.newGame(12, 1);
   assert.equal(core.unlocked('housing'), true);
   assert.equal(core.unlocked('market'), false);
@@ -287,6 +288,10 @@ test('the career: buildings unlock by level (v0.9.2), achievements give experien
   assert.ok(S.over && S.over.career && S.over.career.after > xp0);
   assert.ok(core.career().ach.includes('firstLoss'));
   assert.equal(core.career().runs, 1);
+  // v0.9.3: the career's run count never falls behind the records' (they counted runs before the career existed)
+  core.storage.set('eurocrat_records', JSON.stringify({ best: { settlements: 3, pop: 900 }, runs: 7 }));
+  const B2 = g.newGame(8, 1); B2.cards = []; B2.debt = 999; B2.month = CFG.months + 1; core.endMonth();
+  assert.equal(core.career().runs, 8);
   // ranks: more experience, a bigger grant (only when the UI passes the bonus)
   assert.equal(core.rankOf(0), 0); assert.equal(core.rankOf(core.RANKS[2]), 2);
   const A = g.newGame(5, 0), plain = A.grant; core.newGame(5, 0, { bonus: 0.08 }); core.S.cards = [];

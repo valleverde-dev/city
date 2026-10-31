@@ -33,5 +33,5 @@ b, strong{font-weight:700;}
 .ico.s12{width:12px; height:12px;} .ico.s24{width:24px; height:24px;} .ico.s36{width:36px; height:36px;}
 
 #app{display:flex; flex-direction:column; height:100%;
-     padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); background:var(--blue);}
+     padding-top:env(safe-area-inset-top,0px); background:var(--blue);}   /* the bottom safe area is the dock's (layout.css), not added twice */
 

@@ -3,6 +3,7 @@ import { activeCombos, discovered } from './combos.js';
 import { REGION_COMBOS, STYPES, regionPop } from './region.js';
 import { S } from './state.js';
 import { storage } from './storage.js';
+import { records } from './persist.js';
 
 // =====================================================================
 //  THE CAREER — what carries over between runs (v0.8). Every run gives experience, even a lost one;
@@ -104,7 +105,8 @@ export function runXp(){ const pop = regionPop() + (S.region.active ? S.newcomer
   return Math.floor(pop/20); }
 export function endRun(){
   const c0 = career(), bonus = runXp(), live = S.rs.xp || 0, before = S.rs.xp0 !== undefined ? S.rs.xp0 : c0.xp - live;
-  c0.runs++; saveCareer(c0); addXp(bonus);
+  // v0.9.3: the records counted runs before the career existed (v0.8); keep both counts in step
+  c0.runs = Math.max(c0.runs + 1, records().runs || 0); saveCareer(c0); addXp(bonus);
   checkAch('over'); tutorialDone();
   const c = career();
   return {xp: c.xp - before, bonus, before, after:c.xp, rank0: rankOf(before), rank1: rankOf(c.xp), ach: S.rs.ach.slice()};

@@ -14,7 +14,7 @@ import { approves, buildCost, buildMonths, hasAccess, landPrice, permitMonths, p
 import { S, has, pname, r1, rc } from '../core/state.js';
 import { t } from '../i18n/index.js';
 import { present } from '../render/anim.js';
-import { attachSel, isoOf, keepVisible, preview, scale, selBlock, selected, setAttachSel, setPreview, setSelBlock, setSelected, toScreen, viewHooks, TW } from '../render/camera.js';
+import { FRX, FRY, H, W, attachSel, isoOf, isoW, keepVisible, panBy, preview, scale, selBlock, selected, setAttachSel, setPreview, setSelBlock, setSelected, toScreen, viewHooks, TW } from '../render/camera.js';
 import { GROUNDS, riverTile, roadTile } from '../render/ground.js';
 import { ARCH, BUILDINGS, archOf, colourOf, spr } from '../render/sprites.js';
 import { roadPreviewKey } from '../render/map.js';
@@ -77,6 +77,8 @@ function tile(o){
   const b = document.createElement('button'); b.type = 'button';
   b.className = 'tile' + (o.cls ? ' '+o.cls : '') + (o.on ? ' on' : '') + (o.art ? ' has-art' : '');
   b.disabled = !!o.disabled; if(o.k) b.dataset.k = o.k;
+  const plain = x => String(x||'').replace(/<[^>]*>/g, '').trim();   // the whole text on hover (clamped on the card)
+  b.title = [plain(o.name), plain(o.sub), plain(o.why)].filter(Boolean).join(' · ');
   b.innerHTML = `<span class="art">${o.art ? `<img src="${o.art}" alt="">` : ic(o.icon || 'info')}</span><b>${o.name}</b>`
     + (o.sub ? `<small>${o.sub}</small>` : '') + (o.why ? `<em class="why">${o.why}</em>` : '')
     + (o.badge ? `<span class="tb ${o.badge[1]||''}">${o.badge[0]}</span>` : '');
@@ -204,7 +206,15 @@ export function confirmArmed(){
 }
 function placeOverlays(){
   const cf = $('confirm'), chips = $('chips');
-  if(!(armed && selected>=0 && dockMode()==='parcel')){ cf.hidden = true; chips.innerHTML = ''; return; }
+  // v0.9.3: choosing the next plot, the Acquire button sits on the map beside the plot's number (like Request permit)
+  if(dockMode()==='attach' && attachSel >= 0 && S.region.cands[attachSel]){ chips.innerHTML = '';
+    const k = attachSel;
+    if(cf.dataset.k !== 'att:'+k){ cf.dataset.k = 'att:'+k;
+      cf.innerHTML = `<button class="ok" type="button">${ic('check')}<span>${t('att.go', {k:k+1})}<small>${t('st.'+S.region.next.ty)}</small></span></button><button class="no" type="button" aria-label="${t('ui.close')}">${ic('close')}</button>`;
+      cf.querySelector('.ok').onclick = e=>{ e.stopPropagation(); confirmPlot(); };
+      cf.querySelector('.no').onclick = e=>{ e.stopPropagation(); playSound('click'); setAttachSel(-1); refresh(); present(); }; }
+    cf.hidden = false; positionOverlays(); return; }
+  if(!(armed && selected>=0 && dockMode()==='parcel')){ cf.hidden = true; cf.dataset.k = ''; chips.innerHTML = ''; return; }
   const p = S.grid[selected];
   if(cf.dataset.k !== selected+':'+armed){ cf.dataset.k = selected+':'+armed;
     cf.innerHTML = `<button class="ok" type="button">${ic('check')}<span>${t('d.license')}<small>${money(CFG.permitFee + buildCost(p, armed))} · ${t('d.slot1')}</small></span></button><button class="no" type="button" aria-label="${t('ui.close')}">${ic('close')}</button>`;
@@ -216,8 +226,16 @@ function placeOverlays(){
     .map(c=>`<span class="mchip ${!c.known ? 'mystery' : c.good ? 'good' : 'bad'}" data-r="${c.r}" data-c="${c.c}">${ic(!c.known ? 'workspace_premium' : c.good ? 'add_circle' : 'warning')}${c.known ? t('combo.'+c.id) : t('combo.possible')}</span>`).join('');
   positionOverlays();
 }
+// The screen point of the next plot's number (its centre)
+function plotCentre(k){ const P = S.region.cands[k]; return toScreen(...isoW(P.y-FRY+(P.n-1)/2, P.x-FRX+(P.n-1)/2)); }
+export function confirmPlot(){ const k = attachSel; if(k < 0) return; if(attach(k).ok){ playSound('stamp'); $('confirm').hidden = true; $('confirm').dataset.k = ''; enterSettlement(); } }
 function positionOverlays(){
-  const cf = $('confirm'); if(cf.hidden || selected < 0) return;
+  const cf = $('confirm'); if(cf.hidden) return;
+  if(dockMode()==='attach' && attachSel >= 0){ const [sx, sy] = plotCentre(attachSel), Wd = cf.parentElement.clientWidth;
+    let x = sx + 28, y = sy - cf.offsetHeight/2;
+    if(x + cf.offsetWidth > Wd - 8) x = sx - 28 - cf.offsetWidth;
+    cf.style.left = Math.max(8, x)+'px'; cf.style.top = Math.max(8, y)+'px'; return; }
+  if(selected < 0) return;
   const s = scale(), [sx, sy] = toScreen(...isoOf(...rc(selected))), W = cf.parentElement.clientWidth;
   let x = sx + TW/2*s + 8, y = sy - 24;
   if(x + cf.offsetWidth > W - 8) x = sx - TW/2*s - 8 - cf.offsetWidth;
@@ -228,21 +246,25 @@ function positionOverlays(){
 viewHooks.push(positionOverlays);
 // ---------- choosing the next plot ----------
 const LAND_ICON = {regional:'add_road', flood:'water', village:'cottage', habitat:'forest'};
-export function selectPlot(k){ setAttachSel(k); playSound('click'); refresh(); present(); }
+export function selectPlot(k){ setAttachSel(k); playSound('click'); refresh();
+  // keep the plot and its button in view (below the HUD, above the bar)
+  const [sx, sy] = plotCentre(k), top = Math.min(H*0.4, 140);
+  if(sx < 60 || sx > W - 300 || sy < top || sy > H - 60) panBy(W/2 - 120 - sx, (top + H)/2 - sy);
+  present(); }
 function renderAttach(head, strip){
   const nx = S.region.next; if(!nx) return;
   head.innerHTML = `<h3>${ic('map')}${t('d.attach', {town:nx.town})}</h3>${tag(t('st.'+nx.ty),'blue')}${tag(t('d.target', {n:stageCfg((S.stage||0)+1).target}))}`;
   strip.appendChild(tile({icon:STYPE_ICON[nx.ty], name:t('st.'+nx.ty), sub:t('std.'+nx.ty), cls:'info wide'}));
   const known = discovered();
   S.region.cands.forEach((P,k)=>{ const v = attachPreview(k);
-    const land = Object.entries(v.land).filter(([,n])=>n>0).map(([kk,n])=>`${ic(LAND_ICON[kk])}${n}`).join(' ');
+    const land = Object.entries(v.land).filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1]).slice(0, 2).map(([kk,n])=>`<span class="lnd">${ic(LAND_ICON[kk])}${n}</span>`).join('');
     const good = v.combos.filter(c=>known.includes(c.id) && RCOMBO_BY_ID[c.id].good).length, bad = v.combos.filter(c=>known.includes(c.id) && !RCOMBO_BY_ID[c.id].good).length, unk = v.combos.filter(c=>!known.includes(c.id)).length;
     const badge = good||bad||unk ? [[good?'+'+good:'', bad?'−'+bad:'', unk?'?':''].filter(Boolean).join(' '), bad && !good ? 'bad' : good ? 'good' : 'mystery'] : null;
     const names = v.combos.map(c=>known.includes(c.id) ? t('rcombo.'+c.id) : t('rcombo.possible')).join(' · ');
-    strip.appendChild(tile({icon:'add_location', name:`${k+1} · ${t('side.'+P.dir)}`, sub: names || t('att.none'), why: land, cls:'plot'+(k===attachSel?' on':''), k:String(k), badge, click:()=>selectPlot(k)})); });
-  const ok = attachSel >= 0 && attachSel < S.region.cands.length;
-  strip.appendChild(tile({icon:'real_estate_agent', name: ok ? t('att.go', {k:attachSel+1}) : t('att.pickFirst'), cls:'act primary go', disabled:!ok,
-    click:()=>{ const k = attachSel; if(attach(k).ok){ playSound('stamp'); enterSettlement(); } }}));
+    const all = Object.entries(v.land).filter(([,n])=>n>0).map(([kk,n])=>t('land.'+kk, {n})).join(' · ');
+    const tl = tile({icon:'add_location', name:`${k+1} · ${t('side.'+P.dir)}`, sub: names || t('att.none'), why: land, cls:'plot'+(k===attachSel?' on':''), k:String(k), badge, click:()=>selectPlot(k)});
+    if(all) tl.title += ' · ' + all; strip.appendChild(tl); });
+  // (the Acquire button is on the map, beside the chosen plot — v0.9.3)
 }
 // ---------- an event: portrait, headline, choices with their effects (the letter is one tap away) ----------
 function renderEvent(head, strip){

@@ -6,7 +6,20 @@ Living project document · update it as the prototype evolves. The game design l
 
 **Eurocrat** (working title): a satirical, turn-based roguelike city builder. You are a Brussels programme officer who must deliver a model European town with plenty of money and no power — buy the land, file the permits, survive the neighbours, spend the funds before they expire. Tone and references: *Constructor* (1997), with a hyper-realistic, comic look at how building actually works in contemporary Europe. The plan: validate the loop in the web/iPad prototype, then port to Godot to ship on the App Store and Steam.
 
-## Current status — v0.9.2 (Oct 29, 2026) · playtest polish: a random start, screens instead of cards, progression that takes time
+## Current status — v0.9.3 (Oct 31, 2026) · UX fixes from the iPad playtest
+
+Interface only; the rules do not change (gameplay goes to v0.10):
+- **Bottom bar on iPad:** the home-indicator area was added twice (by the page and by the bar), leaving a band under it; now the bar takes the larger of its own margin and the safe area, never both.
+- **Cards keep their inner margin:** the cost line sits on the same baseline in every card with a fixed margin below it (the cards are a grid of fixed rows; in Safari, a clamped title pushed the cost into the margin). The whole text on hover.
+- **Choosing the next plot:** the *Acquire plot N* button appears on the map beside the chosen plot (✓ / ✕, Enter confirms), like *Request permit*; the bar keeps the type and one card per plot, with the land on each at a legible size.
+- **The settlement screen in slides:** your goal · where you are (type, neighbours and their region combos, funds carried) · what is new · your perks — one at a time with *Next* (*Get to work* on the last), *Back*, *Skip*, dots; → / Enter, ←, Esc. Empty slides are skipped.
+- **Main menu:** *New Game · Continue · Achievements · Settings · Credits*, no subtitles. *Career file* is now *Achievements*, in the run file too.
+- **Achievements screen:** full screen, read across — rank, level, XP, grant bonus and records in one band; then the achievements and the buildings to unlock as grids. What you have not earned shows **???** (no name, no description); buildings sorted by level. The run count no longer reads 0 next to a record (the records counted runs before the career existed).
+- **Settings:** *Mayor's guide* is now *Mayor's hints* (the step-by-step tips), with a speech-bubble icon.
+- **Sound on iPad:** audio is unlocked on a complete tap (touchend / click, not pointerdown) and retried until it really runs, the session is declared as media playback (so the silent mode does not mute it) and the music resumes after the app comes back. If the sound is still blocked, Settings says *Tap to enable the sound*.
+- Tests: 20 rules tests, 144 browser checks.
+
+## Previous — v0.9.2 (Oct 29, 2026) · playtest polish: a random start, screens instead of cards, progression that takes time
 
 Playtest feedback on v0.9 (19 points), applied:
 - **No dossier to choose.** After the tutorial, *New Euroregion* starts a random run at once: settlement type, starting perk (from your rank's pool) and member state are drawn and revealed on the settlement screen. The tutorial can be played again from *Settings*.
@@ -148,7 +161,7 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 ## Next steps
 
 1. **Atlas of settlement types**, then decide: fixed traits or procedural ones.
-2. **v0.10 — missions and events:** contracts from the characters that extend deadlines or add money, an official request for an extension, ~35 events including chained ones and cross-border events between settlements.
+2. **v0.10 — gameplay:** more varied rewards when a settlement is consolidated (not only 1 perk out of 3: money, an extra agenda slot, a building already approved, a free plot, a meter up, debt cut, a combo revealed; rewards with a catch; better offers for consolidating early, debt-free or with many combos; upgrading a perk you have; each reward offered by a character) · drop the 2×2 tutorial hamlet: the first run is a normal 4×4 with the mayor's hints and no random draw, the hints introduce each rule as it switches on, settlements renumbered (decide together with the accumulated-territory idea) · **missions and events:** contracts from the characters that extend deadlines or add money, an official request for an extension, ~35 events including chained ones and cross-border events between settlements.
 3. Playtest v0.9.2: are the screens readable on a desktop, does one level per run feel right, is the random start a good surprise?
 4. Member states with their own rule quirks: a bureaucracy per country.
 5. *Constructor*-style characters: named residents, complaints, a mayor with a face.

@@ -61,8 +61,8 @@ with sync_playwright() as p:
     # --- Title screen: logo, the four-item menu, version and copyright; settings (language), credits, level list
     cv = page.locator("#cover")
     items = [x.strip().lower() for x in page.locator("#cover .cv-item b").all_inner_texts()]
-    check(page.is_visible("#cover .cv-logo") and items == ["new euroregion", "continue", "career file", "settings", "credits"], f"the title screen shows the logo and New Euroregion · Continue · Career file · Settings · Credits ({items})")
-    check("2×2 hamlet" in page.locator("#cover .cv-item.new").inner_text(), "with no record yet, New Euroregion says it starts with a 2×2 hamlet")
+    check(page.is_visible("#cover .cv-logo") and items == ["new game", "continue", "achievements", "settings", "credits"], f"the title screen shows the logo and New Game · Continue · Achievements · Settings · Credits ({items})")
+    check(page.locator("#cover .cv-item small").count() == 0, "the main menu has no subtitles")
     check(page.locator("#cover .cv-item.cont").is_disabled(), "Continue is disabled with no saved programme")
     check(page.is_visible("#cover .cv-foot .ver") and "Groenendaal" in page.locator("#cover .cv-foot .copy").inner_text(), "version and copyright sit in the corners")
     cb = cv.bounding_box(); vw = page.viewport_size
@@ -72,7 +72,7 @@ with sync_playwright() as p:
     page.locator("#cover .cv-item.lang").click()
     check(page.is_visible("text=Idioma: Español") and S("g.lang") == "es", "switching to Spanish translates the menu")
     page.reload()
-    check(page.is_visible("text=Nueva Euroregión"), "the language choice is remembered")
+    check(page.is_visible("text=Nueva partida"), "the language choice is remembered")
     page.click("text=Ajustes"); page.locator("#cover .cv-item.lang").click()
     check(page.is_visible("text=Language: English"), "switching back to English")
     page.keyboard.press("Escape")
@@ -85,7 +85,17 @@ with sync_playwright() as p:
     page.click("#cover .cv-item.new")
     check(page.is_visible("text=Letter of appointment") and "Euroregion" in page.locator("#notice").inner_text(), "a new Euroregion starts with the appointment letter")
     page.click("text=Accept the appointment")
-    check(page.is_visible("text=Pilot Project") and page.locator("#notice .rules li").count() >= 3 and page.is_visible("#notice .stype"), "the settlement card explains its type, the goal and the new rules")
+    seen = []
+    for _ in range(6):
+        seen.append(page.locator("#notice .col-b").inner_text())
+        if page.locator("#notice .btns .btn.next").inner_text().strip() == "Get to work": break
+        page.click("#notice .btns .btn.next"); page.wait_for_timeout(60)
+    check(page.is_visible("text=Pilot Project") and len(seen) >= 3 and page.locator("#notice .dots i").count() == len(seen)
+          and "250" not in "".join(seen[1:]) and any("rules" not in x and x.strip() for x in seen),
+          f"the settlement screen comes in slides ({len(seen)}): the goal, where you are, what is new… one at a time, with Next")
+    page.keyboard.press("ArrowLeft"); page.wait_for_timeout(60)
+    check(page.locator("#notice .dots i.on").count() == 1 and page.locator("#notice .dots i").nth(len(seen)-2).get_attribute("class") == "on", "← goes back a slide")
+    page.keyboard.press("ArrowRight"); page.wait_for_timeout(60)
     page.click("text=Get to work")
     check(S("Math.sqrt(S.grid.length)") == 2 and S("S.stage") == 0 and S("S.stype") == "hamlet", "settlement I is a 2×2 hamlet")
     check("settlement i" in page.locator("#stageTag").inner_text().lower() and page.locator("#townName").inner_text().strip() == S("S.town"),
@@ -122,7 +132,7 @@ with sync_playwright() as p:
     nc = S("S.region.cands.length")
     check(page.locator("#modal").is_hidden() and S("g.dock") == "attach" and page.locator("#strip .tile.plot").count() == nc and 1 <= nc <= 4,
           f"then the next plot is chosen on the map: {nc} numbered plots, also as cards in the bar")
-    check(page.locator("#strip .tile.go").is_disabled(), "nothing is acquired until a plot is chosen")
+    check(page.locator("#strip .tile.go").count() == 0 and page.locator("#confirm").is_hidden(), "nothing is acquired until a plot is chosen (no Acquire card in the bar)")
     box = page.locator("#map").bounding_box()
     vis = [j for j in range(nc) if (lambda q: 0 < q[0] < box["width"] and 0 < q[1] < box["height"])(S(f"(()=>{{const P=S.region.cands[{j}]; return g.screenOfW(P.y+(P.n-1)/2, P.x+(P.n-1)/2);}})()"))]
     check(len(vis) == nc, f"the plots on offer are framed on the map ({len(vis)} of {nc} visible)")
@@ -130,11 +140,14 @@ with sync_playwright() as p:
     x, y = S(f"g.screenOfW({P['y']}+({P['n']}-1)/2, {P['x']}+({P['n']}-1)/2)")
     page.mouse.click(box["x"] + x, box["y"] + y); page.wait_for_timeout(100)
     check(S("g.attachSel") == k and page.locator(f"#strip .tile.plot.on[data-k='{k}']").count() == 1, "tapping a plot on the map selects it (and its card)")
-    page.locator("#strip .tile.go").click(); page.wait_for_timeout(150)
+    cfb = page.locator("#confirm").bounding_box(); mb = page.locator("#map").bounding_box()
+    check(page.is_visible("#confirm .ok") and f"{k+1}" in page.locator("#confirm .ok").inner_text() and cfb["y"] + cfb["height"] <= mb["y"] + mb["height"],
+          "the Acquire button appears on the map, beside the chosen plot")
+    page.locator("#confirm .ok").click(); page.wait_for_timeout(150)
     check(S("S.stage") == 1 and S("Math.sqrt(S.grid.length)") == 4 and S("S.region.blocks.length") == 1, "the next settlement is a 4×4 next to the region")
     check(S(f"S.region.active.x === {P['x']} && S.region.active.y === {P['y']}") and S("S.frontier.some(f=>f.b===0)"), "it is the chosen plot of the same world map, next to the hamlet")
     check(S(f"S.perks.includes('{perk}') || (S.shovel && '{perk}'==='shovel')"), "the perk stays for the rest of the run")
-    check(page.is_visible("text=Expansion Phase") and "Settlement II" in page.locator("#notice .lvl-tag").inner_text(), "settlement II card")
+    check(page.is_visible("text=Expansion Phase") and "Settlement II" in page.locator("#notice .lvl-tag").inner_text() and page.locator("#confirm").is_hidden(), "settlement II card (and the Acquire button is gone)")
     clear_cards(); S("(g.showNext(), 0)")
     check(not page.locator("#m-local").is_hidden() and page.locator("#m-neigh").is_hidden(), "settlement II shows only the Mayor meter")
     check(S("g.dock") == "agenda" and page.locator("#strip .tile[data-k=lobby]").count() == 1, "settlement II: with nothing selected, the bar is the agenda (lunch with the mayor)")
@@ -145,20 +158,27 @@ with sync_playwright() as p:
 
     # --- Back to the menu: the run can be continued
     page.click("#menuBtn"); page.click("text=Main menu")
-    check("Settlement II" in page.locator("#cover .cv-item.cont").inner_text(), "the menu offers to continue the run at settlement II")
+    check(not page.locator("#cover .cv-item.cont").is_disabled() and page.evaluate("JSON.parse(localStorage.getItem('eurocrat_v10')||'{}').stage") == 1,
+          "the menu offers to continue the run (settlement II is saved)")
     check(page.evaluate("!!document.querySelector('#toast') && document.querySelector('#toast').textContent.length > 5") and "firstStone" in page.evaluate("localStorage.getItem('eurocrat_career')"), "achievements pop up as banners during play, and stay in the career")
     page.click("#cover .cv-item.career"); page.wait_for_timeout(60)
-    check(page.locator(".cv-career li").count() == 8 + S("Object.keys(g.ACH_BY_ID).length") and page.locator(".cv-career li.on").count() >= 1
-          and "level" in page.locator(".cv-career").inner_text().lower(),
-          "the career file lists the 8 buildings (each with its level) and every achievement")
+    n_on = page.locator(".cv-ach .acard.on").count(); n_off = page.locator(".cv-ach .acard.off").count()
+    check(n_on + n_off == S("Object.keys(g.ACH_BY_ID).length") and n_on >= 1 and page.locator(".cv-ach .ucard").count() == 8
+          and page.evaluate("getComputedStyle(document.querySelector('.cv-ach .cgrid')).gridTemplateColumns.split(' ').length") >= 6,
+          "Achievements: a screen of grids, every achievement and the 8 buildings (each with its level)")
+    check(all(x.strip().startswith("???") for x in page.locator(".cv-ach .acard.off b").all_inner_texts()) and page.locator(".cv-ach .acard.off small").count() == 0,
+          "achievements not earned yet show ??? (no name, no description)")
     page.keyboard.press("Escape")
     page.click("#cover >> text=Settings"); page.wait_for_timeout(60)
     check(page.locator("#cover .cv-item.tut").count() == 1, "the tutorial can be played again from Settings")
     page.keyboard.press("Escape")
     page.click("#cover .cv-item.new"); page.wait_for_timeout(200)
-    check(page.locator("#cover").is_hidden() and S("S.stage") == 1 and S("S.perks.length") == 1 and S("S.stype") != "hamlet" and page.locator("#notice .perkrow .relicc").count() >= 1,
-          "after the tutorial, New Euroregion starts a random run at once (no dossier to choose): type, perk and country revealed on its screen")
-    check(page.locator("#notice .col-a .speaker").count() == 1 and page.locator("#notice .col-b .rules").count() == 1, "the settlement letter is a screen: the speaker on the left, the facts on the right")
+    for _ in range(5):
+        if page.locator("#notice .perkgrid .pk").count(): break
+        page.click("#notice .btns .btn.next"); page.wait_for_timeout(60)
+    check(page.locator("#cover").is_hidden() and S("S.stage") == 1 and S("S.perks.length") == 1 and S("S.stype") != "hamlet" and page.locator("#notice .perkgrid .pk").count() >= 1,
+          "after the tutorial, New Game starts a random run at once (no dossier to choose): type, perk and country revealed on its screen")
+    check(page.locator("#notice .col-a .speaker").count() == 1 and page.locator("#notice .col-b .slide").count() == 1, "the settlement letter is a screen: the speaker on the left, one slide of facts on the right")
     clear_cards(); ev(f"{G}.hideModal()")
 
     # --- Full rules: settlement IV (16×16, with made-up neighbours), deterministic; its type's bonuses switched off
@@ -255,7 +275,7 @@ with sync_playwright() as p:
     check(S("S.over && S.over.why") == "bankrupt" and page.is_visible("#drama.lose") and page.locator("#drama .stamp-big").count() == 1,
           "a loss is a full-screen moment: the dossier is stamped and shredded")
     page.locator("#drama").click(); page.wait_for_timeout(500)
-    check(page.is_visible("#drama .gazette") and page.locator("#drama canvas.regionmap").count() == 1 and page.is_visible("#drama >> text=New Euroregion"),
+    check(page.is_visible("#drama .gazette") and page.locator("#drama canvas.regionmap").count() == 1 and page.is_visible("#drama >> text=New Game"),
           "then the Gazette, what the region reached, and start a new one")
     check(page.locator("#drama .xpbar").count() == 1 and S("S.over.career && S.over.career.after > S.over.career.before"), "every run gives experience, even a lost one")
     check(S("g.records().best.settlements") >= 4, "the record keeps the best Euroregion")
@@ -371,6 +391,7 @@ with sync_playwright() as p:
     check(opts == ["Continue", "Settings", "Restart", "Abandon", "Main menu"], f"the pause screen has five options and nothing else ({opts})")
     page.click(".popt[data-k=settings]")
     check(page.locator(".popt[data-k=music]").count() == 1 and page.locator(".pause-screen .controls dt").count() >= 6, "Settings: music, language, the guide and the controls")
+    check("hints" in page.locator(".popt[data-k=guide]").inner_text().lower(), "the guide setting says what it is (the mayor's hints)")
     page.keyboard.press("Escape")
     check(page.locator(".popt[data-k=continue]").count() == 1, "Esc goes back from Settings to the pause screen")
     page.click(".popt[data-k=abandon]")
@@ -387,8 +408,11 @@ with sync_playwright() as p:
             S(f"(S.cards=[{{type:'event', id:'{eid}', v:{{i:{site}, x:'1', good:true, priv:true, owned:true}}}}], 0)"); S("g.showNext()")
             if re.search(r"\bev\.|\{\w+\}", page.locator("#dock").inner_text()): raw.append(f"{lang}:{eid}")
         for k in range(6):
-            ev(f"{G}.newGame(9, {k})"); S("(S.cards=[{type:'level'}], 0)"); S("g.showNext()")
-            if re.search(r"\b(lvl|stl|st|std|rcombo)\.|\{\w+\}", page.locator("#notice").inner_text()): raw.append(f"{lang}:level{k+1}")
+            ev(f"{G}.newGame(9, {k})"); S("(S.perks=['notary'], S.cards=[{type:'level'}], 0)"); S("g.showNext()")
+            for _ in range(5):   # every slide
+                if re.search(r"\b(lvl|stl|st|std|rcombo|slide)\.|\{\w+\}", page.locator("#notice").inner_text()): raw.append(f"{lang}:level{k+1}")
+                if page.locator("#notice .btns .btn.next").count() == 0 or page.locator("#notice .dots i").last.get_attribute("class") == "on": break
+                page.click("#notice .btns .btn.next"); page.wait_for_timeout(30)
             S("(S.cards=[], 0)"); ev(f"{G}.hideModal()"); S("(g.refresh(), 0)")
             if re.search(r"\b(g\d|ui|tab|pb|d|dw|tag|hud|xp|file|meterS|bns)\.\w|\{\w+\}", page.locator("#guide").inner_text() + page.locator("#dock").inner_text() + page.locator("#hud").inner_text()): raw.append(f"{lang}:guide{k+1}")
             for tab in ("combos", "perks", "career", "region"):
@@ -431,7 +455,7 @@ with sync_playwright() as p:
     town = S("S.town")
     page.reload()
     play = page.locator("#cover .cv-item.cont")
-    check(page.is_visible("#cover") and play.is_enabled() and f"Settlement II · {town}" in play.inner_text(), "the start menu offers to continue the saved run")
+    check(page.is_visible("#cover") and play.is_enabled() and page.evaluate("JSON.parse(localStorage.getItem('eurocrat_v10')||'{}').town") == town, "the start menu offers to continue the saved run")
     check(page.evaluate("document.activeElement.classList.contains('cont')"), "with a saved programme, Continue is the selected item")
     play.click(); page.wait_for_timeout(100); drain()
     check(page.locator("#cover").is_hidden(), "the cover closes when the game starts")

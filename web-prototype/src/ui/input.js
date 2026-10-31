@@ -5,7 +5,7 @@ import { draw, present, startNight } from '../render/anim.js';
 import { FRX, FRY, centreOn, cvs, keepVisible, panBy, resize, selBlock, selected, setSelBlock, setSelected, setViewRot, tileAt, tileAtW, viewRot, worldEl, zoom, zoomAt } from '../render/camera.js';
 import { money } from '../core/format.js';
 import { t } from '../i18n/index.js';
-import { modal, showNext } from './cards.js';
+import { modal, showNext, slideKey } from './cards.js';
 import { $, flushFx } from './dom.js';
 import { armed, clearSelection, deselect, eventOpen, selectPlot, setArmed } from './dock.js';
 import { refresh } from './guide.js';
@@ -87,6 +87,7 @@ addEventListener('keydown', e=>{
   if(e.target.closest && e.target.closest('input,textarea')) return;   // typing a name: no shortcuts
   const k = e.key.toLowerCase(), modalOpen = !modal.classList.contains('hidden');
   if(coverOpen()){ coverKey(e, k); return; }
+  if(slideKey(e, k)) return;   // the settlement screen's slides (v0.9.3)
   if(k==='escape'){ if(pauseOpen()){ pauseBack(); return; } if(runTab) closeRun(); else if(inboxOpen) toggleInbox(false); else if(modalOpen) return; else if(!deselect() && S && !S.over) pauseMenu(); return; }
   if(modalOpen) return;
   if(k==='tab' && S){ e.preventDefault(); if(runTab) closeRun(); else openRun(); return; }
@@ -97,7 +98,7 @@ addEventListener('keydown', e=>{
   else if(k==='r') orbit(1);
   else if(k==='c') frameView(), present();
   else if(k===' ' && !e.repeat){ e.preventDefault(); $('endTurn').click(); }
-  else if(k==='enter' && armed){ e.preventDefault(); const b = document.querySelector('#confirm .ok'); if(b) b.click(); }
+  else if(k==='enter' && (armed || (S && S.pending==='attach'))){ e.preventDefault(); const b = document.querySelector('#confirm:not([hidden]) .ok'); if(b) b.click(); }
 });
 addEventListener('keyup', e=>{ held.delete(e.key.toLowerCase()); });
 addEventListener('blur', ()=>held.clear());

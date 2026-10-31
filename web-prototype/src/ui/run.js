@@ -88,12 +88,12 @@ function careerTab(body, c){
         <div class="rk"><b>${t('rank.'+r)}</b><span class="bar"><i style="width:${clamp((c.xp-a)/(b-a)*100,0,100)}%"></i></span>
         <small>${t('file.xpNext', {x:c.xp, y:b, n:lv+1})}</small><span class="tagl">${t('file.bonus', {p:Math.round(r*RANK_BONUS*100)})}</span>
         ${nextR !== undefined ? `<small>${t('file.nextRank', {r:t('rank.'+(r+1)), n:nextR})}</small>` : ''}</div></div>
-      <div class="achs"><h3>${t('file.ach')}<em>${got} / ${ACH.length}</em></h3><div class="medals">${ACH.map(x=>`<span class="md ${c.ach.includes(x.id)?'on':''}" title="${t('ach.'+x.id+'.t')}: ${t('ach.'+x.id+'.x')}">${ic('workspace_premium')}</span>`).join('')}</div>
+      <div class="achs"><h3>${t('file.ach')}<em>${got} / ${ACH.length}</em></h3><div class="medals">${ACH.map(x=>`<span class="md ${c.ach.includes(x.id)?'on':''}" title="${c.ach.includes(x.id) ? t('ach.'+x.id+'.t')+': '+t('ach.'+x.id+'.x') : t('car.unknown')+' · +'+x.xp+' XP'}">${ic('workspace_premium')}</span>`).join('')}</div>
         <p class="runxp">${t('file.runXp', {n:S.rs ? S.rs.xp||0 : 0})}</p></div></div>
     <h3>${t('file.unlocks')}<small>${t('file.unlocksSub')}</small><em>${NEW_TYPES.filter(unlocked).length} / ${NEW_TYPES.length}</em></h3>
     <div class="cgrid track">${NEW_TYPES.slice().sort((x,y)=>UNLOCK_LEVEL[x]-UNLOCK_LEVEL[y]).map(ty=>{ const need = UNLOCK_LEVEL[ty], ok = unlocked(ty), pct = ok ? 100 : clamp(c.xp/levelXp(need)*100, 0, 99);
       return `<div class="ucard ${ok ? 'on' : ''}"><div class="band"><img src="${buildingArt(ty)}" alt=""${ok ? '' : ' class="dark"'}>${ic(ok ? 'check' : 'lock')}</div>
-        <b>${t('b.'+ty)}</b><small>${t('lock.level', {n:need})}</small><span class="bar"><i style="width:${pct}%"></i></span><em>${ok ? t('file.done') : c.xp+' / '+levelXp(need)+' XP'}</em></div>`; }).join('')}</div>`;
+        <b>${ok ? t('b.'+ty) : t('car.unknown')}</b><small>${t('lock.level', {n:need})}</small><span class="bar"><i style="width:${pct}%"></i></span><em>${ok ? t('file.done') : c.xp+' / '+levelXp(need)+' XP'}</em></div>`; }).join('')}</div>`;
 }
 // ---------- Region: the map of the Euroregion and this settlement in numbers ----------
 function regionTab(body){

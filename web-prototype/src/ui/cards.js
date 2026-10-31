@@ -30,7 +30,44 @@ export function setRerender(f){ rerender = f; }
 // v0.9.2: a letter is a SCREEN, laid out to be read left to right (desktop first): the speaker, the title and what they
 // say on the left; the facts (goal, rules, chips…) on the right; the buttons in a row at the bottom right.
 // On narrow screens the two columns stack. It appears with a fade (no slide, no tilt).
+// v0.9.3: a letter can be a short series of SLIDES (the settlement screen): the speaker stays on the left, the right
+// column changes with a fade; dots, Back, Next (Get to work on the last one) and a quiet Skip. → / Enter next, ← back, Esc skip.
+let slideState = null, slideKeep = null;
+export const slidesOpen = () => !!slideState && !modal.classList.contains('hidden') && notice.classList.contains('slides');
+export function slideKey(e, k){
+  if(!slidesOpen()) return false;
+  if(k==='arrowright' || k==='enter' || k===' '){ e.preventDefault(); slideGo(+1); return true; }
+  if(k==='arrowleft'){ e.preventDefault(); slideGo(-1); return true; }
+  if(k==='escape'){ e.preventDefault(); slideState.done(); return true; }
+  return false;
+}
+function slideGo(d){ const st = slideState; if(!st) return;
+  const n = st.i + d; if(n >= st.slides.length){ st.done(); return; } if(n < 0) return;
+  st.i = n; playSound('click'); renderSlide(true); }
+function renderSlide(fade){
+  const st = slideState, sl = st.slides[st.i], last = st.i === st.slides.length - 1;
+  const b = notice.querySelector('.col-b');
+  b.innerHTML = `<div class="slide${fade ? ' in' : ''}"><h4 class="slide-h">${sl.label.replace(/[:：]\s*$/, '')}</h4>${sl.html}</div>`;
+  const nav = notice.querySelector('.btns'); nav.innerHTML = '';
+  const skip = document.createElement('button'); skip.type = 'button'; skip.className = 'skip'; skip.textContent = t('slide.skip'); skip.onclick = ()=>st.done();
+  if(!last) nav.appendChild(skip);
+  const dots = document.createElement('div'); dots.className = 'dots'; dots.setAttribute('aria-label', `${st.i+1} / ${st.slides.length}`);
+  dots.innerHTML = st.slides.map((_,j)=>`<i class="${j===st.i ? 'on' : j < st.i ? 'past' : ''}"></i>`).join(''); nav.appendChild(dots);
+  if(st.i > 0){ const bk = btn(t('slide.back'), 'play_arrow', ()=>slideGo(-1)); bk.classList.add('back'); nav.appendChild(bk); }
+  const go = last ? btn(st.doneLabel, 'play_arrow', ()=>st.done(), true) : btn(t('slide.next'), 'play_arrow', ()=>slideGo(+1), true);
+  go.classList.add('next'); nav.appendChild(go);
+  if(b.closest('.notice')) notice.scrollTop = 0;
+}
+export function slideLetter({icon, title, speaker, quote, slides, doneLabel, onDone}){
+  slides = slides.filter(x=>x && x.html && x.html.trim());
+  letter({icon, title, speaker, body:`<div class="quote">${quote}</div><div class="slide-slot"></div>`, buttons:[], wide:true});
+  notice.classList.add('slides');
+  const keep = slideKeep && slideKeep.title === title ? Math.min(slideKeep.i, slides.length-1) : 0;
+  slideState = {slides, i:keep, title, doneLabel, done:()=>{ slideState = null; slideKeep = null; onDone(); }};
+  renderSlide(false);
+}
 export function letter({icon, title, stamp, cls, body, buttons, dock, speaker, wide}){
+  slideKeep = slideState ? {title:slideState.title, i:slideState.i} : null; slideState = null;
   notice.className = 'notice'; modal.classList.remove('title', 'pause');
   notice.innerHTML = `<div class="letterhead"><i class="emblem" aria-hidden="true"></i><div class="org">${t('ui.union')}<i>${t('ui.dg')}</i></div>
       ${S ? `<div class="date">${t('ui.dateline', {m:Math.min(S.month, CFG.months)})}</div>` : ''}</div>
@@ -41,7 +78,7 @@ export function letter({icon, title, stamp, cls, body, buttons, dock, speaker, w
   // the first quote (what the speaker says) belongs with the speaker
   const a = notice.querySelector('.col-a'), b = notice.querySelector('.col-b'), q = b.querySelector(':scope > .quote');
   if(q && speaker) a.appendChild(q);
-  if(!b.textContent.trim() && !b.querySelector('img,canvas,.rmap-slot')) b.remove();
+  if(!b.textContent.trim() && !b.querySelector('img,canvas,.rmap-slot,.slide-slot')) b.remove();
   notice.classList.toggle('single', !notice.querySelector('.col-b'));
   notice.classList.toggle('wide', !!wide);
   notice.classList.toggle('stamped', !!stamp);
@@ -80,7 +117,7 @@ export function makePixelPortrait(id){
 }
 makePixelPortrait.busy = {};
 export function btn(label, icon, fn, primary){ const b=document.createElement('button'); b.className='btn'+(primary?' primary':''); b.innerHTML=`${ic(icon)}${label}`; b.onclick=fn; return b; }
-export function hideModal(){ modal.classList.add('hidden'); modal.classList.remove('title', 'pause'); rerender = null; }
+export function hideModal(){ slideState = null; modal.classList.add('hidden'); modal.classList.remove('title', 'pause'); rerender = null; }
 export const CHIP_ICON = {money:'euro', local:'how_to_vote', neigh:'diversity_3', comp:'fact_check', delay:'schedule', risk:'casino', slot:'event_busy', lose:'block', land:'add_location', debt:'account_balance_wallet', cost:'trending_up', later:'schedule', rate:'percent', market:'trending_down'};
 export function chip([type, v]){
   let cls = '', txt = '';
@@ -127,15 +164,17 @@ export const CARD = {
   level: c => { const L = LV(), k = S.stage||0, n = Math.min(k, LEVELS.length-1), more = k >= LEVELS.length;
     const rules = (more ? t('stl.more.rules', {n:L.target}) : t('lvl.'+(n+1)+'.rules')).split('|').map(x=>`<li>${ic('check')}<span>${x}</span></li>`).join('');
     const mine = S.perks.concat(S.shovel ? ['shovel'] : []);
-    const perks = mine.length ? `<div class="perkrow"><span class="lbl">${t('stl.perksLbl')}</span>${mine.map(p=>`<span class="relicc"><span class="rc-ico">${ic(PERKS[p])}</span><span><b>${t('perk.'+p)}</b><small>${t('perkd.'+p)}</small></span></span>`).join('')}</div>` : '';
-    const carried = S.carried > 0 ? `<p class="hint">${t('stl.carry', {x:money(S.carried)})}</p>` : '';
-    letter({icon:'map', title:`<span class="lvl-tag">${t('ui.settlement')} ${roman(k+1)}</span>${more ? S.town : t('lvl.'+(n+1)+'.name')}`, speaker: n>=2 ? 'brussels' : 'mayor',
-      body:`<div class="quote">${more ? t('stl.more.x', {region:regionName()}) : t('lvl.'+(n+1)+'.x', {town:S.town})}</div>
-        ${stypeBlock(S.stype)}${S.rcombos.length ? `<p class="hint">${t('stl.rcombos')}</p>${rcomboChips(S.rcombos, true)}` : ''}
-        <div class="goal">${t('lvl.goal', {n:L.target, m:L.months, s:L.n})}</div>
-        <p class="hint">${t('lvl.newRules')}</p><ul class="rules">${rules}</ul>${carried}${perks}
-        ${k===0 ? `<p class="keys">${t('lvl.keys')}</p>` : ''}`,
-      buttons:[btn(t('lvl.go'),'play_arrow', ()=>nextCard('stamp'), true)], wide:true}); },
+    const rc = S.rcombos.length ? `<p class="hint">${t('stl.rcombos')}</p><div class="rclist">${S.rcombos.map(x=>{ const cb = RCOMBO_BY_ID[x.id];
+      return `<div class="rcc ${cb.good?'good':'bad'}">${ic(cb.good?'workspace_premium':'warning')}<span><b>${t('rcombo.'+x.id)}</b><small>${t('rcombod.'+x.id)}</small></span></div>`; }).join('')}</div>` : '';
+    slideLetter({icon:'map', title:`<span class="lvl-tag">${t('ui.settlement')} ${roman(k+1)}</span>${more ? S.town : t('lvl.'+(n+1)+'.name')}`, speaker: n>=2 ? 'brussels' : 'mayor',
+      quote: more ? t('stl.more.x', {region:regionName()}) : t('lvl.'+(n+1)+'.x', {town:S.town}),
+      slides:[
+        {label:t('slide.goal'), html:`<div class="goal big"><b>${L.target}</b><span>${t('slide.goalX', {m:L.months, s:L.n})}</span></div>${k===0 ? `<p class="keys">${t('lvl.keys')}</p>` : ''}`},
+        {label:t('slide.where'), html:`${stypeBlock(S.stype)}${rc}${S.carried > 0 ? `<p class="hint">${t('stl.carry', {x:money(S.carried)})}</p>` : ''}`},
+        {label:t('lvl.newRules'), html:`<ul class="rules">${rules}</ul>`},
+        {label:t('stl.perksLbl'), html: mine.length ? `<div class="perkgrid">${mine.map(p=>`<div class="pk">${ic(PERKS[p])}<b>${t('perk.'+p)}</b><small>${t('perkd.'+p)}</small></div>`).join('')}</div>` : ''},
+      ],
+      doneLabel:t('lvl.go'), onDone:()=>nextCard('stamp')}); },
   consolidated: c => { hideModal(); dramaWin(c, ()=>nextCard('click')); },
   // v0.9: a new combo is a banner, not a letter (the game goes on)
   rcombo: c => { const cb = RCOMBO_BY_ID[c.id], B = S.region.blocks[c.b];

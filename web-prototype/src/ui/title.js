@@ -1,9 +1,10 @@
-import { gameTrack, music, setMusic, toggleMusic, updateMusicBtn } from '../audio/music.js';
+import { audioRunning, gameTrack, music, setMusic, toggleMusic, updateMusicBtn } from '../audio/music.js';
+document.addEventListener('audiounlocked', ()=>{ if(typeof pauseView !== 'undefined' && pauseView === 'settings' && pauseOpen()) pauseMenu('settings'); });
 import { playSound } from '../audio/sfx.js';
 import { CFG, VERSION } from '../core/config.js';
 import { loadSave, records, save } from '../core/persist.js';
 import { abandonRun } from '../core/month.js';
-import { ACH, RANKS, RANK_BONUS, UNLOCK_LEVEL, career, randomStart, rankBonus, rankOf, saveCareer, unlocked } from '../core/career.js';
+import { ACH, RANKS, RANK_BONUS, UNLOCK_LEVEL, career, levelOf, levelXp, randomStart, rankBonus, rankOf, saveCareer, unlocked } from '../core/career.js';
 import { B, NEW_TYPES } from '../core/config.js';
 import { STYPE_ICON } from '../core/region.js';
 import { closeDrama } from './drama.js';
@@ -19,7 +20,7 @@ import { btn, hideModal, letter, modal, notice, rerender, setRerender, showNext 
 import { $, country } from './dom.js';
 import { refresh } from './guide.js';
 import { roman, setRunTab } from './hud.js';
-import { clearSelection } from './dock.js';
+import { buildingArt, clearSelection } from './dock.js';
 import { ic } from './icons.js';
 
 // --- Start / pause menu (with language switch) ---
@@ -250,7 +251,24 @@ function item(label, fn, opt={}){
   b.addEventListener('pointerenter', ()=>{ if(!b.disabled && document.activeElement !== b) b.focus({preventScroll:true}); });
   return b;
 }
-function go(v){ view = v; renderMenu(true); requestAnimationFrame(layoutCover); }
+function go(v){ view = v; if(v !== 'career') cover.querySelectorAll('.cv-ach').forEach(x=>x.remove()); renderMenu(true); requestAnimationFrame(layoutCover); }
+// The achievements screen (title menu): rank and records in a band, then the achievements and the buildings as grids
+export function achievementsHTML(){
+  const c = career(), r = rankOf(c.xp), lv = levelOf(c.xp), a = levelXp(lv), b = levelXp(lv+1), rec = records();
+  const runs = Math.max(c.runs || 0, rec.runs || 0);
+  const achs = ACH.map(x=>{ const on = c.ach.includes(x.id);
+    return `<div class="acard ${on ? 'on' : 'off'}"><span class="md">${ic('workspace_premium')}</span><b>${on ? t('ach.'+x.id+'.t') : t('car.unknown')}</b>${on ? `<small>${t('ach.'+x.id+'.x')}</small>` : ''}<em>+${x.xp} XP</em></div>`; }).join('');
+  const blds = NEW_TYPES.slice().sort((x,y)=>UNLOCK_LEVEL[x]-UNLOCK_LEVEL[y]).map(ty=>{ const on = unlocked(ty);
+    return `<div class="ucard ${on ? 'on' : ''}"><div class="band"><img src="${buildingArt(ty)}" alt=""${on ? '' : ' class="dark"'}></div><b>${on ? t('b.'+ty) : t('car.unknown')}</b>${on ? `<small>${t('bd.'+ty)}</small>` : ''}<em>${t('car.level', {n:UNLOCK_LEVEL[ty]})}</em></div>`; }).join('');
+  return `<div class="ach-head">${ic('workspace_premium')}<h2>${t('title.career')}</h2><button class="x" type="button" aria-label="${t('title.back')}">${ic('close')}</button></div>
+    <div class="ach-body">
+      <div class="band-row"><div class="rk"><span class="lvl">${t('car.level', {n:lv})}</span><b>${t('rank.'+r)}</b></div>
+        <div class="xp"><span class="bar"><i style="width:${clamp((c.xp-a)/(b-a)*100, 0, 100)}%"></i></span><small>${c.xp} / ${b} XP</small></div>
+        <span class="fact">${t('car.bonus', {p:Math.round(r*RANK_BONUS*100)})}</span><span class="fact">${t('car.runsN', {n:runs})}</span><span class="fact">${t('car.best', {s:rec.best.settlements, p:rec.best.pop})}</span></div>
+      <h3>${t('file.ach')}<em>${c.ach.length} / ${ACH.length}</em></h3><div class="cgrid">${achs}</div>
+      <h3>${t('file.unlocks')}<em>${NEW_TYPES.filter(unlocked).length} / ${NEW_TYPES.length}</em></h3><div class="cgrid">${blds}</div>
+    </div>`;
+}
 function renderMenu(fresh){
   const menu = cover.querySelector('.cv-menu'); if(!menu) return;
   const items = [...menu.querySelectorAll('.cv-item')], at = items.indexOf(document.activeElement);
@@ -260,36 +278,25 @@ function renderMenu(fresh){
   const add = b => menu.appendChild(b);
   let first = null;
   if(view === 'main'){
-    const car = career();
-    // v0.9.2: no dossier to choose. After the tutorial, New Euroregion starts a random run straight away.
-    add(item(t('title.new'), startNewEuroregion, {sub: car.tutorial ? t('title.newSubQuick', {rank:t('rank.'+rankOf(car.xp))}) : t('title.newSubTut'), cls:'new'}));
-    const c = add(item(t('title.continue'), ()=>{ setState(saved); afterLoad(); },
-      {sub: cont ? t('title.contSub',{l:roman((saved.stage||0)+1), town:saved.town, m:saved.month}) : t('title.noSave'), disabled:!cont, cls:'cont'}));
-    add(item(t('title.career'), ()=>go('career'), {sub: t('title.careerSub', {rank:t('rank.'+rankOf(car.xp)), n:car.ach.length, t:ACH.length}), cls:'career'}));
+    // v0.9.3: five plain options, no subtitles
+    add(item(t('title.new'), startNewEuroregion, {cls:'new'}));
+    const c = add(item(t('title.continue'), ()=>{ setState(saved); afterLoad(); }, {disabled:!cont, cls:'cont'}));
+    add(item(t('title.career'), ()=>go('career'), {cls:'career'}));
     add(item(t('title.settings'), ()=>go('settings')));
     add(item(t('title.credits'), ()=>go('credits')));
     first = cont ? c : menu.querySelector('.cv-item');
   } else if(view === 'career'){
-    const c = career(), r = rankOf(c.xp), next = RANKS[r+1], prev = RANKS[r], rec = records();
-    const box = document.createElement('div'); box.className = 'cv-career';
-    const pct = next ? Math.round((c.xp-prev)/(next-prev)*100) : 100;
-    const achs = ACH.map(a=>{ const on = c.ach.includes(a.id);
-      return `<li class="${on?'on':'off'}">${ic(on?'workspace_premium':'lock')}<span><b>${t('ach.'+a.id+'.t')}</b>${t('ach.'+a.id+'.x')} <small>+${a.xp} XP</small></span></li>`; }).join('');
-    const blds = NEW_TYPES.map(ty=>{ const on = unlocked(ty);
-      return `<li class="${on?'on':'off'}">${ic(B[ty].icon)}<span><b>${t('b.'+ty)}</b>${t('bd.'+ty)} <small>${on ? '' : t('car.lockedBy', {n:UNLOCK_LEVEL[ty]})}</small></span></li>`; }).join('');
-    box.innerHTML = `<div class="rank">${t('rank.'+r)}</div><div class="xpbar"><i style="width:${pct}%"></i></div>
-      <small>${next ? t('car.xp', {x:c.xp, n:next}) : t('car.xpMax', {x:c.xp})} · ${t('car.bonus', {p:Math.round(r*RANK_BONUS*100)})}</small><br>
-      <small>${t('car.runs', {n:c.runs, s:rec.best.settlements, p:rec.best.pop})}</small>
-      <h4>${t('car.build', {n:NEW_TYPES.filter(unlocked).length, t:NEW_TYPES.length})}</h4><ul>${blds}</ul>
-      <h4>${t('car.ach', {n:c.ach.length, t:ACH.length})}</h4><ul>${achs}</ul>`;
-    menu.appendChild(box);
+    // v0.9.3: the achievements as a screen of grids, read across; what you have not earned yet stays a mystery (???)
+    const box = document.createElement('div'); box.className = 'cv-ach'; box.innerHTML = achievementsHTML();
+    cover.querySelectorAll('.cv-ach').forEach(x=>x.remove()); cover.appendChild(box);
+    box.querySelector('.x').onclick = ()=>{ playSound('click'); go('main'); };
     first = add(item(t('title.back'), ()=>go('main'), {cls:'back'}));
   } else if(view === 'settings'){
     const other = LANG === 'es' ? 'en' : 'es';
     first = add(item(t('title.lang', {l: t('lang.'+LANG)}), ()=>setLang(other), {silent:true, cls:'lang'}));
     add(item(t('title.guide', {s: t(career().guide ? 'on' : 'off')}), ()=>{ const c = career(); c.guide = !c.guide; saveCareer(c); renderMenu(); }, {cls:'guide'}));
     add(item(t('title.music', {s: t(music.on ? 'on' : 'off')}), ()=>{ toggleMusic(); renderMenu(); }, {cls:'music'}));
-    add(item(t('title.tutorial'), ()=>startRun(), {sub:t('title.tutorialSub'), cls:'tut'}));
+    add(item(t('title.tutorial'), ()=>startRun(), {cls:'tut'}));
     add(item(t('title.back'), ()=>go('main'), {cls:'back'}));
   } else if(view === 'credits'){
     const c = document.createElement('div'); c.className = 'cv-credits';
@@ -368,9 +375,10 @@ export function pauseMenu(view = 'main'){
   } else if(view === 'settings'){
     head('settings', t('pause.settings'));
     const other = LANG === 'es' ? 'en' : 'es';
-    row([popt(t('title.music', {s:t(music.on ? 'on' : 'off')}), music.on ? 'music_note' : 'music_off', ()=>{ toggleMusic(); pauseMenu('settings'); }, {k:'music'}),
+    // v0.9.3: if the browser still blocks the sound, say so on the music option (a tap there unlocks it)
+    row([popt(t('title.music', {s:t(music.on ? 'on' : 'off')}), music.on ? 'music_note' : 'music_off', ()=>{ toggleMusic(); pauseMenu('settings'); }, {k:'music', sub: music.on && !audioRunning() ? t('ui.tapSound') : ''}),
          popt(t('title.lang', {l:t('lang.'+LANG)}), 'translate', ()=>{ setLang(other); }, {k:'lang'}),
-         popt(t('title.guide', {s:t(career().guide ? 'on' : 'off')}), 'school', ()=>{ const c = career(); c.guide = !c.guide; saveCareer(c); pauseMenu('settings'); }, {k:'guide'}),
+         popt(t('title.guide', {s:t(career().guide ? 'on' : 'off')}), 'forum', ()=>{ const c = career(); c.guide = !c.guide; saveCareer(c); pauseMenu('settings'); }, {k:'guide'}),
          popt(t('title.back'), 'close', ()=>pauseMenu('main'), {k:'back'})]);
     const d = document.createElement('dl'); d.className = 'controls';
     d.innerHTML = ['move','zoom','orbit','centre','file','end','esc'].map(k=>`<dt>${t('keys.'+k+'.k')}</dt><dd>${t('keys.'+k)}</dd>`).join('');
