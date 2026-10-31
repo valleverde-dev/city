@@ -60,3 +60,10 @@ export function styleName(i){ const ty = S.grid[i].ty, A = archOf(i, ty), names 
 export function refresh(){ applyStatic(); updateHUD(); renderDock(); renderGuide(); renderInbox(); renderRun(); draw(); flushToasts(); }
 export let pulseUntil = 0;
 export function pulse(i){ S.focus = i; pulseUntil = performance.now()+2600; draw(); }
+// v0.10: the mayor's hint bubble (and the controls hint) hide while any screen is open — a letter, the pause
+// screen, the run file, the inauguration, the title — and come back when it closes
+const screenOpen = () => { const m = document.getElementById('modal'), ids = ['run', 'drama', 'cover'];
+  return (m && !m.classList.contains('hidden')) || ids.some(id=>{ const e = document.getElementById(id); return e && !e.hidden; }); };
+const syncScreen = () => document.body.classList.toggle('screen-open', screenOpen());
+new MutationObserver(syncScreen).observe(document.body, {subtree:true, childList:true, attributes:true, attributeFilter:['class', 'hidden']});
+syncScreen();

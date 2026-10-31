@@ -204,3 +204,9 @@
   .notice.rewards .perk b{justify-content:flex-start;} .notice.rewards .perk .catch{justify-content:flex-start;}
   .notice.rewards .gold-tag{top:4px; right:4px;}
 }
+/* v0.10: screens build up — each element a little after the previous one (ui/cascade.js) */
+@keyframes csIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+.cs{animation:csIn 180ms ease-out var(--cs, 0ms) both;}
+body.reduce-motion .cs{animation:none;}
+@media (prefers-reduced-motion: reduce){ .cs{animation:none;} }
+body.screen-open #guide, body.screen-open #hint{visibility:hidden;}

@@ -20,6 +20,7 @@ import { ic } from './icons.js';
 import { enterSettlement, frameView, startMenu, startNewEuroregion } from './title.js';
 import { regionCanvas } from './regionmap.js';
 import { closeDrama, dramaLose, dramaWin, toast } from './drama.js';
+import { cascade } from './cascade.js';
 
 // =====================================================================
 //  CARDS & NOTICES (modal). One renderer per card type; re-rendered on language change.
@@ -58,6 +59,7 @@ function renderSlide(fade){
   const go = last ? btn(st.doneLabel, 'play_arrow', ()=>st.done(), true) : btn(t('slide.next'), 'play_arrow', ()=>slideGo(+1), true);
   go.classList.add('next'); nav.appendChild(go);
   if(b.closest('.notice')) notice.scrollTop = 0;
+  cascade(fade ? b.querySelector('.slide') : notice);   // v0.10: the slide's elements come in one after another
 }
 export function slideLetter({icon, title, speaker, quote, slides, doneLabel, onDone}){
   slides = slides.filter(x=>x && x.html && x.html.trim());
@@ -86,6 +88,7 @@ export function letter({icon, title, stamp, cls, body, buttons, dock, speaker, w
   const box = notice.querySelector('.btns'); buttons.forEach(b=>box.appendChild(b));
   modal.classList.remove('hidden'); modal.classList.toggle('dock', !!dock); notice.scrollTop = 0;
   notice.style.animation = 'none'; void notice.offsetWidth; notice.style.animation = '';
+  cascade(notice);
 }
 // Character portraits: the vector faces are rasterised to 32×32, snapped to their own palette
 // and outlined, so they read as pixel art next to the map. Cached per character.

@@ -83,6 +83,11 @@ with sync_playwright() as p:
 
     # --- Settlement I through the real UI: intro, settlement card, guide, buy, build, end months, consolidation
     page.click("#cover .cv-item.new")
+    ds = page.evaluate("[...document.querySelectorAll('#notice .cs')].map(e=>parseInt(getComputedStyle(e).getPropertyValue('--cs')))")
+    check(len(ds) >= 3 and ds == sorted(ds) and ds[1] - ds[0] in range(60, 81) and ds[min(4, len(ds)-1)] <= 500,
+          f"v0.10: a screen builds up — each element ~70 ms after the previous one ({ds[:6]})")
+    page.locator("#notice .letterhead").dispatch_event("pointerdown")
+    check(page.locator("#notice .cs").count() == 0, "a tap shows everything at once")
     check(page.is_visible("text=Letter of appointment") and "Euroregion" in page.locator("#notice").inner_text(), "a new Euroregion starts with the appointment letter")
     page.click("text=Accept the appointment")
     seen = []
@@ -104,6 +109,11 @@ with sync_playwright() as p:
     check(page.locator("#meters").is_hidden(), "settlement I shows no meters (none of those rules are in play)")
     check(S("g.dock") == "agenda" and page.locator("#strip .tile.act").count() == 0 and page.locator("#strip .tile").count() >= 1, "settlement I: the bottom bar shows the goal, no agenda yet")
     check(page.is_visible("#guide") and "step 1 of" in page.locator("#guide").inner_text().lower(), "the mayor's guide shows step 1")
+    page.click("#menuBtn"); page.wait_for_timeout(80)
+    vis = lambda: page.evaluate("getComputedStyle(document.getElementById('guide')).visibility")
+    check(vis() == "hidden", "v0.10: the hint bubble hides while a screen is open (pause)")
+    page.keyboard.press("Escape"); page.wait_for_timeout(80)
+    check(vis() == "visible" and page.locator("#modal").is_hidden(), "…and comes back when it closes")
     lot = S("S.grid.findIndex(p=>p.k==='farm' && p.st==='land')")
     tap(lot)
     check(S("g.dock") == "parcel" and S("g.selected") == lot and page.locator("#strip .tile[data-k=buy]").count() == 1, "tapping a parcel shows what you can do with it in the bottom bar (no sheet)")

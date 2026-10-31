@@ -1,3 +1,4 @@
+import { cascade } from './cascade.js';
 import { audioRunning, gameTrack, music, setMusic, toggleMusic, updateMusicBtn } from '../audio/music.js';
 document.addEventListener('audiounlocked', ()=>{ if(typeof pauseView !== 'undefined' && pauseView === 'settings' && pauseOpen()) pauseMenu('settings'); });
 import { playSound } from '../audio/sfx.js';
@@ -288,7 +289,7 @@ function renderMenu(fresh){
   } else if(view === 'career'){
     // v0.9.3: the achievements as a screen of grids, read across; what you have not earned yet stays a mystery (???)
     const box = document.createElement('div'); box.className = 'cv-ach'; box.innerHTML = achievementsHTML();
-    cover.querySelectorAll('.cv-ach').forEach(x=>x.remove()); cover.appendChild(box);
+    cover.querySelectorAll('.cv-ach').forEach(x=>x.remove()); cover.appendChild(box); cascade(box.querySelector('.ach-body'));
     box.querySelector('.x').onclick = ()=>{ playSound('click'); go('main'); };
     first = add(item(t('title.back'), ()=>go('main'), {cls:'back'}));
   } else if(view === 'settings'){
@@ -389,7 +390,7 @@ export function pauseMenu(view = 'main'){
     row([popt(t('pause.'+view+'Yes'), view === 'restart' ? 'replay' : 'flag', view === 'restart' ? doRestart : doAbandon, {cls:'danger', k:'yes'}),
          popt(t('pause.no'), 'play_arrow', ()=>pauseMenu('main'), {cls:'primary', k:'no'})]);
   }
-  notice.innerHTML = ''; notice.appendChild(box);
+  notice.innerHTML = ''; notice.appendChild(box); cascade(box);
   modal.classList.remove('hidden'); notice.style.animation = 'none'; void notice.offsetWidth; notice.style.animation = '';
   const first = box.querySelector('.popt.primary') || box.querySelector('.popt'); if(first) first.focus({preventScroll:true});
   updateMusicBtn(); setRerender(()=>pauseMenu(pauseView));
