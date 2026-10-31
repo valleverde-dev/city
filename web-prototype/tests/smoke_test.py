@@ -192,6 +192,10 @@ with sync_playwright() as p:
     ev(f"{G}.newGame(42, 3)"); clear_cards(); S("(S.rfx={}, g.refresh(), 0)")
     N = S("Math.sqrt(S.grid.length)")
     check(S("S.region.blocks.length") == 4 and S("S.grid.filter(p=>p.k!=='void').length") == 256 and S("g.on('market') && g.on('milestones')"), "phase IV: four 8×8 plots in play, with every rule")
+    check(page.locator("#strip .tile[data-k=extension]").count() == 1, "from phase III the agenda can ask Brussels for an extension")
+    S("(S.contract={id:'ct_mayor', kind:'housing', n:2, base:S.grid.filter(p=>p.ty==='housing'&&p.st==='built').length, deadline:S.month+5}, g.refresh(), 0)")
+    check(page.locator("#strip .tile.contract").count() == 1 and "0/2" in page.locator("#strip .tile.contract").inner_text(), "an accepted deal shows in the agenda with its progress")
+    S("(S.contract=null, g.refresh(), 0)")
     WN = (ev(f"{G}.artSize[0]") - 32) // 64
     land = S("Object.keys(S.world.cells).length")
     check(land == 256 and WN >= N + 2, f"the map is all the land of the region ({land} parcels)")
@@ -416,7 +420,7 @@ with sync_playwright() as p:
     for lang in ("en", "es"):
         S(f"(g.setLang('{lang}'), 0)")
         for eid in S("Object.keys(g.EVENTS)"):
-            S(f"(S.cards=[{{type:'event', id:'{eid}', v:{{i:{site}, x:'1', good:true, priv:true, owned:true}}}}], 0)"); S("g.showNext()")
+            S(f"(S.cards=[{{type:'event', id:'{eid}', v:{{i:{site}, x:'1', good:true, priv:true, owned:true, n:2, m:9, town:'Klein Stempel', talked:true}}}}], 0)"); S("g.showNext()")
             if re.search(r"\bev\.|\{\w+\}", page.locator("#dock").inner_text()): raw.append(f"{lang}:{eid}")
         for k in range(6):
             ev(f"{G}.newGame(9, {k})"); S("(S.perks=['notary'], S.cards=[{type:'level'}], 0)"); S("g.showNext()")

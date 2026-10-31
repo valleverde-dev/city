@@ -178,6 +178,40 @@ test('v0.10: milestone rewards — offers from the characters, deals with a catc
   assert.ok(mine.filter(i => S.grid[i].st === 'owned' && S.grid[i].urban).length >= 3, 'three parcels of the new plot are already yours');
 });
 
+test('v0.10: deals with the characters move the deadline or pay; Brussels may grant an extension; chained events come back', () => {
+  let S = g.newGame(12, 2);
+  const months0 = CFG.months;
+  // a contract: accept it, meet it, the deadline moves
+  S.cards = [{ type: 'event', id: 'ct_mayor', v: { n: 2, m: S.month + 6 } }];
+  core.resolveCard('accept');
+  assert.equal(S.contract.id, 'ct_mayor');
+  let k = 0; S.grid.forEach(p => { if (k < 2 && p.k === 'farm' && p.st === 'land') { Object.assign(p, { st: 'built', ty: 'housing' }); k++; } });
+  S.cards = []; core.endMonth();
+  assert.equal(S.contract, null); assert.equal(CFG.months, months0 + 2, 'two more months');
+  assert.ok(S.cards.some(c => c.key === 'ct.metExt'));
+  // a broken one costs the character's goodwill
+  S = g.newGame(12, 2); S.cards = [{ type: 'event', id: 'ct_neighbour', v: { n: 1, m: 1 } }]; core.resolveCard('accept');
+  const n0 = S.neigh; S.cards = []; core.endMonth();
+  assert.equal(S.contract, null); assert.ok(S.neigh < n0 - 5); assert.ok(S.cards.some(c => c.key === 'ct.failed'));
+  // the extension: two slots and compliance; granted only if compliance stays decent; once per phase
+  S = g.newGame(12, 2); S.slots = 3; S.comp = 70;
+  const m0 = CFG.months, r = core.requestExtension();
+  assert.ok(r.ok && !r.refused); assert.equal(CFG.months, m0 + core.EXT_MONTHS); assert.equal(S.slots, 1); assert.equal(S.comp, 60);
+  S.slots = 3; assert.equal(core.requestExtension().msg.k, 'err.extAsked');
+  S = g.newGame(12, 2); S.slots = 3; S.comp = 50;
+  assert.ok(core.requestExtension().refused, 'compliance too low afterwards: refused'); assert.equal(CFG.months, core.stageCfg(2).months);
+  g.newGame(12, 1); assert.equal(core.requestExtension().msg.k, 'err.notYet', 'not before phase III');
+  // a chained event: the decision now brings a second card later
+  S = g.newGame(12, 2); S.funds = 50; S.cards = [{ type: 'event', id: 'consultants', v: {} }]; core.resolveCard('hire');
+  assert.equal(S.chain.length, 1);
+  const back = () => S.cards.some(c => c.type === 'event' && c.id === 'consultantsReport');
+  for (let m = 0; m < 4 && !back(); m++) { S.cards = []; core.endMonth(); }
+  assert.ok(back() && S.chain.length === 0 && S.month === 4, 'the report comes back three months later');
+  // events between plots need two plots; chained second cards are never drawn at random
+  g.newGame(12, 0); assert.equal(core.EVENTS.oldTown.ok(), false); g.newGame(12, 1); assert.equal(core.EVENTS.oldTown.ok(), true);
+  assert.ok(Object.keys(core.EVENTS).length >= 35);
+});
+
 test('the plots on offer are new land next to the region, never overlapping', () => {
   for (let k = 1; k < 7; k++) {
     g.newGame(20 + k, k);

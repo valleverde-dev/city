@@ -42,6 +42,17 @@ export function requestPermit(i, ty){
   log('log.permit', {b:ty, at:pname(i), n:p.t}); gainXp('permit');
   return {ok:true, msg:{k:'fx.filed'}, sfx:'stamp'};
 }
+// v0.10: ask Brussels for more time. Two slots and some goodwill; granted only if compliance is still decent
+// afterwards (no dice — the meter is on screen). Once per phase.
+export const EXT_MONTHS = 3, EXT_COMP = 10, EXT_NEED = 45;
+export function requestExtension(){
+  if(!on('directives')) return fail('err.notYet');
+  if(S.extAsked) return fail('err.extAsked');
+  if(!canAct(2)) return fail('err.slots');
+  S.slots -= 2; S.extAsked = true; bump('comp', -EXT_COMP, 'why.extension');
+  if(S.comp >= EXT_NEED){ S.ext = (S.ext||0) + EXT_MONTHS; log('log.extOk', {n:EXT_MONTHS}, 'good'); return {ok:true, msg:{k:'fx.extOk', p:{n:EXT_MONTHS}}, sfx:'stamp'}; }
+  log('log.extNo', {}, 'bad'); return {ok:true, refused:true, cls:'bad', msg:{k:'fx.extNo'}, sfx:'fail'};
+}
 export function sellPlot(i){
   const p = S.grid[i], [r,c] = rc(i);
   if(!on('market')) return fail('err.notYet');

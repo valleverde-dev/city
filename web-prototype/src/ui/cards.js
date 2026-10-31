@@ -119,12 +119,14 @@ export function makePixelPortrait(id){
 makePixelPortrait.busy = {};
 export function btn(label, icon, fn, primary){ const b=document.createElement('button'); b.className='btn'+(primary?' primary':''); b.innerHTML=`${ic(icon)}${label}`; b.onclick=fn; return b; }
 export function hideModal(){ slideState = null; modal.classList.add('hidden'); modal.classList.remove('title', 'pause'); rerender = null; }
-export const CHIP_ICON = {money:'euro', local:'how_to_vote', neigh:'diversity_3', comp:'fact_check', delay:'schedule', risk:'casino', slot:'event_busy', lose:'block', land:'add_location', debt:'account_balance_wallet', cost:'trending_up', later:'schedule', rate:'percent', market:'trending_down'};
+export const CHIP_ICON = {ext:'hourglass_top', deadline:'event', money:'euro', local:'how_to_vote', neigh:'diversity_3', comp:'fact_check', delay:'schedule', risk:'casino', slot:'event_busy', lose:'block', land:'add_location', debt:'account_balance_wallet', cost:'trending_up', later:'schedule', rate:'percent', market:'trending_down'};
 export function chip([type, v]){
   let cls = '', txt = '';
   if(type==='money'){ txt = (v>0?'+':'')+money(v); cls = v>0?'good':'bad'; }
   else if(type==='debt'){ txt = (v>0?'+':'')+money(v); cls = v>0?'bad':'good'; }
   else if(['local','neigh','comp'].includes(type)){ txt = t('meter.'+type)+' '+(typeof v==='number' ? (v>0?'+':'')+v : v); cls = typeof v==='number' ? (v>0?'good':'bad') : ''; }
+  else if(type==='ext'){ txt = t('chip.ext', {n:v}); cls = 'good'; }
+  else if(type==='deadline'){ txt = t('chip.deadline', {n:v}); cls = ''; }
   else if(type==='risk'){ if(!v) return ''; txt = t('chip.risk',{n:v}); cls='risk'; }
   else { txt = t('chip.'+type, {n:v, x:v}); cls = ['delay','slot','lose','cost','rate','market'].includes(type) ? 'bad' : (type==='land'?'good':''); }
   return `<span class="chip ${cls}">${ic(CHIP_ICON[type])}${txt}</span>`;

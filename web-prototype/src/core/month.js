@@ -2,7 +2,7 @@ import { activeCombos, comboFx, discover } from './combos.js';
 import { B, CFG, N_REJECTIONS, on } from './config.js';
 import { directiveProgress, issueDirective, offerPerks } from './directives.js';
 import { residents, taxIncome } from './economy.js';
-import { rollEvent } from './events.js';
+import { checkContract, dueChains, rollEvent } from './events.js';
 import { money } from './format.js';
 import { consolidate, snapshot } from './newgame.js';
 import { recordRun, save } from './persist.js';
@@ -115,6 +115,8 @@ export function endMonth(){
     }
   }
   if(on('directives') && !S.directive && !S.over && (S.month===2 || (S.month>2 && (S.month-2)%5===0))) issueDirective();
+  // 11b. Contracts from the characters, and the second card of chained events (v0.10)
+  if(!S.over){ checkContract(); dueChains(); }
   // 12. Random event (a card with choices)
   if(!S.over) rollEvent();
   // 13. Money trouble: the regional bank lends a bridge loan instead of game over

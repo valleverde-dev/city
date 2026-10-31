@@ -124,7 +124,7 @@ export function beginPhase(stage, fresh){
     month:1, grant:tranche, funds:r1(tranche + (S.carry||0)), spent:0, slotPenalty:0, strikes:0,
     directive:null, plan: S.plan || null, lobbied:0, electionDone:false, crashDone:false, qseq: S.qseq||0,
     cards:[], perkChoice:null, over:null, pending:null, bottleneck:'homes', fx:[], focus:-1, ext:0,
-    stats:{lobby:0, plan:0, approved:0}, guide:0, comboSeen: S.comboSeen||[], carried:r1(S.carry||0), carry:0, lastTax:0,
+    stats:{lobby:0, plan:0, approved:0}, guide:0, extAsked:false, contract:null, chain:[], comboSeen: S.comboSeen||[], carried:r1(S.carry||0), carry:0, lastTax:0,
     stype:last.ty, reports: S.reports||0, consults: S.consults||0, strike: S.strike||0,
   });
   if(fresh){ S.log = []; S.trail = []; }

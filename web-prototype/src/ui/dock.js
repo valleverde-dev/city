@@ -1,10 +1,10 @@
 import { playSound } from '../audio/sfx.js';
-import { acquire, consult, fileReport, lobby, repay, requestPermit, sellPlot, submitPlan } from '../core/actions.js';
+import { EXT_COMP, EXT_MONTHS, EXT_NEED, acquire, consult, fileReport, lobby, repay, requestExtension, requestPermit, sellPlot, submitPlan } from '../core/actions.js';
 import { COMBOS, COMBO_BY_ID, activeCombos, comboPreviewAt, discovered } from '../core/combos.js';
 import { B, BUILD_TYPES, CFG, KIND, NEW_TYPES, stageCfg, on } from '../core/config.js';
 import { unlocked } from '../core/career.js';
 import { DIRECTIVE_ICON } from '../core/directives.js';
-import { EVENTS, choicesFor, resolveEvent } from '../core/events.js';
+import { CONTRACTS, EVENTS, choicesFor, contractCount, isBadResult, resolveEvent } from '../core/events.js';
 import { money } from '../core/format.js';
 import { attach } from '../core/newgame.js';
 import { save } from '../core/persist.js';
@@ -109,12 +109,15 @@ function renderAgenda(head, strip){
   head.innerHTML = can ? `<h3>${ic('work')}${t('tab.agenda')}</h3>${tag(t('d.slotsLeft', {n:S.slots}), S.slots ? '' : 'bad')}` : `<h3>${ic('touch_app')}${t('d.tap')}</h3>`;
   if(S.directive){ const d = S.directive, left = d.deadline - S.month + 1;
     strip.appendChild(tile({icon:DIRECTIVE_ICON[d.kind], name:t('dir.'+d.kind+'.t'), sub:t('dir.'+d.kind+'.x', {n:d.param}), cls:'directive wide', badge:[t('ui.monthsLeft',{n:left}), left<=1?'bad':'warn'], click:()=>{} })); }
+  if(S.contract){ const c = S.contract, C = CONTRACTS[c.id], left = c.deadline - S.month + 1, have = c.kind==='sites' ? contractCount('sites') : c.kind==='nodebt' ? '' : contractCount(c.kind) - c.base;
+    strip.appendChild(tile({icon:C.icon, name:t('d.contract', {c:t('ev.'+c.id+'.t')}), sub:t('ctk.'+c.kind, {n:c.n}) + (have!=='' ? ` · ${Math.max(0,have)}/${c.n}` : ''), cls:'directive wide contract', badge:[t('ui.monthsLeft',{n:left}), left<=1?'bad':'warn'], click:()=>{} })); }
   if(!can){ if(!S.directive) strip.appendChild(tile({icon:'groups', name:t('d.goal', {n:CFG.target}), sub:t('d.goalSub', {m:CFG.months}), cls:'info wide'})); return; }
   const act = (icon, name, sub, fn, dis, cls, k) => strip.appendChild(tile({icon, name, sub, disabled:dis, cls:'act '+(cls||''), k, click:()=>{ doAction(fn(), -1); }}));
   if(on('rustic')) act('map', t('act.plan'), S.plan ? t('act.planBusy',{n:S.plan.t}) : t('d.planSub',{x:money(CFG.planCost)}), submitPlan, off||!!S.plan||S.slots<2, '', 'plan');
   if(on('local')) act('restaurant', t('act.lobby'), t('d.lobbySub',{x:money(CFG.lobbyCost), n:has('lobbyist')?20:(S.lobbied?6:12)}), lobby, off||S.slots<1, '', 'lobby');
   if(on('neigh')) act('forum', t('act.consult'), t('d.consultSub'), consult, off||S.slots<2, '', 'consult');
   if(on('comp')) act('description', t('act.report'), t('d.reportSub'), fileReport, off||S.slots<1, '', 'report');
+  if(on('directives')) act('hourglass_top', t('act.extension'), S.extAsked ? t('d.extUsed') : t('d.extSub', {c:EXT_COMP, need:EXT_NEED, n:EXT_MONTHS}), requestExtension, off||S.extAsked||S.slots<2, '', 'extension');
   if(S.debt>0) act('account_balance_wallet', t('act.repay',{x:money(Math.min(CFG.loanStep,S.debt))}), t('d.repaySub'), repay, off||S.funds<Math.min(CFG.loanStep,S.debt), 'money', 'repay');
 }
 // ---------- land that is not yours: what it is, what it does, the combos it makes (v0.9.2) ----------
@@ -269,7 +272,7 @@ function renderAttach(head, strip){
 // ---------- an event: portrait, headline, choices with their effects (the letter is one tap away) ----------
 function renderEvent(head, strip){
   const c = S.cards[0], E = EVENTS[c.id], v = c.v || {};
-  if(c.type==='result'){ const bad = /caught|lost|stays|refused|unimpressed|ruin|annulled|long/.test(c.res);
+  if(c.type==='result'){ const bad = isBadResult(c.res);
     head.innerHTML = `${pxPortrait(E.char)}<div class="who"><small>${t('char.'+E.char,{town:S.town})}</small><h3>${t('ev.'+c.id+'.t')}</h3></div>`;
     strip.appendChild(tile({icon: bad ? 'cancel' : 'task_alt', name:t(bad ? 'stamp.bad' : 'stamp.done'), sub:t('ev.'+c.id+'.r.'+c.res), cls:'result wide '+(bad?'bad':'good')}));
     strip.appendChild(tile({icon:'check', name:t('ui.noted'), cls:'act primary', k:'ok', click:()=>{ S.cards.shift(); playSound('click'); save(); refresh(); showNext(); }}));
@@ -283,7 +286,7 @@ function renderEvent(head, strip){
     b.innerHTML = `<b>${t('ev.'+c.id+'.c.'+ch.k)}</b><span class="chips">${ch.fx(v).map(chip).join('')}${can ? '' : `<span class="chip bad">${t('err.funds')}</span>`}</span>`;
     b.onclick = ()=>{ const res = resolveEvent(c, ch.k); S.cards.shift();
       if(res) S.cards.unshift({type:'result', id:c.id, res, v});
-      playSound(res && /caught|lost|stays|refused|unimpressed|ruin|annulled|long/.test(res) ? 'fail' : 'stamp');
+      playSound(isBadResult(res) ? 'fail' : 'stamp');
       save(); refresh(); showNext(); };
     strip.appendChild(b); });
 }
