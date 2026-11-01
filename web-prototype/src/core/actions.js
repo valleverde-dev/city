@@ -117,7 +117,9 @@ export function renameTown(name){
   const v = String(name || '').replace(/\s+/g, ' ').trim().slice(0, TOWN_MAX);
   if(!S || !v) return fail('err.townEmpty');
   if(v === S.town) return {ok:true, msg:{k:'log.townSame'}};
-  const old = S.town; S.town = v;   // v0.10.1: the city's name; each district keeps its own (renameDistrict)
+  const old = S.town; S.town = v;
+  // the founding district goes with the city's name, unless it has been given one of its own (renameDistrict)
+  const d0 = S.region && S.region.blocks[0]; if(d0 && d0.town === old) d0.town = v;
   log('log.renamed', {a:old, b:v}, 'good');
   return {ok:true, msg:{k:'log.renamed', p:{a:old, b:v}}};
 }

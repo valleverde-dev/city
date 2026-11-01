@@ -32,7 +32,7 @@ export { count, caps, hasAccess, isRoad, givesAccess, nextToVillage, landPrice, 
 export { residents, taxIncome, monthlyCosts, committed, avail, nextMilestone } from './economy.js';
 export { COMBOS, COMBO_BY_ID, activeCombos, comboFx, comboPreview, comboPreviewAt, discovered } from './combos.js';
 // Player actions (each costs agenda slots)
-export { acquire, requestPermit, sellPlot, submitPlan, lobby, consult, fileReport, repay, canAct , renameTown, suggestTown, TOWN_MAX, requestExtension, EXT_MONTHS, EXT_NEED } from './actions.js';
+export { acquire, requestPermit, sellPlot, submitPlan, lobby, consult, fileReport, repay, canAct , renameTown, renameDistrict, meetOwner, suggestTown, TOWN_MAX, requestExtension, EXT_MONTHS, EXT_NEED } from './actions.js';
 export { CONTRACTS, checkContract, dueChains, chain, isBadResult } from './events.js';
 // Directives and perks
 export { DIRECTIVE_ICON, directiveProgress, choosePerk, offerPerks } from './directives.js';

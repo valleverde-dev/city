@@ -454,3 +454,13 @@ test('v0.9: perks join the pool by rank, and the four new ones work', () => {
   assert.ok(core.career().perks.includes('cohesion'), 'the career remembers the perks you have taken');
   core.resetCareer();
 });
+
+test('v0.10.1: the founding district has the city\'s name and follows it when the city is renamed', () => {
+  const S = g.newGame(31, 0);
+  assert.equal(S.region.blocks[0].town, S.town);
+  assert.ok(core.renameTown('Villa Burocracia').ok);
+  assert.equal(S.region.blocks[0].town, 'Villa Burocracia');
+  assert.ok(core.renameDistrict(0, 'Casco Viejo').ok);
+  assert.ok(core.renameTown('Nueva Burocracia').ok);
+  assert.equal(S.region.blocks[0].town, 'Casco Viejo', 'a district with a name of its own keeps it');
+});

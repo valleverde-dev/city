@@ -44,7 +44,8 @@ export function newGame(seed, stage, opts = {}){
   }
   if(stage > 0) madeUpHistory(stageCfg(stage-1).target, stage);
   rebuildGrid(stage);
-  S.town = townName(); S.country = S.region.blocks[0].country;   // v0.10.1: the city has its own name; the plots are its districts
+  // v0.10.1: the founding district gives the city its name; later districts get their own
+  S.town = S.region.blocks[0].town; S.country = S.region.blocks[0].country;
   if(stage > 0){ S.done = stage; S.newcomers = Math.max(0, stageCfg(stage-1).target - S.base); }
   beginPhase(stage, true);
   return S;

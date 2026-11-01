@@ -456,6 +456,8 @@ with sync_playwright() as p:
     check(page.locator("#run .dcard").count() == nd and nd >= 2, f"the Region tab lists the {nd} districts")
     page.locator("#run .dren").first.click(); page.fill("#run .dinp", "Barrio Formulario"); page.keyboard.press("Enter"); page.wait_for_timeout(80)
     check(S("S.region.blocks[0].town") == "Barrio Formulario" and S("S.town") != "Barrio Formulario", "a district can be renamed (the city keeps its own name)")
+    ev(f"{G}.newGame(43, 0)"); clear_cards()
+    check(S("S.region.blocks[0].town === S.town"), "the founding district has the city's name")
     S("(g.closeRun(), 0)")
     hold = S("(()=>{ const i=S.grid.findIndex((p,k)=>p.k==='farm' && p.st==='land'); Object.assign(S.grid[i],{hold:true, holdKnown:false}); g.centreOn(i); g.refresh(); return i; })()")
     tap(hold); page.wait_for_timeout(100)
