@@ -6,8 +6,12 @@ then written as WAV (convert to OGG/M4A with ffmpeg) and Standard MIDI.
   eurocrat_menu    "Ode to Joy (Brussels Eurodance Mix)"      130 BPM  menu / title
   eurocrat_level1  "Pilot Project (Village Fete Waltz)"       160 BPM  level I, 3/4
   eurocrat_level2  "Expansion Phase (Let's Build Together)"   112 BPM  level II
-  eurocrat_level3  "Partial Plan: Regulatory Framework"        84 BPM  level III
   eurocrat_level4  "Model Town (Harmonised Trance Anthem)"    138 BPM  level IV
+  eurocrat_lobby   "Lobby Bossa (Floor 7, Please)"            128 BPM  in-game playlist
+  eurocrat_hold    "Your Call Is Important to Us"             96 BPM   in-game playlist
+  eurocrat_sunny   "Sunny Subsidy (Ambient House)"           110 BPM  in-game playlist
+  eurocrat_handsup "Plenary Session (Hands Up!)"             140 BPM  in-game playlist
+  eurocrat_italo   "Italo Directive"                         118 BPM  in-game playlist
   eurocrat_win     "Douze Points for Harmonisation"           122 BPM  inauguration
 
 The Ode to Joy melody is Beethoven's (Symphony No. 9, 1824) and is in the public
@@ -146,6 +150,46 @@ def i_choir(m, dur, v):               # "aah" pad: detuned saws through vowel fo
     return y * 2.2 * env(n, 0.7, 0.4, 0.85, 1.2, int(dur * SR)) * v
 
 
+def i_nylon(m, dur, v):               # nylon-string guitar (Karplus-Strong), for the bossa
+    f = hz(m); p = max(2, int(round(SR / f))); n = int((dur + 0.9) * SR)
+    y = np.zeros(n + p + 1)
+    y[:p] = lp(rng.uniform(-1, 1, p), 2600)
+    for s in range(p, n, p):
+        e = min(s + p, n)
+        a = y[s - p:e - p]
+        b = y[s - p - 1:e - p - 1] if s - p - 1 >= 0 else np.concatenate([[0.0], y[:e - p - 1]])
+        y[s:e] = 0.5 * (a + b) * 0.9965
+    y = lp(y[:n], 3200)
+    return y / (np.max(np.abs(y)) + 1e-9) * env(n, 0.002, 0.01, 1, 0.15, int(dur * SR)) * v
+
+def i_organ(m, dur, v):               # drawbar organ with a slow rotary wobble (hold music)
+    n = int((dur + 0.25) * SR); t = tvec(n); f = hz(m)
+    rot = 1 + 0.0025 * np.sin(2 * np.pi * 5.8 * t)
+    ph = 2 * np.pi * f * np.cumsum(rot) / SR
+    x = sum(a * np.sin(k * ph) for k, a in ((1, 1.0), (2, 0.6), (3, 0.35), (4, 0.25), (6, 0.1), (8, 0.08)))
+    x *= 1 + 0.15 * np.sin(2 * np.pi * 5.8 * t + 1.2)
+    return x * 0.5 * env(n, 0.01, 0.05, 0.9, 0.15, int(dur * SR)) * v
+
+def i_marimba(m, dur, v):             # marimba: woody, bright, quick
+    n = int(1.1 * SR); t = tvec(n); f = hz(m)
+    x = np.sin(2 * np.pi * f * t) * np.exp(-t * 4.5) + 0.35 * np.sin(2 * np.pi * 3.93 * f * t) * np.exp(-t * 14)
+    x += 0.12 * np.sin(2 * np.pi * 9.2 * f * t) * np.exp(-t * 40)
+    return x * env(n, 0.002, 0.01, 1, 0.05, n - 1) * v
+
+def i_flute(m, dur, v):               # breathy flute (lobby / smooth-jazz lead)
+    n = int((dur + 0.25) * SR); t = tvec(n); f = hz(m)
+    vib = 1 + 0.005 * np.sin(2 * np.pi * 5.2 * t) * np.clip((t - 0.15) / 0.3, 0, 1)
+    ph = 2 * np.pi * f * np.cumsum(vib) / SR
+    x = np.sin(ph) + 0.18 * np.sin(2 * ph) + 0.06 * np.sin(3 * ph)
+    x += 0.08 * bp(rng.standard_normal(n), f * 0.8, min(f * 4, 12000)) * (0.6 + 0.4 * np.exp(-t * 12))
+    return x * env(n, 0.06, 0.1, 0.85, 0.18, int(dur * SR)) * v
+
+def i_fingerbass(m, dur, v):          # round fingered electric bass
+    n = int((dur + 0.12) * SR); t = tvec(n); f = hz(m)
+    x = np.sin(2 * np.pi * f * t) + 0.35 * np.sin(4 * np.pi * f * t) * np.exp(-t * 6) + 0.15 * lp(saw(f, n), 900)
+    return x * env(n, 0.006, 0.25, 0.55, 0.08, int(dur * SR)) * v
+
+
 def d_kick(v):
     n = int(0.42 * SR); t = tvec(n)
     f = 48 + 140 * np.exp(-t * 32)
@@ -195,15 +239,53 @@ def d_tamb(v):
     jingle = bp(rng.standard_normal(n), 6000, 12000) * (np.exp(-t * 30) + 0.3 * np.exp(-t * 9))
     return jingle * v
 
+def d_rim(v):                         # rimshot / cross-stick
+    n = int(0.08 * SR); t = tvec(n)
+    return (np.sin(2 * np.pi * 1700 * t) * np.exp(-t * 90) + 0.6 * bp(rng.standard_normal(n), 1500, 5000) * np.exp(-t * 120)) * v
+
+def d_brush(v):                       # brush swish on the snare
+    n = int(0.3 * SR); t = tvec(n)
+    return bp(rng.standard_normal(n), 1500, 7000) * np.sin(np.pi * np.clip(t / 0.3, 0, 1)) ** 2 * 0.6 * v
+
+def d_ride(v):
+    n = int(1.0 * SR); t = tvec(n)
+    metal = sum(np.sin(2 * np.pi * fr * t) for fr in (3150, 4780, 6230, 8120)) / 4
+    return (0.5 * metal * np.exp(-t * 5) + 0.5 * hp(rng.standard_normal(n), 7000) * np.exp(-t * 9)) * 0.6 * v
+
+def d_tom(v, f0=110):                 # 80s electronic tom
+    n = int(0.4 * SR); t = tvec(n)
+    return np.sin(2 * np.pi * np.cumsum(f0 + 60 * np.exp(-t * 12)) / SR) * np.exp(-t * 7) * v
+
+def d_cowbell(v):
+    n = int(0.25 * SR); t = tvec(n)
+    x = square(587, n, 0.5) + square(845, n, 0.5)
+    return bp(x, 500, 3000) * np.exp(-t * 14) * 0.5 * v
+
+def d_zap(v):                         # cheesy laser zap
+    n = int(0.25 * SR); t = tvec(n)
+    f = 2400 * np.exp(-t * 18) + 120
+    return np.sign(np.sin(2 * np.pi * np.cumsum(f) / SR)) * np.exp(-t * 10) * 0.35 * v
+
+def d_ding(v, notes=(88, 84)):        # elevator chime: two falling notes
+    n = int(1.8 * SR); t = tvec(n); y = np.zeros(n)
+    for k, m in enumerate(notes):
+        s = int(k * 0.32 * SR); tt = t[:n - s]; f = hz(m)
+        y[s:] += (np.sin(2 * np.pi * f * tt) + 0.3 * np.sin(2 * np.pi * 2.0 * f * tt) * np.exp(-tt * 6)) * np.exp(-tt * 2.5)
+    return y * 0.6 * v
+
+
 DRUMS = {36: d_kick, 39: d_clap, 38: d_snare, 42: d_hat, 46: lambda v: d_hat(v, True),
          49: d_crash, 70: d_shaker, 76: lambda v: d_wood(v, 1700), 77: lambda v: d_wood(v, 1250),
-         75: d_type, 41: d_stamp, 54: d_tamb}
+         75: d_type, 41: d_stamp, 54: d_tamb, 37: d_rim, 40: d_brush, 51: d_ride, 56: d_cowbell,
+         81: d_ding, 82: d_zap, 45: lambda v: d_tom(v, 95), 47: lambda v: d_tom(v, 120),
+         48: lambda v: d_tom(v, 150), 50: lambda v: d_tom(v, 180)}
 INSTR = {'lead': i_supersaw, 'stab': i_stab, 'piano': i_piano, 'bass': i_bass, 'sub': i_sub,
          'pizz': i_pizz, 'ep': i_ep, 'vibes': i_vibes, 'pad': i_pad, 'accordion': i_accordion,
-         'glock': i_glock, 'tuba': i_tuba, 'bell': i_bell, 'pluck': i_pluck, 'choir': i_choir}
+         'glock': i_glock, 'tuba': i_tuba, 'bell': i_bell, 'pluck': i_pluck, 'choir': i_choir,
+         'nylon': i_nylon, 'organ': i_organ, 'marimba': i_marimba, 'flute': i_flute, 'fbass': i_fingerbass}
 GM = {'lead': 81, 'stab': 90, 'piano': 0, 'bass': 38, 'sub': 33, 'pizz': 45, 'ep': 4,
       'vibes': 11, 'pad': 49, 'accordion': 21, 'glock': 9, 'tuba': 58, 'bell': 14, 'pluck': 84,
-      'choir': 52}
+      'choir': 52, 'nylon': 24, 'organ': 17, 'marimba': 12, 'flute': 73, 'fbass': 33}
 
 
 # ---------------------------------------------------------------- effects / render
@@ -403,8 +485,8 @@ def song_win():
 
 
 # ------------------------------------------------------------ campaign levels
-# One theme per level, growing with the campaign: a village pilot, a neighbourhood,
-# the full regulatory framework, and finally the Model Town.
+# One theme per level, growing with the campaign: a village pilot, a neighbourhood and
+# finally the Model Town. (Level III's tense office ambient was retired: too sad.)
 
 def song_level1():
     """Level I, Pilot Project: a village-fete musette waltz (3/4, 160 BPM, D major).
@@ -504,48 +586,6 @@ def song_level2():
                 echo={'bell': (0.75, 0.3, 0.5), 'pluck': (0.75, 0.25, -0.6)})
 
 
-def song_level3():
-    """Level III, Partial Plan: the full regulatory framework (84 BPM, D minor).
-    Tense office ambient: a ticking clock, typewriters, rubber stamps, a pulsing pedal,
-    and the Ode in a minor key, as if Brussels had read the small print."""
-    ev = []; bars = 32
-    CH = {'Dm': [62, 65, 69], 'Bb': [58, 62, 65], 'Gm': [55, 58, 62], 'A7': [57, 61, 64, 67],
-          'F': [57, 60, 65], 'C': [55, 60, 64]}
-    RT = {'Dm': 38, 'Bb': 34, 'Gm': 31, 'A7': 33, 'F': 29, 'C': 36}
-    prog = ['Dm', 'Dm', 'Bb', 'A7'] * 2 + ['Dm', 'C', 'Bb', 'A7'] * 2 + ['Gm', 'Dm', 'Bb', 'A7'] * 2 + ['Dm', 'F', 'Gm', 'A7'] * 2
-    for bar, c in enumerate(prog):
-        b0 = bar * 4
-        for n in CH[c]: ev.append(('pad', b0, 4, n, 0.18))
-        ev.append(('sub', b0, 3.8, RT[c], 0.45))
-        for k in range(8):                                        # pulsing pedal on D: the deadline is coming
-            ev.append(('pluck', b0 + k * 0.5, 0.3, 50, 0.16 + (0.06 if k % 2 == 0 else 0)))
-        for q in range(4):                                        # the clock
-            ev.append(('drums', b0 + q, 0, 76 if q % 2 == 0 else 77, 0.32))
-        if bar % 2 == 0: ev.append(('drums', b0, 0, 41, 0.55))    # stamp
-        if bar % 4 in (1, 2):                                     # someone typing
-            r = np.random.default_rng(bar)
-            for k in range(16):
-                if r.random() < 0.55: ev.append(('drums', b0 + k * 0.25 + r.random() * 0.06, 0, 75, 0.2 + 0.2 * r.random()))
-        if bar % 4 == 3: ev.append(('glock', b0 + 3, 1, 93, 0.22))  # carriage-return ding
-    # the Ode in D minor (F instead of F#), slow and sparse, on electric piano and vibes
-    minor = lambda mel: [(65 if m == Fs else m, d) for m, d in mel]
-    for b, d, m in place(minor(ODE_A1), 8 * 4, 0, speed=1):
-        ev.append(('ep', b, d * 0.9, m, 0.3))
-    for b, d, m in place(minor(ODE_A2), 24 * 4, 12, speed=1):
-        ev.append(('vibes', b, d * 0.9, m, 0.32))
-    # bars 16-23: a dry, worried counter-line
-    worry = [(69,2),(70,1),(69,1), (67,3),(65,1), (64,2),(65,1),(67,1), (61,4),
-             (62,2),(64,1),(65,1), (67,2),(65,1),(64,1), (62,2),(61,2), (57,4)]
-    for b, d, m in place(worry, 16 * 4):
-        ev.append(('ep', b, d * 0.85, m + 12, 0.24))
-    return dict(title='Partial Plan: Regulatory Framework', bpm=84, bars=bars, events=ev, reverb=2.6, wet=0.42,
-                level=0.62,
-                mix={'pad': (0.4, 0.0, 0.8), 'sub': (0.42, 0.0, 0.05), 'pluck': (0.22, 0.2, 0.25),
-                     'ep': (0.62, -0.15, 0.6), 'vibes': (0.45, 0.2, 0.7), 'glock': (0.3, 0.4, 0.6),
-                     'drums': (0.5, -0.1, 0.15)},
-                echo={'vibes': (1.5, 0.3, 0.6), 'ep': (1.0, 0.2, -0.5)})
-
-
 def song_level4():
     """Level IV, Model Town: a Euro-trance anthem (138 BPM, F major).
     Intro, the Ode on supersaws, a breakdown with choir and bells, then the big drop."""
@@ -600,8 +640,246 @@ def song_level4():
                 echo={'lead': (0.75, 0.3, 0.5), 'pluck': (0.75, 0.3, -0.6), 'bell': (0.75, 0.3, 0.6)})
 
 
+# ------------------------------------------------------------ in-game playlist extras
+# Upbeat background tracks that rotate with the level themes, so a long phase never
+# loops one tune: lobby bossa, hold music, sunny ambient house, hands-up and italo disco.
+
+def bars_of(prog):
+    """prog: list of bars, each a chord name or a list of chord names splitting the bar."""
+    out = []
+    for bar, c in enumerate(prog):
+        cs = [c] if isinstance(c, str) else list(c)
+        step = 4 / len(cs)
+        for i, ch in enumerate(cs): out.append((bar * 4 + i * step, step, ch))
+    return out
+
+
+def song_lobby():
+    """Lobby Bossa (Floor 7, Please): elevator bossa nova, 128 BPM, F major.
+    Nylon guitar in a bossa pattern, walking root-fifth bass, rim clave, brushes,
+    a breathy flute tune and the lift's chime at the top of each half."""
+    ev = []; bars = 32
+    V = {'Fmaj7': [65, 69, 72, 76], 'Bbmaj7': [58, 62, 65, 69], 'Am7': [57, 60, 64, 67], 'D7': [60, 62, 66, 69],
+         'Gm7': [58, 62, 65, 67], 'C7': [58, 60, 64, 67], 'Dm7': [57, 60, 62, 65], 'G7': [59, 62, 65, 67],
+         'C6': [57, 60, 64, 67]}
+    R = {'Fmaj7': 41, 'Bbmaj7': 46, 'Am7': 45, 'D7': 38, 'Gm7': 43, 'C7': 36, 'Dm7': 38, 'G7': 43, 'C6': 36}
+    A = ['Fmaj7', 'Bbmaj7', ['Am7', 'D7'], ['Gm7', 'C7']] * 2
+    Bp = ['Dm7', 'G7', 'Gm7', 'C7', 'Am7', 'D7', 'Gm7', 'C7']
+    prog = A[:4] + A + Bp + A + A[:4]                      # 4 intro + 8 A + 8 B + 8 A + 4 outro
+    for b0, d, c in bars_of(prog):
+        # bass: root on the beat, a pickup, then the fifth
+        r = R[c]
+        if d >= 4:
+            for off, note, ln in ((0, r, 1.4), (1.5, r, 0.4), (2, r + 7, 1.4), (3.5, r + 7, 0.4)):
+                ev.append(('sub', b0 + off, ln, note, 0.55))
+        else:
+            ev.append(('sub', b0, 1.4, r, 0.55)); ev.append(('sub', b0 + 1.5, 0.4, r + 7, 0.45))
+    # guitar: bossa comping, the classic 2-bar pattern (in 8ths)
+    patt = [0, 3, 6, 10, 13]
+    chord_at = {}
+    for b0, d, c in bars_of(prog):
+        for k in range(int(d * 2)): chord_at[round(b0 * 2) + k] = c
+    for two in range(0, bars * 8, 16):
+        for p8 in patt:
+            e8 = two + p8
+            if e8 in chord_at:
+                for j, n in enumerate(V[chord_at[e8]]):
+                    ev.append(('nylon', e8 / 2 + j * 0.012, 0.45, n, 0.28))
+    # percussion: rim clave (2-3 bossa), brushes on 16ths, soft kick on 1 and 3
+    clave = [0, 3, 6, 10, 13]
+    for bar in range(bars):
+        b0 = bar * 4
+        for k in range(16):
+            ev.append(('drums', b0 + k * 0.25, 0, 70, 0.06 if k % 2 else 0.1))
+        ev.append(('drums', b0, 0, 36, 0.35)); ev.append(('drums', b0 + 2, 0, 36, 0.28))
+        if bar % 2 == 0:
+            for c8 in clave:
+                ev.append(('drums', b0 + c8 / 2, 0, 37, 0.35))
+        ev.append(('drums', b0 + 1, 0, 40, 0.25)); ev.append(('drums', b0 + 3, 0, 40, 0.25))
+    ev.append(('drums', 0, 0, 81, 0.8)); ev.append(('drums', 64, 0, 81, 0.6))   # ding! floor 7
+    melA = [(72,1.5),(69,.5),(76,2), (74,1),(72,1),(69,1),(65,1), (67,1.5),(69,.5),(72,1),(66,1), (70,2),(69,1),(67,1),
+            (72,1.5),(69,.5),(76,1),(77,1), (79,1.5),(77,.5),(74,2), (76,1),(72,1),(74,1),(78,1), (74,1.5),(72,.5),(70,1),(76,1)]
+    melB = [(69,1),(72,1),(77,2), (74,1.5),(71,.5),(67,2), (70,1),(74,1),(77,1),(74,1), (76,3),(72,1),
+            (72,1),(76,1),(79,2), (78,1.5),(74,.5),(72,2), (70,1),(72,1),(74,1),(70,1), (67,2),(72,2)]
+    for b, d, m in place(melA, 4 * 4):
+        ev.append(('flute', b, d * 0.92, m, 0.42))
+    for b, d, m in place(melB, 12 * 4):
+        ev.append(('flute', b, d * 0.92, m, 0.42))
+    for b, d, m in place(melA, 20 * 4):                       # reprise on vibes, flute an octave down
+        ev.append(('vibes', b, d * 0.9, m + 12, 0.32)); ev.append(('flute', b, d * 0.92, m - 12, 0.22))
+    return dict(title='Lobby Bossa (Floor 7, Please)', bpm=128, bars=bars, events=ev, reverb=1.6, wet=0.3, level=0.72,
+                mix={'nylon': (0.75, -0.25, 0.3), 'sub': (0.5, 0.0, 0.05), 'flute': (0.65, 0.15, 0.45),
+                     'vibes': (0.42, 0.3, 0.6), 'drums': (0.32, 0.1, 0.12)},
+                echo={'flute': (0.75, 0.2, 0.4)})
+
+
+def song_hold():
+    """Your Call Is Important to Us: smooth hold music, 96 BPM, G major (I-vi-ii-V).
+    Electric piano, organ, fingered bass, swung hats; a bell-and-flute tune with the
+    Ode to Joy slipped into the bridge, because it is the Union's switchboard."""
+    ev = []; bars = 32
+    V = {'Gmaj7': [62, 66, 67, 71], 'Em7': [59, 62, 64, 67], 'Am7': [60, 64, 67, 69], 'D7': [60, 62, 66, 69],
+         'Cmaj7': [59, 62, 64, 67], 'Bm7': [57, 62, 66, 69], 'D': [62, 66, 69], 'A': [61, 64, 69]}
+    R = {'Gmaj7': 43, 'Em7': 40, 'Am7': 45, 'D7': 38, 'Cmaj7': 36, 'Bm7': 47, 'D': 38, 'A': 45}
+    A = ['Gmaj7', 'Em7', 'Am7', 'D7'] * 2
+    Bp = ['Cmaj7', 'Bm7', 'Am7', 'D7', 'Cmaj7', 'Bm7', 'Am7', 'D7']
+    Op = ['D', 'D', 'D', 'A', 'D', 'D', 'A', 'D']                # the Ode bridge, in D
+    prog = A + A + Op + A
+    sw = 0.08                                                  # swing on the off-8ths
+    for bar, c in enumerate(prog):
+        b0 = bar * 4
+        for i, n in enumerate(V[c]): ev.append(('ep', b0 + i * 0.03, 1.6, n, 0.28))
+        for i, n in enumerate(V[c]): ev.append(('ep', b0 + 2.5 + sw + i * 0.03, 1.2, n, 0.2))
+        for n in V[c][:3]: ev.append(('organ', b0, 3.9, n - 12, 0.12))
+        r = R[c]
+        line = [(0, r, 0.9), (1, r + 7, 0.9), (2, r + 12, 0.9), (3, r + 10 if c.endswith('7') else r + 9, 0.6), (3.5 + sw, r + 7, 0.4)]
+        for off, note, ln in line: ev.append(('fbass', b0 + off, ln, note, 0.55))
+        for q in range(4):
+            ev.append(('drums', b0 + q, 0, 42, 0.25)); ev.append(('drums', b0 + q + 0.5 + sw, 0, 42, 0.15))
+            if q in (0, 2): ev.append(('drums', b0 + q, 0, 36, 0.5))
+            if q in (1, 3): ev.append(('drums', b0 + q, 0, 37, 0.35))
+        if bar % 8 == 7:
+            ev.append(('drums', b0 + 3.5 + sw, 0, 40, 0.3))
+    tune = [(71,1.5),(74,.5),(76,1),(74,1), (71,2),(67,2), (69,1.5),(72,.5),(76,1),(74,1), (72,1),(71,1),(69,2),
+            (71,1.5),(74,.5),(79,1),(78,1), (76,2),(74,2), (72,1),(71,1),(69,1),(66,1), (67,4)]
+    tune2 = [(74,1),(76,1),(79,2), (78,1.5),(76,.5),(74,2), (72,1),(74,1),(76,1),(72,1), (74,4),
+             (76,1),(74,1),(72,1),(71,1), (69,1.5),(71,.5),(72,2), (71,1),(69,1),(67,1),(66,1), (67,4)]
+    for b, d, m in place(tune, 0):
+        ev.append(('bell', b, d * 0.9, m + 12, 0.32)); ev.append(('flute', b, d * 0.92, m, 0.3))
+    for b, d, m in place(tune2, 8 * 4):
+        ev.append(('flute', b, d * 0.92, m, 0.38))
+    for b, d, m in place(ODE_A1 + ODE_A2, 16 * 4, 12):          # bridge: the Ode on bells, very calm
+        ev.append(('bell', b, d * 0.9, m, 0.36)); ev.append(('vibes', b, d * 0.9, m - 12, 0.22))
+    for b, d, m in place(tune, 24 * 4):
+        ev.append(('flute', b, d * 0.92, m, 0.38)); ev.append(('bell', b, d * 0.9, m + 12, 0.18))
+    return dict(title='Your Call Is Important to Us', bpm=96, bars=bars, events=ev, reverb=1.8, wet=0.32, level=0.72,
+                mix={'ep': (0.5, -0.2, 0.4), 'organ': (0.3, 0.2, 0.5), 'fbass': (0.55, 0.0, 0.05),
+                     'bell': (0.42, 0.25, 0.5), 'flute': (0.45, -0.1, 0.45), 'vibes': (0.3, 0.3, 0.6),
+                     'drums': (0.42, 0.0, 0.1)},
+                echo={'bell': (0.75, 0.25, 0.5)})
+
+
+def song_sunny():
+    """Sunny Subsidy: bright ambient house, 110 BPM, D major (lydian colour).
+    Marimba arpeggios, warm pads, a soft four-on-the-floor and shaker, vibes on top."""
+    ev = []; bars = 32
+    V = {'Dmaj9': [62, 66, 69, 73, 76], 'E/D': [62, 64, 68, 71], 'Bm9': [59, 62, 66, 69, 73],
+         'Gmaj7': [59, 62, 66, 67], 'A6': [57, 61, 64, 66], 'F#m7': [57, 61, 64, 66]}
+    R = {'Dmaj9': 38, 'E/D': 38, 'Bm9': 35, 'Gmaj7': 43, 'A6': 45, 'F#m7': 42}
+    prog = (['Dmaj9', 'E/D'] * 4 + ['Bm9', 'Gmaj7', 'Dmaj9', 'A6'] * 2
+            + ['Gmaj7', 'F#m7', 'Bm9', 'A6'] * 2 + ['Dmaj9', 'E/D'] * 4)
+    for bar, c in enumerate(prog):
+        b0 = bar * 4; drums_on = 4 <= bar < 28
+        for n in V[c][:4]: ev.append(('pad', b0, 4, n, 0.22))
+        arp = V[c] + [V[c][1] + 12, V[c][2] + 12]
+        for k in range(16):
+            ev.append(('marimba', b0 + k * 0.25, 0.25, arp[[0, 2, 4, 1, 3, 5, 2, 4][k % 8] % len(arp)] + 12, 0.3 if k % 2 else 0.42))
+        ev.append(('sub', b0, 1.8, R[c], 0.45)); ev.append(('sub', b0 + 2.5, 1.3, R[c], 0.35))
+        for q in range(4):
+            if drums_on:
+                ev.append(('drums', b0 + q, 0, 36, 0.55))
+                ev.append(('drums', b0 + q + 0.5, 0, 46, 0.22))
+                if q in (1, 3): ev.append(('drums', b0 + q, 0, 39, 0.35))
+            ev.append(('drums', b0 + q + 0.25, 0, 70, 0.14)); ev.append(('drums', b0 + q + 0.75, 0, 70, 0.14))
+    tune = [(78,2),(76,1),(73,1), (74,3),(69,1), (71,2),(73,1),(76,1), (78,4),
+            (81,2),(78,1),(76,1), (78,3),(74,1), (73,2),(71,1),(69,1), (71,4)]
+    for start in (8, 20):
+        for b, d, m in place(tune, start * 4):
+            ev.append(('vibes', b, d * 0.9, m, 0.4))
+    return dict(title='Sunny Subsidy (Ambient House)', bpm=110, bars=bars, events=ev, pump=0.3, reverb=2.4, wet=0.4,
+                level=0.72,
+                mix={'pad': (0.35, 0.0, 0.8), 'marimba': (0.45, 0.3, 0.35), 'sub': (0.5, 0.0, 0.05),
+                     'vibes': (0.5, -0.2, 0.6), 'drums': (0.45, 0.0, 0.08)},
+                echo={'marimba': (0.75, 0.3, -0.6), 'vibes': (1.5, 0.3, 0.5)})
+
+
+def song_handsup():
+    """Plenary Session (Hands Up!): cheap hands-up Eurodance, 140 BPM, C major (vi-IV-I-V).
+    Offbeat bass, supersaw hook, piano riff, choir, laser zaps. Original melody."""
+    ev = []; bars = 32
+    CH = {'Am': [57, 60, 64], 'F': [57, 60, 65], 'C': [55, 60, 64], 'G': [55, 59, 62]}
+    RT = {'Am': 33, 'F': 29, 'C': 36, 'G': 31}
+    prog = ['Am', 'F', 'C', 'G'] * 8
+    hook = [(76,.5),(76,.5),(76,.5),(74,.5),(72,1),(69,1), (72,.5),(72,.5),(72,.5),(74,.5),(76,2),
+            (79,.5),(79,.5),(79,.5),(77,.5),(76,1),(74,1), (74,.5),(76,.5),(74,.5),(72,.5),(71,2)]
+    for bar, c in enumerate(prog):
+        b0 = bar * 4; part = bar // 8                     # 0 intro, 1 hook, 2 break, 3 hook x2
+        for q in range(4):
+            if part != 2 or bar % 8 >= 6:
+                ev.append(('drums', b0 + q, 0, 36, 1.0))
+            ev.append(('drums', b0 + q + 0.5, 0, 46, 0.35 if part != 2 else 0.2))
+            if q in (1, 3) and part != 0: ev.append(('drums', b0 + q, 0, 39, 0.7))
+            if part != 2:
+                ev.append(('bass', b0 + q + 0.5, 0.4, RT[c] + 12, 0.85))
+            for n in CH[c]: ev.append(('stab', b0 + q + 0.5, 0.3, n + 12, 0.3 if part != 2 else 0.18))
+        for n in CH[c]: ev.append(('choir' if part >= 2 else 'pad', b0, 4, n + (12 if part >= 2 else 0), 0.28))
+        if part == 2 and bar % 8 < 6: ev.append(('sub', b0, 3.8, RT[c], 0.4))
+        if bar % 8 == 7:
+            ev.append(('drums', b0 + 3, 0, 82, 0.8))         # pew
+            for i in range(8): ev.append(('drums', b0 + 2 + i * 0.25, 0, 38, 0.3 + i * 0.07))
+        if bar % 8 == 0: ev.append(('drums', b0, 0, 49, 0.8))
+        if part in (0, 2):
+            tones = sorted(CH[c])
+            for k, idx in enumerate([0, 1, 2, 1, 0, 1, 2, 3]):
+                ev.append(('piano', b0 + k * 0.5, 0.45, (tones + [tones[0] + 12])[idx] + 12, 0.38))
+    for start, extra in ((8, False), (24, True)):
+        for rep in range(2):
+            for b, d, m in place(hook, (start + rep * 4) * 4):
+                ev.append(('lead', b, d * 0.9, m, 0.55))
+                if extra: ev.append(('lead', b, d * 0.9, m + 12, 0.25))
+    for b, d, m in place(hook, 16 * 4):                     # break: the hook on bells
+        ev.append(('bell', b, d * 0.9, m, 0.4))
+    return dict(title='Plenary Session (Hands Up!)', bpm=140, bars=bars, events=ev, pump=0.6, reverb=1.6, wet=0.3,
+                level=0.78,
+                mix={'lead': (0.72, 0.0, 0.42), 'stab': (0.2, 0.25, 0.3), 'pad': (0.3, 0.0, 0.8),
+                     'choir': (0.38, 0.0, 0.9), 'bass': (0.55, 0.0, 0.0), 'sub': (0.45, 0.0, 0.05),
+                     'piano': (0.45, -0.25, 0.35), 'bell': (0.42, 0.2, 0.6), 'drums': (0.6, 0.0, 0.08)},
+                echo={'lead': (0.75, 0.3, 0.5), 'bell': (0.75, 0.3, -0.5)})
+
+
+def song_italo():
+    """Italo Directive: 80s Italo disco, 118 BPM, F major (Dm-Bb-C-F).
+    Octave-bouncing bass, arpeggio, Linn claps, tom fills, cowbell, bell + saw lead."""
+    ev = []; bars = 32
+    CH = {'Dm': [62, 65, 69], 'Bb': [62, 65, 70], 'C': [60, 64, 67], 'F': [60, 65, 69]}
+    RT = {'Dm': 38, 'Bb': 34, 'C': 36, 'F': 41}
+    prog = ['Dm', 'Bb', 'C', 'F'] * 8
+    mel = [(74,1),(77,1),(76,.5),(74,.5),(72,1), (70,1.5),(72,.5),(74,2), (72,1),(76,1),(79,.5),(77,.5),(76,1), (77,4),
+           (74,1),(77,1),(81,.5),(79,.5),(77,1), (79,1.5),(77,.5),(74,2), (76,.5),(77,.5),(79,1),(76,1),(72,1), (77,4)]
+    for bar, c in enumerate(prog):
+        b0 = bar * 4; part = bar // 8
+        for k in range(16):                                # octave bass on 16ths
+            ev.append(('bass', b0 + k * 0.25, 0.2, RT[c] + (12 if k % 2 else 0), 0.65 if k % 2 == 0 else 0.5))
+        arp = CH[c] + [CH[c][0] + 12]
+        if part >= 1:
+            for k in range(16):
+                ev.append(('pluck', b0 + k * 0.25, 0.2, arp[k % 4] + 12, 0.25))
+        for n in CH[c]: ev.append(('pad', b0, 4, n, 0.2))
+        for q in range(4):
+            ev.append(('drums', b0 + q, 0, 36, 0.9))
+            ev.append(('drums', b0 + q + 0.5, 0, 46 if part else 42, 0.3))
+            if q in (1, 3): ev.append(('drums', b0 + q, 0, 39, 0.75))
+        if part == 2 and bar % 2: ev.append(('drums', b0 + 3.5, 0, 56, 0.5))
+        if bar % 8 == 7:
+            for i, note in enumerate((50, 48, 47, 45)):        # tom fill, high to low
+                ev.append(('drums', b0 + 2 + i * 0.5, 0, note, 0.6))
+        if bar % 8 == 0: ev.append(('drums', b0, 0, 49, 0.7))
+    for start in (8, 24):
+        for b, d, m in place(mel, start * 4):
+            ev.append(('bell', b, d * 0.9, m, 0.45)); ev.append(('lead', b, d * 0.9, m - 12, 0.3))
+    for b, d, m in place(mel, 16 * 4, -12):                # section 3: the tune low on piano, cowbell plays
+        ev.append(('piano', b, d * 0.9, m + 12, 0.35))
+    return dict(title='Italo Directive', bpm=118, bars=bars, events=ev, pump=0.3, reverb=1.8, wet=0.3, level=0.76,
+                mix={'bass': (0.55, 0.0, 0.0), 'pluck': (0.3, 0.35, 0.3), 'pad': (0.3, 0.0, 0.8),
+                     'bell': (0.48, 0.0, 0.45), 'lead': (0.4, 0.0, 0.45), 'piano': (0.42, -0.2, 0.4),
+                     'drums': (0.58, 0.0, 0.1)},
+                echo={'bell': (0.75, 0.3, 0.5), 'pluck': (0.75, 0.25, -0.6)})
+
+
 SONGS = {'eurocrat_menu': song_menu, 'eurocrat_level1': song_level1, 'eurocrat_level2': song_level2,
-         'eurocrat_level3': song_level3, 'eurocrat_level4': song_level4, 'eurocrat_win': song_win}
+         'eurocrat_level4': song_level4, 'eurocrat_lobby': song_lobby, 'eurocrat_hold': song_hold,
+         'eurocrat_sunny': song_sunny, 'eurocrat_handsup': song_handsup, 'eurocrat_italo': song_italo,
+         'eurocrat_win': song_win}
 
 if __name__ == '__main__':
     out = sys.argv[1]

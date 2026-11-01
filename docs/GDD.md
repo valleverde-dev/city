@@ -251,14 +251,16 @@ From *Syndicate* neon to **Constructor-style** colourful isometric with a bureau
 
 The soundtrack plays the bureaucracy for laughs, like everything else, and grows with the region. All tracks are original arrangements; the Ode to Joy is Beethoven's public-domain melody, never an official anthem arrangement.
 
-| Screen | Track | Style |
+| Screen | Music | Style |
 |---|---|---|
 | Title / menus | *Ode to Joy (Brussels Eurodance Mix)* | Cheap 90s Eurodance |
-| Settlement I · Pilot Project | *Village Fete Waltz* | Musette waltz: accordion, glockenspiel, oom-pah tuba; the Ode in 3/4 |
-| Settlement II · Expansion Phase | *Let's Build Together* | 80s Eurovision synth-pop, original melody |
-| Settlement III · Partial Plan | *Regulatory Framework* | Tense office ambient: clock, typewriters, stamps, the Ode in minor |
-| Settlement IV and later · Model Town | *Harmonised Trance Anthem* | Euro-trance: supersaws, choir breakdown, the drop |
+| Settlement I · Pilot Project | *Village Fete Waltz* → *Sunny Subsidy* → *Lobby Bossa* | Musette waltz, ambient house, elevator bossa |
+| Settlement II · Expansion Phase | *Let's Build Together* → *Italo Directive* → *Your Call Is Important to Us* | 80s Eurovision pop, Italo disco, hold music |
+| Settlement III · Partial Plan | *Lobby Bossa* → *Italo Directive* → *Your Call Is Important to Us* → *Sunny Subsidy* | Lobby, disco, hold music, ambient |
+| Settlement IV and later · Model Town | *Harmonised Trance Anthem* → *Plenary Session (Hands Up!)* → *Sunny Subsidy* → *Italo Directive* | Euro-trance, hands-up Eurodance, ambient, disco |
 | Settlement consolidated | *Douze Points for Harmonisation* | Eurovision schlager with the key change |
+
+In game, each settlement plays a **playlist**: each track plays for about two minutes (whole loops), then crossfades into the next, so a long phase never loops one tune. The mood stays light on purpose: lobby and hold music, ambient and cheap Eurodance, never tense or sad (phase III's minor-key office ambient was retired for killing the mood).
 
 Later: short stingers for stamps, approvals, failed directives and audits; a tension layer for the last months of a settlement.
 
