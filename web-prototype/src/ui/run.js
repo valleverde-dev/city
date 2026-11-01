@@ -3,6 +3,8 @@ import { COMBOS, discovered } from '../core/combos.js';
 import { B, CFG, NEW_TYPES, PERKS, on } from '../core/config.js';
 import { ACH, PERK_RANK, RANK_BONUS, RANK_LEVEL, UNLOCK_LEVEL, career, levelOf, levelXp, rankOf, unlocked } from '../core/career.js';
 import { residents, taxIncome } from '../core/economy.js';
+import { TOWN_MAX, renameDistrict } from '../core/actions.js';
+import { save } from '../core/persist.js';
 import { money } from '../core/format.js';
 import { REGION_COMBOS, STYPE_ICON } from '../core/region.js';
 import { activeSites, caps, contractors, count } from '../core/rules.js';
@@ -53,22 +55,23 @@ function pieceArt(p, dark){
 function combosTab(body, c, known){
   const all = COMBOS.map(cb=>({...cb, region:false})).concat(REGION_COMBOS.map(cb=>({...cb, region:true})));
   const show = all.filter(cb=>{ const k = known.includes(cb.id);
-    return filter==='all' || (filter==='good' && k && cb.good) || (filter==='bad' && k && !cb.good) || (filter==='region' && cb.region) || (filter==='unknown' && !k); });
+    return filter==='all' || (filter==='good' && k && cb.good) || (filter==='bad' && k && !cb.good) || (filter==='region' && k && cb.region) || (filter==='unknown' && !k); });
   const lockOf = cb => !cb.region && [cb.a, cb.b].find(p=>NEW_TYPES.includes(p) && !unlocked(p));
   body.innerHTML = `<div class="filters">${['all','good','bad','region','unknown'].map(f=>`<button class="flt${f===filter?' on':''}" data-f="${f}">${t('file.f.'+f)}</button>`).join('')}
       <span class="count"><b>${known.length}</b> / ${all.length}<span class="bar"><i style="width:${known.length/all.length*100}%"></i></span></span></div>
-    <div class="cgrid">${show.map(cb=>{ const k = known.includes(cb.id), lock = lockOf(cb), name = (cb.region ? 'rcombo.' : 'combo.')+cb.id, pa = cb.region ? 'st.' : 'piece.';
-      const cls = lock ? 'locked' : !k ? 'unknown' : cb.good ? 'good' : 'bad';
-      return `<div class="ccard ${cls}${cb.region ? ' region' : ''}" data-id="${cb.id}" tabindex="0"><div class="band">${pieceArt(cb.a, !k)}${pieceArt(cb.b, !k)}<span class="op">${!k ? '?' : cb.good ? '+' : '−'}</span></div>
-        <b>${lock ? t('file.locked') : k ? t(name) : '???'}</b><small>${t(pa+cb.a)} + ${t(pa+cb.b)}</small>
-        <span class="fx">${lock ? t('lock.level', {n:UNLOCK_LEVEL[lock]}) : k ? t((cb.region ? 'rcombod.' : 'combod.')+cb.id).split('. ')[0] : t('file.tryIt')}</span></div>`; }).join('')}</div>
+    <div class="cgrid">${show.map(cb=>{ const k = known.includes(cb.id), name = (cb.region ? 'rcombo.' : 'combo.')+cb.id, pa = cb.region ? 'st.' : 'piece.';
+      // v0.10.1: a combo you have not discovered gives nothing away — no name, no pieces, no silhouettes, no hint
+      if(!k) return `<div class="ccard unknown" data-id="${cb.id}" tabindex="0"><div class="band"><span class="qmark">?</span></div><b>???</b><small>???</small><span class="fx">???</span></div>`;
+      return `<div class="ccard ${cb.good ? 'good' : 'bad'}${cb.region ? ' region' : ''}" data-id="${cb.id}" tabindex="0"><div class="band">${pieceArt(cb.a, false)}${pieceArt(cb.b, false)}<span class="op">${cb.good ? '+' : '−'}</span></div>
+        <b>${t(name)}</b><small>${t(pa+cb.a)} + ${t(pa+cb.b)}</small>
+        <span class="fx">${t((cb.region ? 'rcombod.' : 'combod.')+cb.id).split('. ')[0]}</span></div>`; }).join('')}</div>
     <p class="foot">${ic('military_tech')}${t('file.comboXp', {n:25})}</p>`;
   body.querySelectorAll('.flt').forEach(b=>b.onclick = ()=>{ playSound('click'); filter = b.dataset.f; renderRun(); });
   // the whole text of a card, on tap (the card itself shows its first line)
-  body.querySelectorAll('.ccard').forEach(el=>el.onclick = e=>{ e.stopPropagation(); const cb = all.find(x=>x.id===el.dataset.id), k = known.includes(cb.id), lock = lockOf(cb), pa = cb.region ? 'st.' : 'piece.';
+  body.querySelectorAll('.ccard').forEach(el=>el.onclick = e=>{ e.stopPropagation(); const cb = all.find(x=>x.id===el.dataset.id), k = known.includes(cb.id), pa = cb.region ? 'st.' : 'piece.';
     playSound('click');
-    placePop(`<h4>${ic(!k ? 'info' : cb.good ? 'workspace_premium' : 'warning')}${lock ? t('file.locked') : k ? t((cb.region ? 'rcombo.' : 'combo.')+cb.id) : '???'}</h4>
-      <p><b>${t(pa+cb.a)} + ${t(pa+cb.b)}</b></p><p>${lock ? t('lock.level', {n:UNLOCK_LEVEL[lock]}) : k ? t((cb.region ? 'rcombod.' : 'combod.')+cb.id) : t('file.tryIt')}</p>`, el); });
+    placePop(k ? `<h4>${ic(cb.good ? 'workspace_premium' : 'warning')}${t((cb.region ? 'rcombo.' : 'combo.')+cb.id)}</h4><p><b>${t(pa+cb.a)} + ${t(pa+cb.b)}</b></p><p>${t((cb.region ? 'rcombod.' : 'combod.')+cb.id)}</p>`
+      : `<h4>${ic('info')}???</h4><p>???</p>`, el); });
 }
 // ---------- Perks: this run's hand, and the pool (grows with your rank) ----------
 function perksTab(body, c){
@@ -104,6 +107,16 @@ function regionTab(body){
         <dl class="kv">${row('ui.residents', residents()+' / '+CFG.target)}${row('ui.homes', cp.homes)}${on('jobs') ? row('ui.jobs', t('ui.jobsN',{n:cp.jobs})) : ''}
           ${on('services') ? row('ui.schoolPl', cp.school) + row('ui.health', cp.health) : ''}${row('ui.construction', t('ui.sites',{a:activeSites(), c:contractors()}))}
           ${on('market') ? row('ui.market', Math.round(S.market*100)+'%') : ''}${row('ui.taxes', money(taxIncome())+'/'+t('ui.mo'))}</dl>
-        <p class="bottleneck">${t('ui.limitedBy')} <b>${t('bn.'+cp.bottleneck)}</b></p></div></div>`;
+        <p class="bottleneck">${t('ui.limitedBy')} <b>${t('bn.'+cp.bottleneck)}</b></p></div></div>
+    <h3>${t('dist.title')}<small>${t('dist.sub')}</small><em>${S.region.blocks.length}</em></h3>
+    <div class="cgrid dists">${S.region.blocks.map((b,k)=>`<div class="dcard"><div class="dh">${ic(STYPE_ICON[b.ty] || 'cottage')}<span class="ph">${t('ui.settlement')} ${roman((b.phase||0)+1)}</span></div>
+      <b class="dn">${b.town}</b><small>${t('st.'+b.ty)}</small><button type="button" class="dren" data-k="${k}" aria-label="${t('dist.rename')}">${ic('edit')}${t('dist.rename')}</button></div>`).join('')}</div>`;
   body.querySelector('.rmap-slot').appendChild(regionCanvas({maxW: 420, maxH: 300}));
+  // v0.10.1: rename a district in place
+  body.querySelectorAll('.dren').forEach(btn=>btn.onclick = ()=>{ const k = +btn.dataset.k, card = btn.closest('.dcard'), nm = card.querySelector('.dn');
+    playSound('click'); const inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = TOWN_MAX; inp.value = S.region.blocks[k].town; inp.className = 'dinp';
+    nm.replaceWith(inp); btn.hidden = true; inp.focus(); inp.select();
+    let over = false; const done = keep => { if(over) return; over = true; if(keep && renameDistrict(k, inp.value).ok){ save(); playSound('stamp'); } refresh(); renderRun(); };
+    inp.addEventListener('keydown', e=>{ e.stopPropagation(); if(e.key==='Enter'){ e.preventDefault(); done(true); } else if(e.key==='Escape'){ e.preventDefault(); done(false); } });
+    inp.addEventListener('blur', ()=>done(true)); });
 }

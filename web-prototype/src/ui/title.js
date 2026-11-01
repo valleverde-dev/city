@@ -2,6 +2,7 @@ import { cascade } from './cascade.js';
 import { audioRunning, gameTrack, music, setMusic, toggleMusic, updateMusicBtn } from '../audio/music.js';
 document.addEventListener('audiounlocked', ()=>{ if(typeof pauseView !== 'undefined' && pauseView === 'settings' && pauseOpen()) pauseMenu('settings'); });
 import { playSound } from '../audio/sfx.js';
+import { speak, toggleVoices, voices } from '../audio/voice.js';
 import { CFG, VERSION } from '../core/config.js';
 import { loadSave, records, save } from '../core/persist.js';
 import { abandonRun } from '../core/month.js';
@@ -297,6 +298,7 @@ function renderMenu(fresh){
     first = add(item(t('title.lang', {l: t('lang.'+LANG)}), ()=>setLang(other), {silent:true, cls:'lang'}));
     add(item(t('title.guide', {s: t(career().guide ? 'on' : 'off')}), ()=>{ const c = career(); c.guide = !c.guide; saveCareer(c); renderMenu(); }, {cls:'guide'}));
     add(item(t('title.music', {s: t(music.on ? 'on' : 'off')}), ()=>{ toggleMusic(); renderMenu(); }, {cls:'music'}));
+    add(item(t('title.voices', {s: t(voices.on ? 'on' : 'off')}), ()=>{ toggleVoices(); if(voices.on) speak('mayor', {mood:'happy', syllables:6}); renderMenu(); }, {cls:'voices'}));
     add(item(t('title.tutorial'), ()=>startRun(), {cls:'tut'}));
     add(item(t('title.back'), ()=>go('main'), {cls:'back'}));
   } else if(view === 'credits'){
@@ -379,6 +381,7 @@ export function pauseMenu(view = 'main'){
     // v0.9.3: if the browser still blocks the sound, say so on the music option (a tap there unlocks it)
     row([popt(t('title.music', {s:t(music.on ? 'on' : 'off')}), music.on ? 'music_note' : 'music_off', ()=>{ toggleMusic(); pauseMenu('settings'); }, {k:'music', sub: music.on && !audioRunning() ? t('ui.tapSound') : ''}),
          popt(t('title.lang', {l:t('lang.'+LANG)}), 'translate', ()=>{ setLang(other); }, {k:'lang'}),
+         popt(t('title.voices', {s:t(voices.on ? 'on' : 'off')}), 'campaign', ()=>{ toggleVoices(); if(voices.on) speak('mayor', {mood:'happy', syllables:6}); pauseMenu('settings'); }, {k:'voices'}),
          popt(t('title.guide', {s:t(career().guide ? 'on' : 'off')}), 'forum', ()=>{ const c = career(); c.guide = !c.guide; saveCareer(c); pauseMenu('settings'); }, {k:'guide'}),
          popt(t('title.back'), 'close', ()=>pauseMenu('main'), {k:'back'})]);
     const d = document.createElement('dl'); d.className = 'controls';
@@ -390,7 +393,7 @@ export function pauseMenu(view = 'main'){
     row([popt(t('pause.'+view+'Yes'), view === 'restart' ? 'replay' : 'flag', view === 'restart' ? doRestart : doAbandon, {cls:'danger', k:'yes'}),
          popt(t('pause.no'), 'play_arrow', ()=>pauseMenu('main'), {cls:'primary', k:'no'})]);
   }
-  notice.innerHTML = ''; notice.appendChild(box); cascade(box);
+  notice.innerHTML = ''; notice.appendChild(box);   // v0.10.1: a menu is ready at once (no cascade)
   modal.classList.remove('hidden'); notice.style.animation = 'none'; void notice.offsetWidth; notice.style.animation = '';
   const first = box.querySelector('.popt.primary') || box.querySelector('.popt'); if(first) first.focus({preventScroll:true});
   updateMusicBtn(); setRerender(()=>pauseMenu(pauseView));

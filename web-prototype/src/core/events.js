@@ -92,7 +92,7 @@ export const EVENTS = {
     ]},
   discount: {char:'farmer', sfx:'farmer', icon:'sell', w:2,
     ok:()=>S.grid.some(p=>p.st==='land'&&p.k==='farm'),
-    setup:()=>{ const i = pick(S.grid.map((p,i)=>i).filter(i=>S.grid[i].st==='land'&&S.grid[i].k==='farm')); const p=S.grid[i]; p.price=r1(p.price*0.6); p.hold=true; return {i, x:money(landPrice(p))}; },
+    setup:()=>{ const i = pick(S.grid.map((p,i)=>i).filter(i=>S.grid[i].st==='land'&&S.grid[i].k==='farm')); const p=S.grid[i]; p.price=r1(p.price*0.6); p.hold=true; p.holdKnown=true; return {i, x:money(landPrice(p))}; },
     choices:[
       {k:'buy',   fx:v=>[['money',-landPrice(S.grid[v.i])],['land']], can:v=>S.funds>=landPrice(S.grid[v.i]),
         run:v=>{ const p=S.grid[v.i], x=landPrice(p); spend(x); p.st='owned'; log('log.acquired',{at:pname(v.i), x:money(x)}); }},

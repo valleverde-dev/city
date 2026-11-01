@@ -1,3 +1,4 @@
+import { activeCombos } from './combos.js';
 import { CFG, LEVELS, N_COUNTRIES, PLOT, TOWN_A, TOWN_B, stageCfg } from './config.js';
 import { offerPerks } from './directives.js';
 import { residents } from './economy.js';
@@ -43,7 +44,7 @@ export function newGame(seed, stage, opts = {}){
   }
   if(stage > 0) madeUpHistory(stageCfg(stage-1).target, stage);
   rebuildGrid(stage);
-  S.town = S.region.blocks[0].town; S.country = S.region.blocks[0].country;
+  S.town = townName(); S.country = S.region.blocks[0].country;   // v0.10.1: the city has its own name; the plots are its districts
   if(stage > 0){ S.done = stage; S.newcomers = Math.max(0, stageCfg(stage-1).target - S.base); }
   beginPhase(stage, true);
   return S;
@@ -179,6 +180,8 @@ export function consolidate(){
   S.cards.push({type:'consolidated', res, kept, back, town:S.town, stage:S.stage});
   log('log.consolidated', {town:S.town, n:res}, 'good');
   const left = CFG.months - (S.month-1);
+  // v0.10.1: how the phase went, for the next phase's introduction (what just happened)
+  S.lastPhase = {left, months:CFG.months, debt:S.debt > 0, combos:activeCombos().filter(c=>c.good).length, neigh:S.neigh, local:S.local};
   checkAch('consolidate', {left}); tutorialDone();
   offerRewards(left);   // v0.10: three offers from the characters (one of them a perk)
 }

@@ -69,6 +69,10 @@ export const setW = (y,x,code) => { S.world.cells[key(y,x)] = code; };
 export const blockAt = (y,x) => S.region.blocks.findIndex(B=>x>=B.x && x<B.x+B.n && y>=B.y && y<B.y+B.n);
 // A stable number per map cell (for looks: crops, building styles, names), the same before and after consolidation
 export const wid = (y,x) => ((y + 4096) * 8192 + (x + 4096)) % 2147483647;
+// v0.10.1: the district (index in S.region.blocks) a parcel of the grid belongs to, or -1 (void)
+export function districtOf(i){ const A = S.region && S.region.active; if(!A) return -1;
+  const y = A.y + Math.floor(i/A.n), x = A.x + i%A.n;
+  return S.region.blocks.findIndex(b=>y>=b.y && y<b.y+b.n && x>=b.x && x<b.x+b.n); }
 export function worldIndex(i){ const A = S.region && S.region.active; if(!A) return i; return wid(A.y + Math.floor(i/A.n), A.x + i%A.n); }
 // Where a new n×n plot goes if put on side `dir` of block `a`: in a pinwheel (north plot flush with a's west
 // edge, east with its north edge, south with its east edge, west with its south edge), so the four sides never
@@ -86,16 +90,20 @@ export function slide(a, dir, n, blocks = S.region.blocks){
   }
   return null;
 }
-// The plots on offer for the next settlement: the four sides of the last one (then of earlier ones, if two
-// of those would overlap). Up to four, never overlapping the region or each other, always touching it.
-// Each comes with its terrain (cells), generated now so the player sees the land before choosing.
+// The plots on offer for the next settlement: every free spot of the right size that touches the region, along
+// every side of every plot (v0.10.1: no cap of four — with plots of one size on one grid they never overlap).
+// Numbered clockwise from north around the region's centre. Each comes with its terrain (cells), generated now
+// so the player sees the land before choosing.
 export function candidates(n, stage, blocks = S.region.blocks){
   const out = [], seen = new Set();
-  for(let k=blocks.length-1; k>=0 && out.length<4; k--)
-    for(const dir of DIR_KEYS){ if(out.length>=4) break;
+  for(let k=blocks.length-1; k>=0; k--)
+    for(const dir of DIR_KEYS){
       const P = slide(blocks[k], dir, n, blocks); if(!P) continue;
       const kk = P.x+','+P.y; if(seen.has(kk) || out.some(Q=>overlap(Q,P))) continue; seen.add(kk);
       out.push({...P, dir, from:k}); }
+  if(blocks.length){ const x0 = Math.min(...blocks.map(b=>b.x)), x1 = Math.max(...blocks.map(b=>b.x+b.n)), y0 = Math.min(...blocks.map(b=>b.y)), y1 = Math.max(...blocks.map(b=>b.y+b.n));
+    const cx = (x0+x1)/2, cy = (y0+y1)/2, ang = P => (Math.atan2(P.x + P.n/2 - cx, -(P.y + P.n/2 - cy)) + 2*Math.PI) % (2*Math.PI);
+    out.sort((a,b)=>ang(a)-ang(b)); }
   out.forEach(P=>{ P.cells = genPlot(P, stage); });
   return out;
 }

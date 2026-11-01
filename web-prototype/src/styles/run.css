@@ -206,3 +206,12 @@
 .cv-ach .ucard small{display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; max-height:3.9em;}
 .cv-ach .ucard:not(.on) b{font-size:26px;}
 @media (max-width:700px){ .cv-ach .ach-head h2{font-size:30px;} .cv-ach .band-row .fact{white-space:normal;} }
+.ccard .band .qmark{align-self:center; font:400 54px/1 var(--f-display); color:#2a4f9a;}
+/* v0.10.1: the districts (Run file → Region) */
+.cgrid.dists .dcard{min-width:0; display:flex; flex-direction:column; gap:6px; padding:10px; background:var(--paper); color:var(--navy); border:3px solid var(--yellow); box-shadow:0 5px 0 #b38c00;}
+.dcard .dh{display:flex; align-items:center; justify-content:space-between;} .dcard .dh .ico{width:22px; height:22px; color:var(--blue);}
+.dcard .ph{font:400 9px/1 var(--f-tag); text-transform:uppercase; letter-spacing:.05em; background:var(--yellow); padding:3px 5px;}
+.dcard .dn{font:400 22px/1 var(--f-display); overflow-wrap:anywhere;} .dcard small{font-size:13px; color:var(--sub);}
+.dcard .dren{align-self:flex-start; margin-top:auto; display:flex; align-items:center; gap:5px; padding:4px 8px; background:var(--white); color:var(--navy); border:2px solid var(--navy); cursor:pointer; font:400 16px/1 var(--f-display);}
+.dcard .dren .ico{width:12px; height:12px;}
+.dcard .dinp{width:100%; font:400 20px/1 var(--f-display); color:var(--navy); border:2px solid var(--navy); padding:4px 6px;}

@@ -10,7 +10,18 @@ Living project document · update it as the prototype evolves. The game design l
 
 - **Phase III has a new theme:** *Lobby Bossa (Floor 7, Please)*, an elevator bossa nova. The old one (*Regulatory Framework*, a tense office ambient in D minor) was too sad and killed the mood.
 - **From phase V on, a random new track per phase:** *Your Call Is Important to Us* (hold music), *Sunny Subsidy* (ambient house), *Plenary Session (Hands Up!)* (cheap Eurodance) or *Italo Directive* (80s Italo disco). The draw is fixed per run and phase (pausing or reloading keeps it) and never repeats the phase before.
-- Phases I, II and IV keep their themes. The rules do not change.
+- Phases I, II and IV keep their themes.
+
+And the playtest feedback on v0.10:
+- **Every free spot is offered.** When a milestone is reached, every 8×8 spot touching the region is on offer (it was capped at four), numbered clockwise from north.
+- **Screens build up slower:** each element takes 1 s, 150 ms after the previous one (long grids speed up after the eighth). A tap or a key still shows everything. **Menus never cascade** (pause, settings, confirmations).
+- **Undiscovered combos stay secret:** in the run file they are ??? (no name, no pieces, no silhouettes); land that is not yours lists only the combos you have discovered; unknown region combos are not mentioned on the plot cards or the phase screen. The "?" badge on a building card and "combo?" beside the ghost stay (they hint that building *there* would make something).
+- **Districts.** Every plot is a district of the city, with its own name: on the map when zoomed out, next to the parcel reference in the bar, and listed in *Run file → Region*, where each can be renamed. The city's name (top left) is its own.
+- **Stubborn owners show up in person** when you go for their land: a scene with their face, name, who they are, their complaint and their price, in their voice. Nothing gives them away before (no "+%" on the map); after, the parcel carries an owner mark.
+- **Events in two steps:** first the scene (the character and the whole story), then *Decide* — the choices as large decision cards with their effects — and a short outcome screen with its stamp. The story can be read again before deciding.
+- **Synthesized voices.** Every character speaks a babble with their own timbre (pitch, speed, vowels, roughness), plus a gesture for the mood (a cough, "hmpf", a laugh, a shout, a sigh). *Settings → Voices* switches them off. Recorded voices can replace a character later without touching anything else.
+- **Phase introductions rewritten** as a story that goes on: what just happened (early, just in time, with many combos, in debt, with angry neighbours — and who says it: the mayor, Brussels, the banker or Remedios), then why the new rules arrive, told in the story (phases II–IV), or one of ten lines that never repeat in a run (phase V on). The new district says hello on the "Where you are" slide.
+- Balance (bot, 60 runs): with more plots to choose from, about 4.0 milestones per run with a new career (was 3.7) and 5.4 with a career that keeps playing (was 4.9). Tests: 22 rules tests, 163 browser checks.
 
 ## Previous — v0.10.0 (Oct 31, 2026) · the region you keep building
 
@@ -184,6 +195,20 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 2. Member states with their own rule quirks: a bureaucracy per country.
 3. *Constructor*-style characters: named residents, complaints, a mayor with a face.
 4. Port to Godot when a port trigger is met: `core/` first (with its tests), then rendering and UI.
+
+### v0.11 or later (agreed)
+
+- **Districts with their own rules:** local regulations per district (height limits, a protected old town, slower permits, a district mayor with a meter of their own).
+- **Energy performance certificates (PEB/EPC, G → A):** buildings are born with a label and are **renovated** one letter at a time, which costs money, months of works (the building yields less meanwhile) and resources (an agenda slot, a renovation permit, a contractor). Better letters cut monthly costs, raise taxes and rents, attract people and please Brussels; dated directives ("all housing at E by month 24"), combos that need good letters, a sticker with the letter on each building.
+- **Negotiating with stubborn owners:** pay, lean on them through the mayor, expropriate (slow, the neighbours hate it) or give up.
+- **Gossip at the village bar:** an agenda action (a slot and a round of drinks); the regulars (characters with their voices) reveal who owns what and what they are like, with the owner mark on their land; some gossip is false; the angrier the neighbours, the less they tell.
+- **Energy requirements:** buildings consume by type and letter; the city produces or imports (solar, wind, a grid link with limited capacity); shortages and blackouts, surplus sold; climate directives with deadlines.
+- **Materials:** concrete, steel, timber, prefab, recycled — bought on a market with prices and shortages, or made locally; works stop without them; the choice affects cost, the energy letter and Brussels' mood. Introduced by phases, energy first.
+- **Recorded voices**, if the synthesized ones fall short.
+
+### Not scheduled
+
+- **An intro cinematic after New Game**, in pixel art inside the game (scenes, camera moves, the characters, typewriter text, music; skippable, both languages), from a script the author will write.
 
 ### Ideas for later (no decision yet)
 

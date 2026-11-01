@@ -84,8 +84,9 @@ with sync_playwright() as p:
     # --- Settlement I through the real UI: intro, settlement card, guide, buy, build, end months, consolidation
     page.click("#cover .cv-item.new")
     ds = page.evaluate("[...document.querySelectorAll('#notice .cs')].map(e=>parseInt(getComputedStyle(e).getPropertyValue('--cs')))")
-    check(len(ds) >= 3 and ds == sorted(ds) and ds[1] - ds[0] in range(60, 81) and ds[min(4, len(ds)-1)] <= 500,
-          f"v0.10: a screen builds up — each element ~70 ms after the previous one ({ds[:6]})")
+    dur = page.evaluate("(()=>{ const e=document.querySelector('#notice .cs'); return e ? parseFloat(getComputedStyle(e).animationDuration) : 0; })()")
+    check(len(ds) >= 3 and ds == sorted(ds) and ds[1] - ds[0] in range(140, 161) and dur >= 1,
+          f"v0.10.1: a screen builds up — each element takes {dur}s, ~150 ms after the previous one ({ds[:6]})")
     page.locator("#notice .letterhead").dispatch_event("pointerdown")
     check(page.locator("#notice .cs").count() == 0, "a tap shows everything at once")
     check(page.is_visible("text=Letter of appointment") and "Euroregion" in page.locator("#notice").inner_text(), "a new Euroregion starts with the appointment letter")
@@ -354,13 +355,19 @@ with sync_playwright() as p:
     ev(f"{G}.newGame(5, 3)")
     site = S("(()=>{ const i=S.grid.findIndex(p=>p.k==='farm'); Object.assign(S.grid[i],{st:'building', ty:'housing', t:3, mcost:1}); return i; })()")
     S(f"(S.cards=[{{type:'event', id:'archaeology', v:{{i:{site}}}}}], 0)"); S("g.showNext()")
-    check(page.is_visible("#dock >> text=Archaeological find") and page.locator("#strip .choice").count() == 3 and page.locator("#modal").is_hidden(),
-          "an event takes the bottom bar: its character, the headline and three choices (the map stays in view)")
-    page.click("#strip .choice[data-k=call]")
-    check(S(f"S.grid[{site}].halt") == 3 and S("g.dock") != "event", "choosing 'by the book' halts the site 3 months, and the bar is free again")
+    check(page.is_visible("#notice.ev-story") and page.is_visible("#notice >> text=Archaeological find") and page.locator("#notice .dchoice").count() == 0
+          and page.locator("#notice .col-a .quote").count() == 1,
+          "v0.10.1: an event opens as a scene — the character and the whole story first, no choices yet")
+    page.click("#notice >> text=Decide")
+    check(page.is_visible("#notice.ev-decide") and page.locator("#notice .dchoice").count() == 3, "then Decide: three decision cards, each with its effects")
+    page.click("#notice >> text=Read the story again")
+    check(page.is_visible("#notice.ev-story"), "you can go back to the story")
+    page.click("#notice >> text=Decide"); page.click("#notice .dchoice[data-k=call]")
+    check(S(f"S.grid[{site}].halt") == 3 and S("g.dock") != "event", "choosing 'by the book' halts the site 3 months")
     S("(S.cards=[{type:'result', id:'archaeology', res:'caught', v:{i:%d}}], 0)" % 0); S("g.showNext()")
-    check(S("g.dock") == "event" and page.locator("#strip .tile.result").count() == 1, "an outcome shows in the bar too")
-    page.click("#strip .tile[data-k=ok]")
+    check(page.is_visible("#notice .stamp") and "caught" not in page.locator("#notice").inner_text().lower() + "x" and page.locator("#notice .col-a .quote").count() == 1,
+          "the outcome closes it: a short screen with its stamp")
+    page.click("#notice >> text=Noted")
     page.click("#inboxBtn")
     check(page.is_visible("#inbox") and page.locator("#inbox .problems li.bad").count() >= 1, "the inbox lists what needs attention, with the halted site")
     page.locator("#inbox .problems li.bad.go").first.click()
@@ -386,7 +393,11 @@ with sync_playwright() as p:
     vil = S("S.grid.findIndex(p=>p.k==='village')")
     if vil >= 0:
         S(f"(g.centreOn({vil}), 0)"); tap(vil)
-        check(page.locator("#strip .tile.land").count() == 1 and page.locator("#strip .tile.combo-of").count() >= 2, "the old village says what it is, what it does and the combos it makes")
+        check(page.locator("#strip .tile.land").count() == 1 and page.locator("#strip .tile.combo-of").count() == 0, "the old village says what it is and does, and gives nothing away about undiscovered combos")
+        page.keyboard.press("Escape")
+        ev("localStorage.setItem('eurocrat_combos', JSON.stringify(JSON.parse(localStorage.getItem('eurocrat_combos')||'[]').concat([window.__eurocrat.COMBOS.find(c=>c.a==='village'||c.b==='village').id])))")
+        tap(vil)
+        check(page.locator("#strip .tile.combo-of").count() == 1, "once a combo with it is discovered, it shows there")
         page.keyboard.press("Escape")
     # a consolidated settlement: tap it on the map
     b0 = S("S.region.blocks[0]")
@@ -425,13 +436,41 @@ with sync_playwright() as p:
     check(S("S.over && S.over.why") == "abandoned" and S("!!S.over.career"), "abandoning ends the run as a loss, and the career is settled")
     ev("document.getElementById('drama') && (document.getElementById('drama').hidden = true)")
 
+    # --- v0.10.1
+    ev("localStorage.setItem('eurocrat_combos','[]')")
+    ev(f"{G}.newGame(42, 3)"); clear_cards(); S("(g.refresh(), 0)")
+    page.keyboard.press("Escape"); page.wait_for_timeout(150)
+    check(page.locator("#notice .cs").count() == 0 and page.is_visible(".popt[data-k=continue]"), "menus never cascade: the pause screen is ready at once")
+    page.click(".popt[data-k=settings]")
+    check(page.locator(".popt[data-k=voices]").count() == 1 and page.locator("#notice .cs").count() == 0, "Settings has a Voices switch (and no cascade)")
+    page.keyboard.press("Escape"); page.keyboard.press("Escape"); page.wait_for_timeout(100)
+    S("(g.openRun('combos'), 0)"); page.wait_for_timeout(60)
+    unk = page.locator("#run .ccard.unknown")
+    check(unk.count() >= 10 and all(t.strip() in ("", "?", "???") for t in unk.first.all_inner_texts()[0].split("\n")) and page.locator("#run .ccard.unknown img").count() == 0,
+          "an undiscovered combo is ??? everywhere: no name, no pieces, no silhouettes")
+    S("(g.closeRun(), 0)")
+    S("(g.openRun('region'), 0)"); page.wait_for_timeout(60)
+    nd = S("S.region.blocks.length")
+    check(page.locator("#run .dcard").count() == nd and nd >= 2, f"the Region tab lists the {nd} districts")
+    page.locator("#run .dren").first.click(); page.fill("#run .dinp", "Barrio Formulario"); page.keyboard.press("Enter"); page.wait_for_timeout(80)
+    check(S("S.region.blocks[0].town") == "Barrio Formulario" and S("S.town") != "Barrio Formulario", "a district can be renamed (the city keeps its own name)")
+    S("(g.closeRun(), 0)")
+    hold = S("(()=>{ const i=S.grid.findIndex((p,k)=>p.k==='farm' && p.st==='land'); Object.assign(S.grid[i],{hold:true, holdKnown:false}); g.centreOn(i); g.refresh(); return i; })()")
+    tap(hold); page.wait_for_timeout(100)
+    check(page.is_visible("#notice >> text=The owner shows up") and S(f"S.grid[{hold}].holdKnown"), "a stubborn owner shows up, in person, when you go for their land")
+    page.click("#notice >> text=Noted"); page.wait_for_timeout(60)
+    check("stubborn" in page.locator("#ctxHead").inner_text().lower(), "from then on the parcel is marked")
+    page.keyboard.press("Escape")
+
     # --- Every card, level and guide step renders in both languages without raw keys
     raw = []
     for lang in ("en", "es"):
         S(f"(g.setLang('{lang}'), 0)")
         for eid in S("Object.keys(g.EVENTS)"):
             S(f"(S.cards=[{{type:'event', id:'{eid}', v:{{i:{site}, x:'1', good:true, priv:true, owned:true, n:2, m:9, town:'Klein Stempel', talked:true}}}}], 0)"); S("g.showNext()")
-            if re.search(r"\bev\.|\{\w+\}", page.locator("#dock").inner_text()): raw.append(f"{lang}:{eid}")
+            if re.search(r"\bev\.|\{\w+\}", page.locator("#notice").inner_text()): raw.append(f"{lang}:{eid}")
+            S("(S.cards[0].step='decide', g.showNext(), 0)")
+            if re.search(r"\bev\.|\{\w+\}", page.locator("#notice").inner_text()): raw.append(f"{lang}:{eid}-decide")
         for k in range(6):
             ev(f"{G}.newGame(9, {k})"); S("(S.perks=['notary'], S.cards=[{type:'level'}], 0)"); S("g.showNext()")
             for _ in range(5):   # every slide

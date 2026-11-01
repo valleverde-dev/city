@@ -117,9 +117,24 @@ export function renameTown(name){
   const v = String(name || '').replace(/\s+/g, ' ').trim().slice(0, TOWN_MAX);
   if(!S || !v) return fail('err.townEmpty');
   if(v === S.town) return {ok:true, msg:{k:'log.townSame'}};
-  const old = S.town; S.town = v; if(S.region && S.region.blocks[0]) S.region.blocks[0].town = v;
+  const old = S.town; S.town = v;   // v0.10.1: the city's name; each district keeps its own (renameDistrict)
   log('log.renamed', {a:old, b:v}, 'good');
   return {ok:true, msg:{k:'log.renamed', p:{a:old, b:v}}};
 }
 // A name suggestion in the house style (k: any integer — the UI passes a random one, so the run's own seed is untouched)
 export function suggestTown(k){ const a = TOWN_A[Math.abs(k) % TOWN_A.length], b = TOWN_B[Math.abs(Math.floor(k / 7)) % TOWN_B.length]; return a.endsWith('-') ? a+b : a+' '+b; }
+// v0.10.1: each plot is a district with its own name, which can be changed too (free, like the city's)
+export function renameDistrict(k, name){
+  const B = S && S.region && S.region.blocks[k]; if(!B) return fail('err.townEmpty');
+  const v = String(name || '').replace(/\s+/g, ' ').trim().slice(0, TOWN_MAX); if(!v) return fail('err.townEmpty');
+  if(v === B.town) return {ok:true, msg:{k:'log.townSame'}};
+  const old = B.town; B.town = v; log('log.renamed', {a:old, b:v}, 'good');
+  return {ok:true, msg:{k:'log.renamed', p:{a:old, b:v}}};
+}
+// v0.10.1: a stubborn owner shows up when you go for their land (tapping the parcel): from then on it is known
+// and marked on the map. Until then nothing gives it away. Free: meeting someone costs no slot.
+export function meetOwner(i){
+  const p = S && S.grid[i]; if(!p || !p.hold || p.holdKnown) return {ok:false};
+  p.holdKnown = true; log('log.owner', {at:pname(i), x:money(landPrice(p))}, 'bad');
+  return {ok:true};
+}

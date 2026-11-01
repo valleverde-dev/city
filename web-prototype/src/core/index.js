@@ -20,7 +20,7 @@ export { LEVELS, PHASES, PLOT, DENSITY0, LV, stageCfg, on, CFG, B, BUILD_TYPES, 
 export { newGame, snapshot, consolidate, attach } from './newgame.js';
 // The Euroregion: settlement types, region combos, placement, frontier
 export { SIZES, STYPES, STYPE_ICON, STYPE_FX, REGION_COMBOS, RCOMBO_BY_ID, DIRS, DIR_KEYS, candidates, attachPreview, neighboursOf,
-         regionCombosAt, regionBounds, regionPop, regionDividend, regionFx, frontAt, cellPos, codeTokens, wcode, blockAt, worldIndex } from './region.js';
+         regionCombosAt, regionBounds, regionPop, regionDividend, regionFx, frontAt, cellPos, codeTokens, wcode, blockAt, worldIndex , districtOf } from './region.js';
 export { genPlot, wid, setW } from './region.js';
 export { writePlot, rebuildGrid, regionEffects, plotParcels } from './newgame.js';
 export { cellCode } from './region.js';

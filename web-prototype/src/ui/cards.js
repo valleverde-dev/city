@@ -1,12 +1,13 @@
 import { setMusic } from '../audio/music.js';
 import { playSound } from '../audio/sfx.js';
+import { speak, syllablesOf } from '../audio/voice.js';
 import { COMBO_BY_ID, discovered } from '../core/combos.js';
 import { CFG, CHARS, LEVELS, LV, PERKS, on, stageCfg } from '../core/config.js';
 import { RCOMBO_BY_ID, STYPE_ICON, regionPop } from '../core/region.js';
 import { DIRECTIVE_ICON, choosePerk } from '../core/directives.js';
 import { DEAL, REWARDS, chooseReward, rewardValue } from '../core/rewards.js';
 import { residents } from '../core/economy.js';
-import { EVENTS, choicesFor, resolveEvent } from '../core/events.js';
+import { EVENTS, choicesFor, isBadResult, resolveEvent } from '../core/events.js';
 import { money } from '../core/format.js';
 import { records, save } from '../core/persist.js';
 import { S, pname } from '../core/state.js';
@@ -69,18 +70,18 @@ export function slideLetter({icon, title, speaker, quote, slides, doneLabel, onD
   slideState = {slides, i:keep, title, doneLabel, done:()=>{ slideState = null; slideKeep = null; onDone(); }};
   renderSlide(false);
 }
-export function letter({icon, title, stamp, cls, body, buttons, dock, speaker, wide}){
+export function letter({icon, title, stamp, cls, body, buttons, dock, speaker, wide, who, role, mood, voice}){
   slideKeep = slideState ? {title:slideState.title, i:slideState.i} : null; slideState = null;
   notice.className = 'notice'; modal.classList.remove('title', 'pause');
   notice.innerHTML = `<div class="letterhead"><i class="emblem" aria-hidden="true"></i><div class="org">${t('ui.union')}<i>${t('ui.dg')}</i></div>
       ${S ? `<div class="date">${t('ui.dateline', {m:Math.min(S.month, CFG.months)})}</div>` : ''}</div>
     <div class="sheet">${stamp?`<div class="stamp ${cls||'info'}">${stamp}</div>`:''}
-      <div class="col-a">${speaker?`<div class="speaker">${pxPortrait(speaker)}<div><b>${CHARS[speaker].name}</b><small>${t('char.'+speaker,{town:S.town})}</small></div></div>`:''}
+      <div class="col-a">${speaker?`<div class="speaker">${pxPortrait(speaker)}<div><b>${who || CHARS[speaker].name}</b><small>${role || t('char.'+speaker,{town:S.town})}</small></div></div>`:''}
         <h2>${ic(icon)}${title}</h2></div>
       <div class="col-b">${body||''}</div><div class="btns"></div></div>`;
   // the first quote (what the speaker says) belongs with the speaker
   const a = notice.querySelector('.col-a'), b = notice.querySelector('.col-b'), q = b.querySelector(':scope > .quote');
-  if(q && speaker) a.appendChild(q);
+  if(q && speaker){ a.appendChild(q); b.querySelectorAll(':scope > .where-line').forEach(w=>a.appendChild(w)); }   // and where it happens
   if(!b.textContent.trim() && !b.querySelector('img,canvas,.rmap-slot,.slide-slot')) b.remove();
   notice.classList.toggle('single', !notice.querySelector('.col-b'));
   notice.classList.toggle('wide', !!wide);
@@ -89,6 +90,9 @@ export function letter({icon, title, stamp, cls, body, buttons, dock, speaker, w
   modal.classList.remove('hidden'); modal.classList.toggle('dock', !!dock); notice.scrollTop = 0;
   notice.style.animation = 'none'; void notice.offsetWidth; notice.style.animation = '';
   cascade(notice);
+  // v0.10.1: the speaker says it out loud (synthesized babble with the character's timbre), once per screen
+  if(speaker && voice !== false){ const qq = notice.querySelector('.col-a .quote');
+    speak(voice || speaker, {mood: mood || (cls==='bad' ? 'angry' : cls==='ok' ? 'happy' : speaker==='brussels' ? 'formal' : 'neutral'), syllables: syllablesOf(qq ? qq.textContent : title)}); }
 }
 // Character portraits: the vector faces are rasterised to 32×32, snapped to their own palette
 // and outlined, so they read as pixel art next to the map. Cached per character.
@@ -164,19 +168,37 @@ export const CARD = {
       body:`<div class="quote">${t(c.key+'.x', P(c.p))}</div>`, buttons:[btn(t('ui.noted'),'check', ()=>nextCard('click'), true)]});
     if(!c.played){ c.played = true; playSound(c.sfx||'stamp'); } },
   // v0.9: events and their results live in the bottom bar (ui/dock.js); the map stays in view
-  event: c => { const E = EVENTS[c.id], v = c.v; hideModal();
+  // v0.10.1: an event is a scene first (the character, the whole story), then the decision as cards, then the outcome
+  event: c => { const E = EVENTS[c.id], v = c.v || {};
     if(v.i>=0 && v.i!==undefined) pulse(v.i);
-    if(!c.played){ c.played = true; playSound(E.sfx); } refresh(); },
+    if(!c.played){ c.played = true; playSound(E.sfx); }
+    const where = v.i>=0 && v.i!==undefined ? `<p class="where-line">${ic('place')}${t('ui.parcel',{at:pname(v.i)})}</p>` : '';
+    if(c.step !== 'decide'){
+      letter({icon:E.icon, title:t('ev.'+c.id+'.t'), speaker:E.char, cls:'event', mood:'neutral',
+        body:`<div class="quote">${t('ev.'+c.id+'.x', {...P(v), x:v.x, at:v.i>=0?pname(v.i):''})}</div>${where}`,
+        buttons:[btn(t('ev.decide'), 'gavel', ()=>{ c.step = 'decide'; playSound('click'); CARD.event(c); }, true)]});
+      notice.classList.add('ev-story'); return; }
+    const cards = choicesFor(c).map(ch=>{ const can = !ch.can || ch.can(v);
+      return `<button type="button" class="dchoice" data-k="${ch.k}"${can ? '' : ' disabled'}><b>${t('ev.'+c.id+'.c.'+ch.k)}</b><span class="chips">${ch.fx(v).map(chip).join('')}${can ? '' : `<span class="chip bad">${t('err.funds')}</span>`}</span></button>`; }).join('');
+    letter({icon:'gavel', title:t('ev.'+c.id+'.t'), speaker:E.char, voice:false,
+      body:`<p class="ask">${t('ev.yourCall')}</p><div class="dchoices n${choicesFor(c).length}">${cards}</div>`,
+      buttons:[btn(t('ev.story'), 'mail', ()=>{ c.step = 'story'; playSound('click'); CARD.event(c); })], wide:true});
+    notice.classList.add('ev-decide');
+    notice.querySelectorAll('.dchoice').forEach(b=>b.onclick = ()=>{ const res = resolveEvent(c, b.dataset.k); S.cards.shift();
+      if(res) S.cards.unshift({type:'result', id:c.id, res, v});
+      playSound(isBadResult(res) ? 'fail' : 'stamp'); save(); refresh(); showNext(); }); },
   level: c => { const L = LV(), k = S.stage||0, n = Math.min(k, LEVELS.length-1), more = k >= LEVELS.length;
     const rules = (more ? t('stl.more.rules', {n:L.target}) : t('lvl.'+(n+1)+'.rules')).split('|').map(x=>`<li>${ic('check')}<span>${x}</span></li>`).join('');
     const mine = S.perks.concat(S.shovel ? ['shovel'] : []);
-    const rc = S.rcombos.length ? `<p class="hint">${t('stl.rcombos')}</p><div class="rclist">${S.rcombos.map(x=>{ const cb = RCOMBO_BY_ID[x.id];
+    const rcK = S.rcombos.filter(x=>discovered().includes(x.id));   // v0.10.1: discovered ones only
+    const rc = rcK.length ? `<p class="hint">${t('stl.rcombos')}</p><div class="rclist">${rcK.map(x=>{ const cb = RCOMBO_BY_ID[x.id];
       return `<div class="rcc ${cb.good?'good':'bad'}">${ic(cb.good?'workspace_premium':'warning')}<span><b>${t('rcombo.'+x.id)}</b><small>${t('rcombod.'+x.id)}</small></span></div>`; }).join('')}</div>` : '';
-    slideLetter({icon:'map', title:`<span class="lvl-tag">${t('ui.settlement')} ${roman(k+1)}</span>${more ? S.town : t('lvl.'+(n+1)+'.name')}`, speaker: n>=2 ? 'brussels' : 'mayor',
-      quote: more ? t('stl.more.x', {region:regionName()}) : t('lvl.'+(n+1)+'.x', {town:S.town}),
+    const intro = phaseIntro(k), dist = S.region.blocks[S.region.blocks.length-1];
+    slideLetter({icon:'map', title:`<span class="lvl-tag">${t('ui.settlement')} ${roman(k+1)}</span>${more ? (dist ? dist.town : S.town) : t('lvl.'+(n+1)+'.name')}`, speaker: intro.speaker,
+      quote: intro.text,
       slides:[
         {label:t('slide.goal'), html:`<div class="goal big"><b>${L.target}</b><span>${t('slide.goalX', {m:CFG.months})}</span></div>${ladderHtml()}${k===0 ? `<p class="keys">${t('lvl.keys')}</p>` : ''}`},
-        {label:t('slide.where'), html:`${stypeBlock(S.stype)}${rc}${S.carried > 0 ? `<p class="hint">${t('stl.carry', {x:money(S.carried)})}</p>` : ''}`},
+        {label:t('slide.where'), html:`${k > 0 && dist ? `<div class="quote local">${t('dline.'+S.stype, {d:dist.town})}</div>` : ''}${stypeBlock(S.stype)}${rc}${S.carried > 0 ? `<p class="hint">${t('stl.carry', {x:money(S.carried)})}</p>` : ''}`},
         {label:t('lvl.newRules'), html:`<ul class="rules">${rules}</ul>`},
         {label:t('stl.perksLbl'), html: mine.length ? `<div class="perkgrid">${mine.map(p=>`<div class="pk">${ic(PERKS[p])}<b>${t('perk.'+p)}</b><small>${t('perkd.'+p)}</small></div>`).join('')}</div>` : ''},
       ],
@@ -197,8 +219,27 @@ export const CARD = {
       body:`<div class="combo-name ${cb.good?'good':'bad'}">${t('combo.'+cb.id)}</div><div class="quote">${t('combod.'+cb.id)}<br><small>${t('combo.pieces',{a:t('piece.'+cb.a), b:t('piece.'+cb.b)})}</small></div><p class="hint">${t(cb.good?'combo.new.x':'combo.newBad.x')}</p>`,
       buttons:[btn(t('ui.noted'),'check', ()=>nextCard('click'), true)]});
     if(!c.played){ c.played = true; playSound(cb.good ? 'fanfare' : 'crowd'); } },
-  result: c => { hideModal(); refresh(); },
+  result: c => { const E = EVENTS[c.id], bad = isBadResult(c.res);
+    letter({icon: bad ? 'cancel' : 'task_alt', title:t('ev.'+c.id+'.t'), speaker:E.char, stamp:t(bad ? 'stamp.bad' : 'stamp.done'), cls: bad ? 'bad' : 'ok',
+      body:`<div class="quote">${t('ev.'+c.id+'.r.'+c.res)}</div>`,
+      buttons:[btn(t('ui.noted'), 'check', ()=>{ S.cards.shift(); playSound('click'); save(); refresh(); showNext(); }, true)]}); },
 };
+// v0.10.1: the phase introduction tells a story that goes on — what just happened (how the last phase went),
+// then why the new rules arrive (phases II–IV) or a line from a pool that never repeats in a run (phase V on).
+// Who speaks: the mayor for local things, Brussels for rules and money; the banker if you are in debt, Remedios if the
+// neighbours are angry. Two or three sentences at most.
+export function phaseIntro(k){
+  if(k === 0) return {speaker:'mayor', text:t('lvl.1.x', {town:S.town})};
+  const L = S.lastPhase || {}, n = Math.min(k, LEVELS.length-1), more = k >= LEVELS.length;
+  const recap = L.debt ? 'debt' : (L.neigh !== undefined && L.neigh < 35) ? 'angry' : (L.left >= Math.ceil((L.months||CFG.months)/4)) ? 'early' : (L.combos >= 3) ? 'combos' : 'ontime';
+  const speaker = recap==='debt' ? 'banker' : recap==='angry' ? 'neighbour' : (!more && n >= 2) ? 'brussels' : 'mayor';
+  const dist = S.region.blocks[S.region.blocks.length-1], p = {city:S.town, d:dist ? dist.town : S.town, m:L.left||0, n:L.combos||0, target:CFG.target, region:regionName()};
+  const first = t('intro.recap.'+recap+'.'+speaker, p);
+  let second;
+  if(!more) second = t('lvl.'+(n+1)+'.why', p);
+  else { const POOL = 10, start = Math.floor(((S.runSeed||0) % 9973) / 9973 * POOL), j = (start + (k - LEVELS.length)) % POOL; second = t('more.'+j, p); }
+  return {speaker, text:first + ' ' + second};
+}
 export function rewardCard(c){
   const wrap = c.offers.map((o,k)=>{ const b = document.createElement('button'), v = rewardValue(o), p = {...v, x: v.x !== undefined ? money(v.x) : ''};
     b.className = 'perk reward' + (o.gold ? ' gold' : '') + (o.deal ? ' deal' : ''); b.dataset.k = o.id;
@@ -226,11 +267,10 @@ export function ladderHtml(){ const k = S.stage||0;
 export const regionName = () => t('region.name', {n:S.region.name});
 export function stypeBlock(ty){ return `<div class="stype">${ic(STYPE_ICON[ty])}<span><b>${t('st.'+ty)}</b><small>${t('std.'+ty)}</small></span></div>`; }
 // Region combo chips: named once discovered (or when `show`), otherwise a mysterious "region combo?"
-export function rcomboChips(list, show){
-  const known = discovered();
-  return `<div class="chips">${list.map(c=>{ const cb = RCOMBO_BY_ID[c.id];
-    return show || known.includes(c.id) ? `<span class="chip ${cb.good?'good':'bad'}">${ic(cb.good?'workspace_premium':'warning')}${t('rcombo.'+c.id)}</span>`
-      : `<span class="chip mystery">${ic('workspace_premium')}${t('rcombo.possible')}</span>`; }).join('')}</div>`;
+export function rcomboChips(list){   // v0.10.1: discovered region combos only; the others are not mentioned
+  const known = discovered(), mine = list.filter(c=>known.includes(c.id)); if(!mine.length) return '';
+  return `<div class="chips">${mine.map(c=>{ const cb = RCOMBO_BY_ID[c.id];
+    return `<span class="chip ${cb.good?'good':'bad'}">${ic(cb.good?'workspace_premium':'warning')}${t('rcombo.'+c.id)}</span>`; }).join('')}</div>`;
 }
 // Put the region minimap into the open letter (its '.rmap-slot')
 export function mountMap(opts){ const slot = notice.querySelector('.rmap-slot'); if(!slot) return; slot.innerHTML = ''; slot.appendChild(regionCanvas(opts)); }

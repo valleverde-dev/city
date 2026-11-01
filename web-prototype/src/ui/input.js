@@ -12,6 +12,7 @@ import { refresh } from './guide.js';
 import { editTownName, hidePop, runTab, showMeterPop } from './hud.js';
 import { inboxOpen, showNews, toggleInbox } from './inbox.js';
 import { closeRun, openRun } from './run.js';
+import { ownerScene } from './owners.js';
 import { coverKey, coverOpen, frameView, pauseBack, pauseMenu, pauseOpen } from './title.js';
 
 // =====================================================================
@@ -51,7 +52,8 @@ export function up(e){
     const k = i < 0 ? blockAtScreen(e.clientX-r.left, e.clientY-r.top) : -1;
     if(k >= 0 && k !== selBlock){ clearSelection(); setSelBlock(k); }   // v0.9.2: a consolidated settlement: what it is and what it brings
     else if(i<0 || i===selected) clearSelection();
-    else { setSelected(i); setArmed(null); setSelBlock(-1); }
+    else { setSelected(i); setArmed(null); setSelBlock(-1);
+      const q = S.grid[i]; if(q && q.st==='land' && q.hold && !q.holdKnown) ownerScene(i); }   // v0.10.1: the owner shows up
     playSound('click'); refresh(); if(selected>=0) keepVisible(selected);
   }
   if(!pointers.size){ downAt=null; }

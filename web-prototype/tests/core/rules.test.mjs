@@ -115,7 +115,7 @@ test('v0.10: a milestone keeps 40% of the money and the region; the next plot jo
   // the map remembers what is built
   const A0 = { ...S.region.active };
   S.grid.forEach((p, k) => assert.equal(core.wcode(A0.y + Math.floor(k / A0.n), A0.x + k % A0.n), core.cellCode(p)));
-  assert.ok(S.region.cands.length >= 1 && S.region.cands.length <= 4 && S.region.cands.every(P => P.n === 8));
+  assert.ok(S.region.cands.length >= 1 && S.region.cands.every(P => P.n === 8));
   assert.ok(S.cards.some(c => c.type === 'consolidated'));
   const rw = S.cards.find(c => c.type === 'reward');
   assert.ok(rw && rw.offers.length >= 3 && rw.offers.some(o => o.id === 'perk'), 'three offers, one of them a perk');
@@ -217,7 +217,12 @@ test('the plots on offer are new land next to the region, never overlapping', ()
     g.newGame(20 + k, k);
     consolidateNow();
     const S = core.S, cs = S.region.cands;
-    assert.ok(cs.length >= 1 && cs.length <= 4, `plots ${k}`);
+    assert.ok(cs.length >= 1, `plots ${k}`);
+    // v0.10.1: every free spot touching the region is offered (one plot: its 4 sides; two side by side: 6)
+    const blocks = S.region.blocks, free = new Set();
+    blocks.forEach(B => [[0,-1],[1,0],[0,1],[-1,0]].forEach(([dx,dy]) => { const x = B.x + dx*B.n, y = B.y + dy*B.n;
+      if (!blocks.some(C => C.x === x && C.y === y)) free.add(x+','+y); }));
+    assert.equal(cs.length, free.size, `all ${free.size} free spots offered (phase ${k})`);
     cs.forEach((P, j) => {
       const v = core.attachPreview(j);
       assert.equal(P.n, S.region.next.n);

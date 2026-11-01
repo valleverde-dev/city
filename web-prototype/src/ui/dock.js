@@ -8,7 +8,7 @@ import { CONTRACTS, EVENTS, choicesFor, contractCount, isBadResult, resolveEvent
 import { money } from '../core/format.js';
 import { attach } from '../core/newgame.js';
 import { save } from '../core/persist.js';
-import { RCOMBO_BY_ID, STYPE_ICON, attachPreview } from '../core/region.js';
+import { RCOMBO_BY_ID, STYPE_ICON, attachPreview, districtOf } from '../core/region.js';
 import { residents } from '../core/economy.js';
 import { approves, buildCost, buildMonths, hasAccess, landPrice, permitMonths, plotValue, support } from '../core/rules.js';
 import { S, has, pname, r1, rc } from '../core/state.js';
@@ -126,10 +126,10 @@ function renderLand(p, pt, add){
   const sub = k==='village' ? t('pcs.villageX', {n:10}) : t('pcs.'+k);
   add({art:landArt(k), name:pt, sub, cls:'info wide land'});
   const piece = k==='regional' ? 'regional' : k;
-  COMBOS.filter(cb=>cb.a===piece || cb.b===piece).forEach(cb=>{ const other = cb.a===piece ? cb.b : cb.a, kn = known.includes(cb.id);
-    if(B[other] && !unlocked(other)) return;
-    add({art: B[other] ? buildingArt(other) : landArt(other), name: kn ? t('combo.'+cb.id) : t('d.withPiece', {p:t('piece.'+other)}),
-      sub: kn ? t('combod.'+cb.id).split('. ')[0] : t('d.comboUnknown'), badge:[kn ? (cb.good ? '+' : '−') : '?', kn ? (cb.good ? 'good' : 'bad') : 'mystery'], cls:'combo-of '+(kn ? (cb.good ? 'good' : 'bad') : 'unknown')}); });
+  // v0.10.1: only the combos you have already discovered — nothing about the others, not even that they exist
+  COMBOS.filter(cb=>(cb.a===piece || cb.b===piece) && known.includes(cb.id)).forEach(cb=>{ const other = cb.a===piece ? cb.b : cb.a;
+    add({art: B[other] ? buildingArt(other) : landArt(other), name: t('combo.'+cb.id), sub: t('combod.'+cb.id).split('. ')[0],
+      badge:[cb.good ? '+' : '−', cb.good ? 'good' : 'bad'], cls:'combo-of '+(cb.good ? 'good' : 'bad')}); });
   if(k==='village') add({icon:'warning', name:t('d.villageNear'), sub:t('d.villageNearX'), cls:'info wide'});
 }
 // ---------- a consolidated settlement tapped on the map (v0.9.2) ----------
@@ -139,7 +139,7 @@ function renderBlock(head, strip){
   add({icon:STYPE_ICON[b.ty] || 'cottage', name:t('st.'+b.ty), sub:t('std.'+b.ty), cls:'info wide'});
   add({icon:'groups', name:String(b.res || 0), sub:t('d.blockRes'), cls:'stat'});
   add({icon:'euro', name:'+'+money(b.tax || 0), sub:t('d.blockDiv'), cls:'stat money'});
-  const rc = (S.rcombos || []).filter(c=>c.b===selBlock);
+  const rc = (S.rcombos || []).filter(c=>c.b===selBlock && known.includes(c.id));   // v0.10.1: discovered ones only
   rc.forEach(c=>{ const cb = RCOMBO_BY_ID[c.id], kn = known.includes(c.id);
     add({icon: cb.good ? 'workspace_premium' : 'warning', name: kn ? t('rcombo.'+c.id) : t('rcombo.possible'), sub: kn ? t('rcombod.'+c.id).split('. ')[0] : t('d.withTown', {town:S.town}),
       badge:[kn ? (cb.good ? '+' : '−') : '?', kn ? (cb.good ? 'good' : 'bad') : 'mystery'], cls:'combo '+(cb.good ? 'good' : 'bad')}); });
@@ -160,15 +160,16 @@ function renderParcel(head, strip){
   let tags = '';
   if(p.st==='owned' || p.st==='land'){ if(on('rustic') && ['farm','muni','flood'].includes(p.k)) tags += p.urban ? tag(t('tag.urban'),'ok') : tag(t('tag.rustic'));
     if(p.st==='owned') tags += tag(t('tag.yours'),'blue'); if(p.st==='owned' && !acc) tags += tag(t('tag.noAccess'),'bad'); }
-  if(p.st==='land' && p.hold) tags += tag(t('tag.hold'),'warn');
-  head.innerHTML = `<h3>${ic(pi)}${pt}</h3>${tags}<span class="ref">${t('ui.parcel',{at:pname(i)})}</span>`;
+  if(p.st==='land' && p.hold && p.holdKnown) tags += tag(t('tag.hold'),'warn');   // v0.10.1: only once you have met the owner
+  const dk = districtOf(i), dn = dk >= 0 ? S.region.blocks[dk].town : '';   // v0.10.1: the district it belongs to
+  head.innerHTML = `<h3>${ic(pi)}${pt}</h3>${tags}<span class="ref">${t('ui.parcel',{at:pname(i)})}${dn ? ' · '+dn : ''}</span>`;
   const add = o => strip.appendChild(tile(o));
   if(p.k==='habitat' || p.k==='village' || p.k==='regional'){ renderLand(p, pt, add); return; }
   if(p.st==='land'){
     const price = landPrice(p), mayor = p.k==='muni' && on('local') && S.local < 40;
     add({icon:'payments', name:t('d.buy'), sub:`${money(price)} · ${t('d.slot1')}`, cls:'act primary', k:'buy',
       disabled: !slotsOk || mayor, why: mayor ? t('dw.mayor') : !slotsOk ? t('dw.slots') : '', click:()=>doAction(acquire(i), i)});
-    add({icon:pi, name:t('d.about'), sub:t(p.k==='muni'?'pcs.muni':p.k==='flood'?'pcs.flood':p.hold?'pcs.hold':'pcs.farm'), cls:'info wide'});
+    add({icon:pi, name:t('d.about'), sub:t(p.k==='muni'?'pcs.muni':p.k==='flood'?'pcs.flood':(p.hold && p.holdKnown)?'pcs.hold':'pcs.farm'), cls:'info wide'});
     return; }
   if(p.st==='owned'){
     const inPlay = ty => (ty!=='road' || on('access')) && (ty!=='factory' || on('jobs')) && ((ty!=='school' && ty!=='clinic') || on('services')) && (!B[ty].flag || on(B[ty].flag));
@@ -261,34 +262,19 @@ function renderAttach(head, strip){
   const known = discovered();
   S.region.cands.forEach((P,k)=>{ const v = attachPreview(k);
     const land = Object.entries(v.land).filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1]).slice(0, 2).map(([kk,n])=>`<span class="lnd">${ic(LAND_ICON[kk])}${n}</span>`).join('');
-    const good = v.combos.filter(c=>known.includes(c.id) && RCOMBO_BY_ID[c.id].good).length, bad = v.combos.filter(c=>known.includes(c.id) && !RCOMBO_BY_ID[c.id].good).length, unk = v.combos.filter(c=>!known.includes(c.id)).length;
+    const good = v.combos.filter(c=>known.includes(c.id) && RCOMBO_BY_ID[c.id].good).length, bad = v.combos.filter(c=>known.includes(c.id) && !RCOMBO_BY_ID[c.id].good).length, unk = 0;   // v0.10.1: unknown region combos stay unknown
     const badge = good||bad||unk ? [[good?'+'+good:'', bad?'−'+bad:'', unk?'?':''].filter(Boolean).join(' '), bad && !good ? 'bad' : good ? 'good' : 'mystery'] : null;
-    const names = v.combos.map(c=>known.includes(c.id) ? t('rcombo.'+c.id) : t('rcombo.possible')).join(' · ');
+    const names = v.combos.filter(c=>known.includes(c.id)).map(c=>t('rcombo.'+c.id)).join(' · ');
     const all = Object.entries(v.land).filter(([,n])=>n>0).map(([kk,n])=>t('land.'+kk, {n})).join(' · ');
     const tl = tile({icon:'add_location', name:`${k+1} · ${t('side.'+P.dir)}`, sub: names || t('att.none'), why: land, cls:'plot'+(k===attachSel?' on':''), k:String(k), badge, click:()=>selectPlot(k)});
     if(all) tl.title += ' · ' + all; strip.appendChild(tl); });
   // (the Acquire button is on the map, beside the chosen plot — v0.9.3)
 }
-// ---------- an event: portrait, headline, choices with their effects (the letter is one tap away) ----------
+// ---------- an event (v0.10.1: it plays as a screen — story, decision, outcome; the bar only says it is waiting) ----------
 function renderEvent(head, strip){
-  const c = S.cards[0], E = EVENTS[c.id], v = c.v || {};
-  if(c.type==='result'){ const bad = isBadResult(c.res);
-    head.innerHTML = `${pxPortrait(E.char)}<div class="who"><small>${t('char.'+E.char,{town:S.town})}</small><h3>${t('ev.'+c.id+'.t')}</h3></div>`;
-    strip.appendChild(tile({icon: bad ? 'cancel' : 'task_alt', name:t(bad ? 'stamp.bad' : 'stamp.done'), sub:t('ev.'+c.id+'.r.'+c.res), cls:'result wide '+(bad?'bad':'good')}));
-    strip.appendChild(tile({icon:'check', name:t('ui.noted'), cls:'act primary', k:'ok', click:()=>{ S.cards.shift(); playSound('click'); save(); refresh(); showNext(); }}));
-    return; }
-  const at = v.i>=0 && v.i!==undefined ? `<span class="where">${ic('place')}${t('ui.parcel',{at:pname(v.i)})}</span>` : '';
-  head.innerHTML = `${pxPortrait(E.char)}<div class="who"><small>${t('char.'+E.char,{town:S.town})}</small><h3>${t('ev.'+c.id+'.t')}</h3></div>${at}<button class="read" type="button">${ic('mail')}<span>${t('d.read')}</span></button>`;
-  head.querySelector('.read').onclick = ()=>{ playSound('click'); letter({icon:E.icon, title:t('ev.'+c.id+'.t'), speaker:E.char,
-    body:`<div class="quote">${t('ev.'+c.id+'.x', {...P(v), x:v.x, at:v.i>=0?pname(v.i):''})}</div>`, buttons:[btn(t('d.back'),'check', ()=>hideModal(), true)]}); };
-  choicesFor(c).forEach(ch=>{ const can = !ch.can || ch.can(v), b = document.createElement('button');
-    b.type = 'button'; b.className = 'choice tile wide'; b.disabled = !can; b.dataset.k = ch.k;
-    b.innerHTML = `<b>${t('ev.'+c.id+'.c.'+ch.k)}</b><span class="chips">${ch.fx(v).map(chip).join('')}${can ? '' : `<span class="chip bad">${t('err.funds')}</span>`}</span>`;
-    b.onclick = ()=>{ const res = resolveEvent(c, ch.k); S.cards.shift();
-      if(res) S.cards.unshift({type:'result', id:c.id, res, v});
-      playSound(isBadResult(res) ? 'fail' : 'stamp');
-      save(); refresh(); showNext(); };
-    strip.appendChild(b); });
+  const c = S.cards[0], E = EVENTS[c.id];
+  head.innerHTML = `${pxPortrait(E.char)}<div class="who"><small>${t('char.'+E.char,{town:S.town})}</small><h3>${t('ev.'+c.id+'.t')}</h3></div>`;
+  strip.appendChild(tile({icon:'mail', name:t(c.type==='result' ? 'ev.outcome' : 'ev.open'), cls:'act primary', k:'open', click:()=>{ playSound('click'); showNext(); }}));
 }
 function renderOver(head, strip){
   head.innerHTML = `<h3>${ic('gavel')}${t('d.over')}</h3>`;

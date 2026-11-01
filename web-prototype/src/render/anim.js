@@ -329,6 +329,14 @@ export function spriteSheet(){
   return {png: cv.toDataURL('image/png'), atlas};
 }
 // A plot number that stays readable at any zoom: drawn in screen pixels at the map point (x,y)
+// A district's name on the map, in screen pixels (crisp at any zoom); alpha fades it in as you zoom out
+export function districtLabel(x, y, text, alpha){
+  const m = ctx.getTransform(), z = dpr, X = (m.a*x + m.e)/z, Y = (m.d*y + m.f)/z;
+  ctx.save(); ctx.setTransform(z,0,0,z,0,0); ctx.globalAlpha = alpha;
+  ctx.font = '400 20px Jersey, system-ui, sans-serif'; const w = Math.ceil(ctx.measureText(text).width) + 16, h = 24, x0 = Math.round(X - w/2), y0 = Math.round(Y - h/2);
+  ctx.fillStyle = 'rgba(11,31,77,.88)'; ctx.fillRect(x0, y0, w, h); ctx.fillStyle = '#ffd200'; ctx.fillRect(x0, y0+h-2, w, 2);
+  ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, X, y0 + h/2);
+  ctx.restore(); }
 export function bigBadge(x, y, text, on){
   const m = ctx.getTransform(), sx = m.a*x + m.e, sy = m.d*y + m.f, z = dpr;
   ctx.save(); ctx.setTransform(z,0,0,z,0,0); const X = sx/z, Y = sy/z, r = 15;
@@ -339,16 +347,17 @@ export function bigBadge(x, y, text, on){
 // v0.9.2: small map badges are drawn in screen pixels at a fixed size, like the plot numbers, so their digits
 // never blur together at any zoom (a "2" read as an "8"). Months get a clock instead of an ambiguous "m".
 const CLOCK = ['..###..','.#...#.','#..#..#','#..#..#','#..##.#','.#...#.','..###..'];
-export function badge(x,y,text,col,clock){
+const OWNER_PX = ['..###..','..###..','..###..','...#...','.#####.','#.###.#','..#.#..'];   // a little person: the owner
+export function badge(x,y,text,col,clock,glyph){
   const m = ctx.getTransform(), z = dpr, X = (m.a*x + m.e)/z, Y = (m.d*y + m.f)/z;
   ctx.save(); ctx.setTransform(z,0,0,z,0,0);
   ctx.font = '400 22px Jersey, system-ui, sans-serif';
-  const tw = Math.ceil(ctx.measureText(text).width), iw = clock ? 18 : 0, w = tw + iw + 10, h = 22;
+  const pic = glyph || (clock ? CLOCK : null), tw = text ? Math.ceil(ctx.measureText(text).width) : 0, iw = pic ? (text ? 18 : 14) : 0, w = tw + iw + 10, h = 22;
   const x0 = Math.round(X - w/2), y0 = Math.round(Y - h/2);
   ctx.fillStyle = '#0b1f4d'; ctx.fillRect(x0-2, y0-2, w+4, h+4); ctx.fillRect(x0, y0+h+2, w+2, 2);
   ctx.fillStyle = col; ctx.fillRect(x0, y0, w, h); ctx.fillStyle = 'rgba(255,255,255,.28)'; ctx.fillRect(x0, y0, w, 2);
   ctx.fillStyle = '#fff';
-  if(clock) CLOCK.forEach((row,r)=>[...row].forEach((ch,c)=>{ if(ch==='#') ctx.fillRect(x0+5+c*2, y0+4+r*2, 2, 2); }));
+  if(pic) pic.forEach((row,r)=>[...row].forEach((ch,c)=>{ if(ch==='#') ctx.fillRect(x0+5+c*2, y0+4+r*2, 2, 2); }));
   ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(text, x0 + 5 + iw, y0 + h/2 + 1);
   ctx.restore(); }
 // Combo pairs: a dotted link between the two parcels with a small medal (good) or warning (bad) in the middle
@@ -393,6 +402,9 @@ export function drawRegion(){
   ctx.save(); ctx.lineWidth = 1;   // (the consolidated settlements' outlines are on the ground now, v0.9.2)
   const sb = S.region.blocks[selBlock];   // the consolidated settlement tapped on the map
   if(sb){ plotPath(sb); ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#ffd200'; ctx.stroke(); ctx.lineWidth = 1; }
+  // v0.10.1: the districts' names, when the map is zoomed out far enough that a label does not cover the buildings
+  const sc = scale(); if(S.region.blocks.length > 1 && sc*TW < 44 && S.pending!=='attach')
+    S.region.blocks.forEach(b=>{ const [cx,cy] = isoW(b.y-FRY+(b.n-1)/2, b.x-FRX+(b.n-1)/2); districtLabel(cx, cy, b.town, Math.min(1, (44 - sc*TW)/10)); });
   if(S.pending==='attach' && S.region.cands && modal.classList.contains('hidden')){
     const ph = (performance.now()%1400)/1400;
     S.region.cands.forEach((P,k)=>{ const on = k===attachSel;
@@ -407,7 +419,7 @@ export const MARK = {rejected:['✕','#d64545'], event:['!','#e8442e'], toad:['!
 export function drawLabels(i){
   const p = S.grid[i], r=Math.floor(i/N), c=i%N, [x,y] = isoOf(r,c);
   if(p.st==='review') badge(x+10,y-24,t('map.m',{n:p.t}), approves() ? '#1d3c78' : '#d64545', true);
-  if(p.st==='land' && p.hold && hasAccess(r,c)) badge(x+12,y-10,'+%','#d98a00');   // only where you would buy
+  if(p.st==='land' && p.hold && p.holdKnown) badge(x+12,y-10,'',`#d98a00`,false,OWNER_PX);   // v0.10.1: an owner you have met
   if(p.st==='approved') badge(x,y-12,t('map.queue'),'#e8762b');
   if(p.st==='building'){ const hh = p.ty==='road' ? 2 : 6 + Math.round((1-p.t/buildMonths(p.ty))*5)*5;
     badge(x-12,y-hh-14, p.halt ? t('map.halt',{n:p.halt}) : t('map.m',{n:p.t}), p.halt ? '#d64545' : '#d0571b', true); }
