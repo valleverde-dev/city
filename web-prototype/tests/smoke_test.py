@@ -450,6 +450,10 @@ with sync_playwright() as p:
     unk = page.locator("#run .ccard.unknown")
     check(unk.count() >= 10 and all(t.strip() in ("", "?", "???") for t in unk.first.all_inner_texts()[0].split("\n")) and page.locator("#run .ccard.unknown img").count() == 0,
           "an undiscovered combo is ??? everywhere: no name, no pieces, no silhouettes")
+    S("(g.openRun('perks'), 0)"); page.wait_for_timeout(60)
+    taken = S("g.career().perks.length")
+    check(page.locator("#run .qcard.seen").count() == taken and all(x.strip().startswith("???") for x in page.locator("#run .qcard:not(.seen) b").all_inner_texts()),
+          f"perks never taken are ??? too ({taken} taken)")
     S("(g.closeRun(), 0)")
     S("(g.openRun('region'), 0)"); page.wait_for_timeout(60)
     nd = S("S.region.blocks.length")

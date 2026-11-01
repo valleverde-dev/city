@@ -81,7 +81,9 @@ function perksTab(body, c){
       <div class="pcard empty">${ic('add_circle')}<b>${t('file.nextPerk')}</b></div></div>
     <h3>${t('file.pool')}<small>${t('file.poolSub')}</small><em>${Object.keys(PERKS).filter(k=>rank >= PERK_RANK[k]).length} / ${Object.keys(PERKS).length}</em></h3>
     <div class="cgrid pool">${Object.keys(PERKS).map(k=>{ const need = PERK_RANK[k] || 0, open = rank >= need, seen = c.perks.includes(k);
-      return `<div class="qcard ${!open ? 'locked' : seen ? 'seen' : 'new'}" title="${open ? t('perkd.'+k) : ''}">${ic(open ? PERKS[k] : 'lock')}<b>${open ? t('perk.'+k) : t('file.rankN', {r:t('rank.'+need)})}</b>${open && !seen ? `<em>${t('file.notYet')}</em>` : ''}</div>`; }).join('')}</div>`;
+      // v0.10.1: like the combos — a perk you have never taken is ??? (a locked one also says the rank it needs)
+      if(!seen) return `<div class="qcard ${open ? 'unknown' : 'locked'}"><span class="qm">?</span><b>???</b>${open ? '' : `<em>${t('file.rankN', {r:t('rank.'+need)})}</em>`}</div>`;
+      return `<div class="qcard seen" title="${t('perkd.'+k)}">${ic(PERKS[k])}<b>${t('perk.'+k)}</b></div>`; }).join('')}</div>`;
 }
 // ---------- Career: level and rank, achievements, the buildings still to unlock (by level, v0.9.2) ----------
 function careerTab(body, c){

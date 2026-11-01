@@ -215,3 +215,8 @@
 .dcard .dren{align-self:flex-start; margin-top:auto; display:flex; align-items:center; gap:5px; padding:4px 8px; background:var(--white); color:var(--navy); border:2px solid var(--navy); cursor:pointer; font:400 16px/1 var(--f-display);}
 .dcard .dren .ico{width:12px; height:12px;}
 .dcard .dinp{width:100%; font:400 20px/1 var(--f-display); color:var(--navy); border:2px solid var(--navy); padding:4px 6px;}
+/* v0.10.1: perks never taken are ??? */
+.qcard.unknown, .qcard.locked{background:#0e2659; color:#7d8db0; border-color:#1d3c78;}
+.qcard .qm{width:46px; height:46px; flex:0 0 46px; display:flex; align-items:center; justify-content:center; font:400 34px/1 var(--f-display); color:#55617c; background:#122f6e; border:3px solid #2a63c9;}
+.qcard.unknown b, .qcard.locked b{font-size:24px;}
+.qcard.locked em{color:#9fb3d9;}
