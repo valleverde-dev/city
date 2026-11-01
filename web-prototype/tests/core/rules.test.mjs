@@ -40,7 +40,8 @@ test('v0.10: a run is one region that grows by 8×8 plots; each phase has its tr
 
 test('rules switch on settlement by settlement', () => {
   g.newGame(1, 0);
-  for (const f of ['access', 'permits', 'jobs', 'lose', 'events']) assert.equal(core.on(f), false, f);
+  assert.equal(core.on('access'), true, 'v0.10.1: access (and roads) from the first phase');
+  for (const f of ['permits', 'jobs', 'lose', 'events']) assert.equal(core.on(f), false, f);
   g.newGame(1, 1);
   for (const f of ['access', 'permits', 'jobs', 'combos']) assert.equal(core.on(f), true, f);
   assert.equal(core.on('lose'), false);
@@ -92,7 +93,7 @@ test('from settlement II a permit needs access (road, built neighbour, the villa
 
 test('a month passes: works advance, slots refill, the calendar moves', () => {
   const S = g.newGame(11, 0);
-  const i = cell(p => p.st === 'land' && p.k === 'farm');
+  const i = cell((p, k) => p.st === 'land' && p.k === 'farm' && core.hasAccess(...core.rc(k)));
   core.acquire(i);
   assert.equal(core.requestPermit(i, 'housing').ok, true);
   assert.equal(S.grid[i].st, 'review');

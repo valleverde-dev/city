@@ -34,8 +34,8 @@ v0.5 had four separate levels, which played like a campaign rather than a roguel
 
 | Phase | Plots | Parcels | Density | Target | Months | Agenda | New rules | Can you lose? |
 |---|---|---|---|---|---|---|---|---|
-| I · Pilot Project | 1 | 64 | 4 | 256 | 8 | 2 | Buy a parcel, build housing, end months | Only by running out of time |
-| II · Expansion Phase | 2 | 128 | 5 | 640 | 14 | 3 | Access (roads / built neighbours), permits can be rejected, the Mayor meter, jobs, combos, farmers holding out | Only by running out of time |
+| I · Pilot Project | 1 | 64 | 4 | 256 | 8 | 2 | Buy a parcel, build housing and roads, end months; access (a road or a built neighbour) from v0.10.1 | Only by running out of time |
+| II · Expansion Phase | 2 | 128 | 5 | 640 | 14 | 3 | Permits can be rejected, the Mayor meter, jobs, combos, farmers holding out | Only by running out of time |
 | III · Partial Plan | 3 | 192 | 6 | 1,152 | 18 | 3 | Rustic land + urban plans, event cards, directives and deals, neighbours, compliance, school and health, the bank, extensions | Yes |
 | IV · Model Town | 4 | 256 | 7 | 1,792 | 18 | 3 | Use-it-or-lose-it milestones (25% of the tranche by month 8, 60% by 14), developers, property market | Yes |
 | V, VI, … | 5, 6… | 320, 384… | 8, 9… | 2,560 · 3,456 · … | 18 | 3 | None: the same bureaucracy, more land, denser | Yes |

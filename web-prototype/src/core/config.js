@@ -21,7 +21,7 @@ export const FULL_F = {...BASE_F, rustic:1, events:1, directives:1, neigh:1, com
 export const PLOT = 8;                     // every plot of the region is PLOT × PLOT parcels
 export const DENSITY0 = 4;                 // residents per parcel asked in the first phase (+1 per milestone)
 export const PHASES = [                    // per phase: rules, months, agenda slots, grant per new resident asked (€M)
-  {months:8,  slots:2, per:0.10, f:{}},
+  {months:8,  slots:2, per:0.10, f:{access:1}},   // v0.10.1: roads and access from the first phase (the first plot is a real 8×8)
   {months:14, slots:3, per:0.12, f:{...BASE_F}},
   {months:18, slots:3, per:0.18, f:{...FULL_F}},
   {months:18, slots:3, per:0.12, f:{...FULL_F, milestones:1, market:1}},

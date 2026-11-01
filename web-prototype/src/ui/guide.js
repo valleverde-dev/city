@@ -20,13 +20,12 @@ import { renderRun } from './run.js';
 
 // --- The mayor's guide: a few steps per level, the current one shown on the map ---
 export const GUIDES = [
-  [ {k:'g1.buy',     done:()=>S.grid.some(p=>p.k==='farm' && p.st!=='land'), at:()=>S.grid.findIndex(p=>p.k==='farm' && p.st==='land')},
+  [ {k:'g1.buy',     done:()=>S.grid.some(p=>p.k==='farm' && p.st!=='land'), at:()=>S.grid.findIndex((p,i)=>p.k==='farm' && p.st==='land' && hasAccess(...rc(i)))},   // v0.10.1: next to the road
     {k:'g1.permit',  done:()=>S.grid.some(p=>p.ty==='housing'), at:()=>S.grid.findIndex(p=>p.st==='owned')},
     {k:'g1.end',     done:()=>S.month>=2, end:true},
     {k:'g1.wait',    done:()=>count('housing')>=1, end:true},
     {k:'g1.grow',    done:()=>false, end:true} ],
-  [ {k:'g2.access',  done:()=>S.grid.some(p=>p.k==='farm' && p.st!=='land'), at:()=>S.grid.findIndex((p,i)=>p.k==='farm' && p.st==='land' && hasAccess(...rc(i)))},
-    {k:'g2.jobs',    done:()=>S.grid.some(p=>p.ty==='factory'), at:()=>S.grid.findIndex(p=>p.st==='owned')},
+  [ {k:'g2.jobs',    done:()=>S.grid.some(p=>p.ty==='factory'), at:()=>S.grid.findIndex(p=>p.st==='owned')},
     {k:'g2.combo',   done:()=>activeCombos().length>0},
     {k:'g2.mayor',   done:()=>S.stats.lobby>0, tab:'agenda'} ],
   [ {k:'g3.rustic',  done:()=>S.stats.plan>0, tab:'agenda'},

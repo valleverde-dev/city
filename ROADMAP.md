@@ -21,7 +21,8 @@ And the playtest feedback on v0.10:
 - **Events in two steps:** first the scene (the character and the whole story), then *Decide* — the choices as large decision cards with their effects — and a short outcome screen with its stamp. The story can be read again before deciding.
 - **Synthesized voices.** Every character speaks a babble with their own timbre (pitch, speed, vowels, roughness), plus a gesture for the mood (a cough, "hmpf", a laugh, a shout, a sigh). *Settings → Voices* switches them off. Recorded voices can replace a character later without touching anything else.
 - **Phase introductions rewritten** as a story that goes on: what just happened (early, just in time, with many combos, in debt, with angry neighbours — and who says it: the mayor, Brussels, the banker or Remedios), then why the new rules arrive, told in the story (phases II–IV), or one of ten lines that never repeat in a run (phase V on). The new district says hello on the "Where you are" slide.
-- Balance (bot, 60 runs): with more plots to choose from, about 4.0 milestones per run with a new career (was 3.7) and 5.4 with a career that keeps playing (was 4.9). Tests: 22 rules tests, 163 browser checks.
+- **Roads and access from phase I.** The first plot is a real 8×8 since v0.10, but the access rule (and with it the road card) only switched on at phase II — a leftover of the 2×2 hamlet. Now phase I already asks for a road or a finished building next to each new one, the road is in the bar from the start, and the mayor's first hint points at a parcel by the road.
+- Balance (bot, 60 runs): about 3.8 milestones per run with a new career (v0.10: 3.7) and 5.4 with a career that keeps playing (v0.10: 4.9); phase I is still always won. Tests: 22 rules tests, 164 browser checks.
 
 ## Previous — v0.10.0 (Oct 31, 2026) · the region you keep building
 
