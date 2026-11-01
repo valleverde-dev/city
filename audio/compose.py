@@ -7,11 +7,11 @@ then written as WAV (convert to OGG/M4A with ffmpeg) and Standard MIDI.
   eurocrat_level1  "Pilot Project (Village Fete Waltz)"       160 BPM  level I, 3/4
   eurocrat_level2  "Expansion Phase (Let's Build Together)"   112 BPM  level II
   eurocrat_level4  "Model Town (Harmonised Trance Anthem)"    138 BPM  level IV
-  eurocrat_lobby   "Lobby Bossa (Floor 7, Please)"            128 BPM  in-game playlist
-  eurocrat_hold    "Your Call Is Important to Us"             96 BPM   in-game playlist
-  eurocrat_sunny   "Sunny Subsidy (Ambient House)"           110 BPM  in-game playlist
-  eurocrat_handsup "Plenary Session (Hands Up!)"             140 BPM  in-game playlist
-  eurocrat_italo   "Italo Directive"                         118 BPM  in-game playlist
+  eurocrat_lobby   "Lobby Bossa (Floor 7, Please)"            128 BPM  phase III
+  eurocrat_hold    "Your Call Is Important to Us"             96 BPM   phase V+ (random)
+  eurocrat_sunny   "Sunny Subsidy (Ambient House)"           110 BPM  phase V+ (random)
+  eurocrat_handsup "Plenary Session (Hands Up!)"             140 BPM  phase V+ (random)
+  eurocrat_italo   "Italo Directive"                         118 BPM  phase V+ (random)
   eurocrat_win     "Douze Points for Harmonisation"           122 BPM  inauguration
 
 The Ode to Joy melody is Beethoven's (Symphony No. 9, 1824) and is in the public
@@ -640,9 +640,9 @@ def song_level4():
                 echo={'lead': (0.75, 0.3, 0.5), 'pluck': (0.75, 0.3, -0.6), 'bell': (0.75, 0.3, 0.6)})
 
 
-# ------------------------------------------------------------ in-game playlist extras
-# Upbeat background tracks that rotate with the level themes, so a long phase never
-# loops one tune: lobby bossa, hold music, sunny ambient house, hands-up and italo disco.
+# ------------------------------------------------------------ phase III and phases V+
+# Upbeat background tracks: the lobby bossa is phase III's theme (v0.10.1); from phase V on,
+# each phase draws one of hold music, sunny ambient house, hands-up or italo disco at random.
 
 def bars_of(prog):
     """prog: list of bars, each a chord name or a list of chord names splitting the bar."""

@@ -18,31 +18,31 @@ export const audioRunning = () => !!actx && actx.state === 'running';
 // Ogg Vorbis where supported, AAC (.m4a) fallback for older Safari/iOS.
 export const music = {
   on: (()=>{ try{ return localStorage.getItem('citybuilder_music') !== 'off'; }catch(e){ return true; } })(),
-  want: null,      // what the game asked for: 'menu' | 'win' | 'phase1'…'phase4'
-  playing: null,   // the playlist that is sounding
-  cur: null,       // the track of that playlist that is sounding
-  pos: {},         // per playlist: index of the current track (so pause / resume carries on where it was)
-  switchAt: 0,     // AudioContext time at which the next track of the playlist crossfades in
-  src: null, gain: null, buffers: {}, loading: {},
+  want: null, playing: null, src: null, gain: null, buffers: {}, loading: {},
   ext: (()=>{ const a=document.createElement('audio');
     return a.canPlayType && a.canPlayType('audio/ogg; codecs="vorbis"') ? 'ogg' : 'm4a'; })(),
   level: 1,
 };
 export const TRACKS = { menu:'eurocrat_menu', win:'eurocrat_win',
-  level1:'eurocrat_level1', level2:'eurocrat_level2', level4:'eurocrat_level4',
-  lobby:'eurocrat_lobby', hold:'eurocrat_hold', sunny:'eurocrat_sunny', handsup:'eurocrat_handsup', italo:'eurocrat_italo' };
-// In game, each phase has a small playlist that rotates (about two minutes per track, with a crossfade), so a long
-// phase never loops one tune. The first track is the phase's own theme. Phase III has no theme of its own any more
-// (its tense office ambient was retired): it plays lobby music, hold music and a bit of disco instead.
-export const PLAYLISTS = {
-  menu:['menu'], win:['win'],
-  phase1:['level1', 'sunny', 'lobby'],
-  phase2:['level2', 'italo', 'hold'],
-  phase3:['lobby', 'italo', 'hold', 'sunny'],
-  phase4:['level4', 'handsup', 'sunny', 'italo'],
-};
-export const TRACK_SECONDS = 110;   // roughly how long one track of a playlist plays before the next one
-export const gameTrack = () => 'phase' + (Math.min((S && S.level) | 0, 3) + 1);
+  level1:'eurocrat_level1', level2:'eurocrat_level2', level3:'eurocrat_lobby', level4:'eurocrat_level4',
+  hold:'eurocrat_hold', sunny:'eurocrat_sunny', handsup:'eurocrat_handsup', italo:'eurocrat_italo' };
+// Phases I–IV each have their own theme: village waltz → Eurovision pop → lobby bossa → Euro-trance.
+// (v0.10.1: phase III's tense office ambient was retired for the lobby bossa — it killed the mood.)
+// From phase V on, every phase draws one of the new tracks at random — fixed per run and phase, so pausing or
+// reloading keeps the same tune, and never the same one twice in a row.
+export const RANDOM_TRACKS = ['hold', 'sunny', 'handsup', 'italo'];
+const mix = (a, b) => { let h = (Math.imul(a | 0, 2654435761) ^ Math.imul(b + 1, 40503)) >>> 0; h ^= h >>> 15; h = Math.imul(h, 2246822507) >>> 0; return (h ^ (h >>> 13)) >>> 0; };
+export function phaseTrack(stage, runSeed = 0){
+  if(stage < 4) return 'level' + (Math.max(0, stage) + 1);
+  let prev = -1;
+  for(let k = 4; k <= stage; k++){
+    let i = mix(runSeed, k) % RANDOM_TRACKS.length;
+    if(i === prev) i = (i + 1) % RANDOM_TRACKS.length;
+    prev = i;
+  }
+  return RANDOM_TRACKS[prev];
+}
+export const gameTrack = () => phaseTrack(S ? (S.stage ?? S.level ?? 0) | 0 : 0, S ? S.runSeed : 0);
 export const MUSIC_VOL = 0.45;
 export function loadTrack(name){
   if(music.buffers[name]) return Promise.resolve(music.buffers[name]);
@@ -56,53 +56,20 @@ export function loadTrack(name){
   return music.loading[name];
 }
 export function fadeOutCurrent(t=0.8){
-  music.cur = null; music.switchAt = 0;
+  music.playing = null;
   if(!music.src) return;
   const {src, gain} = music, now = actx.currentTime;
   gain.gain.cancelScheduledValues(now);
   gain.gain.setValueAtTime(gain.gain.value, now);
   gain.gain.linearRampToValueAtTime(0, now+t);
   src.stop(now+t+0.05);
-  music.src = music.gain = null;
+  music.src = music.gain = music.playing = null;
 }
-const playlist = key => PLAYLISTS[key] || [key];
-// Start one track of the playing playlist (looped; it fades in)
-function startTrack(track){
-  const key = music.playing;
-  music.cur = track;
-  loadTrack(track).then(buf=>{
-    if(music.cur !== track || music.playing !== key || music.src) return;  // changed while loading
-    const src = actx.createBufferSource(), gain = actx.createGain();
-    src.buffer = buf; src.loop = true;
-    src.connect(gain); gain.connect(actx.destination);
-    const now = actx.currentTime, list = playlist(key);
-    gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(MUSIC_VOL*music.level, now+1.2);
-    src.start(now);
-    music.src = src; music.gain = gain;
-    if(list.length > 1){
-      // whole loops only, so a track never cuts mid-phrase: ~TRACK_SECONDS, at least one loop
-      const loops = Math.max(1, Math.round(TRACK_SECONDS / buf.duration));
-      music.switchAt = now + loops * buf.duration - 1.5;
-      const next = list[(list.indexOf(track) + 1) % list.length];
-      setTimeout(()=>{ loadTrack(next).catch(()=>{}); }, 4000);   // decode the next one ahead of time
-    }
-  }).catch(()=>{ if(music.cur === track){ music.cur = null; music.playing = null; } });
-}
-// Crossfade to the next track of the playlist
-export function nextTrack(){
-  const key = music.playing; if(!key || !actx) return;
-  const list = playlist(key); if(list.length < 2) return;
-  music.pos[key] = ((music.pos[key] || 0) + 1) % list.length;
-  fadeOutCurrent(1.5);
-  startTrack(list[music.pos[key]]);
-}
-setInterval(()=>{ if(music.src && music.switchAt && actx && actx.state === 'running' && actx.currentTime >= music.switchAt) nextTrack(); }, 500);
 export function syncMusic(){
   // No music when opened as a local file (fetch is blocked there) or when muted
   if(location.protocol==='file:' || !actx) return;
-  const key = music.on ? music.want : null;
-  if(key === music.playing && (music.src || music.cur)){
+  const name = music.on ? music.want : null;
+  if(name === music.playing){
     if(music.gain){ const now=actx.currentTime;
       music.gain.gain.cancelScheduledValues(now);
       music.gain.gain.setValueAtTime(music.gain.gain.value, now);
@@ -110,12 +77,21 @@ export function syncMusic(){
     return;
   }
   fadeOutCurrent();
-  music.playing = key;
-  if(!key) return;
-  const list = playlist(key);
-  startTrack(list[(music.pos[key] || 0) % list.length]);
+  if(!name) return;
+  music.playing = name;
+  loadTrack(name).then(buf=>{
+    if(music.playing !== name || music.src) return;  // changed while loading
+    const src = actx.createBufferSource(), gain = actx.createGain();
+    src.buffer = buf; src.loop = true;
+    src.connect(gain); gain.connect(actx.destination);
+    const now = actx.currentTime;
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(MUSIC_VOL*music.level, now+1.2);
+    src.start(now);
+    music.src = src; music.gain = gain;
+  }).catch(()=>{ if(music.playing===name) music.playing=null; });
 }
-// track: 'menu' | 'phase1'…'phase4' | 'win' (a playlist); level: 1 = full, <1 = ducked (pause screen)
+// track: 'menu' | 'level1'…'level4' | a random track | 'win'; level: 1 = full, <1 = ducked (pause screen)
 export function setMusic(track, level=1){ music.want = track; music.level = level; syncMusic(); }
 export function updateMusicBtn(){
   const hb = document.getElementById('musicBtn'); if(hb) hb.innerHTML = ic(music.on ? 'music_note' : 'music_off');
