@@ -166,7 +166,7 @@ with sync_playwright() as p:
     check(S(f"S.region.blocks[1].x === {P['x']} && S.region.blocks[1].y === {P['y']}") and S("S.grid.filter(p=>p.k!=='void').length") == 128, "it is the chosen plot of the same world map; the rest of the square is void")
     check(S(f"S.perks.includes('{perk}') || (S.shovel && '{perk}'==='shovel')"), "the perk stays for the rest of the run")
     check(page.is_visible("text=Expansion Phase") and "Phase II" in page.locator("#notice .lvl-tag").inner_text() and page.locator("#confirm").is_hidden(), "phase II card (and the Acquire button is gone)")
-    check(page.locator("#notice .ladder .rung").count() == 3 and "640" in page.locator("#notice .ladder").inner_text(), "the phase card shows the targets ahead (this one and the next two)")
+    check(page.locator("#notice .ladder").count() == 0 and page.locator("#notice .lose-line").count() == 1, "v0.10.2: the phase card shows no targets ahead, only how you can lose")
     clear_cards(); S("(g.showNext(), 0)")
     check(not page.locator("#m-local").is_hidden() and page.locator("#m-neigh").is_hidden(), "settlement II shows only the Mayor meter")
     check(S("g.dock") == "agenda" and page.locator("#strip .tile[data-k=lobby]").count() == 1, "settlement II: with nothing selected, the bar is the agenda (lunch with the mayor)")
@@ -184,9 +184,11 @@ with sync_playwright() as p:
     n_on = page.locator(".cv-ach .acard.on").count(); n_off = page.locator(".cv-ach .acard.off").count()
     check(n_on + n_off == S("Object.keys(g.ACH_BY_ID).length") and n_on >= 1 and page.locator(".cv-ach .ucard").count() == 8
           and page.evaluate("getComputedStyle(document.querySelector('.cv-ach .cgrid')).gridTemplateColumns.split(' ').length") >= 6,
-          "Achievements: a screen of grids, every achievement and the 8 buildings (each with its level)")
+          "Achievements: a screen of grids, every achievement and the 8 buildings")
     check(all(x.strip().startswith("???") for x in page.locator(".cv-ach .acard.off b").all_inner_texts()) and page.locator(".cv-ach .acard.off small").count() == 0,
           "achievements not earned yet show ??? (no name, no description)")
+    check(page.locator(".cv-ach .ucard:not(.on)").count() >= 1 and all(x.strip() == "???" for x in page.locator(".cv-ach .ucard:not(.on)").all_inner_texts()),
+          "v0.10.2: locked buildings are just ??? (no level to reach)")
     page.keyboard.press("Escape")
     page.click("#cover >> text=Settings"); page.wait_for_timeout(60)
     check(page.locator("#cover .cv-item.tut").count() == 1, "the tutorial can be played again from Settings")
@@ -305,6 +307,7 @@ with sync_playwright() as p:
     check(page.is_visible("#drama .gazette") and page.locator("#drama canvas.regionmap").count() == 1 and page.is_visible("#drama >> text=New Game"),
           "then the Gazette, what the region reached, and start a new one")
     check(page.locator("#drama .xpbar").count() == 1 and S("S.over.career && S.over.career.after > S.over.career.before"), "every run gives experience, even a lost one")
+    check(S("g.music") == "gameover", "v0.10.2: a lost run has its own music (the Ode, slow and minor)")
     check(S("g.records().best.settlements") >= 4, "the record keeps the best Euroregion")
 
     # --- Combos (discovered by building), access through finished buildings
@@ -436,6 +439,8 @@ with sync_playwright() as p:
     check(not S("!!S.over") and page.locator(".popt[data-k=yes]").count() == 1, "Abandon asks before ending the run")
     page.click(".popt[data-k=yes]"); page.wait_for_timeout(200)
     check(S("S.over && S.over.why") == "abandoned" and S("!!S.over.career"), "abandoning ends the run as a loss, and the career is settled")
+    S("(g.showNext(), 0)"); page.wait_for_timeout(100)
+    check(S("g.music") == "gameover", "abandoning plays the game-over music too")
     ev("document.getElementById('drama') && (document.getElementById('drama').hidden = true)")
 
     # --- v0.10.1
@@ -472,6 +477,29 @@ with sync_playwright() as p:
     page.click("#notice >> text=Noted"); page.wait_for_timeout(60)
     check("stubborn" in page.locator("#ctxHead").inner_text().lower(), "from then on the parcel is marked")
     page.keyboard.press("Escape")
+
+    # --- v0.10.2
+    ev(f"{G}.newGame(44, 0)"); clear_cards()
+    check(S("g.on('combos') && g.on('debt') && g.on('access') && !g.on('lose')"), "phase I already has combos, roads and bankruptcy (audits come later)")
+    S("(S.over=null, S.funds=50, S.debt=g.CFG.debtCap+1, S.cards=[], 0)"); S("g.endMonth()")
+    check(S("S.over && S.over.why") == "bankrupt", "phase I: debt over the limit ends the programme")
+    S("(g.showNext(), 0)"); page.wait_for_timeout(100); ev("document.getElementById('drama').click()"); page.wait_for_timeout(300)
+    check(page.locator("#drama .gazette dt").count() == 1, "with a single plot, the Gazette shows only the residents reached")
+    ev("document.getElementById('drama') && (document.getElementById('drama').hidden = true)")
+    pcts = S("(()=>{ const out=[]; for(let s=1;s<=20;s++){ g.newGame(500+s, 1); g.S.grid.forEach(p=>{ if(p.hold) out.push(p.holdPct); }); } return out; })()")
+    check(len(pcts) > 0 and all(50 <= x <= 150 for x in pcts) and len(set(pcts)) > 3, f"stubborn owners ask +50…150%, different per parcel ({sorted(set(pcts))[:6]}…)")
+    ev(f"{G}.newGame(45, 2)"); clear_cards()
+    S("(S.comboPings=[{id:g.COMBOS[0].id, i:0, j:1, good:true, first:false}], g.showNext(), 0)"); page.wait_for_timeout(120)
+    check(S("(S.comboPings||[]).length") == 0 and S("g.flashes") >= 1, "a combo that forms flashes on the map (and chimes)")
+    S("(g.openRun('career'), 0)"); page.wait_for_timeout(60)
+    med = page.locator("#run .medals .md")
+    if med.count():
+        med.first.click(); page.wait_for_timeout(80)
+        check(page.is_visible("#pop") and "XP" in page.locator("#pop").inner_text(), "tapping a medal says what it is (and its XP)")
+    else:
+        check(False, "the run file shows the medals")
+    check("PX" not in page.locator("#run").inner_text(), "XP, never PX")
+    S("(g.closeRun(), 0)")
 
     # --- Every card, level and guide step renders in both languages without raw keys
     raw = []

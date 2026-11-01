@@ -14,7 +14,8 @@ import { DIR_KEYS, RCOMBO_BY_ID, attachPreview, cellPos, regionPop } from './cor
 import { caps, hasAccess } from './core/rules.js';
 import { S, rc } from './core/state.js';
 import { LANG, t } from './i18n/index.js';
-import { born, compose, draw, presentNow, spriteSheet, startNight } from './render/anim.js';
+import { FLASH, born, compose, draw, presentNow, spriteSheet, startNight } from './render/anim.js';
+import { music } from './audio/music.js';
 import { FRX, FRY, MAPCX, MAPCY, attachSel, centreOn, isoOf, isoW, panBy, resize, selBlock, selected, tileAt, tileAtW, toScreen, viewRot, zoom, zoomAt } from './render/camera.js';
 import { art, startSite } from './render/map.js';
 import { ARCH, archOf } from './render/sprites.js';
@@ -45,6 +46,7 @@ window.__eurocrat = {
   screenOfW:(R,C)=>{ const [ix,iy]=isoW(R-FRY,C-FRX); return toScreen(ix,iy); },   // a MAP cell (y, x) on screen
   get attachSel(){ return attachSel; }, get viewRot(){ return viewRot; }, get selBlock(){ return selBlock; },
   refresh, showNext, hideModal, get selected(){ return selected; }, spriteSheet, portrait,
+  get music(){ return music.want; }, get flashes(){ return FLASH.size; },
   startNight, ARCH, archOf, styleName, get born(){ return born.size; }, get artSize(){ return [art.width, art.height]; },
   frameMs:(n=30)=>{ const t0=performance.now(); for(let k=0;k<n;k++){ compose(t0+k*66); presentNow(); } return (performance.now()-t0)/n; },
 };

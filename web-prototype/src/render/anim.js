@@ -228,7 +228,8 @@ export function drawEntry(E, T, step, now){
       else { if(b0 !== undefined) born.delete(E.i);
         const hl = HL.get(E.i); if(hl) drawHalo(E, hl, T);   // Kairosoft-style: the buildings of a combo glow
         bl(E.s, E.x, E.y, step);
-        if(hl === 'good') drawSparkles(E, T); } }
+        if(hl === 'good') drawSparkles(E, T);
+        const F = FLASH.get(E.i); if(F) drawFlash(E, F, now); } }
     if(E.crane) drawCrane(E, T, step);
     if(!rising) E.fx.forEach(f=>FX[f.k](f, E, T, step));
     if(E.walk && !rising) drawWalkers(E, T, step);
@@ -238,6 +239,28 @@ export function drawEntry(E, T, step, now){
 // ---------- combos, Kairosoft-style: the buildings that form a (discovered) combo get a pulsing outline,
 // gold for good combos (with a few sparkles), red for bad ones ----------
 export let HL = new Map();   // entry id (E.i) → 'good' | 'bad'
+// v0.10.2: the moment a combo forms, its buildings flash (a white burst, then the halo) and throw sparkles
+export const FLASH = new Map();   // entry id → {t0, good}
+export const FLASH_MS = 1400;
+export function comboEntryIds(x){
+  const A = S.region.active, ids = [x.i];
+  if(x.j >= 0) ids.push(x.j);
+  else if(A && S.frontier[-1-x.j]){ const f = S.frontier[-1-x.j]; ids.push(-1 - wid(A.y + f.r, A.x + f.c)); }
+  return ids;
+}
+export function comboFlash(x){ if(!MOTION) return; const t0 = performance.now(); comboEntryIds(x).forEach(id=>FLASH.set(id, {t0, good:x.good})); kick(); }
+function drawFlash(E, F, now){
+  const a = (now - F.t0) / FLASH_MS; if(a >= 1){ FLASH.delete(E.i); return; }
+  const o = haloOf(E.s, F.good ? 'good' : 'bad');
+  GX.globalAlpha = 1 - a; GX.drawImage(o.c, OX0 + E.x - o.ox, OY0 + E.y - o.oy);
+  if(a < 0.35){ GX.globalCompositeOperation = 'lighter'; GX.globalAlpha = (0.35 - a) / 0.35 * 0.8;   // the white burst
+    GX.drawImage(E.s.c, OX0 + E.x - E.s.ox, OY0 + E.y - E.s.oy); GX.globalCompositeOperation = 'source-over'; }
+  GX.globalAlpha = 1;
+  const col = F.good ? '#fff7c2' : '#ffb3a8', top = E.s.top || 14;   // sparkles flying out of the roof
+  for(let k = 0; k < 8; k++){ const ang = k/8 * Math.PI*2 + hsh(E.i, k, 71), d = 4 + a*26, sz = a < 0.6 ? 2 : 1;
+    const X = Math.round(OX0 + E.x + Math.cos(ang)*d*1.4), Y = Math.round(OY0 + E.y - top*0.6 + Math.sin(ang)*d*0.8 - a*8);
+    R(X, Y-sz, 1, 2*sz+1, col); R(X-sz, Y, 2*sz+1, 1, col); }
+}
 export function comboHighlights(){
   HL = new Map(); if(!S.region.active) return;
   const known = discovered(), A = S.region.active;

@@ -134,7 +134,7 @@ export function beginPhase(stage, fresh){
   S.region.next = null; S.region.cands = [];
   // the new plot: stubborn owners (from phase II) and the municipal land reserve
   const mine = plotParcels(last);
-  if(L.f.holdout) mine.forEach(i=>{ const p = S.grid[i]; if(p.k==='farm' && p.st==='land' && rnd() < 0.25){ p.hold = true; p.price = r1(p.price*1.8); } });
+  if(L.f.holdout) mine.forEach(i=>{ const p = S.grid[i]; if(p.k==='farm' && p.st==='land' && rnd() < 0.25){ p.hold = true; p.holdPct = 50 + Math.round(rnd()*20)*5; p.price = r1(p.price*(1 + p.holdPct/100)); } });   // v0.10.2: +50…150%, rolled once
   if(stage >= 1){ const n = last.n, ox = last.x - S.region.active.x, oy = last.y - S.region.active.y;
     const set = (r,c)=>{ if(r<0||c<0||r>=n||c>=n) return false; const p = S.grid[idx(oy+r, ox+c)]; if(p.k!=='farm' || p.st!=='land') return false; Object.assign(p, {k:'muni', price:0.6, urban:true}); return true; };
     let r=ri(0,n-1), c=ri(0,n-1), k=0, guard=0;

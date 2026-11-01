@@ -464,3 +464,14 @@ test('v0.10.1: the founding district has the city\'s name and follows it when th
   assert.ok(core.renameTown('Nueva Burocracia').ok);
   assert.equal(S.region.blocks[0].town, 'Casco Viejo', 'a district with a name of its own keeps it');
 });
+
+test('v0.10.2: combos and bankruptcy from phase I; stubborn owners ask +50…150%, rolled once', () => {
+  g.newGame(5, 0);
+  assert.equal(core.on('combos'), true); assert.equal(core.on('debt'), true); assert.equal(core.on('permits'), false);
+  const S = core.S; S.cards = []; S.debt = core.CFG.debtCap + 1; core.endMonth();
+  assert.equal(S.over && S.over.why, 'bankrupt', 'phase I can be lost by debt');
+  const pcts = [];
+  for (let s = 1; s <= 30; s++) { g.newGame(s, 1); core.S.grid.forEach(p => { if (p.hold && p.holdPct) pcts.push(p.holdPct); }); }
+  assert.ok(pcts.length > 10 && pcts.every(p => p >= 50 && p <= 150 && p % 5 === 0), 'between +50% and +150%');
+  assert.ok(new Set(pcts).size >= 5, 'and they vary');
+});

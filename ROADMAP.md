@@ -6,7 +6,24 @@ Living project document · update it as the prototype evolves. The game design l
 
 **Eurocrat** (working title): a satirical, turn-based roguelike city builder. You are a Brussels programme officer who must deliver a model European town with plenty of money and no power — buy the land, file the permits, survive the neighbours, spend the funds before they expire. Tone and references: *Constructor* (1997), with a hyper-realistic, comic look at how building actually works in contemporary Europe. The plan: validate the loop in the web/iPad prototype, then port to Godot to ship on the App Store and Steam.
 
-## Current status — v0.10.1 (Nov 1, 2026) · new music
+## Current status — v0.10.2 (Nov 2, 2026) · discover, don't be told
+
+The player has to discover and explore: **no screen shows what comes next.**
+- **No targets ahead.** *Próximos objetivos* (the ladder of targets) is gone from the phase screen and from *Run file → Region*. Locked things are only ???: no level to reach, no XP bar, no hint of the rank or the name of the next one. The collection counters and the XP of each achievement stay.
+- **Everything from phase I:** roads and access (a leftover of the 2×2 hamlet had kept them for phase II), **combos** and **bankruptcy** (debt over the limit ends the programme). Audits and failed directives still arrive in phase III.
+- **How you lose, said clearly.** The goal slide of phases I–II: "If time runs out, or your debt goes over the limit, the programme ends." From phase III: "…and an audit, or two failed directives, also end it."
+- **Game-over music:** *Programme Closed (Ode in D minor)* — the Ode to Joy, slow (63 BPM) and minor, on an out-of-tune tuba, the B section on a thin accordion, and a sad trombone "wah-wah-wah-waaah" before it loops. It starts with the stamp, plays softly under the Gazette and the summary, and gives way to the menu theme only back at the main menu. Abandoning a run plays it too.
+- **Combos have a sound of their own** and a flash on the map: good, a bright rising arpeggio; bad, a comic falling "tuu-tuu"; the first discovery, the long version and the mayor's voice; a combo you already know, short and soft; several at once, each a little higher. The buildings flash white, then gold or red, and throw sparkles.
+- **Tap an achievement medal** in *Run file → Career* to see what it is: earned, its name, description and XP; not earned, ??? and its XP.
+- **"XP" everywhere** (no more "PX" in Spanish).
+- **The Gazette with a single plot** shows only the residents reached (no plots or region count).
+- **Stubborn owners ask +50…150%** — a different markup per parcel, rolled once, and shown only when you meet the owner (it was always +80%).
+- **The founding district carries the city's name** (and follows it when the city is renamed, unless it has a name of its own).
+- **Perks never taken are ???** in *Run file → Perks* (a locked one says only the rank it needs).
+- **No Euroregion box** in *Run file → Region* while there is only the first plot.
+- Balance (bot, 60 runs): about 3.6 milestones per run with a new career and 5.2 with a career that keeps playing; phases I and II are still always won. Tests: 24 rules tests, 177 browser checks.
+
+## Previous — v0.10.1 (Nov 1, 2026) · new music
 
 - **Phase III has a new theme:** *Lobby Bossa (Floor 7, Please)*, an elevator bossa nova. The old one (*Regulatory Framework*, a tense office ambient in D minor) was too sad and killed the mood.
 - **From phase V on, a random new track per phase:** *Your Call Is Important to Us* (hold music), *Sunny Subsidy* (ambient house), *Plenary Session (Hands Up!)* (cheap Eurodance) or *Italo Directive* (80s Italo disco). The draw is fixed per run and phase (pausing or reloading keeps it) and never repeats the phase before.
@@ -15,13 +32,12 @@ Living project document · update it as the prototype evolves. The game design l
 And the playtest feedback on v0.10:
 - **Every free spot is offered.** When a milestone is reached, every 8×8 spot touching the region is on offer (it was capped at four), numbered clockwise from north.
 - **Screens build up slower:** each element takes 1 s, 150 ms after the previous one (long grids speed up after the eighth). A tap or a key still shows everything. **Menus never cascade** (pause, settings, confirmations).
-- **Undiscovered combos stay secret:** in the run file they are ??? (no name, no pieces, no silhouettes); land that is not yours lists only the combos you have discovered; unknown region combos are not mentioned on the plot cards or the phase screen. The "?" badge on a building card and "combo?" beside the ghost stay (they hint that building *there* would make something). **Perks too:** in *Run file → Perks*, a perk you have never taken is ??? (a locked one only says the rank it needs).
-- **Districts.** Every plot is a district of the city, with its own name: on the map when zoomed out, next to the parcel reference in the bar, and listed in *Run file → Region*, where each can be renamed. The Euroregion box (map, plots, targets ahead) appears there only from the second plot on. The founding district carries the city's name (and follows it when the city is renamed, unless it has been given a name of its own); later districts get their own.
+- **Undiscovered combos stay secret:** in the run file they are ??? (no name, no pieces, no silhouettes); land that is not yours lists only the combos you have discovered; unknown region combos are not mentioned on the plot cards or the phase screen. The "?" badge on a building card and "combo?" beside the ghost stay (they hint that building *there* would make something).
+- **Districts.** Every plot is a district of the city, with its own name: on the map when zoomed out, next to the parcel reference in the bar, and listed in *Run file → Region*, where each can be renamed. Later districts get their own names.
 - **Stubborn owners show up in person** when you go for their land: a scene with their face, name, who they are, their complaint and their price, in their voice. Nothing gives them away before (no "+%" on the map); after, the parcel carries an owner mark.
 - **Events in two steps:** first the scene (the character and the whole story), then *Decide* — the choices as large decision cards with their effects — and a short outcome screen with its stamp. The story can be read again before deciding.
 - **Synthesized voices.** Every character speaks a babble with their own timbre (pitch, speed, vowels, roughness), plus a gesture for the mood (a cough, "hmpf", a laugh, a shout, a sigh). *Settings → Voices* switches them off. Recorded voices can replace a character later without touching anything else.
 - **Phase introductions rewritten** as a story that goes on: what just happened (early, just in time, with many combos, in debt, with angry neighbours — and who says it: the mayor, Brussels, the banker or Remedios), then why the new rules arrive, told in the story (phases II–IV), or one of ten lines that never repeat in a run (phase V on). The new district says hello on the "Where you are" slide.
-- **Roads and access from phase I.** The first plot is a real 8×8 since v0.10, but the access rule (and with it the road card) only switched on at phase II — a leftover of the 2×2 hamlet. Now phase I already asks for a road or a finished building next to each new one, the road is in the bar from the start, and the mayor's first hint points at a parcel by the road.
 - Balance (bot, 60 runs): about 3.8 milestones per run with a new career (v0.10: 3.7) and 5.4 with a career that keeps playing (v0.10: 4.9); phase I is still always won. Tests: 23 rules tests, 167 browser checks.
 
 ## Previous — v0.10.0 (Oct 31, 2026) · the region you keep building
@@ -206,6 +222,9 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 - **Energy requirements:** buildings consume by type and letter; the city produces or imports (solar, wind, a grid link with limited capacity); shortages and blackouts, surplus sold; climate directives with deadlines.
 - **Materials:** concrete, steel, timber, prefab, recycled — bought on a market with prices and shortages, or made locally; works stop without them; the choice affects cost, the energy letter and Brussels' mood. Introduced by phases, energy first.
 - **Recorded voices**, if the synthesized ones fall short.
+- **A combo for joining districts by road** (and a bad one when lorries end up in residential streets).
+- **Longer event stories:** two or three paragraphs per event, in English and Spanish — five samples first, for approval.
+- **A pixel-art illustration for every event.**
 
 ### Not scheduled
 
@@ -236,6 +255,7 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
   - Menu: "Ode to Joy (Brussels Eurodance Mix)" — cheap 90s Eurodance with Beethoven's melody (public domain).
   - In game, one theme per phase: I "Village Fete Waltz", II "Let's Build Together" (80s Eurovision pop), III "Lobby Bossa (Floor 7, Please)" (v0.10.1, replacing the too-sad "Regulatory Framework"), IV "Harmonised Trance Anthem"; from phase V on, a random draw of "Your Call Is Important to Us" (hold music), "Sunny Subsidy" (ambient house), "Plenary Session (Hands Up!)" and "Italo Directive".
   - Win: "Douze Points for Harmonisation" — Eurovision-style schlager with the obligatory key change.
+  - Game over (v0.10.2): "Programme Closed (Ode in D minor)" — the Ode slowed down and minor, out-of-tune tuba, a sad trombone at the end.
 - ✅ Wired into the web prototype (menu / phase themes / milestones, crossfades, mute toggle) and the Godot skeleton (menu, level I theme in game; win theme preloaded for the port).
 - v0.1's darksynth tracks were retired with the pivot.
 - Later: short stingers (permit approved, directive failed, audit), a tension layer for the last months of a level, or re-voicing the MIDI with better instruments.

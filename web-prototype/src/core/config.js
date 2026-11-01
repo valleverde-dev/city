@@ -13,15 +13,16 @@ import { S } from './state.js';
 //    access: buildings need a road/built neighbour · permits: reviews can be rejected · local: the mayor matters
 //    jobs: residents need jobs · combos · holdout: farmers raise prices · rustic: farmland needs an urban plan
 //    events: crisis cards · directives · neigh/comp: neighbours and compliance meters · services: school + health
-//    lose: you can actually lose · milestones: use-it-or-lose-it · market: developers, property market
+//    lose: audits and failed directives end the run · debt (v0.10.2, from phase I): loans, and bankruptcy past the cap
+//    milestones: use-it-or-lose-it · market: developers, property market
 // =====================================================================
-export const VERSION = '0.10.1';   // keep in step with package.json (the build checks it)
-export const BASE_F = {access:1, permits:1, local:1, jobs:1, combos:1, holdout:1};
+export const VERSION = '0.10.2';   // keep in step with package.json (the build checks it)
+export const BASE_F = {access:1, permits:1, local:1, jobs:1, combos:1, holdout:1, debt:1};
 export const FULL_F = {...BASE_F, rustic:1, events:1, directives:1, neigh:1, comp:1, services:1, lose:1};
 export const PLOT = 8;                     // every plot of the region is PLOT × PLOT parcels
 export const DENSITY0 = 4;                 // residents per parcel asked in the first phase (+1 per milestone)
 export const PHASES = [                    // per phase: rules, months, agenda slots, grant per new resident asked (€M)
-  {months:8,  slots:2, per:0.10, f:{access:1}},   // v0.10.1: roads and access from the first phase (the first plot is a real 8×8)
+  {months:8,  slots:2, per:0.10, f:{access:1, combos:1, debt:1}},   // roads and access (v0.10.1), combos and bankruptcy (v0.10.2) from the first phase
   {months:14, slots:3, per:0.12, f:{...BASE_F}},
   {months:18, slots:3, per:0.18, f:{...FULL_F}},
   {months:18, slots:3, per:0.12, f:{...FULL_F, milestones:1, market:1}},

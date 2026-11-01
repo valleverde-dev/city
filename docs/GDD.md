@@ -34,13 +34,13 @@ v0.5 had four separate levels, which played like a campaign rather than a roguel
 
 | Phase | Plots | Parcels | Density | Target | Months | Agenda | New rules | Can you lose? |
 |---|---|---|---|---|---|---|---|---|
-| I · Pilot Project | 1 | 64 | 4 | 256 | 8 | 2 | Buy a parcel, build housing and roads, end months; access (a road or a built neighbour) from v0.10.1 | Only by running out of time |
-| II · Expansion Phase | 2 | 128 | 5 | 640 | 14 | 3 | Permits can be rejected, the Mayor meter, jobs, combos, farmers holding out | Only by running out of time |
-| III · Partial Plan | 3 | 192 | 6 | 1,152 | 18 | 3 | Rustic land + urban plans, event cards, directives and deals, neighbours, compliance, school and health, the bank, extensions | Yes |
+| I · Pilot Project | 1 | 64 | 4 | 256 | 8 | 2 | Buy a parcel, build housing and roads, end months; access (a road or a built neighbour), combos and debt (v0.10.2) | By running out of time, or debt over the limit |
+| II · Expansion Phase | 2 | 128 | 5 | 640 | 14 | 3 | Permits can be rejected, the Mayor meter, jobs, farmers holding out | By running out of time, or debt over the limit |
+| III · Partial Plan | 3 | 192 | 6 | 1,152 | 18 | 3 | Rustic land + urban plans, event cards, directives and deals, neighbours, compliance, school and health, the bank, extensions | Yes: also audits and two failed directives |
 | IV · Model Town | 4 | 256 | 7 | 1,792 | 18 | 3 | Use-it-or-lose-it milestones (25% of the tranche by month 8, 60% by 14), developers, property market | Yes |
 | V, VI, … | 5, 6… | 320, 384… | 8, 9… | 2,560 · 3,456 · … | 18 | 3 | None: the same bureaucracy, more land, denser | Yes |
 
-The phase screen and *Run file → Region* always show **the targets ahead** (this phase and the next two, with the land × density behind each), so the growth is never a surprise.
+**No screen shows what comes next** (v0.10.2): the phase screen gives this phase's target and how you can lose, never the targets ahead; locked buildings, perks, combos and achievements are ??? (no level, rank or name to reach). The player discovers and explores.
 
 **Money comes in tranches.** Each phase releases a new grant tranche sized to what it asks for (*10% of the new residents in €M + 8* in phase I, 12% in II, 18% in III, 12% from IV on), and gives the phase its months. Rules switch on phase by phase, so the learning curve stays.
 
@@ -57,7 +57,7 @@ The phase screen and *Run file → Region* always show **the targets ahead** (th
 1. **Region combos** between the types of plots that touch (all of them, since the whole region is in play). Good ones include Commuter Belt (commuter + industrial), Technology Transfer, Heritage Trail, Farm to Table, Campus Town, Freight Hub, Market Town. Bad ones include Smokestack View (industrial + spa), Lorries in the Old Town, Slurry Season (farming + commuter), Rust Belt (two industrial towns), Sleeper Sprawl, Freshers' Week. They are **discovered** like building combos; the catalogue persists between runs.
 2. **The land itself.** Where the road runs, where the river and the woods are: you see it before you choose. Buildings form ordinary adjacency combos and give access **across plot edges** — it is one map.
 
-- Every phase opens with a **phase screen** (its type, region combos, the targets ahead and "what is new") and, up to phase IV, the **guide** (the mayor's hints, one rule at a time as it switches on).
+- Every phase opens with a **phase screen** (its type, region combos, this phase's goal, how you lose and "what is new") and, up to phase IV, the **guide** (the mayor's hints, one rule at a time as it switches on).
 - Rules that are not in play are **invisible**: no meter, tab or button for them.
 - In phases I–II you cannot order works you cannot pay for, so there is no debt and no loan.
 - **Between runs:** the combo catalogue (buildings and region) and the **records** (most milestones, largest Euroregion population).
@@ -67,7 +67,7 @@ The phase screen and *Run file → Region* always show **the targets ahead** (th
 
 Playtest: the second settlement felt impossible and depended on luck (the bot averaged 3.6 rejected permits and 2 farmers raising prices per game). Now:
 - **Permits are decided by political support, not dice.** Support (0–100) comes from the Mayor, the neighbours and compliance. A permit is approved if support is at least **50** when it is decided. The parcel sheet, the map badge (red) and the bell warn you in advance, and you can lobby or consult in time.
-- **Stubborn owners are known from the start.** About a quarter of the farmland belongs to owners who ask 80% more; their parcels are marked "+80%" on the map (where you could build) and their price already includes it. No surprise raises, no lost actions.
+- **Stubborn owners** (from phase II): about a quarter of the new farmland belongs to owners who ask more — **+50…150%, rolled once per parcel** (v0.10.2). Nothing gives them away: they show up in person when you go for their land (v0.10.1), with their price, and from then on the parcel is marked. No surprise raises after that, no lost actions.
 - Randomness stays where it is fun and visible: event cards (each a choice), directives, the market.
 
 ## 5. Core loop

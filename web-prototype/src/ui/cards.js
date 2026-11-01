@@ -1,3 +1,5 @@
+import { comboSound } from '../audio/combo.js';
+import { comboFlash } from '../render/anim.js';
 import { setMusic } from '../audio/music.js';
 import { playSound } from '../audio/sfx.js';
 import { speak, syllablesOf } from '../audio/voice.js';
@@ -140,8 +142,13 @@ export function chip([type, v]){
 }
 export function showNext(){
   hidePop();
+  // v0.10.2: every combo that has just formed flashes on the map; the ones you already know just chime (softly,
+  // a little higher each, when several form at once). New ones get the long sound with their banner.
+  const pings = (S.comboPings || []).splice(0); let rep = 0;
+  pings.forEach(x=>{ const k = x.first ? 0 : rep++;
+    setTimeout(()=>{ comboFlash(x); if(!x.first) comboSound('repeat', x.good, k); }, (x.first ? 0 : k) * 280); });
   // new combos are banners: they never stop the game
-  let shifted = false;
+  let shifted = pings.length > 0;
   while(S.cards.length && (S.cards[0].type==='combo' || S.cards[0].type==='rcombo')){ const c = S.cards.shift(); shifted = true;
     if(c.type==='combo'){ toast({k:'combo', id:c.id, good:COMBO_BY_ID[c.id].good}); pulse(c.i); }
     else toast({k:'combo', id:c.id, good:RCOMBO_BY_ID[c.id].good, region:true}); }
@@ -197,7 +204,7 @@ export const CARD = {
     slideLetter({icon:'map', title:`<span class="lvl-tag">${t('ui.settlement')} ${roman(k+1)}</span>${more ? (dist ? dist.town : S.town) : t('lvl.'+(n+1)+'.name')}`, speaker: intro.speaker,
       quote: intro.text,
       slides:[
-        {label:t('slide.goal'), html:`<div class="goal big"><b>${L.target}</b><span>${t('slide.goalX', {m:CFG.months})}</span></div>${ladderHtml()}${k===0 ? `<p class="keys">${t('lvl.keys')}</p>` : ''}`},
+        {label:t('slide.goal'), html:`<div class="goal big"><b>${L.target}</b><span>${t('slide.goalX', {m:CFG.months})}</span></div><p class="hint lose-line">${t(k < 2 ? 'slide.lose' : 'slide.lose3')}</p>${k===0 ? `<p class="keys">${t('lvl.keys')}</p>` : ''}`},
         {label:t('slide.where'), html:`${k > 0 && dist ? `<div class="quote local">${t('dline.'+S.stype, {d:dist.town})}</div>` : ''}${stypeBlock(S.stype)}${rc}${S.carried > 0 ? `<p class="hint">${t('stl.carry', {x:money(S.carried)})}</p>` : ''}`},
         {label:t('lvl.newRules'), html:`<ul class="rules">${rules}</ul>`},
         {label:t('stl.perksLbl'), html: mine.length ? `<div class="perkgrid">${mine.map(p=>`<div class="pk">${ic(PERKS[p])}<b>${t('perk.'+p)}</b><small>${t('perkd.'+p)}</small></div>`).join('')}</div>` : ''},

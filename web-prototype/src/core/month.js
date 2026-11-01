@@ -61,7 +61,9 @@ export function endMonth(){
   // 5b. Combos: newly formed pairs are announced (and discovered the first time ever)
   const combosNow = activeCombos(); S.comboSeen = S.comboSeen || [];
   combosNow.forEach(x=>{ const key = x.id+':'+x.i+':'+x.j; if(S.comboSeen.includes(key)) return; S.comboSeen.push(key);
-    if(discover(x.id)){ S.cards.push({type:'combo', id:x.id, i:x.i, j:x.j}); gainXp('discover'); }
+    const first = discover(x.id);
+    (S.comboPings = S.comboPings || []).push({id:x.id, i:x.i, j:x.j, good:x.good, first});   // v0.10.2: the UI's sound and flash
+    if(first){ S.cards.push({type:'combo', id:x.id, i:x.i, j:x.j}); gainXp('discover'); }
     if(x.good) gainXp('combo');
     else fx(x.good || x.j < 0 ? x.i : x.j, x.good ? 'fx.combo' : 'fx.comboBad', {c:x.id}, x.good ? 'good' : 'bad');   // j < 0: across the border
     log(x.good ? 'log.combo' : 'log.comboBad', {c:x.id}, x.good ? 'good' : 'bad'); });
@@ -120,7 +122,7 @@ export function endMonth(){
   // 12. Random event (a card with choices)
   if(!S.over) rollEvent();
   // 13. Money trouble: the regional bank lends a bridge loan instead of game over
-  if(S.funds < 0 && !S.over && !on('lose')) S.funds = 0;   // learning levels: the Union quietly covers small gaps
+  if(S.funds < 0 && !S.over && !on('debt')) S.funds = 0;   // (no phase without the debt rule since v0.10.2)
   if(S.funds < 0 && !S.over){
     const loan = Math.ceil((-S.funds+1)/CFG.loanStep)*CFG.loanStep;
     S.debt = r1(S.debt + loan); S.funds += loan;
@@ -136,7 +138,7 @@ export function endMonth(){
   if(!S.over){
     const L = on('lose');
     if(residents() >= CFG.target){ S.perkChoice = null; consolidate(); }
-    else if(L && S.debt > CFG.debtCap) S.over = {win:false, why:'bankrupt'};
+    else if(on('debt') && S.debt > CFG.debtCap) S.over = {win:false, why:'bankrupt'};   // v0.10.2: from phase I
     else if(L && on('comp') && S.comp <= 0) S.over = {win:false, why:'audit'};
     else if(L && S.strikes >= 2) S.over = {win:false, why:'suspended'};
     else if(S.month > CFG.months) S.over = {win:false, why:'timeout'};

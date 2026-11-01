@@ -261,7 +261,7 @@ export function achievementsHTML(){
   const achs = ACH.map(x=>{ const on = c.ach.includes(x.id);
     return `<div class="acard ${on ? 'on' : 'off'}"><span class="md">${ic('workspace_premium')}</span><b>${on ? t('ach.'+x.id+'.t') : t('car.unknown')}</b>${on ? `<small>${t('ach.'+x.id+'.x')}</small>` : ''}<em>+${x.xp} XP</em></div>`; }).join('');
   const blds = NEW_TYPES.slice().sort((x,y)=>UNLOCK_LEVEL[x]-UNLOCK_LEVEL[y]).map(ty=>{ const on = unlocked(ty);
-    return `<div class="ucard ${on ? 'on' : ''}"><div class="band"><img src="${buildingArt(ty)}" alt=""${on ? '' : ' class="dark"'}></div><b>${on ? t('b.'+ty) : t('car.unknown')}</b>${on ? `<small>${t('bd.'+ty)}</small>` : ''}<em>${t('car.level', {n:UNLOCK_LEVEL[ty]})}</em></div>`; }).join('');
+    return `<div class="ucard ${on ? 'on' : ''}"><div class="band"><img src="${buildingArt(ty)}" alt=""${on ? '' : ' class="dark"'}></div><b>${on ? t('b.'+ty) : t('car.unknown')}</b>${on ? `<small>${t('bd.'+ty)}</small>` : ''}</div>`; }).join('');   // v0.10.2: no level hint for what is still locked
   return `<div class="ach-head">${ic('workspace_premium')}<h2>${t('title.career')}</h2><button class="x" type="button" aria-label="${t('title.back')}">${ic('close')}</button></div>
     <div class="ach-body">
       <div class="band-row"><div class="rk"><span class="lvl">${t('car.level', {n:lv})}</span><b>${t('rank.'+r)}</b></div>

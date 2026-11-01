@@ -1,5 +1,6 @@
 import { setMusic } from '../audio/music.js';
 import { playSound } from '../audio/sfx.js';
+import { comboSound } from '../audio/combo.js';
 import { ACH_BY_ID, PERK_RANK, RANKS, RANK_BONUS, UNLOCK_LEVEL, XP_FOR, career, levelOf, rankOf } from '../core/career.js';
 import { B, CFG, NEW_TYPES } from '../core/config.js';
 import { residents } from '../core/economy.js';
@@ -98,7 +99,9 @@ export function dramaLose(buttons){
     <div class="shredder"><i></i></div><div class="strips"></div>
     <div class="page" hidden>${gazette(t('news.'+w+'.h', {town:S.town}), t('news.'+w+'.s'),
       `<div class="rmap-slot"></div>
-       <dl class="kv"><dt>${t('ui.settlements')}</dt><dd>${S.region.blocks.length}</dd><dt>${t('ui.regionPop')}</dt><dd>${pop}</dd></dl>
+       ${S.region.blocks.length > 1   // v0.10.2: with a single plot, just the people you reached
+         ? `<dl class="kv"><dt>${t('ui.settlements')}</dt><dd>${S.region.blocks.length}</dd><dt>${t('ui.regionPop')}</dt><dd>${pop}</dd></dl>`
+         : `<dl class="kv"><dt>${t('ui.residents')}</dt><dd>${pop}</dd></dl>`}
        ${(beat.settlements || beat.pop) ? `<p class="record">${ic('workspace_premium')}${t('run.record')}</p>` : ''}`)}
       <div class="summary">
         <div class="xprow"><span>${t('rank.'+res.rank1)}</span><b>${t('sum.gained', {x: res.after - res.before})}</b></div>
@@ -106,7 +109,7 @@ export function dramaLose(buttons){
         ${res.rank1 > res.rank0 ? `<p class="promo">${ic('military_tech')}${t('toast.rank', {r:t('rank.'+res.rank1)})}</p>` : ''}
         <h4>${t('sum.newAch')}</h4>${achList}
         ${unlockedNow.length ? `<h4>${t('sum.unlocked')}</h4><ul class="medals new">${unlockedNow.map(ty=>`<li>${ic(B[ty].icon)}<b>${t('b.'+ty)}</b></li>`).join('')}</ul>` : ''}
-        <p class="hint">${t('run.best', {s:rec.best.settlements, p:rec.best.pop})}</p>
+        ${rec.best.settlements > 0 ? `<p class="hint">${t('run.best', {s:rec.best.settlements, p:rec.best.pop})}</p>` : ''}
         <div class="btns"></div></div></div>
     <p class="tap">${t('drama.tap')}</p>`;
   buttons.forEach(b=>d.querySelector('.btns').appendChild(b));
@@ -114,9 +117,10 @@ export function dramaLose(buttons){
   const showPage = () => { if(!page.hidden) return; page.hidden = false; d.classList.add('paged');
     const slot = page.querySelector('.rmap-slot'); if(slot) slot.appendChild(regionCanvas({maxW: 260, maxH: 110}));
     const bar = page.querySelector('.xpbar i'); requestAnimationFrame(()=>requestAnimationFrame(()=>{ bar.style.width = pct(res.after)+'%'; })); };
+  setMusic('gameover', 0.8);   // v0.10.2: the Ode, slow and minor; the menu theme comes back only on the main menu
   const first = !S.over.dramaPlayed; S.over.dramaPlayed = true;
   if(!first || !MOTION){ d.classList.add('stamped', 'shred'); showPage(); return; }
-  playSound('fail'); setMusic('menu', 0.6);
+  playSound('fail');
   later(650, ()=>{ d.classList.add('stamped'); playSound('stamp'); const app = document.getElementById('app'); app.classList.add('shake'); setTimeout(()=>app.classList.remove('shake'), 500); });
   later(1700, ()=>{ d.classList.add('shred'); const st = d.querySelector('.strips');
     for(let k=0;k<14;k++){ const s = document.createElement('i'); s.style.left = (k*7)+'%'; s.style.animationDelay = (k*40)+'ms'; st.appendChild(s); } });
@@ -125,7 +129,7 @@ export function dramaLose(buttons){
 }
 
 // ---------- banners during play: achievements, new buildings, promotions ----------
-let queue = [], showing = false;
+let queue = [], showing = false, streak = 0;
 // Any banner (combos, levels…): queued after the ones already showing
 export function toast(q){ queue.push(q); if(!showing) nextToast(); }
 export const pendingToasts = () => queue.map(q=>q.k);   // for the tests
@@ -143,7 +147,7 @@ export function flushToasts(){
   if(!showing) nextToast();
 }
 function nextToast(){
-  const q = queue.shift(); if(!q){ showing = false; return; } showing = true;
+  const q = queue.shift(); if(!q){ showing = false; streak = 0; return; } showing = true;
   let bar = document.getElementById('toast'); if(!bar){ bar = document.createElement('div'); bar.id = 'toast'; document.body.appendChild(bar); }
   bar.className = 'toast '+q.k;
   if(q.k==='ach') bar.innerHTML = `${ic('workspace_premium')}<span><small>${t('toast.ach')} · +${ACH_BY_ID[q.id].xp} XP</small><b>${t('ach.'+q.id+'.t')}</b></span>`;
@@ -155,7 +159,8 @@ function nextToast(){
   if(q.k==='level') bar.innerHTML = `${ic('trending_up')}<span><small>${t('file.t')}</small><b>${t('toast.level', {n:q.n})}</b>${gives ? `<i>${gives}</i>` : ''}</span>`;
   if(q.k==='combo'){ bar.className = 'toast combo '+(q.good ? 'good' : 'bad');
     bar.innerHTML = `${ic(q.good ? 'workspace_premium' : 'warning')}<span><small>${t(q.good ? 'toast.combo' : 'toast.comboBad')}${q.good ? ' · +'+XP_FOR.discover+' XP' : ''}</small><b>${t((q.region ? 'rcombo.' : 'combo.')+q.id)}</b><i>${t((q.region ? 'rcombod.' : 'combod.')+q.id).split('. ')[0]}</i></span>`; }
-  playSound(q.k==='rank' ? 'win' : q.k==='combo' ? (q.good ? 'fanfare' : 'crowd') : q.k==='level' ? 'ok' : 'fanfare');
+  if(q.k==='combo'){ comboSound('discover', q.good, streak); streak++; } else { streak = 0;   // v0.10.2: combos have their own sound
+    playSound(q.k==='rank' ? 'win' : q.k==='level' ? 'ok' : 'fanfare'); }
   // v0.9.2: below the HUD, never over it; it fades out on its own (or when tapped) and the next one follows
   const hud = document.getElementById('hud'); if(hud) bar.style.setProperty('--toastTop', Math.round(hud.getBoundingClientRect().bottom + 12)+'px');
   bar.classList.remove('in'); void bar.offsetWidth; bar.classList.add('in');

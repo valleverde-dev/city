@@ -14,6 +14,7 @@ Eurocrat soundtrack, generated procedurally by `compose.py` (no samples, no thir
 | `eurocrat_handsup` | "Plenary Session (Hands Up!)" | Phase V+ (random) | 140 BPM | 32 bars (~55 s) |
 | `eurocrat_italo` | "Italo Directive" | Phase V+ (random) | 118 BPM | 32 bars (~65 s) |
 | `eurocrat_win` | "Douze Points for Harmonisation" | Milestone / win screen | 122 BPM | 24 bars (~47 s) |
+| `eurocrat_gameover` | "Programme Closed (Ode in D minor)" | Game over (lost or abandoned run, v0.10.2) | 63 BPM | 16 bars (~61 s) |
 
 - **Menu:** cheap 90s Eurodance — four-on-the-floor, offbeat bass, plastic stabs, house piano, pumping sidechain — with the Ode to Joy on a supersaw lead.
 - **One theme per phase** (looped, ducked on pause; chosen in `web-prototype/src/audio/music.js`):
@@ -27,6 +28,7 @@ Eurocrat soundtrack, generated procedurally by `compose.py` (no samples, no thir
     - **Plenary Session (Hands Up!):** the cheapest hands-up Eurodance — vi-IV-I-V, offbeat bass, supersaw hook, piano riff, laser zaps.
     - **Italo Directive:** 80s Italo disco — octave-bouncing bass, arpeggio, claps, tom fills, cowbell, bell and saw lead.
 - **Win:** a Eurovision-style schlager with the obligatory truck-driver key change into the last chorus.
+- **Game over:** the Ode to Joy slowed down and turned minor on an out-of-tune tuba, the B section on a thin accordion, and a sad trombone "wah-wah-wah-waaah" before it loops.
 
 All tracks loop seamlessly: the reverb tail is folded back into the start of the file.
 

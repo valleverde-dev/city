@@ -23,7 +23,7 @@ export const music = {
     return a.canPlayType && a.canPlayType('audio/ogg; codecs="vorbis"') ? 'ogg' : 'm4a'; })(),
   level: 1,
 };
-export const TRACKS = { menu:'eurocrat_menu', win:'eurocrat_win',
+export const TRACKS = { menu:'eurocrat_menu', win:'eurocrat_win', gameover:'eurocrat_gameover',
   level1:'eurocrat_level1', level2:'eurocrat_level2', level3:'eurocrat_lobby', level4:'eurocrat_level4',
   hold:'eurocrat_hold', sunny:'eurocrat_sunny', handsup:'eurocrat_handsup', italo:'eurocrat_italo' };
 // Phases I–IV each have their own theme: village waltz → Eurovision pop → lobby bossa → Euro-trance.

@@ -13,6 +13,7 @@ then written as WAV (convert to OGG/M4A with ffmpeg) and Standard MIDI.
   eurocrat_handsup "Plenary Session (Hands Up!)"             140 BPM  phase V+ (random)
   eurocrat_italo   "Italo Directive"                         118 BPM  phase V+ (random)
   eurocrat_win     "Douze Points for Harmonisation"           122 BPM  inauguration
+  eurocrat_gameover "Programme Closed (Ode in D minor)"        63 BPM   game over (v0.10.2)
 
 The Ode to Joy melody is Beethoven's (Symphony No. 9, 1824) and is in the public
 domain. The arrangements here are new; no existing recording or official
@@ -129,6 +130,22 @@ def i_tuba(m, dur, v):                # oom-pah bass
     n = int((dur + 0.08) * SR); f = hz(m)
     x = np.sin(2 * np.pi * f * tvec(n)) * 0.7 + lp(saw(f, n), 500) * 0.5
     return x * env(n, 0.015, 0.1, 0.6, 0.06, int(dur * SR)) * v
+
+def i_trombone(m, dur, v):            # sad trombone: a brassy saw with a "wah" mute, vibrato and a droop at the end
+    n = int((dur + 0.12) * SR); t = tvec(n); f0 = hz(m)
+    droop = np.where(t > dur * 0.6, -0.06 * (t - dur * 0.6) / max(dur * 0.4, 1e-3), 0)   # sags a little as it fades
+    f = f0 * (1 + 0.012 * np.sin(2 * np.pi * 5.5 * t) * np.clip(t * 3, 0, 1) + droop)
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    x = sum((1 / k) * np.sin(k * ph) for k in range(1, 9))
+    wah = 0.5 + 0.5 * np.sin(2 * np.pi * 3.0 * t - np.pi / 2)                          # the plunger mute opening and closing
+    y = lp(x * (0.35 + 0.65 * wah), 1400) + 0.25 * x * wah
+    return y * env(n, 0.04, 0.1, 0.8, 0.1, int(dur * SR)) * v * 0.55
+
+def i_sadtuba(m, dur, v):             # the tuba, a little out of tune (a few cents flat, wobbling)
+    n = int((dur + 0.1) * SR); t = tvec(n); f = hz(m) * (1 - 0.012 + 0.006 * np.sin(2 * np.pi * 0.7 * t))
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    x = np.sin(ph) * 0.7 + lp(np.sin(ph) + 0.5 * np.sin(2 * ph) + 0.3 * np.sin(3 * ph), 450) * 0.5
+    return x * env(n, 0.03, 0.12, 0.7, 0.1, int(dur * SR)) * v
 
 def i_bell(m, dur, v):                # 80s FM bell lead (the "Eurovision 1986" sound)
     n = int((dur + 1.0) * SR); t = tvec(n); f = hz(m)
@@ -282,10 +299,11 @@ DRUMS = {36: d_kick, 39: d_clap, 38: d_snare, 42: d_hat, 46: lambda v: d_hat(v, 
 INSTR = {'lead': i_supersaw, 'stab': i_stab, 'piano': i_piano, 'bass': i_bass, 'sub': i_sub,
          'pizz': i_pizz, 'ep': i_ep, 'vibes': i_vibes, 'pad': i_pad, 'accordion': i_accordion,
          'glock': i_glock, 'tuba': i_tuba, 'bell': i_bell, 'pluck': i_pluck, 'choir': i_choir,
-         'nylon': i_nylon, 'organ': i_organ, 'marimba': i_marimba, 'flute': i_flute, 'fbass': i_fingerbass}
+         'nylon': i_nylon, 'organ': i_organ, 'marimba': i_marimba, 'flute': i_flute, 'fbass': i_fingerbass,
+         'trombone': i_trombone, 'sadtuba': i_sadtuba}
 GM = {'lead': 81, 'stab': 90, 'piano': 0, 'bass': 38, 'sub': 33, 'pizz': 45, 'ep': 4,
       'vibes': 11, 'pad': 49, 'accordion': 21, 'glock': 9, 'tuba': 58, 'bell': 14, 'pluck': 84,
-      'choir': 52, 'nylon': 24, 'organ': 17, 'marimba': 12, 'flute': 73, 'fbass': 33}
+      'choir': 52, 'nylon': 24, 'organ': 17, 'marimba': 12, 'flute': 73, 'fbass': 33, 'trombone': 57, 'sadtuba': 58}
 
 
 # ---------------------------------------------------------------- effects / render
@@ -876,10 +894,41 @@ def song_italo():
                 echo={'bell': (0.75, 0.3, 0.5), 'pluck': (0.75, 0.25, -0.6)})
 
 
+def song_gameover():
+    """Programme Closed (Ode in D minor): game over, 63 BPM. The Ode slowed down and turned minor on an
+    out-of-tune tuba, the B section on accordion, and a sad trombone "wah-wah-wah-waaah" before it loops."""
+    ev = []; bars = 16
+    minor = lambda m: m - 1 if m % 12 == 6 else m              # F# → F: D major → D minor
+    TRI = {'Dm': [62, 65, 69], 'A': [61, 64, 69], 'Gm': [62, 67, 70], 'Bb': [62, 65, 70]}
+    RT = {'Dm': 38, 'A': 33, 'Gm': 31, 'Bb': 34}
+    chords = ['Dm','A','Dm','A', 'Dm','A','Dm','Dm', 'A','Dm','Gm','A', 'Dm','A','Dm','A']
+    for bar, c in enumerate(chords):
+        b0 = bar * 4
+        for n in TRI[c]: ev.append(('pad', b0, 4, n - 12, 0.16))
+        ev.append(('sub', b0, 3.5, RT[c], 0.5))
+        ev.append(('drums', b0, 0, 40, 0.12)); ev.append(('drums', b0 + 2, 0, 40, 0.09))   # a tired brush
+    # A1 + A2 on the tuba, low and dragging (bars 0-7)
+    for b, d, m in place([(minor(x), y) for x, y in ODE_A1 + ODE_A2], 0):
+        ev.append(('sadtuba', b, d * 0.95, m - 12, 0.75))
+    # B on the accordion, thin and quiet (bars 8-11)
+    for b, d, m in place([(minor(x), y) for x, y in ODE_B], 32):
+        ev.append(('accordion', b, d * 0.9, m, 0.32))
+    # the first half of A2 on the tuba again (bars 12-13)
+    for b, d, m in place([(minor(x), y) for x, y in ODE_A2[:8]], 48):
+        ev.append(('sadtuba', b, d * 0.95, m - 12, 0.7))
+    # bars 14-15: the sad trombone — three short falling wahs and a long one that sags
+    for k, (m, d) in enumerate([(58, 0.9), (57, 0.9), (56, 0.9), (55, 4.3)]):
+        ev.append(('trombone', 56 + k, d, m, 0.95))
+    ev.append(('drums', 63.6, 0, 41, 0.35))                    # and the rubber stamp, softly, before it loops
+    return dict(title='Programme Closed (Ode in D minor)', bpm=63, bars=bars, events=ev, reverb=2.4, wet=0.32, level=0.72,
+                mix={'sadtuba': (0.62, -0.1, 0.25), 'accordion': (0.45, 0.25, 0.45), 'trombone': (0.7, 0.05, 0.35),
+                     'pad': (0.25, 0.0, 0.8), 'sub': (0.35, 0.0, 0.0), 'drums': (0.3, 0.1, 0.2)})
+
+
 SONGS = {'eurocrat_menu': song_menu, 'eurocrat_level1': song_level1, 'eurocrat_level2': song_level2,
          'eurocrat_level4': song_level4, 'eurocrat_lobby': song_lobby, 'eurocrat_hold': song_hold,
          'eurocrat_sunny': song_sunny, 'eurocrat_handsup': song_handsup, 'eurocrat_italo': song_italo,
-         'eurocrat_win': song_win}
+         'eurocrat_win': song_win, 'eurocrat_gameover': song_gameover}
 
 if __name__ == '__main__':
     out = sys.argv[1]

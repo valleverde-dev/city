@@ -16,7 +16,7 @@ export function acquire(i){
   if(p.st!=='land' || !['farm','muni','flood'].includes(p.k)) return fail('err.notForSale');
   if(p.k==='muni' && on('local') && S.local < 40) return fail('err.mayorNo');
   const price = landPrice(p);
-  if(avail() < price) return fail(on('lose') ? 'err.funds' : 'err.committed');
+  if(avail() < price) return fail(on('debt') ? 'err.funds' : 'err.committed');
   S.slots--;
   spend(price); p.st = 'owned';
   log('log.acquired', {at:pname(i), x:money(price)}); gainXp('acquire');
@@ -33,7 +33,7 @@ export function requestPermit(i, ty){
   if(B[ty].urban && !p.urban) return fail('err.rustic');
   if(S.funds < CFG.permitFee) return fail('err.funds');
   // In the learning levels (no bank drama yet) you cannot order works you cannot pay for
-  if(!on('lose') && avail() < CFG.permitFee + buildCost(p, ty)) return fail('err.fundsBuild');
+  if(!on('debt') && avail() < CFG.permitFee + buildCost(p, ty)) return fail('err.fundsBuild');
   S.slots--; spend(CFG.permitFee);
   p.st = 'review'; p.ty = ty; p.t = permitMonths(ty); p.flag = null;
   if(S.fast > 0){ S.fast--; p.st = 'approved'; p.q = ++S.qseq; p.t = 0; log('log.fast', {b:ty, at:pname(i)}, 'good'); }   // a milestone reward: already approved

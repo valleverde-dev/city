@@ -29,7 +29,7 @@ export function ownerScene(i, after){
   const o = ownerOf(i);
   playSound('farmer');
   letter({icon:'front_hand', title:t('owner.t'), speaker:'farmer', who:o.name, role:t('owner.kind.'+o.kind), cls:'bad', mood:'angry', voice:'owner',
-    body:`<div class="quote">${t('owner.line.'+o.line, {at:pname(i)})}</div><p class="where-line">${t('owner.price', {x:money(landPrice(p))})}</p>`,
+    body:`<div class="quote">${t('owner.line.'+o.line, {at:pname(i)})}</div><p class="where-line">${t('owner.price', {x:money(landPrice(p)), p:p.holdPct||80})}</p>`,
     buttons:[btn(t('owner.ok'), 'check', ()=>{ playSound('click'); hideModal(); refresh(); if(after) after(); }, true)]});
   return true;
 }

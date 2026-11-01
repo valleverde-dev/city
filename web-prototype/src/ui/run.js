@@ -10,7 +10,7 @@ import { REGION_COMBOS, STYPE_ICON } from '../core/region.js';
 import { activeSites, caps, contractors, count } from '../core/rules.js';
 import { S, clamp } from '../core/state.js';
 import { t } from '../i18n/index.js';
-import { ladderHtml, regionName } from './cards.js';
+import { regionName } from './cards.js';
 import { $ } from './dom.js';
 import { buildingArt } from './dock.js';
 import { refresh } from './guide.js';
@@ -82,7 +82,7 @@ function perksTab(body, c){
     <h3>${t('file.pool')}<small>${t('file.poolSub')}</small><em>${Object.keys(PERKS).filter(k=>rank >= PERK_RANK[k]).length} / ${Object.keys(PERKS).length}</em></h3>
     <div class="cgrid pool">${Object.keys(PERKS).map(k=>{ const need = PERK_RANK[k] || 0, open = rank >= need, seen = c.perks.includes(k);
       // v0.10.1: like the combos — a perk you have never taken is ??? (a locked one also says the rank it needs)
-      if(!seen) return `<div class="qcard ${open ? 'unknown' : 'locked'}"><span class="qm">?</span><b>???</b>${open ? '' : `<em>${t('file.rankN', {r:t('rank.'+need)})}</em>`}</div>`;
+      if(!seen) return `<div class="qcard ${open ? 'unknown' : 'locked'}"><span class="qm">?</span><b>???</b></div>`;   // v0.10.2: no rank hint either
       return `<div class="qcard seen" title="${t('perkd.'+k)}">${ic(PERKS[k])}<b>${t('perk.'+k)}</b></div>`; }).join('')}</div>`;
 }
 // ---------- Career: level and rank, achievements, the buildings still to unlock (by level, v0.9.2) ----------
@@ -92,13 +92,16 @@ function careerTab(body, c){
   body.innerHTML = `<div class="row top"><div class="rank"><div class="medal">${ic('military_tech')}<b>${t('xp.lvShort', {n:lv})}</b></div>
         <div class="rk"><b>${t('rank.'+r)}</b><span class="bar"><i style="width:${clamp((c.xp-a)/(b-a)*100,0,100)}%"></i></span>
         <small>${t('file.xpNext', {x:c.xp, y:b, n:lv+1})}</small><span class="tagl">${t('file.bonus', {p:Math.round(r*RANK_BONUS*100)})}</span>
-        ${nextR !== undefined ? `<small>${t('file.nextRank', {r:t('rank.'+(r+1)), n:nextR})}</small>` : ''}</div></div>
-      <div class="achs"><h3>${t('file.ach')}<em>${got} / ${ACH.length}</em></h3><div class="medals">${ACH.map(x=>`<span class="md ${c.ach.includes(x.id)?'on':''}" title="${c.ach.includes(x.id) ? t('ach.'+x.id+'.t')+': '+t('ach.'+x.id+'.x') : t('car.unknown')+' · +'+x.xp+' XP'}">${ic('workspace_premium')}</span>`).join('')}</div>
+        </div></div>
+      <div class="achs"><h3>${t('file.ach')}<em>${got} / ${ACH.length}</em></h3><div class="medals">${ACH.map(x=>`<span class="md ${c.ach.includes(x.id)?'on':''}" data-id="${x.id}" role="button" tabindex="0" title="${c.ach.includes(x.id) ? t('ach.'+x.id+'.t')+': '+t('ach.'+x.id+'.x') : t('car.unknown')+' · +'+x.xp+' XP'}">${ic('workspace_premium')}</span>`).join('')}</div>
         <p class="runxp">${t('file.runXp', {n:S.rs ? S.rs.xp||0 : 0})}</p></div></div>
     <h3>${t('file.unlocks')}<small>${t('file.unlocksSub')}</small><em>${NEW_TYPES.filter(unlocked).length} / ${NEW_TYPES.length}</em></h3>
     <div class="cgrid track">${NEW_TYPES.slice().sort((x,y)=>UNLOCK_LEVEL[x]-UNLOCK_LEVEL[y]).map(ty=>{ const need = UNLOCK_LEVEL[ty], ok = unlocked(ty), pct = ok ? 100 : clamp(c.xp/levelXp(need)*100, 0, 99);
       return `<div class="ucard ${ok ? 'on' : ''}"><div class="band"><img src="${buildingArt(ty)}" alt=""${ok ? '' : ' class="dark"'}>${ic(ok ? 'check' : 'lock')}</div>
-        <b>${ok ? t('b.'+ty) : t('car.unknown')}</b><small>${t('lock.level', {n:need})}</small><span class="bar"><i style="width:${pct}%"></i></span><em>${ok ? t('file.done') : c.xp+' / '+levelXp(need)+' XP'}</em></div>`; }).join('')}</div>`;
+        <b>${ok ? t('b.'+ty) : t('car.unknown')}</b>${ok ? `<small>${t('bd.'+ty)}</small><em>${t('file.done')}</em>` : ''}</div>`; }).join('')}</div>`;   // v0.10.2: nothing about when
+  // v0.10.2: tap a medal to see what it is (earned: name, what you did, XP; not yet: ??? and its XP)
+  body.querySelectorAll('.achs .md').forEach(el=>el.onclick = e=>{ e.stopPropagation(); const x = ACH.find(a=>a.id===el.dataset.id), on = c.ach.includes(x.id); playSound('click');
+    placePop(on ? `<h4>${ic('workspace_premium')}${t('ach.'+x.id+'.t')}</h4><p>${t('ach.'+x.id+'.x')}</p><p><b>+${x.xp} XP</b></p>` : `<h4>${ic('workspace_premium')}???</h4><p>???</p><p><b>+${x.xp} XP</b></p>`, el); });
 }
 // ---------- Region: the map of the Euroregion and this settlement in numbers ----------
 function regionTab(body){
@@ -106,7 +109,7 @@ function regionTab(body){
   // v0.10.1: the Euroregion box only once there is a region (two plots or more); with the first plot alone it says nothing new
   const many = S.region.blocks.length > 1;
   body.innerHTML = `<div class="row reg">${many ? `<div class="rbox map"><h3>${ic('map')}${regionName()}</h3><div class="rmap-slot"></div>
-        <dl class="kv">${row('ui.settlements', S.region.blocks.length)}${row('ui.parcels', S.grid.filter(p=>p.k!=='void').length)}${row('ui.regionPop', residents())}</dl>${ladderHtml()}</div>` : ''}
+        <dl class="kv">${row('ui.settlements', S.region.blocks.length)}${row('ui.parcels', S.grid.filter(p=>p.k!=='void').length)}${row('ui.regionPop', residents())}</dl></div>` : ''}
       <div class="rbox town"><h3>${ic(STYPE_ICON[S.stype] || 'cottage')}${S.town}<small>${t('st.'+S.stype)}</small></h3><p>${t('std.'+S.stype)}</p>
         <dl class="kv">${row('ui.residents', residents()+' / '+CFG.target)}${row('ui.homes', cp.homes)}${on('jobs') ? row('ui.jobs', t('ui.jobsN',{n:cp.jobs})) : ''}
           ${on('services') ? row('ui.schoolPl', cp.school) + row('ui.health', cp.health) : ''}${row('ui.construction', t('ui.sites',{a:activeSites(), c:contractors()}))}

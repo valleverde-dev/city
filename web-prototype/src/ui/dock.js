@@ -160,7 +160,7 @@ function renderParcel(head, strip){
   let tags = '';
   if(p.st==='owned' || p.st==='land'){ if(on('rustic') && ['farm','muni','flood'].includes(p.k)) tags += p.urban ? tag(t('tag.urban'),'ok') : tag(t('tag.rustic'));
     if(p.st==='owned') tags += tag(t('tag.yours'),'blue'); if(p.st==='owned' && !acc) tags += tag(t('tag.noAccess'),'bad'); }
-  if(p.st==='land' && p.hold && p.holdKnown) tags += tag(t('tag.hold'),'warn');   // v0.10.1: only once you have met the owner
+  if(p.st==='land' && p.hold && p.holdKnown) tags += tag(t('tag.hold', {p:p.holdPct||80}),'warn');   // v0.10.1: only once you have met the owner
   const dk = districtOf(i), dn = dk >= 0 ? S.region.blocks[dk].town : '';   // v0.10.1: the district it belongs to
   head.innerHTML = `<h3>${ic(pi)}${pt}</h3>${tags}<span class="ref">${t('ui.parcel',{at:pname(i)})}${dn ? ' · '+dn : ''}</span>`;
   const add = o => strip.appendChild(tile(o));
@@ -169,7 +169,7 @@ function renderParcel(head, strip){
     const price = landPrice(p), mayor = p.k==='muni' && on('local') && S.local < 40;
     add({icon:'payments', name:t('d.buy'), sub:`${money(price)} · ${t('d.slot1')}`, cls:'act primary', k:'buy',
       disabled: !slotsOk || mayor, why: mayor ? t('dw.mayor') : !slotsOk ? t('dw.slots') : '', click:()=>doAction(acquire(i), i)});
-    add({icon:pi, name:t('d.about'), sub:t(p.k==='muni'?'pcs.muni':p.k==='flood'?'pcs.flood':(p.hold && p.holdKnown)?'pcs.hold':'pcs.farm'), cls:'info wide'});
+    add({icon:pi, name:t('d.about'), sub:t(p.k==='muni'?'pcs.muni':p.k==='flood'?'pcs.flood':(p.hold && p.holdKnown)?'pcs.hold':'pcs.farm', {p:p.holdPct||80}), cls:'info wide'});
     return; }
   if(p.st==='owned'){
     const inPlay = ty => (ty!=='road' || on('access')) && (ty!=='factory' || on('jobs')) && ((ty!=='school' && ty!=='clinic') || on('services')) && (!B[ty].flag || on(B[ty].flag));
