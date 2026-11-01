@@ -103,8 +103,10 @@ function careerTab(body, c){
 // ---------- Region: the map of the Euroregion and this settlement in numbers ----------
 function regionTab(body){
   const cp = caps(), row = (k, v) => `<dt>${t(k)}</dt><dd>${v}</dd>`;
-  body.innerHTML = `<div class="row reg"><div class="rbox map"><h3>${ic('map')}${regionName()}</h3><div class="rmap-slot"></div>
-        <dl class="kv">${row('ui.settlements', S.region.blocks.length)}${row('ui.parcels', S.grid.filter(p=>p.k!=='void').length)}${row('ui.regionPop', residents())}</dl>${ladderHtml()}</div>
+  // v0.10.1: the Euroregion box only once there is a region (two plots or more); with the first plot alone it says nothing new
+  const many = S.region.blocks.length > 1;
+  body.innerHTML = `<div class="row reg">${many ? `<div class="rbox map"><h3>${ic('map')}${regionName()}</h3><div class="rmap-slot"></div>
+        <dl class="kv">${row('ui.settlements', S.region.blocks.length)}${row('ui.parcels', S.grid.filter(p=>p.k!=='void').length)}${row('ui.regionPop', residents())}</dl>${ladderHtml()}</div>` : ''}
       <div class="rbox town"><h3>${ic(STYPE_ICON[S.stype] || 'cottage')}${S.town}<small>${t('st.'+S.stype)}</small></h3><p>${t('std.'+S.stype)}</p>
         <dl class="kv">${row('ui.residents', residents()+' / '+CFG.target)}${row('ui.homes', cp.homes)}${on('jobs') ? row('ui.jobs', t('ui.jobsN',{n:cp.jobs})) : ''}
           ${on('services') ? row('ui.schoolPl', cp.school) + row('ui.health', cp.health) : ''}${row('ui.construction', t('ui.sites',{a:activeSites(), c:contractors()}))}
@@ -113,7 +115,7 @@ function regionTab(body){
     <h3>${t('dist.title')}<small>${t('dist.sub')}</small><em>${S.region.blocks.length}</em></h3>
     <div class="cgrid dists">${S.region.blocks.map((b,k)=>`<div class="dcard"><div class="dh">${ic(STYPE_ICON[b.ty] || 'cottage')}<span class="ph">${t('ui.settlement')} ${roman((b.phase||0)+1)}</span></div>
       <b class="dn">${b.town}</b><small>${t('st.'+b.ty)}</small><button type="button" class="dren" data-k="${k}" aria-label="${t('dist.rename')}">${ic('edit')}${t('dist.rename')}</button></div>`).join('')}</div>`;
-  body.querySelector('.rmap-slot').appendChild(regionCanvas({maxW: 420, maxH: 300}));
+  const slot = body.querySelector('.rmap-slot'); if(slot) slot.appendChild(regionCanvas({maxW: 420, maxH: 300}));
   // v0.10.1: rename a district in place
   body.querySelectorAll('.dren').forEach(btn=>btn.onclick = ()=>{ const k = +btn.dataset.k, card = btn.closest('.dcard'), nm = card.querySelector('.dn');
     playSound('click'); const inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = TOWN_MAX; inp.value = S.region.blocks[k].town; inp.className = 'dinp';
