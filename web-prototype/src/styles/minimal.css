@@ -4,17 +4,19 @@
    for it (a parcel, the next plot) or when you tap an icon (agenda, a pending event). The run file
    and End month stay as two floating buttons in the bottom corners.
    ===================================================================== */
-#app{position:relative;}
+#app{position:relative; --cornerH:92px; --cornerW:88px; --cornerM:12px;}   /* v0.11.1: one size for the three corner buttons */
 #world{flex:1 1 auto;}
 /* --- top strip --- */
 #hud{top:8px; left:10px; right:10px; grid-template-columns:auto minmax(0,1fr) auto; grid-template-areas:"brand goal right" ". meters relics"; gap:6px 10px;}
-#hud .hud-logo{display:none;}
-#hud .brand{justify-content:center;}
+#hud .hud-logo{width:96px;}   /* v0.11.1: the logo is back, above the city's name */
+#hud .brand{justify-content:flex-start; gap:6px;}
+#hud .brand .town-name{font-size:20px; padding:4px 7px 3px;}
 #goal{width:min(520px, 100%); gap:6px;}
 .cap{border-width:2px; box-shadow:0 3px 0 rgba(11,31,77,.3);}
 .cap b{font-size:22px;} .cap .of{font-size:15px;} .cap .ico{width:16px; height:16px;}
 .cap.res{padding:4px 9px 5px;} .pbar{height:6px; margin-top:3px; border-width:1px;}
-.cap.months{flex:0 0 auto; display:flex; align-items:center; padding:0 9px;} .cap.months .pips{display:none;} .cap.months .of{font-size:13px;}
+.cap.months{flex:0 0 auto; display:flex; align-items:center; padding:0 11px;} .cap.months .pips{display:none;}
+.cap.months .of{font-size:18px; color:var(--navy); letter-spacing:.01em;}   /* v0.11.1: "months left" readable at a glance */
 .cap.money{height:38px; padding:0 9px; gap:5px;} .cap.money .debt b{font-size:16px;}
 .hud-btn{width:38px; height:38px; border-width:2px;} .hud-btn .ico{width:17px; height:17px;}
 .badge{top:-7px; right:-7px; min-width:18px; height:18px; font-size:14px; line-height:15px;}
@@ -32,13 +34,22 @@ body.dock-open #dock #ctx{display:flex;}
 body.dock-open #dock[data-mode="event"]{background:var(--paper); border-top-color:var(--bad);}
 #dock:not([data-mode]) #ctx{display:none;}
 /* closed: the run file and End month float in the corners */
-body:not(.dock-open) #runBtn{margin:0 0 12px 12px; width:76px; height:76px; padding:6px 4px; gap:4px; border:3px solid var(--navy); box-shadow:0 4px 0 rgba(11,31,77,.35);}
-body:not(.dock-open) #runBtn > .ico{width:26px; height:26px;} body:not(.dock-open) #runBtn .lbl{display:none;}
-body:not(.dock-open) #runBtn .xpbar{width:58px; height:8px;} body:not(.dock-open) #runBtn small{font-size:8px; max-width:70px;}
-body:not(.dock-open) #endTurn{margin:0 12px 12px 0; height:76px; padding:0 18px; gap:4px;}
+/* v0.11.1: the run file, the agenda and End month share one height, with room above and below their contents */
+body:not(.dock-open) #runBtn{margin:0 0 var(--cornerM) var(--cornerM); width:var(--cornerW); height:var(--cornerH); padding:8px 5px; gap:5px; justify-content:center;
+  border:3px solid var(--navy); box-shadow:0 4px 0 rgba(11,31,77,.35);}
+body:not(.dock-open) #runBtn > .ico{width:22px; height:22px;} body:not(.dock-open) #runBtn .lbl{display:none;}
+body:not(.dock-open) #runBtn .xpbar{width:62px; height:8px; flex:0 0 auto;}
+body:not(.dock-open) #runBtn small{font-size:8px; line-height:1.25; max-width:80px;}
+body:not(.dock-open) #runBtn small b{display:block;} body:not(.dock-open) #runBtn small .sep{display:none;}   /* the level, then the rank in up to two lines */
+body:not(.dock-open) #runBtn small span{display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+body:not(.dock-open) #endTurn{margin:0 var(--cornerM) var(--cornerM) 0; height:var(--cornerH); padding:12px 20px; gap:6px; box-sizing:border-box;}
+body:not(.dock-open) #endTurn > .ico{width:24px; height:24px;}
 body:not(.dock-open) #endTurn .lbl{font-size:24px;}
+body:not(.dock-open) #endTurn .slots i{width:11px; height:11px;}
 /* the icons that open the bar */
-#rail{grid-area:rail; display:flex; flex-direction:column; justify-content:flex-end; gap:8px; padding:0 0 12px 8px;}
+#rail{grid-area:rail; display:flex; flex-direction:column; justify-content:flex-end; gap:8px; padding:0 0 var(--cornerM) 8px;}
+body:not(.dock-open) .railbtn{width:var(--cornerW); height:var(--cornerH);}   /* v0.11.1: as big as the run file beside it */
+body:not(.dock-open) .railbtn .ico{width:30px; height:30px;}
 body.dock-open #rail{padding:var(--pad) 0 var(--pad) 10px; justify-content:flex-start;}
 .railbtn{position:relative; width:52px; height:52px; display:flex; align-items:center; justify-content:center; background:var(--white); color:var(--navy);
          border:3px solid var(--navy); box-shadow:0 4px 0 rgba(11,31,77,.35); cursor:pointer; padding:0;}
@@ -50,11 +61,11 @@ body.dock-open #rail{padding:var(--pad) 0 var(--pad) 10px; justify-content:flex-
 body.reduce-motion .railbtn.alert{animation:none;}
 @media (prefers-reduced-motion: reduce){ .railbtn.alert{animation:none;} }
 /* the map's own buttons and hints sit above the floating corners */
-#mapBtns{bottom:104px;}
+#mapBtns{bottom:calc(env(safe-area-inset-bottom, 0px) + var(--cornerM) + var(--cornerH) + 4px + 18px);}   /* v0.11.1: clear of End month (and the safe area) */
 body.dock-open #mapBtns, body.dock-open #hint{visibility:hidden;}
 body.dock-open #guide{left:12px; bottom:calc(var(--dockH, 200px) + 10px);}   /* the hints stay, just above the open bar */
-#guide{left:162px; bottom:12px; width:min(460px, calc(100% - 360px));}
-#hint{left:162px; bottom:20px;}
+#guide{left:calc(var(--cornerM)*2 + var(--cornerW)*2 + 18px); bottom:calc(env(safe-area-inset-bottom, 0px) + var(--cornerM)); width:min(460px, calc(100% - 420px));}
+#hint{left:calc(var(--cornerM)*2 + var(--cornerW)*2 + 18px); bottom:calc(env(safe-area-inset-bottom, 0px) + 20px);}
 
 @media (max-width:700px){
   #hud{grid-template-areas:"goal" "right"; gap:5px;}
@@ -65,10 +76,46 @@ body.dock-open #guide{left:12px; bottom:calc(var(--dockH, 200px) + 10px);}   /* 
   body.dock-open #runBtn{margin:0 0 10px 10px; height:52px; width:76px;}
   body.dock-open #rail{flex-direction:row; padding:0 0 10px 8px;}
   body.dock-open #endTurn{margin:0 10px 10px 0; height:52px;}
-  body:not(.dock-open) #runBtn{width:62px; height:62px; margin:0 0 10px 8px;}
-  body:not(.dock-open) #endTurn{height:62px; margin:0 8px 10px 0; padding:0 12px;}
-  #rail{padding:0 0 10px 6px;} .railbtn{width:46px; height:46px;}
-  #guide{left:8px; right:8px; width:auto; bottom:86px;} #hint{left:8px; bottom:86px;}
+  #app{--cornerH:64px; --cornerW:64px; --cornerM:8px;}
+  body:not(.dock-open) #runBtn{padding:7px 4px; gap:4px;} body:not(.dock-open) #runBtn small{display:none;}
+  body:not(.dock-open) #endTurn{padding:8px 12px; gap:3px;}
+  #rail{padding:0 0 10px 6px;} .railbtn{width:46px; height:46px;} body:not(.dock-open) .railbtn .ico{width:24px; height:24px;}
+  #guide{left:8px; right:8px; width:auto; bottom:calc(env(safe-area-inset-bottom, 0px) + 84px);} #hint{left:8px; bottom:calc(env(safe-area-inset-bottom, 0px) + 84px);}
   body.dock-open #guide{left:8px; bottom:calc(var(--dockH, 260px) + 8px);}
 }
 body:not(.dock-open) #endTurn small{display:none;}
+
+/* v0.11.1: phones in landscape (wide but short): everything a size smaller, so the map keeps the middle of the
+   screen and the open bar takes about a third of it, not two thirds */
+@media (max-height:520px) and (min-width:701px){
+  #app{--cornerH:66px; --cornerW:66px; --cornerM:8px;}
+  #hud{top:6px; left:8px; right:8px; gap:4px 8px;}
+  #hud .hud-logo{width:70px;} #hud .brand{gap:4px;}
+  #hud .brand .town-name{font-size:15px; padding:3px 6px 2px; max-width:min(220px, 24vw);}
+  #goal{width:min(420px, 100%);}
+  .cap b{font-size:18px;} .cap .of{font-size:13px;} .cap .ico{width:14px; height:14px;}
+  .cap.res{padding:3px 8px 4px;} .pbar{height:5px; margin-top:2px;}
+  .cap.months .of{font-size:14px;}
+  .cap.money{height:32px; padding:0 8px;} .hud-btn{width:32px; height:32px;} .hud-btn .ico{width:15px; height:15px;}
+  .meter{padding:2px 4px;} .meter .seg i{width:5px; height:7px;}
+  #mapBtns{right:8px; gap:6px;} .mapbtn{width:36px; height:36px; font-size:22px;}
+  body:not(.dock-open) #runBtn{padding:6px 4px; gap:4px;} body:not(.dock-open) #runBtn small{display:none;}
+  body:not(.dock-open) #endTurn{padding:7px 14px; gap:3px;} body:not(.dock-open) #endTurn .lbl{font-size:19px;} body:not(.dock-open) #endTurn > .ico{width:20px; height:20px;}
+  body:not(.dock-open) .railbtn .ico{width:24px; height:24px;}
+  #guide{left:calc(var(--cornerM)*2 + var(--cornerW)*2 + 14px); width:min(420px, calc(100% - 330px));} #guide .pxp{width:36px; height:36px; flex-basis:36px;} #guide p{font-size:13px; line-height:1.3;}
+  #hint{left:calc(var(--cornerM)*2 + var(--cornerW)*2 + 14px);}
+  /* the open bar */
+  #dock{--pad:8px; --tileH:112px;}
+  #ctx{gap:5px;} #ctxHead{min-height:22px;} #ctxHead h3{font-size:18px;}
+  #strip{gap:8px;}
+  .tile{flex-basis:108px; padding:0 6px 7px;} .tile.wide{flex-basis:240px;}
+  .tile .art{height:38px; flex-basis:38px;} .tile .art img{width:40px; height:70px; margin-bottom:-12px;} .tile .art > .ico{width:22px; height:22px; margin-bottom:8px;}
+  .tile b{font-size:14px; margin-top:4px;} .tile small{font-size:11px; -webkit-line-clamp:1; max-height:calc(1.25em + 4px);}
+  .tile.wide small{-webkit-line-clamp:3; max-height:calc(3 * 1.25em + 4px);}
+  body.dock-open #runBtn{width:84px; gap:4px; padding:6px 4px;} body.dock-open #runBtn > .ico{width:24px; height:24px;}
+  body.dock-open #runBtn .lbl{font-size:15px;} body.dock-open #runBtn .xpbar{width:60px; height:7px;} body.dock-open #runBtn small{display:none;}
+  body.dock-open #rail{padding:var(--pad) 0 var(--pad) 6px;} body.dock-open .railbtn{width:44px; height:44px;}
+  body.dock-open #endTurn{margin:var(--pad); padding:0 12px; gap:4px;} body.dock-open #endTurn .lbl{font-size:19px;} body.dock-open #endTurn > .ico{width:20px; height:20px;}
+  body.dock-open #endTurn small{font-size:8px;}
+  body.dock-open #guide{bottom:calc(var(--dockH, 170px) + 6px);}
+}

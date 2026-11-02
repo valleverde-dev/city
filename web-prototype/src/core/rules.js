@@ -34,7 +34,7 @@ export function hasAccess(r,c){
 export function nextToVillage(r,c){ return NB8.some(([dr,dc])=> inside(r+dr,c+dc) && S.grid[idx(r+dr,c+dc)].k==='village'); }
 export function landPrice(p){ return r1(p.price * (has('notary') ? 0.7 : 1) * (1 + (regionFx().land||0))); }
 export function plotValue(p){ return r1(p.price * CFG.urbanUplift * S.market * (has('revolving') ? 1.3 : 1)); }
-export function buildCost(p, ty){ return r1(B[ty].cost * S.inflation * (p.k==='flood' ? 1.5 : 1)); }
+export function buildCost(p, ty){ return r1(B[ty].cost * S.inflation); }   // v0.11.1: no building on water any more
 export function permitMonths(ty){
   if(!on('permits')) return 1;
   return Math.max(1, B[ty].permit + (S.neigh<40?1:0) + (S.neigh<25?1:0) - (has('fasttrack')?1:0) + (regionFx().permit||0));

@@ -60,7 +60,8 @@ export function offerRewards(left = 0){
     if(REWARDS[id].deal && rnd() < 0.4) o.deal = true;
     return o; });
   // each reason makes one offer gold
-  list.slice().sort(()=>rnd()-0.5).forEach(o=>{ if(golds > 0){ o.gold = true; golds--; } });
+  // (never the deputy mayor: one slot more is the same in gold — v0.11.1)
+  list.filter(o=>o.id!=='slot').sort(()=>rnd()-0.5).forEach(o=>{ if(golds > 0){ o.gold = true; golds--; } });
   S.cards.push({type:'reward', offers:list, gold});
 }
 export function chooseReward(k){

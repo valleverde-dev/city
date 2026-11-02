@@ -195,7 +195,10 @@
 .notice.rewards .perk .catch{display:flex; align-items:center; gap:4px; font-size:11px; color:#8a2b22; flex-wrap:wrap; justify-content:center;}
 .notice.rewards .perk.gold{background:#fff6c9; border-color:#b8860b; box-shadow:0 0 0 2px #ffd200 inset;}
 .notice.rewards .gold-tag{position:absolute; top:6px; right:6px; font:400 10px/1 var(--f-display); font-style:normal; background:#ffd200; color:var(--navy); padding:3px 5px; border:1px solid var(--navy);}
-.notice.rewards .gold-why{display:flex; align-items:center; gap:6px; font-weight:700; color:#8a6400;}
+.notice.rewards .gold-why{display:flex; align-items:center; gap:8px; font-weight:700; color:#6b4d00; background:#fff6c9; border:2px solid #e6b400; padding:7px 10px; margin:8px 0 2px;}
+.notice.rewards .gold-why .ico{flex:0 0 18px; color:#b8860b;}
+.notice.rewards .gold-up{display:inline-flex; align-items:center; gap:4px; font:400 14px/1 var(--f-display); color:#6b4d00; background:#ffd200; padding:3px 6px; border:1px solid #b8860b;}
+.notice.rewards .gold-up .ico{width:12px; height:12px;}
 @media (max-width:560px){ .notice.rewards.four .btns{grid-template-columns:1fr;} .notice.rewards .perk .pxp{width:40px; height:40px;} }
 .notice.rewards .perk small strong{font-weight:800; color:var(--navy);}
 @media (max-width:560px){

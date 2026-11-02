@@ -79,7 +79,7 @@ function perksTab(body, c){
   body.innerHTML = `<h3>${t('file.hand')}<small>${t('file.handSub')}</small></h3>
     <div class="cgrid hand">${mine.map(k=>`<div class="pcard">${ic(PERKS[k])}<b>${t('perk.'+k)}</b><small>${t('perkd.'+k)}</small></div>`).join('')}
       <div class="pcard empty">${ic('add_circle')}<b>${t('file.nextPerk')}</b></div></div>
-    <h3>${t('file.pool')}<small>${t('file.poolSub')}</small><em>${Object.keys(PERKS).filter(k=>rank >= PERK_RANK[k]).length} / ${Object.keys(PERKS).length}</em></h3>
+    <h3>${t('file.pool')}<small>${t('file.poolSub')}</small><em>${Object.keys(PERKS).filter(k=>c.perks.includes(k)).length} / ${Object.keys(PERKS).length}</em></h3>
     <div class="cgrid pool">${Object.keys(PERKS).map(k=>{ const need = PERK_RANK[k] || 0, open = rank >= need, seen = c.perks.includes(k);
       // v0.10.1: like the combos — a perk you have never taken is ??? (a locked one also says the rank it needs)
       if(!seen) return `<div class="qcard ${open ? 'unknown' : 'locked'}"><span class="qm">?</span><b>???</b></div>`;   // v0.10.2: no rank hint either

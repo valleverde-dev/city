@@ -66,3 +66,15 @@
 .perk > .ico:after{content:""; position:absolute; inset:9px; background:var(--navy); -webkit-mask:var(--m) center/100% 100% no-repeat; mask:var(--m) center/100% 100% no-repeat;}
 .perk b{display:block; font:400 22px/1 var(--f-display); color:var(--navy);} .perk small{color:var(--sub); font-size:13px; line-height:1.35; display:block; margin-top:2px;}
 
+
+/* v0.11.1: the event's illustration, above the story (16:9 pixel art, never taller than about a third of the screen) */
+.notice .evart-wrap{margin:0 0 12px; display:flex; justify-content:center;}
+.notice .evart{display:block; width:100%; max-width:calc(30vh * 16 / 9); height:auto; aspect-ratio:16/9; image-rendering:pixelated; image-rendering:crisp-edges;
+  border:3px solid var(--navy); box-shadow:4px 4px 0 rgba(11,31,77,.25); background:var(--sky);}
+/* short landscape screens: the picture to the left of the story, so the buttons stay in view */
+@media (max-height:520px) and (min-width:600px){
+  .notice.ev-story .col-a{display:grid; grid-template-columns:minmax(0, 44%) minmax(0, 1fr); column-gap:16px; align-items:start;}
+  .notice.ev-story .col-a > *{grid-column:2;}
+  .notice.ev-story .evart-wrap{grid-column:1; grid-row:1 / span 8; margin:0;}
+  .notice.ev-story .evart{max-width:none;}
+}

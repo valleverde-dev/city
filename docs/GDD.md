@@ -89,7 +89,7 @@ Land ──acquire──▶ Owned (rustic) ──urban plan──▶ Owned (urba
                                                      └─ Approved ─▶ Waiting for contractor ─▶ Under construction (M months) ─▶ Built
 ```
 
-- **Acquire.** Private farmland has an owner and a price; owners may *hold out* (price jumps). Municipal land is cheap but needs the mayor (Local support ≥ 40). Protected habitat can never be built on. Flood-zone land costs extra to build on.
+- **Acquire.** Private farmland has an owner and a price; owners may *hold out* (price jumps). Municipal land is cheap but needs the mayor (Local support ≥ 40). Protected habitat can never be built on. **Rivers and lakes** (the old flood zones, v0.11.1) can be neither bought nor built on, and they can grow: an event floods the empty parcels on a bank unless you pay for sandbags.
 - **Urban plan (rezoning).** Rustic land only takes roads and parks. One plan (2 slots, ~2 months, council approval) rezones every rustic parcel you own. Municipal land is already urban.
 - **Permit.** Needs access on any of the **8 neighbours** (diagonals count): a road (even a planned one), a **finished** building or the old village — built-up land brings its own streets. Works in progress do not count, so the order you build in matters. Review time depends on the building and on how angry the neighbours are. Approval chance depends on Local support, Neighbours and Compliance. Building next to the old village annoys its residents.
 - **Construction.** Limited **contractors** (sites at the same time). Cost is paid month by month.
@@ -233,7 +233,7 @@ What carries over between runs, apart from the combo catalogue and the records:
 
 ## 11. Roguelike variety
 
-Every run is a new **Euroregion**: a name, a chain of settlements with random types, member states and town names, procedural sites (farmland, municipal plots, protected habitat, a river with its flood zone, the old village by the regional road), the shape that your attach choices give the region, a random stream of events and directives, and a different set of perks.
+Every run is a new **Euroregion**: a name, a chain of settlements with random types, member states and town names, procedural sites (farmland, municipal plots, protected habitat, a river, the old village by the regional road), the shape that your attach choices give the region, a random stream of events and directives, and a different set of perks.
 
 Later: member states with their own rule quirks; more plot types and region combos; an atlas of plot types. (Events between plots, chained events and deals that extend deadlines arrived in v0.10.)
 

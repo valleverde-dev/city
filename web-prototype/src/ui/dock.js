@@ -171,7 +171,7 @@ function renderParcel(head, strip){
   const i = selected, p = S.grid[i], [r,c] = rc(i), [pi, pt] = parcelTitle(i), isB = p.ty && p.k!=='regional', acc = hasAccess(r,c);
   const slotsOk = !S.over && S.slots >= 1;
   let tags = '';
-  if(p.st==='owned' || p.st==='land'){ if(on('rustic') && ['farm','muni','flood'].includes(p.k)) tags += p.urban ? tag(t('tag.urban'),'ok') : tag(t('tag.rustic'));
+  if(p.st==='owned' || p.st==='land'){ if(on('rustic') && ['farm','muni'].includes(p.k)) tags += p.urban ? tag(t('tag.urban'),'ok') : tag(t('tag.rustic'));
     if(p.st==='owned') tags += tag(t('tag.yours'),'blue'); if(p.st==='owned' && !acc) tags += tag(t('tag.noAccess'),'bad'); }
   if(p.st==='land' && p.hold && p.holdKnown) tags += tag(t('tag.hold', {p:p.holdPct||80}),'warn');
   if(p.st==='land' && p.rumour) tags += tag(t('tag.rumour'),'warn');   // v0.11: what they say at the bar
@@ -179,7 +179,7 @@ function renderParcel(head, strip){
   const dk = districtOf(i), dn = dk >= 0 ? S.region.blocks[dk].town : '';   // v0.10.1: the district it belongs to
   head.innerHTML = `<h3>${ic(pi)}${pt}</h3>${tags}<span class="ref">${t('ui.parcel',{at:pname(i)})}${dn ? ' · '+dn : ''}</span>`;
   const add = o => strip.appendChild(tile(o));
-  if(p.k==='habitat' || p.k==='village' || p.k==='regional'){ renderLand(p, pt, add); return; }
+  if(p.k==='habitat' || p.k==='village' || p.k==='regional' || (p.k==='flood' && p.st==='land')){ renderLand(p, pt, add); return; }   // v0.11.1: water is scenery
   if(p.st==='land' && p.expro){ add({icon:'gavel', name:t('d.expro'), sub:t('d.exproSub', {n:p.expro}), cls:'status wide'}); return; }
   if(p.st==='land'){
     const price = landPrice(p), mayor = p.k==='muni' && on('local') && S.local < 40;

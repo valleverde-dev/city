@@ -525,6 +525,29 @@ with sync_playwright() as p:
     check("PX" not in page.locator("#run").inner_text(), "XP, never PX")
     S("(g.closeRun(), 0)")
 
+    # --- v0.11.1
+    S("(g.openRun('perks'), 0)"); page.wait_for_timeout(60)
+    cnt = page.locator("#run h3 em").last.inner_text().split("/")[0].strip()
+    check(cnt == str(page.locator("#run .qcard.seen").count()),
+          f"v0.11.1: the perk collection counts the perks discovered ({cnt})")
+    S("(g.closeRun(), 0)")
+    ev(f"{G}.newGame(9, 1)"); clear_cards()
+    S("(S.debt=0, S.comboSeen=['a','b','c'], S.cards=[], g.offerRewards(8), g.showNext(), 0)"); page.wait_for_timeout(100); page.keyboard.press("Space"); page.wait_for_timeout(100)
+    golds = page.locator("#notice .perk.gold").count()
+    check(page.is_visible("#notice .gold-why") and golds >= 1 and page.locator("#notice .gold-up").count() == golds and page.locator("#notice .perk.gold[data-k=slot]").count() == 0,
+          f"gold offers say why they are gold and what gold adds ({golds} gold)")
+    S("(S.cards=[], g.hideModal(), 0)")
+    ev(f"{G}.newGame(9, 2)"); clear_cards()
+    S("(S.cards=[{type:'event', id:'strike', v:{}, open:true}], g.showNext(), 0)"); page.wait_for_timeout(200)
+    check(page.locator("#notice.ev-story canvas.evart").count() == 1, "every event has an illustration above its story")
+    S("(S.cards=[], g.hideModal(), 0)")
+    w = S("(()=>{ for(let s=1;s<40;s++){ g.newGame(s, 2); const i = g.S.grid.findIndex(p=>p.k==='flood'); if(i>=0) return i; } return -1; })()")
+    if w >= 0:
+        clear_cards(); S("(S.slots=3, S.funds=50, 0)")
+        r = S(f"[g.acquire({w}).ok, S.grid[{w}].st, g.t('k.flood')]")
+        check(r[0] is False and r[1] == "land" and r[2] in ("River", "Río"), f"a river cannot be bought (it is water now) {r}")
+        page.keyboard.press("Escape")
+
     # --- Every card, level and guide step renders in both languages without raw keys
     raw = []
     for lang in ("en", "es"):
@@ -605,6 +628,20 @@ with sync_playwright() as p:
     check(page.locator("#ctx").is_hidden(), "Esc closes it")
     h0 = rect("#dock")["height"]; lot3 = S("(()=>{ const i=S.grid.findIndex(p=>p.k==='farm' && p.st==='land'); g.centreOn(i); g.refresh(); return i; })()"); tap(lot3)
     check(S("g.dock") == "parcel" and page.is_visible("#strip .tile[data-k=buy]"), "a parcel opens the bar by itself, with what you can do there")
+    page.keyboard.press("Escape"); page.wait_for_timeout(60)
+    # v0.11.1: the logo is back; the three corner buttons share a height; the map buttons clear End month
+    check(page.is_visible("#hud .hud-logo") and rect("#hud .hud-logo")["y"] < rect("#townName")["y"], "v0.11.1: the Eurocrat logo is in the HUD, above the city's name")
+    hs = [round(rect(x)["height"]) for x in ("#runBtn", "#agendaBtn", "#endTurn")]
+    check(max(hs) - min(hs) <= 1, f"the run file, the agenda and End month have the same height ({hs})")
+    mb, et = rect("#mapBtns"), rect("#endTurn")
+    check(mb["y"] + mb["height"] + 8 <= et["y"], f"the map buttons keep clear of End month ({et['y'] - mb['y'] - mb['height']:.0f}px)")
+    fsm = ev("parseFloat(getComputedStyle(document.querySelector('.cap.months .of')).fontSize)")
+    check(fsm >= 16, f"'months left' is readable ({fsm:.0f}px)")
+    page.set_viewport_size({"width": 844, "height": 390}); page.wait_for_timeout(200)
+    ev(f"{G}.newGame(11, 3)"); clear_cards(); S("(g.refresh(), 0)"); page.wait_for_timeout(100)
+    page.click("#agendaBtn"); page.wait_for_timeout(100)
+    dko = rect("#dock")
+    check(dko["height"] <= 390 * 0.48 and ev("document.documentElement.scrollWidth <= innerWidth"), f"phone in landscape: the open bar takes under half the screen ({dko['height']:.0f}px)")
     page.keyboard.press("Escape")
     page.set_viewport_size({"width": 390, "height": 844}); page.wait_for_timeout(200)
     ev(f"{G}.newGame(11, 3)"); clear_cards(); S("(g.refresh(), 0)"); page.wait_for_timeout(100)

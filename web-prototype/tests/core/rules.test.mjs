@@ -521,3 +521,20 @@ test('v0.11: gossip at the village bar marks stubborn owners — some of it fals
   let lies = 0; for (let s = 1; s <= 30; s++) { const T = g.newGame(s, 2); T.slots = 3; T.funds = 10; T.neigh = 70; core.gossip(); lies += T.grid.filter(p => p.rumour).length; }
   assert.ok(lies > 0);
 });
+
+test('v0.11.1: rivers are not for sale nor buildable; the river can grow over empty banks', () => {
+  let S = null, w = -1;
+  for (let s = 1; s <= 40 && w < 0; s++) { S = g.newGame(s, 2); w = cell(p => p.k === 'flood'); }
+  assert.ok(w >= 0, 'some seed has a river');
+  S.slots = 3; S.funds = 50;
+  assert.equal(core.acquire(w).ok, false); assert.equal(core.acquire(w).msg.k, 'err.notForSale');
+  // the event: only empty parcels on a bank; "let it" turns them into river
+  const E = core.EVENTS.riverRise, banks = core.bankParcels();
+  if (banks.length) {
+    assert.ok(E.ok());
+    const v = E.setup(); assert.ok(banks.includes(v.i));
+    E.choices.find(c => c.k === 'let').run(v);
+    assert.equal(S.grid[v.i].k, 'flood'); assert.equal(S.grid[v.i].st, 'land');
+    const f0 = S.funds; E.choices.find(c => c.k === 'sandbags').run(v); assert.ok(Math.abs(f0 - 0.4 - S.funds) < 1e-9);
+  }
+});

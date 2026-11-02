@@ -14,7 +14,7 @@ export function acquire(i){
   if(p.st==='ruin'){ const price=r1(p.price*1.5); if(S.funds<price) return fail('err.funds');
     S.slots--; spend(price); Object.assign(p,{st:'owned', ty:null, dev:null}); log('log.buyback',{at:pname(i), x:money(price)}); return {ok:true, msg:{k:'fx.money', p:{x:money(-price)}}}; }
   if(p.expro) return fail('err.expro');   // v0.11: being expropriated
-  if(p.st!=='land' || !['farm','muni','flood'].includes(p.k)) return fail('err.notForSale');
+  if(p.st!=='land' || !['farm','muni'].includes(p.k)) return fail('err.notForSale');   // v0.11.1: rivers and lakes are not for sale
   if(p.k==='muni' && on('local') && S.local < 40) return fail('err.mayorNo');
   const price = landPrice(p);
   if(avail() < price) return fail(on('debt') ? 'err.funds' : 'err.committed');

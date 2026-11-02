@@ -11,6 +11,12 @@ import { S, pick, pname, r1, rc, ri, rnd } from './state.js';
 // =====================================================================
 export const sitesFree = () => S.grid.map((p,i)=>i).filter(i=>S.grid[i].st==='building' && !S.grid[i].halt);
 export const halt = (i,n) => { const p=S.grid[i]; p.halt = Math.max(p.halt, n); p.flag = {k:'halt', until:S.month+n}; };
+// v0.11.1: empty land on a river bank (farmland or a parcel of yours with nothing on it)
+const near = (i, j) => { const [a,b] = rc(i), [c,d] = rc(j); return Math.abs(a-c) + Math.abs(b-d) === 1; };
+export const bankParcels = () => S.grid.map((p,i)=>i).filter(i=>{ const p = S.grid[i];
+  if(!((p.st==='land' && p.k==='farm' && !p.expro) || (p.st==='owned' && !p.ty))) return false;
+  const [r,c] = rc(i); return [[-1,0],[1,0],[0,-1],[0,1]].some(([dr,dc])=>{ const q = S.grid[idxOf(r+dr, c+dc)]; return q && q.k==='flood'; }); });
+const idxOf = (r, c) => { const n = Math.round(Math.sqrt(S.grid.length)); return r < 0 || c < 0 || r >= n || c >= n ? -1 : r*n + c; };
 export const EVENTS = {
   archaeology: {char:'heritage', sfx:'clink', icon:'domain_disabled', w:3,
     ok:()=>sitesFree().length>0, setup:()=>({i:pick(sitesFree())}),
@@ -233,6 +239,17 @@ Object.assign(EVENTS, {
     choices:[
       {k:'fix',   fx:()=>[['money',-0.5],['neigh',+4]], can:()=>S.funds>=0.5, run:()=>{ spend(0.5); bump('neigh',4,'ev:potholes'); }},
       {k:'blame', fx:()=>[['local',-5],['neigh',-3]], run:()=>{ bump('local',-5,'ev:potholes'); bump('neigh',-3,'ev:potholes'); }},
+    ]},
+  // v0.11.1: the river grows — it takes the empty parcels along its banks, unless you pay for sandbags
+  riverRise: {char:'mayor', sfx:'crowd', icon:'water', w:2,
+    ok:()=>bankParcels().length>0,
+    setup:()=>{ const c = bankParcels(), i = pick(c); const two = c.filter(j=>j!==i && near(i,j)); return {i, j: two.length ? pick(two) : -1, owned: S.grid[i].st==='owned'}; },
+    choices:[
+      {k:'sandbags', fx:()=>[['money',-0.4],['neigh',+2]], can:()=>S.funds>=0.4, run:()=>{ spend(0.4); bump('neigh',2,'ev:riverRise'); }},
+      {k:'let',      fx:v=>v.owned ? [['lose']] : [['neigh',-2]], run:v=>{ [v.i, v.j].filter(k=>k>=0).forEach(k=>{ const p = S.grid[k];
+          Object.assign(p, {k:'flood', st:'land', ty:null, hold:false, holdKnown:false, urban:false, rumour:false}); });
+        if(!v.owned) bump('neigh',-2,'ev:riverRise');
+        log('log.riverRise', {at:pname(v.i)}, 'bad'); }},
     ]},
   heatwave: {char:'mayor', sfx:'crowd', icon:'solar_power', w:1, ok:()=>true, setup:()=>({}),
     choices:[

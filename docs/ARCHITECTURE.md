@@ -77,6 +77,7 @@ The contract with the UI (also the contract the Godot port must honour):
 | `sprites.js` | Props and the 20 building styles |
 | `map.js` | Composing the static map layers; `setMapSize`, `startSite` |
 | `anim.js` | The ~15 fps animation layer, night, completions, birds, flags, traffic |
+| `evart.js` | v0.11.1: the event illustrations — 43 scenes of 160×90 px painted in code from a small kit (skies, rooms, buildings, props, 15-px people, a 3×5 pixel font); `mountEventArt` animates one in the event screen |
 
 ### `src/ui/`, `src/audio/`, `src/main.js`
 `dom.js` (helpers, floating feedback), `hud.js` (the floating HUD: the town's name — editable —, goal, months, money, meters, perks as relics, the experience bar), v0.11: the bar opens on demand (`dock.js`: `dockPin`, `dockShown`, `eventWaiting`; `body.dock-open`; styles in `styles/minimal.css`), district placards drawn on the map with their hit boxes (`render/anim.js`: `districtLabel`, `LABEL_HITS`), `cascade.js` (v0.10: screens build up element by element; a tap or key shows all), `dock.js` (v0.9: the bottom bar — agenda, parcel, building cards with the ghost preview and on-map confirm, land that is not yours, a consolidated settlement, the next plot, events; v0.9.2: `landArt` draws land as it looks on the map), `run.js` (the run file: combos, perks, career, region), `inbox.js` (what needs attention, the news), `problems.js`, `guide.js` (the mayor's guide), `cards.js` (letters — v0.9.2: two-column screens; v0.9.3: `slideLetter` for the settlement screen; v0.10.1: events as story → decision cards → outcome, `phaseIntro` for the phase texts), `title.js` (title screen: the scene, the menu and its views — new game, settings, credits — keyboard navigation, starting a run; v0.9.2: the pause screen and its views — settings, restart, abandon), `input.js` (touch, mouse, keyboard), `icons.js` (66 pixel icons), `regionmap.js` (the Euroregion minimap), `drama.js` (full-screen consolidation and game over, banners), `owners.js` (v0.10.1: stubborn owners show up in person). `audio/music.js`, `audio/sfx.js` and `audio/voice.js` (v0.10.1: synthesized character voices; `RECORDED` can swap in recorded clips per character). `main.js` boots the game and exposes `window.__eurocrat` for the tests.
@@ -94,7 +95,7 @@ CSS split by area and imported in order by `styles/index.css` (order matters: `r
 |---|---|---|
 | `npm run check` | Layer check: the core stays portable | Node |
 | `npm run test:core` | Rules tests: phases (plots, void, density targets), rule flags, determinism, actions, a month passing, milestones and attach, rewards, deals, extensions and chained events, access and combos across plots, region effects, records, save/load, the difficulty band | Node |
-| `npm run test:smoke` | 177 checks driving the real UI in Chromium (phone and iPad layouts, both languages) | Playwright |
+| `npm run test:smoke` | 196 checks driving the real UI in Chromium (phone and iPad layouts, both languages) | Playwright |
 | `npm test` | All of the above + build | both |
 | `npm run balance -- 150 --run` / `--level=4` | The greedy bot over whole Euroregion runs, or one settlement, in Node | Node |
 

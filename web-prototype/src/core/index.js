@@ -37,7 +37,7 @@ export { CONTRACTS, checkContract, dueChains, chain, isBadResult } from './event
 // Directives and perks
 export { DIRECTIVE_ICON, directiveProgress, choosePerk, offerPerks } from './directives.js';
 // Event cards
-export { EVENTS, choicesFor, resolveEvent } from './events.js';
+export { EVENTS, bankParcels, choicesFor, resolveEvent } from './events.js';
 // The turn
 export { endMonth, abandonRun } from './month.js';
 // The career: experience, ranks, achievements, unlocks, quick-start dossiers

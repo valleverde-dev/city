@@ -14,6 +14,16 @@ Living project document · update it as the prototype evolves. The game design l
 - **Gossip at the village bar.** An agenda action once a month (a slot and a round): the regulars name stubborn owners before you meet them — more when the neighbours are happy, none when they are angry — and about a quarter of it is false.
 - Tests: 26 rules tests, browser checks all green.
 
+### v0.11.0 playtest fixes (Nov 3, 2026)
+
+- **HUD on iPad:** the Eurocrat logo is back above the city's name; "months left" is readable (18 px, navy); the run file, the agenda and End month share one height with room above and below their contents (the rank shows on two lines under the level); the map buttons keep clear of End month, safe area included.
+- **Phones in landscape:** a compact layout for short screens (HUD, corner buttons and the open bar a size smaller — the open bar takes about 40% of the height instead of 60%).
+- **Gold offers explained:** a line on the reward screen says that gold offers give more and why they were earned (ahead of schedule · no debt · combos galore — all three also bring a fourth offer), and each gold card shows what gold adds ("2 instead of 1"). The deputy mayor is never gold (it added nothing).
+- **The perk collection counts the perks you have discovered** (as combos do), not the ones your rank allows.
+- **Every event has an illustration:** 43 pixel-art scenes (160×90, painted in code with the game's palette, lightly animated: smoke, blinks, flags, flashes, fireworks), above the story; on short landscape screens, beside it.
+- **Flood zones are rivers now:** water cannot be bought or built on (it was cheap land at +50% building cost). **The river can grow:** a new event (*The river is rising*, phase III on) — sandbags (−€0.4M, neighbours +2) or let the river take the empty parcel(s) on its bank, yours included.
+- Tests: 27 rules tests, 196 browser checks. Balance (bot, 40 runs): 3.8 milestones per run with a new career.
+
 ## Previous — v0.10.2 (Nov 2, 2026) · discover, don't be told
 
 The player has to discover and explore: **no screen shows what comes next.**
@@ -229,7 +239,14 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 - **Recorded voices**, if the synthesized ones fall short.
 - **A combo for joining districts by road** (and a bad one when lorries end up in residential streets).
 - **Longer event stories:** two or three paragraphs per event, in English and Spanish — five samples first, for approval.
-- **A pixel-art illustration for every event.**
+
+### v0.12 — characters and intrigue (agreed Nov 2–3, 2026; the full list of characters, traits, perks and events goes to the author for review before any code)
+
+- **The map as a place with people, Crusader Kings style.** Tapping things on the map opens a scene with characters: the village **bar** (a round of drinks, two or three regulars with names, faces and voices, each with a rumour — who owns what, which owner is stubborn, what the mayor is plotting; some false; less when the neighbours are angry — replacing the agenda action of v0.11), the **church** (the priest blesses a work or complains), the **square** (Remedios Quintana and the village's notables: fiestas, complaints, favours), the **farms** (meet the owner before buying: negotiate, flatter, lean on them) and **your own buildings** (the factory wants more shifts, the school is too small…). Every character has **traits** (greedy, spiteful, gossip, honest, vain…), an **opinion of you** and **relationships** with the others (cousins, feuds, favours owed): favours, blackmail and schemes. Traits and relationships are ??? until you talk to people.
+- **New perks, good and bad.** New good ones (*Star architect*, *Friend at the Commission*, *Builder brother-in-law*…) and **negative perks** that arrive with events or the catch of a deal (*Auditor at your side*, *Bad press*, *Mayor on the campaign trail*, *Ghost payroll*…), in your hand in red; some expire, others must be got rid of. Discovered like the others.
+- **Satirical events inspired by real cases, always with made-up names** (never real people, parties or companies): the adviser's adviser who "speeds up" permits; gifts from a Gulf delegation; the councillor caught partying during a lockdown he demanded, fleeing down a drainpipe; the director of *Ferrovías Transeuropeas* who wants "little jobs" for his "nieces".
+- **The forum regulars of *Foromotores*** (made-up characters): Picapiedra (furious, in capitals, hates games made with AI), Panikero, el_caracoles, Perkys, el_litri, @Tonto, Susana (the only sensible one) and Samus (the troll who spreads hoaxes). Forum threads as a recurring event, hoaxes as a negative perk, and a last thread under the Gazette at game over.
+- **More water:** a dam or a Brussels reservoir that makes a lake; renaturing a riverbank (you lose land, the neighbours are happy).
 
 ### Not scheduled
 

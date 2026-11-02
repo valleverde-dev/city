@@ -78,7 +78,7 @@ export function updateHUD(){
   // the bottom bar's two ends: the run file (experience) and the month
   const c = career(), lv = levelOf(c.xp), a = levelXp(lv), b = levelXp(lv+1);
   $('runBtn').querySelector('.xpbar i').style.width = clamp((c.xp-a)/(b-a)*100, 0, 100)+'%';
-  $('xpTxt').innerHTML = `<b>${t('xp.lvShort', {n:lv})}</b><span> · ${t('rank.'+rankOf(c.xp))}</span>`;
+  $('xpTxt').innerHTML = `<b>${t('xp.lvShort', {n:lv})}</b><span><i class="sep"> · </i>${t('rank.'+rankOf(c.xp))}</span>`;
   if(lastXp !== null && c.xp > lastXp && S && !S.over){ xpGain(c.xp - lastXp); }
   lastXp = c.xp;
   const end = $('endTurn'); end.querySelector('.lbl').textContent = t('ui.endMonthShort');

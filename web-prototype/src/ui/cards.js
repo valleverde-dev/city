@@ -1,3 +1,5 @@
+import { mountEventArt } from '../render/evart.js';
+import { MOTION } from '../render/anim.js';
 import { comboSound } from '../audio/combo.js';
 import { comboFlash } from '../render/anim.js';
 import { setMusic } from '../audio/music.js';
@@ -185,7 +187,11 @@ export const CARD = {
       letter({icon:E.icon, title:t('ev.'+c.id+'.t'), speaker:E.char, cls:'event', mood:'neutral',
         body:`<div class="quote">${t('ev.'+c.id+'.x', {...P(v), x:v.x, at:v.i>=0?pname(v.i):''})}</div>${where}`,
         buttons:[btn(t('ev.decide'), 'gavel', ()=>{ c.step = 'decide'; playSound('click'); CARD.event(c); }, true)]});
-      notice.classList.add('ev-story'); return; }
+      notice.classList.add('ev-story');
+      // v0.11.1: every event has its illustration, above the story
+      const colA = notice.querySelector('.col-a'), art = document.createElement('div'); art.className = 'evart-wrap';
+      if(colA){ colA.prepend(art); mountEventArt(art, c.id, E.char, MOTION); }
+      return; }
     const cards = choicesFor(c).map(ch=>{ const can = !ch.can || ch.can(v);
       return `<button type="button" class="dchoice" data-k="${ch.k}"${can ? '' : ' disabled'}><b>${t('ev.'+c.id+'.c.'+ch.k)}</b><span class="chips">${ch.fx(v).map(chip).join('')}${can ? '' : `<span class="chip bad">${t('err.funds')}</span>`}</span></button>`; }).join('');
     letter({icon:'gavel', title:t('ev.'+c.id+'.t'), speaker:E.char, voice:false,
@@ -252,11 +258,15 @@ export function rewardCard(c){
   const wrap = c.offers.map((o,k)=>{ const b = document.createElement('button'), v = rewardValue(o), p = {...v, x: v.x !== undefined ? money(v.x) : ''};
     b.className = 'perk reward' + (o.gold ? ' gold' : '') + (o.deal ? ' deal' : ''); b.dataset.k = o.id;
     const dl = o.deal && DEAL[o.id] ? `<span class="chip bad">${ic(CHIP_ICON[DEAL[o.id][0]])}${t('meter.'+DEAL[o.id][0])} ${DEAL[o.id][1]}</span>` : '';
-    b.innerHTML = `${pxPortrait(o.char)}${o.gold ? `<em class="gold-tag">${t('rw.gold')}</em>` : ''}<b>${ic(REWARDS[o.id].icon)}${t('rw.'+o.id+'.t')}</b><small>${t('rw.'+o.id+'.x', p)}</small>
+    // v0.11.1: a gold card says what gold adds ("2 instead of 1")
+    const v0 = o.gold ? rewardValue({...o, gold:false}) : null, fmt = w => w.x !== undefined ? money(w.x) : w.n;
+    const up = v0 ? `<span class="gold-up">${ic('trending_up')}${t('rw.instead', {a:fmt(v), b:fmt(v0)})}</span>` : '';
+    b.innerHTML = `${pxPortrait(o.char)}${o.gold ? `<em class="gold-tag">${t('rw.gold')}</em>` : ''}<b>${ic(REWARDS[o.id].icon)}${t('rw.'+o.id+'.t')}</b><small>${t('rw.'+o.id+'.x', p)}</small>${up}
       <i class="who">${CHARS[o.char].name}</i>${dl ? `<span class="catch">${t('rw.catch')} ${dl}</span>` : ''}`;
     b.onclick = ()=>{ const r = chooseReward(k); if(!r.ok) return; playSound(o.deal ? 'cash' : 'ok'); save(); refresh(); showNext(); };
     return b; });
-  const why = c.gold && c.gold.length ? `<p class="gold-why">${ic('workspace_premium')}${c.gold.map(g=>t('rw.why.'+g)).join(' · ')}</p>` : '';
+  // v0.11.1: why some offers are gold, said plainly (and the fourth offer when all three reasons are met)
+  const why = c.gold && c.gold.length ? `<p class="gold-why">${ic('workspace_premium')}<span>${t('rw.goldWhy', {r:c.gold.map(g=>t('rw.why.'+g).toLowerCase()).join(' · ')})}${c.offers.length > 3 ? ' '+t('rw.goldFour') : ''}</span></p>` : '';
   letter({icon:'emoji_events', title:t('rw.title'), body:`<p class="hint">${t('rw.x')}</p>${why}`, buttons:wrap});
   notice.classList.add('perks', 'rewards'); notice.classList.toggle('four', c.offers.length > 3);
 }
