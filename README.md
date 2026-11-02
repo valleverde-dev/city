@@ -12,7 +12,7 @@ Web prototype playable on iPad, iPhone and desktop; a Godot port is planned for 
 - Plan and status: [ROADMAP.md](ROADMAP.md)
 - Code organisation: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
-## How to play (v0.10)
+## How to play (v0.11)
 
 - A run is one **Euroregion**. It starts with one 8×8 plot; the whole region has a resident target and the phase a deadline. The phase screen and the mayor's hints tell you what to do.
 - Each turn is **one month**. Tap a parcel: the bar at the bottom shows what you can do (buy; for your land, a card per building — pick one, see it as a ghost on the map with its combos, confirm). Nothing selected, the bar is your agenda. Press **End month** to let time pass.
@@ -21,6 +21,8 @@ Web prototype playable on iPad, iPhone and desktop; a Godot port is planned for 
 - Permits are approved when political support is at least 50: the game tells you in advance. Stubborn owners (+80%) are marked on the map.
 - Each plot has a **type** (farming, industrial, spa…). Touching types form **region combos**, good and bad.
 - Buildings next to each other form **combos**, good and bad: they glow gold or red. From phase III, crises arrive as **cards**, Brussels sends **directives**, the characters offer **deals** (more months or money) and you can ask Brussels for an **extension**.
+- **The screen is the map** (v0.11): a thin strip on top; the bar at the bottom opens when you tap a parcel or the agenda icon (bottom left), and events wait behind a blinking icon. Every district has its placard on the map: zoom out and tap it.
+- **Stubborn owners** can be negotiated with (the mayor, expropriation, or leave them in peace), and a round at the village bar tells you who they are — if the regulars are not lying.
 - **Controls:** drag to move the map, pinch / wheel / +− to zoom. PC: WASD / arrows, + −, Q / E turn the map, C centre, Space end month, Tab run file, Esc close / pause. Tap the town's name to rename it.
 - **Run file** (bottom left, or Tab): your combo collection, the perks of this run and the pool, your career and the region.
 - **Career:** experience comes with every step (levels and ranks during play), even in a lost run. Higher ranks add perks to the pool. Ranks raise every grant; career levels unlock 8 new buildings for good (market at level 2 … data centre at 18); 26 achievements give experience. After the first, guided run, every *New Game* is random: plot type, starting perk and member state are drawn for you.

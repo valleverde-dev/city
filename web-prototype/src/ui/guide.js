@@ -14,7 +14,7 @@ import { flushToasts } from './drama.js';
 import { $ } from './dom.js';
 import { applyStatic, updateHUD } from './hud.js';
 import { ic } from './icons.js';
-import { clearSelection, eventOpen, renderDock } from './dock.js';
+import { clearSelection, eventOpen, renderDock, setDockPin } from './dock.js';
 import { renderInbox } from './inbox.js';
 import { renderRun } from './run.js';
 
@@ -51,7 +51,7 @@ export function renderGuide(){
   el.innerHTML = `${pxPortrait(who)}<div><div class="step">${t('ui.step',{n:cur.n, t:cur.total})}</div><p>${t(cur.s.k, {n:CFG.target, m:CFG.months})}</p></div>
     <button class="x" aria-label="${t('ui.close')}">${ic('close')}</button>`;
   el.querySelector('.x').onclick = e=>{ e.stopPropagation(); S.guideOff = true; save(); playSound('click'); refresh(); };
-  el.onclick = cur.s.tab ? e=>{ if(!e.target.closest('.x')){ clearSelection(); refresh(); } } : null;   // 'agenda' steps: the bar shows the agenda
+  el.onclick = cur.s.tab ? e=>{ if(!e.target.closest('.x')){ clearSelection(); setDockPin('agenda'); refresh(); } } : null;   // 'agenda' steps: the bar shows the agenda
 }
 // Every building gets a style (its archetype) and a name, both fixed by the run's seed
 export function styleName(i){ const ty = S.grid[i].ty, A = archOf(i, ty), names = t('names.'+ty).split('|');

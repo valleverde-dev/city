@@ -52,6 +52,9 @@
   </div>
   <div id="dock">
     <button id="runBtn"><i class="ico i-work"></i><span class="lbl"></span><span class="xpbar"><i></i></span><small id="xpTxt"></small><em class="badge" id="runN" hidden></em></button>
+    <!-- v0.11: the bar opens on demand — these icons open it (agenda, a pending event); a parcel or the next plot open it by themselves -->
+    <div id="rail"><button type="button" class="railbtn" id="agendaBtn" aria-label="Agenda"><i class="ico i-forum"></i><em class="badge" id="agendaN" hidden></em></button>
+      <button type="button" class="railbtn alert" id="eventBtn" aria-label="Event" hidden><i class="ico i-campaign"></i></button></div>
     <div id="ctx"><div id="ctxHead"></div><div id="strip"></div></div>
     <button id="endTurn"><i class="ico i-skip_next"></i><span class="lbl"></span><span class="slots" id="slots"></span><small></small></button>
   </div>

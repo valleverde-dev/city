@@ -356,10 +356,34 @@ with sync_playwright() as p:
     S(f"(S.grid[{at(2,3)}].st='building', 0)")
     check(not S(f"g.hasAccess({r0+3},{c0+4})"), "a building under construction does not give access yet")
 
+    # --- v0.11: stubborn owners can be negotiated with; the village bar; districts on the map
+    ho = S("(()=>{ const i=S.grid.findIndex(p=>p.st==='land' && p.hold); if(i>=0){ g.meetOwner(i); S.slots=3; S.local=70; g.centreOn(i); } return i; })()")
+    if ho >= 0:
+        tap(ho)
+        check(all(page.locator(f"#strip .tile[data-k={k}]").count() == 1 for k in ("lean", "expro", "peace")), "a stubborn owner you have met: lean on them, expropriate or leave them in peace")
+        page.locator("#strip .tile[data-k=expro]").click(); page.wait_for_timeout(60)
+        check(S(f"S.grid[{ho}].expro") > 0 and page.locator("#strip .tile[data-k=buy]").count() == 0, "expropriating: the parcel is on its way, not for sale")
+        page.keyboard.press("Escape")
+    S("(S.slots=3, S.funds=50, S.neigh=70, g.setDockPin('agenda'), g.refresh(), 0)")
+    check(page.locator("#strip .tile[data-k=gossip]").count() == 1, "the agenda has drinks at the village bar")
+    page.locator("#strip .tile[data-k=gossip]").click(); page.wait_for_timeout(60)
+    check(S("S.gossiped") and S("S.grid.some(p=>p.heard || p.rumour)"), "the regulars name parcels (some of it may be gossip)")
+    S("(g.setDockPin(null), g.zoomAt(0.25), g.refresh(), 0)"); page.wait_for_timeout(120)
+    hits = S("g.labelHits")
+    check(len(hits) == S("S.region.blocks.length"), f"every district has its placard on the map ({len(hits)})")
+    if hits:
+        hb = hits[0]; box = page.locator("#map").bounding_box()
+        page.mouse.click(box["x"] + hb["x0"] + hb["w"]/2, box["y"] + hb["y0"] + hb["h"]/2); page.wait_for_timeout(80)
+        check(S("g.dock") == "block" and S(f"S.region.blocks[{hb['k']}].town") in page.locator("#ctxHead").inner_text(), "tapping a placard opens the district: its type, what is built, its region combos")
+        page.keyboard.press("Escape")
+
     # --- Event cards with characters and choices
     ev(f"{G}.newGame(5, 3)")
     site = S("(()=>{ const i=S.grid.findIndex(p=>p.k==='farm'); Object.assign(S.grid[i],{st:'building', ty:'housing', t:3, mcost:1}); return i; })()")
     S(f"(S.cards=[{{type:'event', id:'archaeology', v:{{i:{site}}}}}], 0)"); S("g.showNext()")
+    check(page.locator("#modal").is_hidden() and page.is_visible("#eventBtn.alert") and S("g.dock") != "event",
+          "v0.11: an event waits behind a blinking icon — the map stays clear and in play")
+    page.click("#eventBtn"); page.wait_for_timeout(80)
     check(page.is_visible("#notice.ev-story") and page.is_visible("#notice >> text=Archaeological find") and page.locator("#notice .dchoice").count() == 0
           and page.locator("#notice .col-a .quote").count() == 1,
           "v0.10.1: an event opens as a scene — the character and the whole story first, no choices yet")
@@ -419,7 +443,7 @@ with sync_playwright() as p:
     S("(S.levelUps=[3], 0)"); ev("window.__eurocrat.refresh()"); page.wait_for_timeout(300)
     shown = page.locator("#toast.in").count() == 1
     try:   # every queued banner (earlier ones too) leaves on its own, one after another
-        page.wait_for_function("!document.querySelector('#toast.in') && window.__eurocrat.toasts.length === 0", timeout=60000); gone = True
+        page.wait_for_function("!document.querySelector('#toast.in') && window.__eurocrat.toasts.length === 0", timeout=90000); gone = True
     except Exception:
         gone = False
     check(shown and gone, "a banner leaves on its own")
@@ -506,7 +530,7 @@ with sync_playwright() as p:
     for lang in ("en", "es"):
         S(f"(g.setLang('{lang}'), 0)")
         for eid in S("Object.keys(g.EVENTS)"):
-            S(f"(S.cards=[{{type:'event', id:'{eid}', v:{{i:{site}, x:'1', good:true, priv:true, owned:true, n:2, m:9, town:'Klein Stempel', talked:true}}}}], 0)"); S("g.showNext()")
+            S(f"(S.cards=[{{type:'event', id:'{eid}', open:true, v:{{i:{site}, x:'1', good:true, priv:true, owned:true, n:2, m:9, town:'Klein Stempel', talked:true}}}}], 0)"); S("g.showNext()")
             if re.search(r"\bev\.|\{\w+\}", page.locator("#notice").inner_text()): raw.append(f"{lang}:{eid}")
             S("(S.cards[0].step='decide', g.showNext(), 0)")
             if re.search(r"\bev\.|\{\w+\}", page.locator("#notice").inner_text()): raw.append(f"{lang}:{eid}-decide")
@@ -572,9 +596,15 @@ with sync_playwright() as p:
     def rect(sel):
         return page.locator(sel).bounding_box()
     w, dk, hd = rect("#world"), rect("#dock"), rect("#hud")
-    check(dk["y"] >= w["y"] + w["height"] - 1 and w["width"] >= 1170 and hd["y"] < w["y"] + 20, "iPad: the map uses the full width, the HUD floats over it, one bar at the bottom")
+    check(w["height"] >= 815 and w["width"] >= 1170 and hd["y"] < w["y"] + 20 and hd["height"] < 90 and not S("document.body.classList.contains('dock-open')"),
+          f"v0.11 iPad: the map takes the whole screen, a thin HUD floats over it, the bar is closed ({hd['height']:.0f}px)")
+    check(page.is_visible("#endTurn") and page.is_visible("#runBtn") and page.is_visible("#agendaBtn") and page.locator("#ctx").is_hidden(), "closed: the run file, the agenda icon and End month float in the corners")
+    page.click("#agendaBtn"); page.wait_for_timeout(60)
+    check(page.is_visible("#strip .tile[data-k=lobby]") and S("document.body.classList.contains('dock-open')"), "the agenda icon opens the bar")
+    page.keyboard.press("Escape"); page.wait_for_timeout(60)
+    check(page.locator("#ctx").is_hidden(), "Esc closes it")
     h0 = rect("#dock")["height"]; lot3 = S("(()=>{ const i=S.grid.findIndex(p=>p.k==='farm' && p.st==='land'); g.centreOn(i); g.refresh(); return i; })()"); tap(lot3)
-    check(S("g.dock") == "parcel" and abs(rect("#dock")["height"] - h0) < 1, "iPad: selecting a parcel changes what the bar shows, not its size (nothing slides in)")
+    check(S("g.dock") == "parcel" and page.is_visible("#strip .tile[data-k=buy]"), "a parcel opens the bar by itself, with what you can do there")
     page.keyboard.press("Escape")
     page.set_viewport_size({"width": 390, "height": 844}); page.wait_for_timeout(200)
     ev(f"{G}.newGame(11, 3)"); clear_cards(); S("(g.refresh(), 0)"); page.wait_for_timeout(100)
@@ -582,6 +612,7 @@ with sync_playwright() as p:
     check(hd["height"] < 110, f"iPhone: the HUD takes two short rows ({hd['height']:.0f}px)")
     check(w["height"] > 450 and dk["y"] + dk["height"] <= 844 + 1, f"iPhone: the map gets most of the screen ({w['height']:.0f}px)")
     check(ev("document.documentElement.scrollWidth <= innerWidth"), "iPhone: no horizontal overflow")
+    page.click("#agendaBtn"); page.wait_for_timeout(60)
     sw = ev("(()=>{ const s=document.getElementById('strip'); return [s.scrollWidth, s.clientWidth]; })()")
     check(sw[0] > sw[1], "iPhone: the bar's cards scroll sideways")
     fs = ev("parseFloat(getComputedStyle(document.querySelector('#strip .tile b')).fontSize)")

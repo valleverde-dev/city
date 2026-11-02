@@ -1,7 +1,8 @@
 import { activeCombos, discovered } from '../core/combos.js';
 import { approves, buildMonths, hasAccess } from '../core/rules.js';
 import { N, S, clamp, idx, rc } from '../core/state.js';
-import { cellPos, wid } from '../core/region.js';
+import { STYPE_ICON, cellPos, wid } from '../core/region.js';
+import { iconRows } from '../ui/icons.js';
 import { t } from '../i18n/index.js';
 import { FRX, FRY, H, MAPCX, MAPCY, OX, OY, TH, TW, W, WN, attachSel, selBlock, ctx, cvs, dpr, isoOf, isoW, preview, rotateCoord, scale, selected, viewHooks, viewRot, worldEl } from './camera.js';
 import { GROUNDS, riverTile, roadTile, skirt, wedgeTile } from './ground.js';
@@ -353,13 +354,19 @@ export function spriteSheet(){
 }
 // A plot number that stays readable at any zoom: drawn in screen pixels at the map point (x,y)
 // A district's name on the map, in screen pixels (crisp at any zoom); alpha fades it in as you zoom out
-export function districtLabel(x, y, text, alpha){
+// v0.11: a district's placard — the type's pixel icon and the name; `small` when zoomed in (it sits at the
+// district's top corner then, off the buildings). Returns its rectangle in CSS pixels (for taps).
+export let LABEL_HITS = [];
+export function districtLabel(x, y, text, alpha, icon, small, on){
   const m = ctx.getTransform(), z = dpr, X = (m.a*x + m.e)/z, Y = (m.d*y + m.f)/z;
   ctx.save(); ctx.setTransform(z,0,0,z,0,0); ctx.globalAlpha = alpha;
-  ctx.font = '400 20px Jersey, system-ui, sans-serif'; const w = Math.ceil(ctx.measureText(text).width) + 16, h = 24, x0 = Math.round(X - w/2), y0 = Math.round(Y - h/2);
-  ctx.fillStyle = 'rgba(11,31,77,.88)'; ctx.fillRect(x0, y0, w, h); ctx.fillStyle = '#ffd200'; ctx.fillRect(x0, y0+h-2, w, 2);
-  ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, X, y0 + h/2);
-  ctx.restore(); }
+  const fs = small ? 15 : 20, h = small ? 20 : 26, px = small ? 1 : 2, iw = icon ? 12*px + 6 : 0;
+  ctx.font = `400 ${fs}px Jersey, system-ui, sans-serif`; const w = Math.ceil(ctx.measureText(text).width) + 14 + iw, x0 = Math.round(X - w/2), y0 = Math.round(Y - h/2);
+  ctx.fillStyle = on ? 'rgba(232,118,43,.95)' : 'rgba(11,31,77,.88)'; ctx.fillRect(x0, y0, w, h); ctx.fillStyle = '#ffd200'; ctx.fillRect(x0, y0+h-2, w, 2);
+  if(icon){ const rows = iconRows(icon); if(rows){ ctx.fillStyle = '#ffd200'; const ix = x0 + 6, iy = Math.round(y0 + (h-2-12*px)/2);
+    rows.forEach((row,r)=>{ for(let c=0;c<row.length;c++) if(row[c]==='#') ctx.fillRect(ix + c*px, iy + r*px, px, px); }); } }
+  ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(text, x0 + 7 + iw, y0 + (h-2)/2 + 1);
+  ctx.restore(); return {x0, y0, w, h}; }
 export function bigBadge(x, y, text, on){
   const m = ctx.getTransform(), sx = m.a*x + m.e, sy = m.d*y + m.f, z = dpr;
   ctx.save(); ctx.setTransform(z,0,0,z,0,0); const X = sx/z, Y = sy/z, r = 15;
@@ -425,9 +432,14 @@ export function drawRegion(){
   ctx.save(); ctx.lineWidth = 1;   // (the consolidated settlements' outlines are on the ground now, v0.9.2)
   const sb = S.region.blocks[selBlock];   // the consolidated settlement tapped on the map
   if(sb){ plotPath(sb); ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#ffd200'; ctx.stroke(); ctx.lineWidth = 1; }
-  // v0.10.1: the districts' names, when the map is zoomed out far enough that a label does not cover the buildings
-  const sc = scale(); if(S.region.blocks.length > 1 && sc*TW < 44 && S.pending!=='attach')
-    S.region.blocks.forEach(b=>{ const [cx,cy] = isoW(b.y-FRY+(b.n-1)/2, b.x-FRX+(b.n-1)/2); districtLabel(cx, cy, b.town, Math.min(1, (44 - sc*TW)/10)); });
+  // v0.11: the districts are always on the map — a placard at the centre when zoomed out, a small one at the
+  // district's top corner when zoomed in (so it never covers the buildings). Tapping it opens the district.
+  LABEL_HITS = [];
+  const sc = scale(); if(S.region.blocks.length && S.pending!=='attach'){ const far = sc*TW < 44;
+    S.region.blocks.forEach((b,k)=>{ let cx, cy;
+      if(far) [cx,cy] = isoW(b.y-FRY+(b.n-1)/2, b.x-FRX+(b.n-1)/2);
+      else { const pts = [[b.y,b.x],[b.y,b.x+b.n-1],[b.y+b.n-1,b.x],[b.y+b.n-1,b.x+b.n-1]].map(([yy,xx])=>isoW(yy-FRY, xx-FRX)); [cx,cy] = pts.sort((a,c)=>a[1]-c[1])[0]; cy -= TH*1.5; }   // just above the district's top corner
+      const r = districtLabel(cx, cy, b.town, far ? 1 : 0.9, STYPE_ICON[b.ty] || 'cottage', !far, k===selBlock); if(far) LABEL_HITS.push({k, ...r}); }); }   // small placards never steal a tap from a parcel
   if(S.pending==='attach' && S.region.cands && modal.classList.contains('hidden')){
     const ph = (performance.now()%1400)/1400;
     S.region.cands.forEach((P,k)=>{ const on = k===attachSel;
@@ -442,7 +454,9 @@ export const MARK = {rejected:['✕','#d64545'], event:['!','#e8442e'], toad:['!
 export function drawLabels(i){
   const p = S.grid[i], r=Math.floor(i/N), c=i%N, [x,y] = isoOf(r,c);
   if(p.st==='review') badge(x+10,y-24,t('map.m',{n:p.t}), approves() ? '#1d3c78' : '#d64545', true);
-  if(p.st==='land' && p.hold && p.holdKnown) badge(x+12,y-10,'',`#d98a00`,false,OWNER_PX);   // v0.10.1: an owner you have met
+  if(p.st==='land' && p.hold && p.holdKnown && !p.expro) badge(x+12,y-10,'',p.peace ? '#8a8f99' : `#d98a00`,false,OWNER_PX);   // v0.10.1: an owner you have met
+  else if(p.st==='land' && p.rumour) badge(x+12,y-10,'?','#b08a3a');   // v0.11: they say so at the bar
+  if(p.expro) badge(x+10,y-24,t('map.m',{n:p.expro}),'#8a2b22',true);   // v0.11: being expropriated
   if(p.st==='approved') badge(x,y-12,t('map.queue'),'#e8762b');
   if(p.st==='building'){ const hh = p.ty==='road' ? 2 : 6 + Math.round((1-p.t/buildMonths(p.ty))*5)*5;
     badge(x-12,y-hh-14, p.halt ? t('map.halt',{n:p.halt}) : t('map.m',{n:p.t}), p.halt ? '#d64545' : '#d0571b', true); }

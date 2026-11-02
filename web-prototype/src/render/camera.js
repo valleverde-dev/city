@@ -66,8 +66,9 @@ export function zoomAt(z, sx=W/2, sy=H/2){
 }
 // Move the camera so parcel i is not hidden under the floating HUD (or off the edges)
 export function keepVisible(i){
-  const [sx, sy] = toScreen(...isoOf(...rc(i))), top = Math.min(H*0.4, W < 700 ? 150 : 130);
-  if(sy < top || sy > H - 40 || sx < 40 || sx > W - 40) panBy(W/2 - sx, (top + H)/2 - sy);
+  const [sx, sy] = toScreen(...isoOf(...rc(i))), top = Math.min(H*0.4, W < 700 ? 110 : 90);
+  const d = document.body.classList.contains('dock-open') ? ($('dock').offsetHeight || 0) : 90, bot = H - d - 30;   // v0.11: the bar opens over the map
+  if(sy < top || sy > bot || sx < 40 || sx > W - 40) panBy(W/2 - sx, (top + bot)/2 - sy);
 }
 export function panBy(dx, dy){ const s = scale(); MAPCX -= dx/s; MAPCY -= dy/s; clampCam(); present(); }
 export function toScreen(ix,iy){ const s=scale(); return [W/2 + (ix-MAPCX)*s, H/2 + (iy-MAPCY)*s]; }

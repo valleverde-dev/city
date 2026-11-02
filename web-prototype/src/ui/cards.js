@@ -177,6 +177,7 @@ export const CARD = {
   // v0.9: events and their results live in the bottom bar (ui/dock.js); the map stays in view
   // v0.10.1: an event is a scene first (the character, the whole story), then the decision as cards, then the outcome
   event: c => { const E = EVENTS[c.id], v = c.v || {};
+    if(!c.open){ hideModal(); refresh(); return; }   // v0.11: an event waits behind its blinking icon (or End month) — the map stays clear
     if(v.i>=0 && v.i!==undefined) pulse(v.i);
     if(!c.played){ c.played = true; playSound(E.sfx); }
     const where = v.i>=0 && v.i!==undefined ? `<p class="where-line">${ic('place')}${t('ui.parcel',{at:pname(v.i)})}</p>` : '';

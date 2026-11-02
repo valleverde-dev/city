@@ -6,7 +6,15 @@ Living project document · update it as the prototype evolves. The game design l
 
 **Eurocrat** (working title): a satirical, turn-based roguelike city builder. You are a Brussels programme officer who must deliver a model European town with plenty of money and no power — buy the land, file the permits, survive the neighbours, spend the funds before they expire. Tone and references: *Constructor* (1997), with a hyper-realistic, comic look at how building actually works in contemporary Europe. The plan: validate the loop in the web/iPad prototype, then port to Godot to ship on the App Store and Steam.
 
-## Current status — v0.10.2 (Nov 2, 2026) · discover, don't be told
+## Current status — v0.11.0 (Nov 2, 2026) · more map, more dealing with people
+
+- **Minimal HUD.** One thin strip on top (goal, months, money, inbox, menu; the meters as small pills you tap). The bottom bar is closed and opens over the map only when something asks for it: a parcel, the next plot, the end of the run — or its icon: the **agenda** (speech bubble, bottom left, with the free slots). **Events wait behind a blinking icon** (or End month) instead of covering the map. Closed, the run file and End month float in the corners; Esc or tapping the map closes the bar; the mayor's hints sit above it.
+- **Districts on the map.** Every district has a placard with its type's icon and name — at the centre when zoomed out (tap it: type, buildings, homes, your parcels, region combos, ??? until discovered), small above its top corner when zoomed in.
+- **Negotiating with stubborn owners.** Once met: lean on them through the mayor (halves the markup; Mayor −10), expropriate (base price, neighbours −12, yours in 4 months) or leave them in peace (neighbours +3).
+- **Gossip at the village bar.** An agenda action once a month (a slot and a round): the regulars name stubborn owners before you meet them — more when the neighbours are happy, none when they are angry — and about a quarter of it is false.
+- Tests: 26 rules tests, browser checks all green.
+
+## Previous — v0.10.2 (Nov 2, 2026) · discover, don't be told
 
 The player has to discover and explore: **no screen shows what comes next.**
 - **No targets ahead.** *Próximos objetivos* (the ladder of targets) is gone from the phase screen and from *Run file → Region*. Locked things are only ???: no level to reach, no XP bar, no hint of the rank or the name of the next one. The collection counters and the XP of each achievement stay.
@@ -207,18 +215,15 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 
 ### After v0.10
 
-0. **A minimal HUD for more map** (requested Oct 31, 2026): shrink the HUD and hide the bottom bar; it opens when you tap a contextual icon (build, events, agenda…), so the map takes almost the whole screen.
 1. **Atlas of settlement types**, then decide: fixed traits or procedural ones.
 2. Member states with their own rule quirks: a bureaucracy per country.
 3. *Constructor*-style characters: named residents, complaints, a mayor with a face.
 4. Port to Godot when a port trigger is met: `core/` first (with its tests), then rendering and UI.
 
-### v0.11 or later (agreed)
+### v0.12 or later (agreed)
 
 - **Districts with their own rules:** local regulations per district (height limits, a protected old town, slower permits, a district mayor with a meter of their own).
 - **Energy performance certificates (PEB/EPC, G → A):** buildings are born with a label and are **renovated** one letter at a time, which costs money, months of works (the building yields less meanwhile) and resources (an agenda slot, a renovation permit, a contractor). Better letters cut monthly costs, raise taxes and rents, attract people and please Brussels; dated directives ("all housing at E by month 24"), combos that need good letters, a sticker with the letter on each building.
-- **Negotiating with stubborn owners:** pay, lean on them through the mayor, expropriate (slow, the neighbours hate it) or give up.
-- **Gossip at the village bar:** an agenda action (a slot and a round of drinks); the regulars (characters with their voices) reveal who owns what and what they are like, with the owner mark on their land; some gossip is false; the angrier the neighbours, the less they tell.
 - **Energy requirements:** buildings consume by type and letter; the city produces or imports (solar, wind, a grid link with limited capacity); shortages and blackouts, surplus sold; climate directives with deadlines.
 - **Materials:** concrete, steel, timber, prefab, recycled — bought on a market with prices and shortages, or made locally; works stop without them; the choice affects cost, the energy letter and Brussels' mood. Introduced by phases, energy first.
 - **Recorded voices**, if the synthesized ones fall short.

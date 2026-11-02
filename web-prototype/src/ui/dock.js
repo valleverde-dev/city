@@ -1,5 +1,5 @@
 import { playSound } from '../audio/sfx.js';
-import { EXT_COMP, EXT_MONTHS, EXT_NEED, acquire, consult, fileReport, lobby, repay, requestExtension, requestPermit, sellPlot, submitPlan } from '../core/actions.js';
+import { EXT_COMP, EXT_MONTHS, EXT_NEED, GOSSIP, NEG, basePrice, expropriate, gossip, leanOnOwner, leaveInPeace, acquire, consult, fileReport, lobby, repay, requestExtension, requestPermit, sellPlot, submitPlan } from '../core/actions.js';
 import { COMBOS, COMBO_BY_ID, activeCombos, comboPreviewAt, discovered } from '../core/combos.js';
 import { B, BUILD_TYPES, CFG, KIND, NEW_TYPES, stageCfg, on } from '../core/config.js';
 import { unlocked } from '../core/career.js';
@@ -41,7 +41,7 @@ export function clearSelection(){ setSelected(-1); setArmed(null); setSelBlock(-
 // Which content the strip shows
 export function dockMode(){
   if(!S) return 'none';
-  if(S.cards.length && ['event','result'].includes(S.cards[0].type)) return 'event';
+  if(S.cards.length && ['event','result'].includes(S.cards[0].type) && !eventWaiting()) return 'event';   // v0.11: a waiting event leaves the map in play
   if(S.over) return 'over';
   if(S.pending==='attach') return 'attach';
   if(selected >= 0) return 'parcel';
@@ -49,6 +49,12 @@ export function dockMode(){
   return 'agenda';
 }
 export const eventOpen = () => dockMode()==='event';
+// v0.11: the bar is closed unless something asks for it: a parcel, the next plot, the end of the run open it by
+// themselves; the agenda and a pending event open when you tap their icon (dockPin)
+export let dockPin = null;
+export function setDockPin(v){ dockPin = v; }
+export const dockShown = (mode = dockMode()) => ['parcel','attach','block','over'].includes(mode) || (mode==='agenda' && dockPin==='agenda');
+export const eventWaiting = () => !!(S && S.cards.length && S.cards[0].type==='event' && !S.cards[0].open);
 // Building art for the cards: the very style this parcel would get (cached as an image)
 const ART = new Map();
 export function buildingArt(ty, i = -1){
@@ -92,6 +98,10 @@ export function renderDock(){
   const key = mode + ':' + (mode==='parcel' ? selected : mode==='block' ? selBlock : '');
   const keep = key === lastKey ? strip.scrollLeft : 0; lastKey = key;
   dock.dataset.mode = mode; document.body.dataset.dock = mode;
+  if(dockPin && dockPin !== mode) dockPin = null;
+  document.body.classList.toggle('dock-open', dockShown(mode));
+  $('eventBtn').hidden = !eventWaiting(); $('agendaBtn').classList.toggle('on', mode==='agenda' && dockPin==='agenda');
+  const ag = $('agendaN'); ag.hidden = !S || !!S.over || !S.slots || mode!=='agenda'; ag.textContent = S ? S.slots : '';
   head.innerHTML = ''; strip.innerHTML = '';
   if(mode !== 'parcel' && armed) setArmed(null);
   if(mode==='event') renderEvent(head, strip);
@@ -101,6 +111,7 @@ export function renderDock(){
   else if(mode==='block') renderBlock(head, strip);
   else renderAgenda(head, strip);
   strip.scrollLeft = keep;
+  document.body.style.setProperty('--dockH', dock.offsetHeight + 'px');   // v0.11: the hints sit above the open bar
   placeOverlays();
 }
 // ---------- nothing selected: the agenda (and the directive) ----------
@@ -116,6 +127,7 @@ function renderAgenda(head, strip){
   if(on('rustic')) act('map', t('act.plan'), S.plan ? t('act.planBusy',{n:S.plan.t}) : t('d.planSub',{x:money(CFG.planCost)}), submitPlan, off||!!S.plan||S.slots<2, '', 'plan');
   if(on('local')) act('restaurant', t('act.lobby'), t('d.lobbySub',{x:money(CFG.lobbyCost), n:has('lobbyist')?20:(S.lobbied?6:12)}), lobby, off||S.slots<1, '', 'lobby');
   if(on('neigh')) act('forum', t('act.consult'), t('d.consultSub'), consult, off||S.slots<2, '', 'consult');
+  if(S.grid.some(p=>p.k==='village')) act('restaurant', t('act.gossip'), S.gossiped ? t('d.gossiped') : t('d.gossipSub', {x:money(GOSSIP.cost)}), gossip, off||!!S.gossiped||S.slots<1, '', 'gossip');   // v0.11
   if(on('comp')) act('description', t('act.report'), t('d.reportSub'), fileReport, off||S.slots<1, '', 'report');
   if(on('directives')) act('hourglass_top', t('act.extension'), S.extAsked ? t('d.extUsed') : t('d.extSub', {c:EXT_COMP, need:EXT_NEED, n:EXT_MONTHS}), requestExtension, off||S.extAsked||S.slots<2, '', 'extension');
   if(S.debt>0) act('account_balance_wallet', t('act.repay',{x:money(Math.min(CFG.loanStep,S.debt))}), t('d.repaySub'), repay, off||S.funds<Math.min(CFG.loanStep,S.debt), 'money', 'repay');
@@ -134,19 +146,20 @@ function renderLand(p, pt, add){
 }
 // ---------- a consolidated settlement tapped on the map (v0.9.2) ----------
 function renderBlock(head, strip){
-  const b = S.region.blocks[selBlock], add = o => strip.appendChild(tile(o)), known = discovered();
-  head.innerHTML = `<h3>${ic(STYPE_ICON[b.ty] || 'cottage')}${b.town}</h3>${tag(t('st.'+b.ty),'blue')}${tag(t('d.consolidated'),'ok')}<span class="ref">${t('d.settlementN', {n:roman(selBlock+1)})}</span>`;
+  // v0.11: a district (tap its placard on the map): its type, what is built there, its region combos (??? until discovered)
+  const k = selBlock, b = S.region.blocks[k], add = o => strip.appendChild(tile(o)), known = discovered();
+  const mine = S.grid.map((p,i)=>i).filter(i=>districtOf(i)===k), built = mine.filter(i=>S.grid[i].st==='built' && S.grid[i].ty && S.grid[i].k!=='regional' && S.grid[i].ty!=='road');
+  const homes = built.reduce((a,i)=>a + (B[S.grid[i].ty].homes||0), 0), yours = mine.filter(i=>['owned','review','approved','building','built'].includes(S.grid[i].st) && S.grid[i].k!=='regional' && S.grid[i].k!=='village').length;
+  head.innerHTML = `<h3>${ic(STYPE_ICON[b.ty] || 'cottage')}${b.town}</h3>${tag(t('st.'+b.ty),'blue')}<span class="ref">${t('d.settlementN', {n:roman(k+1)})}</span>`;
   add({icon:STYPE_ICON[b.ty] || 'cottage', name:t('st.'+b.ty), sub:t('std.'+b.ty), cls:'info wide'});
-  add({icon:'groups', name:String(b.res || 0), sub:t('d.blockRes'), cls:'stat'});
-  add({icon:'euro', name:'+'+money(b.tax || 0), sub:t('d.blockDiv'), cls:'stat money'});
-  const rc = (S.rcombos || []).filter(c=>c.b===selBlock && known.includes(c.id));   // v0.10.1: discovered ones only
-  rc.forEach(c=>{ const cb = RCOMBO_BY_ID[c.id], kn = known.includes(c.id);
-    add({icon: cb.good ? 'workspace_premium' : 'warning', name: kn ? t('rcombo.'+c.id) : t('rcombo.possible'), sub: kn ? t('rcombod.'+c.id).split('. ')[0] : t('d.withTown', {town:S.town}),
-      badge:[kn ? (cb.good ? '+' : '−') : '?', kn ? (cb.good ? 'good' : 'bad') : 'mystery'], cls:'combo '+(cb.good ? 'good' : 'bad')}); });
-  const edge = activeCombos().filter(x=>x.j < 0 && S.frontier[-1-x.j] && S.frontier[-1-x.j].b === selBlock && known.includes(x.id));
-  const seen = new Set(); edge.forEach(x=>{ if(seen.has(x.id)) return; seen.add(x.id); const cb = COMBO_BY_ID[x.id];
-    add({icon: cb.good ? 'workspace_premium' : 'warning', name:t('combo.'+x.id), sub:t('d.acrossEdge'), badge:[cb.good ? '+' : '−', cb.good ? 'good' : 'bad'], cls:'combo '+(cb.good ? 'good' : 'bad')}); });
-  if(!rc.length && !edge.length) add({icon:'info', name:t('d.noTies'), sub:t('d.noTiesX'), cls:'info wide'});
+  add({icon:'apartment', name:String(built.length), sub:t('d.blockBuilt'), cls:'stat'});
+  add({icon:'groups', name:String(homes), sub:t('d.blockHomes'), cls:'stat'});
+  add({icon:'map', name:String(yours), sub:t('d.blockYours'), cls:'stat'});
+  const rc = (S.rcombos || []).filter(c=>c.a===k || c.b===k);
+  rc.forEach(c=>{ const cb = RCOMBO_BY_ID[c.id], kn = known.includes(c.id), other = S.region.blocks[c.a===k ? c.b : c.a];
+    add({icon: kn ? (cb.good ? 'workspace_premium' : 'warning') : 'info', name: kn ? t('rcombo.'+c.id) : '???', sub: t('d.withTown', {town: other ? other.town : ''}),
+      badge:[kn ? (cb.good ? '+' : '−') : '?', kn ? (cb.good ? 'good' : 'bad') : 'mystery'], cls:'combo '+(kn ? (cb.good ? 'good' : 'bad') : 'unknown')}); });
+  if(!rc.length && S.region.blocks.length > 1) add({icon:'info', name:t('d.noTies'), sub:t('d.noTiesX'), cls:'info wide'});
 }
 // ---------- a parcel ----------
 export function parcelTitle(i){
@@ -160,15 +173,26 @@ function renderParcel(head, strip){
   let tags = '';
   if(p.st==='owned' || p.st==='land'){ if(on('rustic') && ['farm','muni','flood'].includes(p.k)) tags += p.urban ? tag(t('tag.urban'),'ok') : tag(t('tag.rustic'));
     if(p.st==='owned') tags += tag(t('tag.yours'),'blue'); if(p.st==='owned' && !acc) tags += tag(t('tag.noAccess'),'bad'); }
-  if(p.st==='land' && p.hold && p.holdKnown) tags += tag(t('tag.hold', {p:p.holdPct||80}),'warn');   // v0.10.1: only once you have met the owner
+  if(p.st==='land' && p.hold && p.holdKnown) tags += tag(t('tag.hold', {p:p.holdPct||80}),'warn');
+  if(p.st==='land' && p.rumour) tags += tag(t('tag.rumour'),'warn');   // v0.11: what they say at the bar
+  if(p.expro) tags += tag(t('tag.expro', {n:p.expro}),'bad');   // v0.10.1: only once you have met the owner
   const dk = districtOf(i), dn = dk >= 0 ? S.region.blocks[dk].town : '';   // v0.10.1: the district it belongs to
   head.innerHTML = `<h3>${ic(pi)}${pt}</h3>${tags}<span class="ref">${t('ui.parcel',{at:pname(i)})}${dn ? ' · '+dn : ''}</span>`;
   const add = o => strip.appendChild(tile(o));
   if(p.k==='habitat' || p.k==='village' || p.k==='regional'){ renderLand(p, pt, add); return; }
+  if(p.st==='land' && p.expro){ add({icon:'gavel', name:t('d.expro'), sub:t('d.exproSub', {n:p.expro}), cls:'status wide'}); return; }
   if(p.st==='land'){
     const price = landPrice(p), mayor = p.k==='muni' && on('local') && S.local < 40;
     add({icon:'payments', name:t('d.buy'), sub:`${money(price)} · ${t('d.slot1')}`, cls:'act primary', k:'buy',
       disabled: !slotsOk || mayor, why: mayor ? t('dw.mayor') : !slotsOk ? t('dw.slots') : '', click:()=>doAction(acquire(i), i)});
+    // v0.11: a stubborn owner you have met can be negotiated with
+    if(p.hold && p.holdKnown && !p.peace){
+      const lean = !on('local') ? null : p.leaned ? t('dw.leaned') : S.local < NEG.leanNeed ? t('dw.mayorLean', {n:NEG.leanNeed}) : !slotsOk ? t('dw.slots') : '';
+      if(lean !== null) add({icon:'restaurant', name:t('d.lean'), sub:t('d.leanSub', {n:-NEG.leanLocal}), cls:'act', k:'lean', disabled:!!lean, why:lean, click:()=>doAction(leanOnOwner(i), i)});
+      const ex = r1(basePrice(p)), exWhy = S.slots < NEG.exproSlots || S.over ? t('dw.slots2') : '';
+      add({icon:'gavel', name:t('d.expropriate'), sub:t('d.exproCost', {x:money(ex), n:NEG.exproMonths, s:NEG.exproSlots}), cls:'act', k:'expro', disabled:!!exWhy, why:exWhy, click:()=>doAction(expropriate(i), i)});
+      add({icon:'handshake', name:t('d.peace'), sub:t('d.peaceSub'), cls:'act', k:'peace', click:()=>doAction(leaveInPeace(i), i)});
+    }
     add({icon:pi, name:t('d.about'), sub:t(p.k==='muni'?'pcs.muni':p.k==='flood'?'pcs.flood':(p.hold && p.holdKnown)?'pcs.hold':'pcs.farm', {p:p.holdPct||80}), cls:'info wide'});
     return; }
   if(p.st==='owned'){
@@ -281,4 +305,7 @@ function renderOver(head, strip){
   strip.appendChild(tile({icon:'description', name:t('d.summary'), cls:'act primary', click:()=>showNext()}));
 }
 // Escape / tapping the map again: let go of whatever is selected
-export function deselect(){ if(armed){ setArmed(null); refresh(); return true; } if(selected>=0 || selBlock>=0){ clearSelection(); hidePop(); refresh(); return true; } return false; }
+export function deselect(){ if(armed){ setArmed(null); refresh(); return true; }
+  if(selected>=0 || selBlock>=0){ clearSelection(); hidePop(); refresh(); return true; }
+  if(dockPin){ dockPin = null; refresh(); return true; }   // v0.11: close the bar
+  return false; }

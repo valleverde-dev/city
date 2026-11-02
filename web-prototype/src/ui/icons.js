@@ -992,5 +992,7 @@ export const EMBLEM_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 
   css.push(`.emblem{--m:${svgURL(EMBLEM_SVG)}}`);
   const st = document.createElement('style'); st.textContent = css.join('\n'); document.head.appendChild(st);
 })();
+// the 12×12 bitmap of an icon (for canvas drawing: the district placards on the map, v0.11)
+export function iconRows(name){ return PIXEL_ICONS[ICON_ALIAS[name] || name] || null; }
 export function ic(name, cls){ const n = (ICON_ALIAS[name] || PIXEL_ICONS[name]) ? name : 'info';
   return `<i class="ico i-${n}${cls ? ' '+cls : ''}" aria-hidden="true"></i>`; }

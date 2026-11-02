@@ -475,3 +475,49 @@ test('v0.10.2: combos and bankruptcy from phase I; stubborn owners ask +50…150
   assert.ok(pcts.length > 10 && pcts.every(p => p >= 50 && p <= 150 && p % 5 === 0), 'between +50% and +150%');
   assert.ok(new Set(pcts).size >= 5, 'and they vary');
 });
+
+test('v0.11: negotiating with a stubborn owner — lean on them, expropriate, or leave them in peace', () => {
+  const held = S => S.grid.findIndex(p => p.st === 'land' && p.hold);
+  let S = g.newGame(21, 2), i = held(S);
+  assert.ok(i >= 0, 'phase III has stubborn owners');
+  S.slots = 3; S.funds = 100; S.local = 60;
+  assert.equal(core.leanOnOwner(i).msg.k, 'err.noDeal', 'you have to meet them first');
+  core.meetOwner(i);
+  const p = S.grid[i], pct = p.holdPct, base = core.basePrice(p);
+  assert.ok(core.leanOnOwner(i).ok);
+  assert.equal(p.holdPct, Math.round(pct / 2)); assert.equal(S.local, 50); assert.equal(S.slots, 2);
+  assert.ok(Math.abs(core.basePrice(p) - base) <= 0.1, 'the base price stays');
+  assert.equal(core.leanOnOwner(i).msg.k, 'err.noDeal', 'only once');
+  // expropriation: two slots, the base price now, the neighbours pay, the land is yours in four months
+  S = g.newGame(21, 2); i = held(S); core.meetOwner(i); S.slots = 3; S.funds = 100;
+  const q = S.grid[i], f0 = S.funds, n0 = S.neigh, b = core.basePrice(q);
+  assert.ok(core.expropriate(i).ok);
+  assert.equal(S.slots, 1); assert.ok(Math.abs((f0 - S.funds) - b) < 0.11); assert.equal(S.neigh, n0 + core.NEG.exproNeigh);
+  assert.equal(core.acquire(i).ok, false, 'not for sale while it is being expropriated');
+  for (let m = 0; m < core.NEG.exproMonths; m++) { S.cards = []; core.endMonth(); }
+  assert.equal(q.st, 'owned'); assert.equal(q.hold, false);
+  // peace: the neighbours like it, and the owner stops negotiating
+  S = g.newGame(21, 2); i = held(S); core.meetOwner(i); const n1 = S.neigh;
+  assert.ok(core.leaveInPeace(i).ok); assert.equal(S.neigh, n1 + core.NEG.peaceNeigh);
+  S.slots = 3; assert.equal(core.expropriate(i).msg.k, 'err.noDeal');
+});
+
+test('v0.11: gossip at the village bar marks stubborn owners — some of it false, less when the neighbours are angry', () => {
+  let S = g.newGame(30, 2); S.slots = 3; S.funds = 10; S.neigh = 70;
+  const hidden0 = S.grid.filter(p => p.st === 'land' && p.hold && !p.holdKnown).length;
+  assert.equal(core.gossipCount(), 3);
+  assert.ok(core.gossip().ok);
+  const known = S.grid.filter(p => p.heard).length, rumours = S.grid.filter(p => p.rumour).length;
+  assert.equal(known + rumours, Math.min(3, known + rumours)); assert.ok(known + rumours >= 1);
+  assert.ok(S.grid.filter(p => p.st === 'land' && p.hold && !p.holdKnown).length === hidden0 - known);
+  assert.ok(S.grid.every(p => !p.rumour || !p.hold), 'a rumour is always about a parcel that is not held');
+  assert.equal(core.gossip().msg.k, 'err.gossiped', 'once a month');
+  // meeting the owner of a rumoured parcel clears it
+  const r = S.grid.findIndex(p => p.rumour); if (r >= 0) { assert.ok(core.meetOwner(r).rumour); assert.equal(S.grid[r].rumour, false); }
+  // angry neighbours tell nothing
+  S = g.newGame(30, 2); S.slots = 3; S.neigh = 10;
+  assert.equal(core.gossipCount(), 0); assert.equal(core.gossip().msg.k, 'fx.gossip0');
+  // over many seeds, some gossip is false
+  let lies = 0; for (let s = 1; s <= 30; s++) { const T = g.newGame(s, 2); T.slots = 3; T.funds = 10; T.neigh = 70; core.gossip(); lies += T.grid.filter(p => p.rumour).length; }
+  assert.ok(lies > 0);
+});

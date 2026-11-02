@@ -1,13 +1,14 @@
 import { playSound } from '../audio/sfx.js';
 import { endMonth } from '../core/month.js';
 import { S } from '../core/state.js';
-import { draw, present, startNight } from '../render/anim.js';
+import { LABEL_HITS, draw, present, startNight } from '../render/anim.js';
+import { meetOwner } from '../core/actions.js';
 import { FRX, FRY, centreOn, cvs, keepVisible, panBy, resize, selBlock, selected, setSelBlock, setSelected, setViewRot, tileAt, tileAtW, viewRot, worldEl, zoom, zoomAt } from '../render/camera.js';
 import { money } from '../core/format.js';
 import { t } from '../i18n/index.js';
 import { modal, showNext, slideKey } from './cards.js';
-import { $, flushFx } from './dom.js';
-import { armed, clearSelection, deselect, eventOpen, selectPlot, setArmed } from './dock.js';
+import { $, floatAt, flushFx } from './dom.js';
+import { armed, clearSelection, deselect, dockPin, eventOpen, selectPlot, setArmed, setDockPin } from './dock.js';
 import { refresh } from './guide.js';
 import { editTownName, hidePop, runTab, showMeterPop } from './hud.js';
 import { inboxOpen, showNews, toggleInbox } from './inbox.js';
@@ -48,12 +49,15 @@ export function up(e){
     if(k >= 0) selectPlot(k);
   }
   else if(wasSingle && !dragged && downAt && !eventOpen()){
-    const r = cvs.getBoundingClientRect(); const i = tileAt(e.clientX-r.left, e.clientY-r.top);
-    const k = i < 0 ? blockAtScreen(e.clientX-r.left, e.clientY-r.top) : -1;
+    const r = cvs.getBoundingClientRect(), lx = e.clientX-r.left, ly = e.clientY-r.top;
+    const hit = LABEL_HITS.find(h=>lx>=h.x0 && lx<=h.x0+h.w && ly>=h.y0 && ly<=h.y0+h.h);   // v0.11: a district's placard
+    const i = hit ? -1 : tileAt(lx, ly);
+    const k = hit ? hit.k : i < 0 ? blockAtScreen(lx, ly) : -1;
     if(k >= 0 && k !== selBlock){ clearSelection(); setSelBlock(k); }   // v0.9.2: a consolidated settlement: what it is and what it brings
-    else if(i<0 || i===selected) clearSelection();
+    else if(i<0 || i===selected){ clearSelection(); setDockPin(null); }   // v0.11: tapping the map closes the bar
     else { setSelected(i); setArmed(null); setSelBlock(-1);
-      const q = S.grid[i]; if(q && q.st==='land' && q.hold && !q.holdKnown) ownerScene(i); }   // v0.10.1: the owner shows up
+      const q = S.grid[i]; if(q && q.st==='land' && q.rumour && meetOwner(i).rumour) floatAt(i, t('fx.rumour'), '', 'info');   // v0.11: the bar was wrong
+      else if(q && q.st==='land' && q.hold && !q.holdKnown) ownerScene(i); }   // v0.10.1: the owner shows up
     playSound('click'); refresh(); if(selected>=0) keepVisible(selected);
   }
   if(!pointers.size){ downAt=null; }
@@ -120,10 +124,14 @@ $('menuBtn').onclick = ()=>{ playSound('click'); pauseMenu(); };
 $('townName').onclick = e=>{ e.stopPropagation(); editTownName(); };
 $('inboxBtn').onclick = e=>{ e.stopPropagation(); playSound('click'); toggleInbox(); };
 $('runBtn').onclick = ()=>{ runTab ? closeRun() : openRun(); };
-$('dirPill').onclick = ()=>{ playSound('click'); clearSelection(); refresh(); };   // the bar shows the agenda and the directive
+$('dirPill').onclick = ()=>{ playSound('click'); clearSelection(); setDockPin('agenda'); refresh(); };
+// v0.11: the icons that open the bar
+$('agendaBtn').onclick = ()=>{ playSound('click'); const open = dockPin==='agenda'; clearSelection(); setDockPin(open ? null : 'agenda'); refresh(); };
+$('eventBtn').onclick = ()=>{ playSound('click'); openEvent(); };
+function openEvent(){ const c = S && S.cards[0]; if(c && c.type==='event'){ c.open = true; clearSelection(); showNext(); } }   // the bar shows the agenda and the directive
 $('endTurn').onclick = ()=>{
   if(S.over){ showNext(); return; }
-  if(S.cards.length || S.perkChoice){ showNext(); return; }
+  if(S.cards.length || S.perkChoice){ openEvent(); showNext(); return; }
   const n0 = S.logN || 0;
   playSound('turn'); startNight(); endMonth(); clearSelection(); refresh(); flushFx(); showNews(n0); showNext(); };
 document.querySelectorAll('.meter').forEach(el=> el.addEventListener('click', ev=>{ ev.stopPropagation(); playSound('click'); showMeterPop(el.dataset.m); }));

@@ -3,6 +3,7 @@ import { B, CFG, N_REJECTIONS, on } from './config.js';
 import { directiveProgress, issueDirective, offerPerks } from './directives.js';
 import { residents, taxIncome } from './economy.js';
 import { checkContract, dueChains, rollEvent } from './events.js';
+import { tickExpro } from './actions.js';
 import { money } from './format.js';
 import { consolidate, snapshot } from './newgame.js';
 import { recordRun, save } from './persist.js';
@@ -117,6 +118,8 @@ export function endMonth(){
     }
   }
   if(on('directives') && !S.directive && !S.over && (S.month===2 || (S.month>2 && (S.month-2)%5===0))) issueDirective();
+  // 11a. Expropriations run their course (v0.11)
+  tickExpro();
   // 11b. Contracts from the characters, and the second card of chained events (v0.10)
   if(!S.over){ checkContract(); dueChains(); }
   // 12. Random event (a card with choices)
@@ -131,7 +134,7 @@ export function endMonth(){
   }
   // 14. Next month
   gainXp('month');
-  S.month++; S.slots = Math.max(1, slotsPerMonth() - S.slotPenalty); S.slotPenalty = 0; S.lobbied = 0;
+  S.month++; S.slots = Math.max(1, slotsPerMonth() - S.slotPenalty); S.slotPenalty = 0; S.lobbied = 0; S.gossiped = false;
   S.grid.forEach(p=>{ if(p.flag && p.flag.until < S.month) p.flag = null; });
   // 15. Win / lose
   //     Meeting the target consolidates the settlement and the region grows; any loss ends the run.

@@ -1,0 +1,74 @@
+/* =====================================================================
+   v0.11 MINIMAL HUD — more map. One thin strip on top (goal, months, money, inbox, menu; the meters as
+   small segment pills you tap); the bottom bar lies over the map and only opens when something asks
+   for it (a parcel, the next plot) or when you tap an icon (agenda, a pending event). The run file
+   and End month stay as two floating buttons in the bottom corners.
+   ===================================================================== */
+#app{position:relative;}
+#world{flex:1 1 auto;}
+/* --- top strip --- */
+#hud{top:8px; left:10px; right:10px; grid-template-columns:auto minmax(0,1fr) auto; grid-template-areas:"brand goal right" ". meters relics"; gap:6px 10px;}
+#hud .hud-logo{display:none;}
+#hud .brand{justify-content:center;}
+#goal{width:min(520px, 100%); gap:6px;}
+.cap{border-width:2px; box-shadow:0 3px 0 rgba(11,31,77,.3);}
+.cap b{font-size:22px;} .cap .of{font-size:15px;} .cap .ico{width:16px; height:16px;}
+.cap.res{padding:4px 9px 5px;} .pbar{height:6px; margin-top:3px; border-width:1px;}
+.cap.months{flex:0 0 auto; display:flex; align-items:center; padding:0 9px;} .cap.months .pips{display:none;} .cap.months .of{font-size:13px;}
+.cap.money{height:38px; padding:0 9px; gap:5px;} .cap.money .debt b{font-size:16px;}
+.hud-btn{width:38px; height:38px; border-width:2px;} .hud-btn .ico{width:17px; height:17px;}
+.badge{top:-7px; right:-7px; min-width:18px; height:18px; font-size:14px; line-height:15px;}
+#meters{gap:4px;}
+.meter{padding:3px 5px; gap:4px; box-shadow:0 2px 0 rgba(11,31,77,.25);} .meter .lbl, .meter b{display:none;} .meter .seg i{width:6px; height:9px;} .meter .ico{width:13px; height:13px;}
+#relics{display:none;}   /* the perks live in the run file */
+#news{top:78px;}
+/* --- the bottom bar, over the map --- */
+#dock{position:absolute; left:0; right:0; bottom:0; grid-template-columns:auto auto minmax(0,1fr) auto; grid-template-areas:"run rail ctx end";
+      background:transparent; border-top:0; pointer-events:none; align-items:end; padding-bottom:env(safe-area-inset-bottom, 0px);}
+#dock > *{pointer-events:auto;}
+#dock #ctx{display:none;}
+body.dock-open #dock{background:var(--navy); border-top:4px solid var(--yellow); align-items:stretch; padding-bottom:max(0px, calc(env(safe-area-inset-bottom, 0px) - var(--pad)));}
+body.dock-open #dock #ctx{display:flex;}
+body.dock-open #dock[data-mode="event"]{background:var(--paper); border-top-color:var(--bad);}
+#dock:not([data-mode]) #ctx{display:none;}
+/* closed: the run file and End month float in the corners */
+body:not(.dock-open) #runBtn{margin:0 0 12px 12px; width:76px; height:76px; padding:6px 4px; gap:4px; border:3px solid var(--navy); box-shadow:0 4px 0 rgba(11,31,77,.35);}
+body:not(.dock-open) #runBtn > .ico{width:26px; height:26px;} body:not(.dock-open) #runBtn .lbl{display:none;}
+body:not(.dock-open) #runBtn .xpbar{width:58px; height:8px;} body:not(.dock-open) #runBtn small{font-size:8px; max-width:70px;}
+body:not(.dock-open) #endTurn{margin:0 12px 12px 0; height:76px; padding:0 18px; gap:4px;}
+body:not(.dock-open) #endTurn .lbl{font-size:24px;}
+/* the icons that open the bar */
+#rail{grid-area:rail; display:flex; flex-direction:column; justify-content:flex-end; gap:8px; padding:0 0 12px 8px;}
+body.dock-open #rail{padding:var(--pad) 0 var(--pad) 10px; justify-content:flex-start;}
+.railbtn{position:relative; width:52px; height:52px; display:flex; align-items:center; justify-content:center; background:var(--white); color:var(--navy);
+         border:3px solid var(--navy); box-shadow:0 4px 0 rgba(11,31,77,.35); cursor:pointer; padding:0;}
+.railbtn .ico{width:22px; height:22px;}
+.railbtn.on{background:var(--yellow);}
+.railbtn.alert{background:var(--bad); color:#fff; animation:railBlink 1s steps(2) infinite;}
+@keyframes railBlink{50%{background:#ff7a5c; box-shadow:0 0 0 4px rgba(214,46,40,.35), 0 4px 0 rgba(11,31,77,.35);}}
+.railbtn:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(11,31,77,.35);}
+body.reduce-motion .railbtn.alert{animation:none;}
+@media (prefers-reduced-motion: reduce){ .railbtn.alert{animation:none;} }
+/* the map's own buttons and hints sit above the floating corners */
+#mapBtns{bottom:104px;}
+body.dock-open #mapBtns, body.dock-open #hint{visibility:hidden;}
+body.dock-open #guide{left:12px; bottom:calc(var(--dockH, 200px) + 10px);}   /* the hints stay, just above the open bar */
+#guide{left:162px; bottom:12px; width:min(460px, calc(100% - 360px));}
+#hint{left:162px; bottom:20px;}
+
+@media (max-width:700px){
+  #hud{grid-template-areas:"goal" "right"; gap:5px;}
+  .cap b{font-size:20px;}
+  #meters{top:calc(100% + 6px);}
+  #dock{grid-template-columns:auto auto minmax(0,1fr) auto; grid-template-areas:"run rail . end";}
+  body.dock-open #dock{grid-template-columns:auto auto minmax(0,1fr) auto; grid-template-areas:"ctx ctx ctx ctx" "run rail . end";}
+  body.dock-open #runBtn{margin:0 0 10px 10px; height:52px; width:76px;}
+  body.dock-open #rail{flex-direction:row; padding:0 0 10px 8px;}
+  body.dock-open #endTurn{margin:0 10px 10px 0; height:52px;}
+  body:not(.dock-open) #runBtn{width:62px; height:62px; margin:0 0 10px 8px;}
+  body:not(.dock-open) #endTurn{height:62px; margin:0 8px 10px 0; padding:0 12px;}
+  #rail{padding:0 0 10px 6px;} .railbtn{width:46px; height:46px;}
+  #guide{left:8px; right:8px; width:auto; bottom:86px;} #hint{left:8px; bottom:86px;}
+  body.dock-open #guide{left:8px; bottom:calc(var(--dockH, 260px) + 8px);}
+}
+body:not(.dock-open) #endTurn small{display:none;}

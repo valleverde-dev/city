@@ -13,6 +13,7 @@ export function acquire(i){
   if(!canAct()) return fail('err.slots');
   if(p.st==='ruin'){ const price=r1(p.price*1.5); if(S.funds<price) return fail('err.funds');
     S.slots--; spend(price); Object.assign(p,{st:'owned', ty:null, dev:null}); log('log.buyback',{at:pname(i), x:money(price)}); return {ok:true, msg:{k:'fx.money', p:{x:money(-price)}}}; }
+  if(p.expro) return fail('err.expro');   // v0.11: being expropriated
   if(p.st!=='land' || !['farm','muni','flood'].includes(p.k)) return fail('err.notForSale');
   if(p.k==='muni' && on('local') && S.local < 40) return fail('err.mayorNo');
   const price = landPrice(p);
@@ -123,6 +124,73 @@ export function renameTown(name){
   log('log.renamed', {a:old, b:v}, 'good');
   return {ok:true, msg:{k:'log.renamed', p:{a:old, b:v}}};
 }
+// =====================================================================
+//  v0.11 — NEGOTIATING WITH A STUBBORN OWNER (once you have met them). Besides paying what they ask:
+//  · lean on them through the mayor: 1 slot, the Mayor −10; the markup is halved (needs the Mayor at 50+)
+//  · expropriate: 2 slots, the base price (no markup) paid now, the neighbours −12; the parcel is yours in 4 months
+//  · leave them in peace: free; the neighbours +3, and they stop asking you (you can still pay their price)
+// =====================================================================
+export const NEG = {leanLocal:-10, leanNeed:50, exproSlots:2, exproMonths:4, exproNeigh:-12, peaceNeigh:3};
+const stubborn = p => p && p.st==='land' && p.hold && p.holdKnown && !p.expro;
+export function basePrice(p){ return r1(p.price / (1 + (p.holdPct||80)/100)); }
+export function leanOnOwner(i){
+  const p = S.grid[i];
+  if(!stubborn(p) || p.leaned || p.peace) return fail('err.noDeal');
+  if(!on('local')) return fail('err.notYet');
+  if(!canAct()) return fail('err.slots');
+  if(S.local < NEG.leanNeed) return fail('err.mayorNo');
+  const base = basePrice(p);
+  S.slots--; p.leaned = true; p.holdPct = Math.round((p.holdPct||80)/2); p.price = r1(base*(1 + p.holdPct/100));
+  bump('local', NEG.leanLocal, 'why.lean'); log('log.lean', {at:pname(i), x:money(landPrice(p))}); gainXp('agenda');
+  return {ok:true, msg:{k:'fx.lean', p:{x:money(landPrice(p))}}, sfx:'stamp'};
+}
+export function expropriate(i){
+  const p = S.grid[i];
+  if(!stubborn(p) || p.peace) return fail('err.noDeal');
+  if(!canAct(NEG.exproSlots)) return fail('err.slots');
+  const x = r1(basePrice(p) * (has('notary') ? 0.7 : 1));
+  if(avail() < x) return fail(on('debt') ? 'err.funds' : 'err.committed');
+  S.slots -= NEG.exproSlots; spend(x); p.expro = NEG.exproMonths;
+  bump('neigh', NEG.exproNeigh, 'why.expro'); log('log.expro', {at:pname(i), x:money(x), n:NEG.exproMonths}, 'bad');
+  return {ok:true, msg:{k:'fx.expro', p:{n:NEG.exproMonths}}, sfx:'stamp'};
+}
+export function leaveInPeace(i){
+  const p = S.grid[i];
+  if(!stubborn(p) || p.peace) return fail('err.noDeal');
+  p.peace = true; bump('neigh', NEG.peaceNeigh, 'why.peace'); log('log.peace', {at:pname(i)}, 'good');
+  return {ok:true, msg:{k:'fx.peace'}, sfx:'click'};
+}
+// Each month: expropriations run their course
+export function tickExpro(){
+  S.grid.forEach((p,i)=>{ if(!p.expro || p.st!=='land') return;
+    if(--p.expro <= 0){ p.expro = 0; Object.assign(p, {st:'owned', hold:false}); log('log.exproDone', {at:pname(i)}, 'good'); } });
+}
+
+// =====================================================================
+//  v0.11 — GOSSIP AT THE VILLAGE BAR: a slot and a round of drinks. The regulars tell you who owns what:
+//  stubborn owners get marked before you meet them. Some gossip is false (a rumour that the parcel is held);
+//  the angrier the neighbours, the less they tell. Rumours are cleared when you meet the real owner.
+// =====================================================================
+export const GOSSIP = {cost:0.3, lie:0.25};
+export function gossipCount(){ if(!on('neigh')) return 2; return S.neigh < 20 ? 0 : S.neigh < 40 ? 1 : S.neigh < 65 ? 2 : 3; }
+export function gossip(){
+  if(!S.grid.some(p=>p.k==='village')) return fail('err.noBar');
+  if(S.gossiped) return fail('err.gossiped');
+  if(!canAct()) return fail('err.slots');
+  if(S.funds < GOSSIP.cost) return fail('err.funds');
+  S.slots--; spend(GOSSIP.cost); S.gossiped = true; gainXp('agenda');
+  const n = gossipCount();
+  if(!n){ log('log.gossip0', {}, 'bad'); return {ok:true, cls:'bad', msg:{k:'fx.gossip0'}, sfx:'crowd'}; }
+  const held = S.grid.map((p,i)=>i).filter(i=>{ const p = S.grid[i]; return p.st==='land' && p.hold && !p.holdKnown; });
+  const plain = S.grid.map((p,i)=>i).filter(i=>{ const p = S.grid[i]; return p.st==='land' && p.k==='farm' && !p.hold && !p.rumour; });
+  let told = 0;
+  for(let k=0; k<n; k++){
+    if(rnd() < GOSSIP.lie && plain.length){ const i = plain.splice(Math.floor(rnd()*plain.length),1)[0]; S.grid[i].rumour = true; told++; }
+    else if(held.length){ const i = held.splice(Math.floor(rnd()*held.length),1)[0]; S.grid[i].holdKnown = true; S.grid[i].heard = true; told++; }
+  }
+  log('log.gossip', {n:told}, told ? 'good' : '');
+  return {ok:true, msg:{k: told ? 'fx.gossip' : 'fx.gossipNone', p:{n:told}}, sfx:'crowd'};
+}
 // A name suggestion in the house style (k: any integer — the UI passes a random one, so the run's own seed is untouched)
 export function suggestTown(k){ const a = TOWN_A[Math.abs(k) % TOWN_A.length], b = TOWN_B[Math.abs(Math.floor(k / 7)) % TOWN_B.length]; return a.endsWith('-') ? a+b : a+' '+b; }
 // v0.10.1: each plot is a district with its own name, which can be changed too (free, like the city's)
@@ -136,7 +204,8 @@ export function renameDistrict(k, name){
 // v0.10.1: a stubborn owner shows up when you go for their land (tapping the parcel): from then on it is known
 // and marked on the map. Until then nothing gives it away. Free: meeting someone costs no slot.
 export function meetOwner(i){
-  const p = S && S.grid[i]; if(!p || !p.hold || p.holdKnown) return {ok:false};
+  const p = S && S.grid[i]; if(p && p.rumour){ p.rumour = false; if(!p.hold){ log('log.rumour', {at:pname(i)}); return {ok:true, rumour:true}; } }   // v0.11: bar gossip was wrong
+  if(!p || !p.hold || p.holdKnown) return {ok:false};
   p.holdKnown = true; log('log.owner', {at:pname(i), x:money(landPrice(p))}, 'bad');
   return {ok:true};
 }

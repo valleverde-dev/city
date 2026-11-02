@@ -1,6 +1,6 @@
 # EUROCRAT — Game Design Document
 
-*Living document. v0.10.1 · Nov 1, 2026. Working title. Available in English and Spanish.*
+*Living document. v0.11.0 · Nov 2, 2026. Working title. Available in English and Spanish.*
 
 > Every city builder is a dictatorship: you click, a house appears, people move in.
 > **Eurocrat** asks what building a new town would *really* take in contemporary Europe —
@@ -68,6 +68,8 @@ v0.5 had four separate levels, which played like a campaign rather than a roguel
 Playtest: the second settlement felt impossible and depended on luck (the bot averaged 3.6 rejected permits and 2 farmers raising prices per game). Now:
 - **Permits are decided by political support, not dice.** Support (0–100) comes from the Mayor, the neighbours and compliance. A permit is approved if support is at least **50** when it is decided. The parcel sheet, the map badge (red) and the bell warn you in advance, and you can lobby or consult in time.
 - **Stubborn owners** (from phase II): about a quarter of the new farmland belongs to owners who ask more — **+50…150%, rolled once per parcel** (v0.10.2). Nothing gives them away: they show up in person when you go for their land (v0.10.1), with their price, and from then on the parcel is marked. No surprise raises after that, no lost actions.
+- **Negotiating with them (v0.11).** Once you have met an owner, besides paying their price you can **lean on them through the mayor** (1 slot, Mayor −10, needs the Mayor at 50+; halves their markup, once), **expropriate** (2 slots, the base price without markup paid now, neighbours −12; the parcel is yours after 4 months of courts, not for sale meanwhile) or **leave them in peace** (free, neighbours +3; they stop negotiating, you can still pay).
+- **Gossip at the village bar (v0.11).** An agenda action, once a month: a slot and a round (€0.3M). The regulars name parcels with a stubborn owner before you meet them — up to 3 when the neighbours are happy (65+), 2 (40+), 1 (20+), nobody talks below 20. About a quarter of what they say is **false**: a "rumour" mark on a parcel whose owner turns out to be perfectly reasonable when you go for it.
 - Randomness stays where it is fun and visible: event cards (each a choice), directives, the market.
 
 ## 5. Core loop
@@ -274,6 +276,9 @@ English and Spanish, switchable at any time (HUD button, pause menu or Settings 
 Pixel-art frame in the imagery of a (fictional) Union portal: pixel fonts for titles, figures, buttons and stamps; a crisp system sans at 15–16px for everything you read.
 
 **v0.9: everything on one screen, little text. No sheets. v0.9.2: screens instead of cards, desktop first, read left to right; things appear and leave with a fade (no slide, no tilt).**
+**v0.11: more map.** The HUD is one thin strip on top (goal, months, money, inbox, menu; the meters as small segment pills, tap one for the detail; the perks live in the run file). **The bottom bar is closed** and lies over the map when open: a parcel, the next plot or the end of the run open it by themselves; the **agenda** opens from its icon (speech bubble, bottom left, with the free slots); a new **event waits behind a blinking icon** — the map stays clear and in play until you tap it (or End month). Closed, the run file and End month float in the bottom corners. Esc or tapping the map closes the bar. The mayor's hints sit just above the open bar.
+**Districts on the map (v0.11).** Every district (each 8×8 plot) has a placard with its type's icon and its name: at the centre when zoomed out — tap it for the district: type, buildings, homes, your parcels and its region combos (??? until discovered) — and a small one above its top corner when zoomed in, so it never covers the buildings.
+
 - **The map fills the screen; the HUD floats over it.** First the goal: residents toward the target (with what holds growth back) and the months left as pips; then the money, the inbox and the menu. The meters sit below as five segments each (tap one for why it moved). The perks of the run are always on show, top right, like relics (tap one for what it does).
 - **One bar at the bottom** that never opens or closes, only changes what it shows: the **run file** on the left (experience bar and level), a **strip of cards** in the middle and **End month** on the right (with the agenda slots as pips). The strip shows:
   - nothing selected → the **agenda** (urban plan, lunch with the mayor, consultation, report, repay) and the directive;
