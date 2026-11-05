@@ -128,7 +128,7 @@ $('dirPill').onclick = ()=>{ playSound('click'); clearSelection(); setDockPin('a
 // v0.11: the icons that open the bar
 $('agendaBtn').onclick = ()=>{ playSound('click'); const open = dockPin==='agenda'; clearSelection(); setDockPin(open ? null : 'agenda'); refresh(); };
 $('eventBtn').onclick = ()=>{ playSound('click'); openEvent(); };
-function openEvent(){ const c = S && S.cards[0]; if(c && c.type==='event'){ c.open = true; clearSelection(); showNext(); } }   // the bar shows the agenda and the directive
+function openEvent(){ const c = S && S.cards[0]; if(c && c.type==='event'){ c.open = true; c.peek = false; clearSelection(); showNext(); } }   // the bar shows the agenda and the directive
 $('endTurn').onclick = ()=>{
   if(S.over){ showNext(); return; }
   if(S.cards.length || S.perkChoice){ openEvent(); showNext(); return; }

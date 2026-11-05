@@ -53,7 +53,7 @@ export const eventOpen = () => dockMode()==='event';
 // themselves; the agenda and a pending event open when you tap their icon (dockPin)
 export let dockPin = null;
 export function setDockPin(v){ dockPin = v; }
-export const dockShown = (mode = dockMode()) => ['parcel','attach','block','over'].includes(mode) || (mode==='agenda' && dockPin==='agenda');
+export const dockShown = (mode = dockMode()) => ['parcel','attach','block','over'].includes(mode) || (mode==='agenda' && dockPin==='agenda') || (mode==='event' && !!(S.cards[0] && S.cards[0].peek));   // v0.11.1: looking at an event's parcel
 export const eventWaiting = () => !!(S && S.cards.length && S.cards[0].type==='event' && !S.cards[0].open);
 // Building art for the cards: the very style this parcel would get (cached as an image)
 const ART = new Map();
@@ -297,8 +297,10 @@ function renderAttach(head, strip){
 // ---------- an event (v0.10.1: it plays as a screen — story, decision, outcome; the bar only says it is waiting) ----------
 function renderEvent(head, strip){
   const c = S.cards[0], E = EVENTS[c.id];
-  head.innerHTML = `${pxPortrait(E.char)}<div class="who"><small>${t('char.'+E.char,{town:S.town})}</small><h3>${t('ev.'+c.id+'.t')}</h3></div>`;
-  strip.appendChild(tile({icon:'mail', name:t(c.type==='result' ? 'ev.outcome' : 'ev.open'), cls:'act primary', k:'open', click:()=>{ playSound('click'); showNext(); }}));
+  const v = c.v || {}, at = v.i>=0 && v.i!==undefined ? `<small class="where">${ic('place')}${t('ui.parcel',{at:pname(v.i)})}</small>` : '';
+  head.innerHTML = `${pxPortrait(E.char)}<div class="who"><small>${t('char.'+E.char,{town:S.town})}</small><h3>${t('ev.'+c.id+'.t')}</h3>${c.peek ? at : ''}</div>`;
+  // v0.11.1: while you look at the event's parcel, the bar only offers to go back to it
+  strip.appendChild(tile({icon:'mail', name:t(c.peek ? 'ev.back' : c.type==='result' ? 'ev.outcome' : 'ev.open'), cls:'act primary', k:'open', click:()=>{ playSound('click'); c.peek = false; showNext(); }}));
 }
 function renderOver(head, strip){
   head.innerHTML = `<h3>${ic('gavel')}${t('d.over')}</h3>`;

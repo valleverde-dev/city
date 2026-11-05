@@ -6,7 +6,16 @@ Living project document · update it as the prototype evolves. The game design l
 
 **Eurocrat** (working title): a satirical, turn-based roguelike city builder. You are a Brussels programme officer who must deliver a model European town with plenty of money and no power — buy the land, file the permits, survive the neighbours, spend the funds before they expire. Tone and references: *Constructor* (1997), with a hyper-realistic, comic look at how building actually works in contemporary Europe. The plan: validate the loop in the web/iPad prototype, then port to Godot to ship on the App Store and Steam.
 
-## Current status — v0.11.0 (Nov 2, 2026) · more map, more dealing with people
+## Current status — v0.11.1 (Nov 5, 2026) · fixes from the first players
+
+Everything under *v0.11.0 playtest fixes* below ships in this version too, plus:
+- **Stubborn owners only on private farmland.** The municipal land reserve (the land the mayor offers) was set aside *after* the owners had been dealt, so a municipal parcel could keep a stubborn owner who showed up when you tapped it. Owners are now dealt among the farmland that is left, gifted land never has one, and saved games are repaired on loading. The cousins' land offer is an ordinary parcel at the offer price (it was marked as a known stubborn one, so it offered to lean on its owner or expropriate it).
+- **See on the map.** Events about a parcel (a find, a toad, a land offer, a survey, the river…) have a *See on the map* button: the event steps aside undecided, the camera goes to the parcel and marks it, and the bar offers only *Back to the event* — nothing else can be done until you decide.
+- **Events are dealt like a deck.** One-off events come up at most once a run; the ones that can happen again (strikes, potholes, heat, the river, the bank, lawsuits, audits, land offers, developers, contracts) wait at least 8 months; never the same twice running; and the ones you have never seen in your career are a little likelier.
+- **The mayor's hint on phones in landscape** is compact (a small portrait, two lines, the cross tucked in) and steps aside while the bar is open.
+- Tests: 29 rules tests, 199 browser checks. Built for itch.io (the first build with the v0.11 minimal HUD — the phone screenshot from a player, with the big meters and the tall bar, was the old v0.10 layout).
+
+## Previous — v0.11.0 (Nov 2, 2026) · more map, more dealing with people
 
 - **Minimal HUD.** One thin strip on top (goal, months, money, inbox, menu; the meters as small pills you tap). The bottom bar is closed and opens over the map only when something asks for it: a parcel, the next plot, the end of the run — or its icon: the **agenda** (speech bubble, bottom left, with the free slots). **Events wait behind a blinking icon** (or End month) instead of covering the map. Closed, the run file and End month float in the corners; Esc or tapping the map closes the bar; the mayor's hints sit above it.
 - **Districts on the map.** Every district has a placard with its type's icon and name — at the centre when zoomed out (tap it: type, buildings, homes, your parcels, region combos, ??? until discovered), small above its top corner when zoomed in.
@@ -238,14 +247,14 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 - **Materials:** concrete, steel, timber, prefab, recycled — bought on a market with prices and shortages, or made locally; works stop without them; the choice affects cost, the energy letter and Brussels' mood. Introduced by phases, energy first.
 - **Recorded voices**, if the synthesized ones fall short.
 - **A combo for joining districts by road** (and a bad one when lorries end up in residential streets).
-- **Longer event stories:** two or three paragraphs per event, in English and Spanish — five samples first, for approval.
+- **Longer event stories:** two or three paragraphs per event, in English and Spanish — five samples first, for approval. With them, **2–3 text variants for the events that can repeat** ("Potholes again…", "The pothole has a name in the village now").
 
 ### v0.12 — characters and intrigue (agreed Nov 2–3, 2026; the full list of characters, traits, perks and events goes to the author for review before any code)
 
 - **The map as a place with people, Crusader Kings style.** Tapping things on the map opens a scene with characters: the village **bar** (a round of drinks, two or three regulars with names, faces and voices, each with a rumour — who owns what, which owner is stubborn, what the mayor is plotting; some false; less when the neighbours are angry — replacing the agenda action of v0.11), the **church** (the priest blesses a work or complains), the **square** (Remedios Quintana and the village's notables: fiestas, complaints, favours), the **farms** (meet the owner before buying: negotiate, flatter, lean on them) and **your own buildings** (the factory wants more shifts, the school is too small…). Every character has **traits** (greedy, spiteful, gossip, honest, vain…), an **opinion of you** and **relationships** with the others (cousins, feuds, favours owed): favours, blackmail and schemes. Traits and relationships are ??? until you talk to people.
 - **New perks, good and bad.** New good ones (*Star architect*, *Friend at the Commission*, *Builder brother-in-law*…) and **negative perks** that arrive with events or the catch of a deal (*Auditor at your side*, *Bad press*, *Mayor on the campaign trail*, *Ghost payroll*…), in your hand in red; some expire, others must be got rid of. Discovered like the others.
 - **Satirical events inspired by real cases, always with made-up names** (never real people, parties or companies): the adviser's adviser who "speeds up" permits; gifts from a Gulf delegation; the councillor caught partying during a lockdown he demanded, fleeing down a drainpipe; the director of *Ferrovías Transeuropeas* who wants "little jobs" for his "nieces".
-- **The forum regulars of *Foromotores*** (made-up characters): Picapiedra (furious, in capitals, hates games made with AI), Panikero, el_caracoles, Perkys, el_litri, @Tonto, Susana (the only sensible one) and Samus (the troll who spreads hoaxes). Forum threads as a recurring event, hoaxes as a negative perk, and a last thread under the Gazette at game over.
+- **The forum regulars of *Foropoles*** (made-up characters): Picapiedra (furious, in capitals, hates games made with AI), Panikero, el_caracoles, Perkys, el_litri, @Tonto, Susana (the only sensible one) and Samus (the troll who spreads hoaxes). Forum threads as a recurring event, hoaxes as a negative perk, and a last thread under the Gazette at game over.
 - **More water:** a dam or a Brussels reservoir that makes a lake; renaturing a riverbank (you lose land, the neighbours are happy).
 
 ### Not scheduled

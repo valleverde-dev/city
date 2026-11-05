@@ -134,15 +134,16 @@ export function beginPhase(stage, fresh){
   S.region.next = null; S.region.cands = [];
   // the new plot: stubborn owners (from phase II) and the municipal land reserve
   const mine = plotParcels(last);
-  if(L.f.holdout) mine.forEach(i=>{ const p = S.grid[i]; if(p.k==='farm' && p.st==='land' && rnd() < 0.25){ p.hold = true; p.holdPct = 50 + Math.round(rnd()*20)*5; p.price = r1(p.price*(1 + p.holdPct/100)); } });   // v0.10.2: +50…150%, rolled once
   if(stage >= 1){ const n = last.n, ox = last.x - S.region.active.x, oy = last.y - S.region.active.y;
     const set = (r,c)=>{ if(r<0||c<0||r>=n||c>=n) return false; const p = S.grid[idx(oy+r, ox+c)]; if(p.k!=='farm' || p.st!=='land') return false; Object.assign(p, {k:'muni', price:0.6, urban:true}); return true; };
     let r=ri(0,n-1), c=ri(0,n-1), k=0, guard=0;
     while(k<4 && guard++<50){ if(set(r,c)) k++; const d=pick(NB); r=clamp(r+d[0],0,n-1); c=clamp(c+d[1],0,n-1); } }
+  // v0.11.1: stubborn owners only on the private farmland left once the municipal reserve is set aside
+  if(L.f.holdout) mine.forEach(i=>{ const p = S.grid[i]; if(p.k==='farm' && p.st==='land' && rnd() < 0.25){ p.hold = true; p.holdPct = 50 + Math.round(rnd()*20)*5; p.price = r1(p.price*(1 + p.holdPct/100)); } });   // v0.10.2: +50…150%, rolled once
   // a milestone reward (v0.10): free building land on the new plot, next to a road where possible
   if(S.gifts && S.gifts.land){ const free = mine.filter(i=>{ const p = S.grid[i]; return p.k==='farm' && p.st==='land'; });
     free.sort((a,b)=>(hasAccess(...rc(b))?1:0) - (hasAccess(...rc(a))?1:0) || a-b);
-    free.slice(0, S.gifts.land).forEach(i=>{ Object.assign(S.grid[i], {st:'owned', urban:true, hold:false}); });
+    free.slice(0, S.gifts.land).forEach(i=>{ const p = S.grid[i]; if(p.hold){ p.price = r1(p.price / (1 + (p.holdPct||80)/100)); delete p.holdPct; } Object.assign(p, {st:'owned', urban:true, hold:false, holdKnown:false}); });
     S.gifts.land = 0; }
   regionEffects();
   S.prev = snapshot();

@@ -538,3 +538,29 @@ test('v0.11.1: rivers are not for sale nor buildable; the river can grow over em
     const f0 = S.funds; E.choices.find(c => c.k === 'sandbags').run(v); assert.ok(Math.abs(f0 - 0.4 - S.funds) < 1e-9);
   }
 });
+
+test('v0.11.1: stubborn owners only on private farmland (never municipal or gifted land); the cousins\' offer is an ordinary parcel', () => {
+  for (let s = 1; s <= 40; s++) for (let st = 1; st <= 3; st++) {
+    const S = g.newGame(s, st);
+    S.grid.forEach(p => { if (p.hold) assert.equal(p.k, 'farm', `seed ${s} stage ${st}`); });
+  }
+  const S = g.newGame(7, 2); const v = core.EVENTS.discount.setup();
+  assert.equal(S.grid[v.i].hold, false);
+});
+
+test('v0.11.1: events are dealt like a deck — one-offs once a run, repeatable ones at least 8 months apart', () => {
+  const S = g.newGame(21, 4); S.month = 5; S.cards = [];
+  const when = {};
+  for (let m = 0; m < 120; m++) {
+    const n = S.cards.length; core.rollEvent();
+    if (S.cards.length > n) { const id = S.cards[S.cards.length - 1].id; (when[id] = when[id] || []).push(S.evClock); }
+    S.cards = [];
+  }
+  const ids = Object.keys(when);
+  assert.ok(ids.length >= 15, `variety: ${ids.length} different events`);
+  for (const id of ids) {
+    const t = when[id];
+    if (!core.REPEATS.includes(id) && !id.startsWith('ct_')) assert.equal(t.length, 1, `${id} is a one-off`);
+    for (let k = 1; k < t.length; k++) assert.ok(t[k] - t[k-1] >= core.COOLDOWN, `${id} waits`);
+  }
+});

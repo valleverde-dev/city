@@ -541,6 +541,16 @@ with sync_playwright() as p:
     S("(S.cards=[{type:'event', id:'strike', v:{}, open:true}], g.showNext(), 0)"); page.wait_for_timeout(200)
     check(page.locator("#notice.ev-story canvas.evart").count() == 1, "every event has an illustration above its story")
     S("(S.cards=[], g.hideModal(), 0)")
+    S("(S.cards=[{type:'event', id:'discount', v:g.EVENTS.discount.setup(), open:true}], g.showNext(), 0)"); page.wait_for_timeout(200)
+    sm = page.locator("#notice .btn", has=page.locator(".ico")).filter(has_text=S("g.t('ev.seeMap')"))
+    check(sm.count() == 1, "v0.11.1: an event about a parcel has a 'See on the map' button")
+    sm.first.click(); page.wait_for_timeout(150)
+    check(S("document.getElementById('modal').classList.contains('hidden')") and page.is_visible("#strip .tile[data-k=open]") and S("g.t('ev.back')") in page.locator("#strip .tile[data-k=open]").inner_text(),
+          "it shows the parcel and waits, undecided, with 'Back to the event' in the bar")
+    page.locator("#strip .tile[data-k=open]").click(); page.wait_for_timeout(200)
+    check(page.is_visible("#notice.ev-story"), "and goes back to the story")
+
+    S("(S.cards=[], g.hideModal(), 0)")
     w = S("(()=>{ for(let s=1;s<40;s++){ g.newGame(s, 2); const i = g.S.grid.findIndex(p=>p.k==='flood'); if(i>=0) return i; } return -1; })()")
     if w >= 0:
         clear_cards(); S("(S.slots=3, S.funds=50, 0)")

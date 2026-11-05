@@ -1,5 +1,5 @@
 import { CFG, on } from './config.js';
-import { checkAch } from './career.js';
+import { checkAch, seeEvent, seenEvents } from './career.js';
 import { money } from './format.js';
 import { activeSites, bump, count, hasAccess, landPrice, log, plotValue, spend } from './rules.js';
 import { S, pick, pname, r1, rc, ri, rnd } from './state.js';
@@ -98,7 +98,7 @@ export const EVENTS = {
     ]},
   discount: {char:'farmer', sfx:'farmer', icon:'sell', w:2,
     ok:()=>S.grid.some(p=>p.st==='land'&&p.k==='farm'),
-    setup:()=>{ const i = pick(S.grid.map((p,i)=>i).filter(i=>S.grid[i].st==='land'&&S.grid[i].k==='farm')); const p=S.grid[i]; p.price=r1(p.price*0.6); p.hold=true; p.holdKnown=true; return {i, x:money(landPrice(p))}; },
+    setup:()=>{ const i = pick(S.grid.map((p,i)=>i).filter(i=>S.grid[i].st==='land'&&S.grid[i].k==='farm')); const p=S.grid[i]; if(p.hold){ p.price = r1(p.price / (1 + (p.holdPct||80)/100)); delete p.holdPct; } p.price=r1(p.price*0.6); p.hold=false; p.holdKnown=false; return {i, x:money(landPrice(p))}; },   // v0.11.1: an ordinary parcel on offer, not a stubborn one
     choices:[
       {k:'buy',   fx:v=>[['money',-landPrice(S.grid[v.i])],['land']], can:v=>S.funds>=landPrice(S.grid[v.i]),
         run:v=>{ const p=S.grid[v.i], x=landPrice(p); spend(x); p.st='owned'; log('log.acquired',{at:pname(v.i), x:money(x)}); }},
@@ -326,13 +326,28 @@ export function toHabitat(i, owned){
   if(owned){ const back = r1(p.price*0.5); S.funds += back; }
   Object.assign(p,{k:'habitat', st:'land', ty:null, urban:false, flag:{k:'toad', until:S.month+2}});
 }
+// v0.11.1: events are dealt like a deck, not rolled like a die. One-offs come up at most once a run; the ones that can
+// happen again (strikes, potholes, heat, the bank…) wait COOLDOWN months; never the same twice running; and the ones
+// you have never seen in your career are a little likelier.
+export const REPEATS = ['inflation','strike','busStrike','potholes','riverRise','heatwave','lawsuit','loanCall','discount','devOffer','audit'];
+export const COOLDOWN = 8;
+const repeats = id => REPEATS.includes(id) || id.startsWith('ct_');
+export function eventPool(){
+  const log = S.evLog || {}, clock = S.evClock || 0;
+  return Object.keys(EVENTS).filter(id=>{ const E = EVENTS[id]; if(!(E.w > 0) || !E.ok()) return false;
+    if(log[id] === undefined) return true;
+    return repeats(id) && clock - log[id] >= COOLDOWN; });
+}
 export function rollEvent(){
   if(!on('events')) return;
+  S.evClock = (S.evClock || 0) + 1; S.evLog = S.evLog || {};
   if(S.month < 2 || rnd() > 0.6) return;
   S.chainBusy = !!(S.chain && S.chain.length);
-  const pool = Object.keys(EVENTS).filter(id=>EVENTS[id].w > 0 && EVENTS[id].ok()); if(!pool.length) return;
-  let tot = pool.reduce((a,id)=>a+EVENTS[id].w,0), x = rnd()*tot, id = pool[0];
-  for(const e of pool){ x -= EVENTS[e].w; if(x<=0){ id = e; break; } }
+  const pool = eventPool(); if(!pool.length) return;
+  const seen = seenEvents(), wt = id => EVENTS[id].w * (seen.includes(id) ? 1 : 1.6) * (S.evLog[id] !== undefined ? 0.5 : 1);
+  let tot = pool.reduce((a,id)=>a+wt(id),0), x = rnd()*tot, id = pool[0];
+  for(const e of pool){ x -= wt(e); if(x<=0){ id = e; break; } }
+  S.evLog[id] = S.evClock; seeEvent(id);
   const v = EVENTS[id].setup();
   if(v.i>=0 && v.i!==undefined) S.grid[v.i].flag = S.grid[v.i].flag || {k:'event', until:S.month+1};
   S.cards.push({type:'event', id, v});

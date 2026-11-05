@@ -7,7 +7,9 @@ import { regionPop } from './region.js';
 // =====================================================================
 export const SAVE_KEY = 'eurocrat_v11';
 export function save(){ try{ storage.set(SAVE_KEY, JSON.stringify(S)); }catch(e){} }
-export function loadSave(){ try{ const raw=storage.get(SAVE_KEY); if(raw){ const s=JSON.parse(raw); if(s && s.v===11) return s; } }catch(e){} return null; }
+export function loadSave(){ try{ const raw=storage.get(SAVE_KEY); if(raw){ const s=JSON.parse(raw); if(s && s.v===11) return repair(s); } }catch(e){} return null; }
+// v0.11.1: only private farmland has stubborn owners (a bug let municipal land keep the mark)
+function repair(s){ (s.grid||[]).forEach(p=>{ if(p && p.hold && p.k!=='farm'){ p.hold = false; p.holdKnown = false; delete p.holdPct; } }); return s; }
 
 // Records: the best Euroregion so far (settlements consolidated, population) and the number of runs
 export function records(){ try{ const r = JSON.parse(storage.get('eurocrat_records')||'null'); if(r && r.best) return r; }catch(e){} return {best:{settlements:0, pop:0}, runs:0}; }

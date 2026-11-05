@@ -102,7 +102,12 @@ body:not(.dock-open) #endTurn small{display:none;}
   body:not(.dock-open) #runBtn{padding:6px 4px; gap:4px;} body:not(.dock-open) #runBtn small{display:none;}
   body:not(.dock-open) #endTurn{padding:7px 14px; gap:3px;} body:not(.dock-open) #endTurn .lbl{font-size:19px;} body:not(.dock-open) #endTurn > .ico{width:20px; height:20px;}
   body:not(.dock-open) .railbtn .ico{width:24px; height:24px;}
-  #guide{left:calc(var(--cornerM)*2 + var(--cornerW)*2 + 14px); width:min(420px, calc(100% - 330px));} #guide .pxp{width:36px; height:36px; flex-basis:36px;} #guide p{font-size:13px; line-height:1.3;}
+  /* v0.11.1: the mayor's hint, compact: a small portrait, two lines at most, the cross tucked in; hidden while the bar is open */
+  #guide{left:calc(var(--cornerM)*2 + var(--cornerW)*2 + 14px); width:min(380px, calc(100% - 330px)); padding:5px 26px 6px 6px; gap:7px;}
+  #guide .pxp{width:28px; height:28px; flex-basis:28px;} #guide .step{font-size:8px;}
+  #guide p{font-size:12.5px; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  #guide .x{width:22px; height:22px; right:3px; top:3px; padding:0; display:grid; place-items:center;} #guide .x .ico{width:13px; height:13px;}
+  body.dock-open #guide{display:none;}
   #hint{left:calc(var(--cornerM)*2 + var(--cornerW)*2 + 14px);}
   /* the open bar */
   #dock{--pad:8px; --tileH:112px;}
@@ -117,5 +122,4 @@ body:not(.dock-open) #endTurn small{display:none;}
   body.dock-open #rail{padding:var(--pad) 0 var(--pad) 6px;} body.dock-open .railbtn{width:44px; height:44px;}
   body.dock-open #endTurn{margin:var(--pad); padding:0 12px; gap:4px;} body.dock-open #endTurn .lbl{font-size:19px;} body.dock-open #endTurn > .ico{width:20px; height:20px;}
   body.dock-open #endTurn small{font-size:8px;}
-  body.dock-open #guide{bottom:calc(var(--dockH, 170px) + 6px);}
 }

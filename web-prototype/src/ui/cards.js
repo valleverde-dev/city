@@ -18,6 +18,7 @@ import { S, pname } from '../core/state.js';
 import { t } from '../i18n/index.js';
 import { C } from '../render/pixel.js';
 import { setMapSize } from '../render/map.js';
+import { centreOn } from '../render/camera.js';
 import { $, P, country, portrait } from './dom.js';
 import { pulse, refresh } from './guide.js';
 import { hidePop, roman } from './hud.js';
@@ -180,13 +181,16 @@ export const CARD = {
   // v0.10.1: an event is a scene first (the character, the whole story), then the decision as cards, then the outcome
   event: c => { const E = EVENTS[c.id], v = c.v || {};
     if(!c.open){ hideModal(); refresh(); return; }   // v0.11: an event waits behind its blinking icon (or End month) — the map stays clear
+    if(c.peek){ hideModal(); refresh(); return; }    // v0.11.1: looking at its parcel; the bar has "Back to the event"
     if(v.i>=0 && v.i!==undefined) pulse(v.i);
+    // v0.11.1: events about a parcel can show it on the map (the event waits, undecided, and nothing else can be done meanwhile)
+    const peek = v.i>=0 && v.i!==undefined ? btn(t('ev.seeMap'), 'place', ()=>{ c.peek = true; playSound('click'); hideModal(); centreOn(v.i); pulse(v.i); refresh(); }) : null;
     if(!c.played){ c.played = true; playSound(E.sfx); }
     const where = v.i>=0 && v.i!==undefined ? `<p class="where-line">${ic('place')}${t('ui.parcel',{at:pname(v.i)})}</p>` : '';
     if(c.step !== 'decide'){
       letter({icon:E.icon, title:t('ev.'+c.id+'.t'), speaker:E.char, cls:'event', mood:'neutral',
         body:`<div class="quote">${t('ev.'+c.id+'.x', {...P(v), x:v.x, at:v.i>=0?pname(v.i):''})}</div>${where}`,
-        buttons:[btn(t('ev.decide'), 'gavel', ()=>{ c.step = 'decide'; playSound('click'); CARD.event(c); }, true)]});
+        buttons:[peek, btn(t('ev.decide'), 'gavel', ()=>{ c.step = 'decide'; playSound('click'); CARD.event(c); }, true)].filter(Boolean)});
       notice.classList.add('ev-story');
       // v0.11.1: every event has its illustration, above the story
       const colA = notice.querySelector('.col-a'), art = document.createElement('div'); art.className = 'evart-wrap';
@@ -196,7 +200,7 @@ export const CARD = {
       return `<button type="button" class="dchoice" data-k="${ch.k}"${can ? '' : ' disabled'}><b>${t('ev.'+c.id+'.c.'+ch.k)}</b><span class="chips">${ch.fx(v).map(chip).join('')}${can ? '' : `<span class="chip bad">${t('err.funds')}</span>`}</span></button>`; }).join('');
     letter({icon:'gavel', title:t('ev.'+c.id+'.t'), speaker:E.char, voice:false,
       body:`<p class="ask">${t('ev.yourCall')}</p><div class="dchoices n${choicesFor(c).length}">${cards}</div>`,
-      buttons:[btn(t('ev.story'), 'mail', ()=>{ c.step = 'story'; playSound('click'); CARD.event(c); })], wide:true});
+      buttons:[btn(t('ev.story'), 'mail', ()=>{ c.step = 'story'; playSound('click'); CARD.event(c); }), peek].filter(Boolean), wide:true});
     notice.classList.add('ev-decide');
     notice.querySelectorAll('.dchoice').forEach(b=>b.onclick = ()=>{ const res = resolveEvent(c, b.dataset.k); S.cards.shift();
       if(res) S.cards.unshift({type:'result', id:c.id, res, v});

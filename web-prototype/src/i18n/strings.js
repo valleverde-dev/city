@@ -730,6 +730,9 @@ en: {
   'evart.strike':"STRIKE",
   'evart.sale':"FOR SALE",
   'evart.scandal':"SCANDAL!",
+  // --- v0.11.1 ---
+  'ev.seeMap':"See on the map",
+  'ev.back':"Back to the event",
 },
 es: {
   // --- v0.8: the career ---
@@ -1462,5 +1465,8 @@ es: {
   'evart.strike':"HUELGA",
   'evart.sale':"SE VENDE",
   'evart.scandal':"ESCANDALO!",
+  // --- v0.11.1 ---
+  'ev.seeMap':"Ver en el mapa",
+  'ev.back':"Volver al evento",
 },
 };

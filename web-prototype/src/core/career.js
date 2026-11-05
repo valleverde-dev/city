@@ -97,6 +97,9 @@ export function checkAch(when, ctx = {}){
   return got;
 }
 // A settlement type has been seen (for 'tourist'), and the tutorial is behind us once a run gets anywhere
+// v0.11.1: the events seen across runs (unseen ones come up a little more often)
+export function seenEvents(){ return career().events || []; }
+export function seeEvent(id){ const c = career(); c.events = c.events || []; if(!c.events.includes(id)){ c.events.push(id); saveCareer(c); } }
 export function seeType(ty){ const c = career(); if(!c.types.includes(ty)){ c.types.push(ty); saveCareer(c); } }
 export function tutorialDone(){ const c = career(); if(!c.tutorial){ c.tutorial = true; saveCareer(c); } }
 // The end of a run: experience for what the region reached (achievements were paid when earned)

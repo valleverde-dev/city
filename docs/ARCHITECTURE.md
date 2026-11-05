@@ -95,7 +95,7 @@ CSS split by area and imported in order by `styles/index.css` (order matters: `r
 |---|---|---|
 | `npm run check` | Layer check: the core stays portable | Node |
 | `npm run test:core` | Rules tests: phases (plots, void, density targets), rule flags, determinism, actions, a month passing, milestones and attach, rewards, deals, extensions and chained events, access and combos across plots, region effects, records, save/load, the difficulty band | Node |
-| `npm run test:smoke` | 196 checks driving the real UI in Chromium (phone and iPad layouts, both languages) | Playwright |
+| `npm run test:smoke` | 199 checks driving the real UI in Chromium (phone and iPad layouts, both languages) | Playwright |
 | `npm test` | All of the above + build | both |
 | `npm run balance -- 150 --run` / `--level=4` | The greedy bot over whole Euroregion runs, or one settlement, in Node | Node |
 
