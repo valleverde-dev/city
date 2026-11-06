@@ -81,11 +81,21 @@ cd web-prototype
 npm run build:itch   # -> dist-itch/ and release/eurocrat-<version>-web.zip
 ```
 
-To publish a release: bump `version` in `web-prototype/package.json`, merge to `main`, then tag it:
+Every version gets a git tag (`vX.Y.Z`) on its last commit, so each GitHub Release is a tag and any version can be built locally:
 
 ```bash
-git tag v0.5.1 && git push origin v0.5.1
+git fetch --tags
+git worktree add ../city-v0.11.1 v0.11.1   # a separate copy, your branch untouched
+cd ../city-v0.11.1/web-prototype && npm ci && npm run build
 ```
+
+To publish a release: bump `version` in `web-prototype/package.json`, merge to `main`, then tag it — from GitHub (Actions → **Tag** → Run workflow, with the version, e.g. `v0.12.0`; it tags the latest commit of `main` and starts the Release) or from a computer:
+
+```bash
+git tag -a v0.12.0 -m "Eurocrat 0.12.0" && git push origin v0.12.0
+```
+
+A tag is never moved: changes after it go in the next version. The **Tag** workflow run with no version tags the past versions (v0.1.0 … v0.11.1), skipping those that exist.
 
 The **Release** workflow tests the itch build, attaches the zip to a GitHub Release and, once configured, uploads it to itch.io with butler (channel `html5`). To switch the upload on: in GitHub → Settings → Secrets and variables → Actions, add the secret `BUTLER_API_KEY` (itch.io → Settings → API keys) and the variable `ITCH_GAME` (`user/game`, e.g. `valleverde/eurocrat`).
 

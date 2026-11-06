@@ -1,0 +1,81 @@
+# Tag a version from GitHub, without a computer (Actions → Tag → Run workflow).
+#   - version empty: tags every past version on its last commit (v0.1.0 … v0.11.1), once.
+#     Tags that already exist are skipped. No Releases are made for these.
+#   - version set (e.g. v0.12.0): tags the latest commit of main, if it matches
+#     web-prototype/package.json, then starts the Release workflow for it
+#     (tags pushed by Actions do not start other workflows by themselves).
+name: Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to tag on the latest commit of main, e.g. v0.12.0 (empty: tag the past versions)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    env:
+      VERSION_TAG: ${{ github.event.inputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Tagger
+        run: |
+          git config user.name valleverde-dev
+          git config user.email valleverde-dev@users.noreply.github.com
+      - name: Tag the past versions
+        if: env.VERSION_TAG == ''
+        run: |
+          set -euo pipefail
+          while read -r tag commit; do
+            if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then echo "skip $tag (exists)"; continue; fi
+            # the tag carries its commit's date, so the history reads in order
+            GIT_COMMITTER_DATE="$(git log -1 --format=%cI "$commit")" git tag -a "$tag" "$commit" -m "Eurocrat ${tag#v}"
+            echo "tag  $tag -> $commit"
+          done <<'EOF'
+          v0.1.0 b3ab13c
+          v0.2.0 413153b
+          v0.3.0 c65c0dd
+          v0.4.0 d9eb009
+          v0.5.0 71705a1
+          v0.5.1 f076ac1
+          v0.6.0 5d7cf7a
+          v0.6.1 a79a53e
+          v0.7.0 f01285d
+          v0.8.0 dd2d6f4
+          v0.9.0 8b05744
+          v0.9.1 1d2bff8
+          v0.9.2 cea8f1c
+          v0.9.3 003234b
+          v0.10.0 954e384
+          v0.10.1 1c61abc
+          v0.10.2 ef3ac23
+          v0.11.0 c08a1a6
+          v0.11.1 b8eb98e
+          EOF
+          git push origin --tags
+      - name: Tag this version
+        if: env.VERSION_TAG != ''
+        run: |
+          set -euo pipefail
+          VERSION=$(node -p "require('./web-prototype/package.json').version")
+          [ "$VERSION_TAG" = "v$VERSION" ] || { echo "::error::$VERSION_TAG does not match package.json version $VERSION"; exit 1; }
+          if git rev-parse -q --verify "refs/tags/$VERSION_TAG" >/dev/null; then
+            echo "::error::$VERSION_TAG already exists; tags are not moved. Bump the version for new changes."; exit 1; fi
+          git tag -a "$VERSION_TAG" -m "Eurocrat $VERSION"
+          git push origin "$VERSION_TAG"
+          echo "::notice::$VERSION_TAG -> $(git rev-parse --short HEAD)"
+      - name: Start the Release
+        if: env.VERSION_TAG != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run release.yml --ref main -f tag="$VERSION_TAG"
