@@ -15,7 +15,8 @@ export function problems(){
     else if(p.st==='owned' && !p.urban) rustic++;
     if(p.st==='building' && p.halt) add('bad','pan_tool','pb.halted',{at:pname(i), b:p.ty, n:p.halt},i);
     if(p.flag && p.flag.k==='rejected') add('bad','cancel','pb.rejected',{at:pname(i)},i);
-    if(p.st==='review' && !approves()) add('bad','gavel','pb.willReject',{at:pname(i), o:support(), need:CFG.approveAt},i);
+    if(p.st==='review' && p.flag && p.flag.k==='away') add('warn','beach_access','pb.away',{at:pname(i)},i);   // v0.12
+    else if(p.st==='review' && !approves(0, i)) add('bad','gavel','pb.willReject',{at:pname(i), o:support(i), need:CFG.approveAt},i);
     if(p.st==='private' && p.flag && p.flag.k==='paused') add('warn','pause_circle','pb.paused',{at:pname(i)},i);
     if(p.st==='ruin') add('bad','domain_disabled','pb.ruin',{at:pname(i)},i);
   });

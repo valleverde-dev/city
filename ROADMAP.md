@@ -6,7 +6,15 @@ Living project document · update it as the prototype evolves. The game design l
 
 **Eurocrat** (working title): a satirical, turn-based roguelike city builder. You are a Brussels programme officer who must deliver a model European town with plenty of money and no power — buy the land, file the permits, survive the neighbours, spend the funds before they expire. Tone and references: *Constructor* (1997), with a hyper-realistic, comic look at how building actually works in contemporary Europe. The plan: validate the loop in the web/iPad prototype, then port to Godot to ship on the App Store and Steam.
 
-## Current status — v0.11.1 (Nov 5, 2026) · fixes from the first players
+## Current status — v0.12.0 (Nov 6, 2026) · a town hall in every village
+
+- **Every district has its own town hall**, in its village (the old town-hall sprite), with lore (founded in…, a motto, a clerk at the counter), **one or two ordinances** of its own and **its own relation with you**, which decides the permits of that district. The founding district's is the Mayor meter; the others show as a small face on each district's placard.
+- **The town hall screen** (tap it on the map, or *The town hall* in the district card): the scene, the clerk, the ordinances (??? until you ask or run into one), your permits waiting there, and the counter — ask about the rules, pastries for the clerk, lunch with the mayor (moved here from the agenda), call the mayor over the clerk's head, a formal complaint, propose repealing an ordinance in plenary.
+- **Nine ordinances**: the permits clerk on holiday, protected old town, everything in triplicate, the patron saint's fiesta, no industry, the long lunch, bilingual signs; and two that help, a one-stop shop and an industrial tradition. They come from a hash of the plot's position, not the run's dice.
+- The **buildable town hall is gone** (7 buildings to unlock).
+- Balance (bot, 60 runs): about 3.7 milestones a run, as before; the bot uses the counter (calls back a clerk, pastries, lunches, repeals). Tests: 33 rules tests, all browser checks green.
+
+## Previous — v0.11.1 (Nov 5, 2026) · fixes from the first players
 
 Everything under *v0.11.0 playtest fixes* below ships in this version too, plus:
 - **Stubborn owners only on private farmland.** The municipal land reserve (the land the mayor offers) was set aside *after* the owners had been dealt, so a municipal parcel could keep a stubborn owner who showed up when you tapped it. Owners are now dealt among the farmland that is left, gifted land never has one, and saved games are repaired on loading. The cousins' land offer is an ordinary parcel at the offer price (it was marked as a known stubborn one, so it offered to lean on its owner or expropriate it).
@@ -241,7 +249,6 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 
 ### v0.12 or later (agreed)
 
-- **Districts with their own rules:** local regulations per district (height limits, a protected old town, slower permits, a district mayor with a meter of their own).
 - **Energy performance certificates (PEB/EPC, G → A):** buildings are born with a label and are **renovated** one letter at a time, which costs money, months of works (the building yields less meanwhile) and resources (an agenda slot, a renovation permit, a contractor). Better letters cut monthly costs, raise taxes and rents, attract people and please Brussels; dated directives ("all housing at E by month 24"), combos that need good letters, a sticker with the letter on each building.
 - **Energy requirements:** buildings consume by type and letter; the city produces or imports (solar, wind, a grid link with limited capacity); shortages and blackouts, surplus sold; climate directives with deadlines.
 - **Materials:** concrete, steel, timber, prefab, recycled — bought on a market with prices and shortages, or made locally; works stop without them; the choice affects cost, the energy letter and Brussels' mood. Introduced by phases, energy first.

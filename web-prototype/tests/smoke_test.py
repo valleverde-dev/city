@@ -169,7 +169,17 @@ with sync_playwright() as p:
     check(page.locator("#notice .ladder").count() == 0 and page.locator("#notice .lose-line").count() == 1, "v0.10.2: the phase card shows no targets ahead, only how you can lose")
     clear_cards(); S("(g.showNext(), 0)")
     check(not page.locator("#m-local").is_hidden() and page.locator("#m-neigh").is_hidden(), "settlement II shows only the Mayor meter")
-    check(S("g.dock") == "agenda" and page.locator("#strip .tile[data-k=lobby]").count() == 1, "settlement II: with nothing selected, the bar is the agenda (lunch with the mayor)")
+    check(S("g.dock") == "agenda" and page.locator("#strip .tile[data-k=lobby]").count() == 0, "v0.12: the agenda no longer has the lunch — it is at the town hall")
+    hc = S("g.hallCell(0)"); S(f"(g.centreOn({hc}), S.slots=3, S.funds=Math.max(S.funds, 5), S.local=40, 0)"); page.wait_for_timeout(80); tap(hc); page.wait_for_timeout(120)
+    check(page.is_visible("#notice.hall-screen") and page.locator("#notice .hact").count() >= 4 and page.locator("#notice .ord").count() >= 1 and page.locator("#notice .evart").count() == 1,
+          "v0.12: tapping the village's town hall opens its screen — the clerk, its lore, its ordinances (??? at first), what you can do")
+    check(page.locator("#notice .ord.unknown").count() + page.locator("#notice .ord:not(.unknown)").count() == S("S.region.blocks[0].hall.ords.length"), "every ordinance listed, unknown ones as ???")
+    page.locator("#notice .hact[data-k=lunch]").click(); page.wait_for_timeout(80)
+    check(S("S.local") > 40 and page.is_visible("#notice .hall-msg"), "lunch with this town's mayor, right there (the founding town's mayor is the Mayor meter)")
+    page.locator("#notice .hact[data-k=ask]").click(); page.wait_for_timeout(80)
+    check(page.locator("#notice .ord.unknown").count() == 0, "asking at the counter explains every ordinance")
+    page.click("#notice >> text=Close"); page.wait_for_timeout(60)
+    check(page.locator("#modal").is_hidden(), "Close: back to the map")
     check(S("g.on('access') && !g.on('rustic') && !g.on('events')"), "settlement II rules: access yes, rustic land and events not yet")
     page.click("#runBtn"); page.wait_for_timeout(60); page.click("#run .rtab[data-t=region]"); page.wait_for_timeout(60)
     check(page.locator("#run canvas.regionmap").count() == 1 and page.is_visible("#run .rbox.town"), "the run file's Region tab shows the Euroregion map and this settlement in numbers")
@@ -182,9 +192,9 @@ with sync_playwright() as p:
     check(page.evaluate("!!document.querySelector('#toast') && document.querySelector('#toast').textContent.length > 5") and "firstStone" in page.evaluate("localStorage.getItem('eurocrat_career')"), "achievements pop up as banners during play, and stay in the career")
     page.click("#cover .cv-item.career"); page.wait_for_timeout(60)
     n_on = page.locator(".cv-ach .acard.on").count(); n_off = page.locator(".cv-ach .acard.off").count()
-    check(n_on + n_off == S("Object.keys(g.ACH_BY_ID).length") and n_on >= 1 and page.locator(".cv-ach .ucard").count() == 8
+    check(n_on + n_off == S("Object.keys(g.ACH_BY_ID).length") and n_on >= 1 and page.locator(".cv-ach .ucard").count() == 7
           and page.evaluate("getComputedStyle(document.querySelector('.cv-ach .cgrid')).gridTemplateColumns.split(' ').length") >= 6,
-          "Achievements: a screen of grids, every achievement and the 8 buildings")
+          "Achievements: a screen of grids, every achievement and the 7 buildings (v0.12: no town hall to build)")
     check(all(x.strip().startswith("???") for x in page.locator(".cv-ach .acard.off b").all_inner_texts()) and page.locator(".cv-ach .acard.off small").count() == 0,
           "achievements not earned yet show ??? (no name, no description)")
     check(page.locator(".cv-ach .ucard:not(.on)").count() >= 1 and all(x.strip() == "???" for x in page.locator(".cv-ach .ucard:not(.on)").all_inner_texts()),
@@ -348,7 +358,7 @@ with sync_playwright() as p:
     page.click("#run .rtab[data-t=perks]"); page.wait_for_timeout(40)
     check(page.locator("#run .qcard").count() == 14 and page.locator("#run .pcard").count() >= 1, "Perks: this run's hand and the whole pool (some locked by rank)")
     page.click("#run .rtab[data-t=career]"); page.wait_for_timeout(40)
-    check(page.locator("#run .ucard").count() == 8 and page.locator("#run .achs .md").count() == S("Object.keys(g.ACH_BY_ID).length"), "Career: level and rank, achievements, the 8 buildings to unlock")
+    check(page.locator("#run .ucard").count() == 7 and page.locator("#run .achs .md").count() == S("Object.keys(g.ACH_BY_ID).length"), "Career: level and rank, achievements, the 8 buildings to unlock")
     page.keyboard.press("Escape")
     check(S("g.runTab") is None, "Esc closes it")
     S(f"(Object.assign(S.grid[{at(2,3)}],{{k:'farm',st:'built',ty:'school'}}), 0)")
@@ -429,8 +439,8 @@ with sync_playwright() as p:
         check(page.locator("#strip .tile.combo-of").count() == 1, "once a combo with it is discovered, it shows there")
         page.keyboard.press("Escape")
     # a consolidated settlement: tap it on the map
-    b0 = S("S.region.blocks[0]")
-    x, y = S(f"g.screenOfW({b0['y']}+({b0['n']}-1)/2, {b0['x']}+({b0['n']}-1)/2)"); box = page.locator("#map").bounding_box()
+    f0 = S("S.grid.findIndex((p,i)=>g.districtOf(i)===0 && p.k==='farm' && !p.hall)"); S(f"(g.centreOn({f0}), 0)"); page.wait_for_timeout(80)
+    x, y = S(f"g.screenOf({f0})"); box = page.locator("#map").bounding_box()
     if 0 < x < box["width"] and 0 < y < box["height"]:
         page.mouse.click(box["x"] + x, box["y"] + y); page.wait_for_timeout(80)
         check(S("g.selected") >= 0 and S("g.dock") == "parcel", "v0.10: the first plot is still in play — tapping it selects one of its parcels")
@@ -633,7 +643,7 @@ with sync_playwright() as p:
           f"v0.11 iPad: the map takes the whole screen, a thin HUD floats over it, the bar is closed ({hd['height']:.0f}px)")
     check(page.is_visible("#endTurn") and page.is_visible("#runBtn") and page.is_visible("#agendaBtn") and page.locator("#ctx").is_hidden(), "closed: the run file, the agenda icon and End month float in the corners")
     page.click("#agendaBtn"); page.wait_for_timeout(60)
-    check(page.is_visible("#strip .tile[data-k=lobby]") and S("document.body.classList.contains('dock-open')"), "the agenda icon opens the bar")
+    check(page.is_visible("#strip .tile[data-k=gossip]") and S("document.body.classList.contains('dock-open')"), "the agenda icon opens the bar")
     page.keyboard.press("Escape"); page.wait_for_timeout(60)
     check(page.locator("#ctx").is_hidden(), "Esc closes it")
     h0 = rect("#dock")["height"]; lot3 = S("(()=>{ const i=S.grid.findIndex(p=>p.k==='farm' && p.st==='land'); g.centreOn(i); g.refresh(); return i; })()"); tap(lot3)

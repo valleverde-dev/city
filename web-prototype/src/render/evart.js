@@ -219,6 +219,10 @@ const SCENES = {
     who('heritage', 130, 84, {arm:'sign'}, T); R(124, 58, 18, 10, WHITE); R(124, 58, 18, 1, GREEN); R(124, 67, 18, 1, GREEN); R(124, 58, 1, 10, GREEN); R(141, 58, 1, 10, GREEN);
     R(130, 61, 6, 3, '#8a7a3a'); P(130, 60, '#8a7a3a'); P(135, 60, '#8a7a3a'); R(127, 65, 12, 1, GREEN);
     const fx = 80 + Math.round(Math.cos(T*4)*14), fy = 42 + Math.round(Math.sin(T*8)*3); P(fx, fy, '#1b1b1b'); if(blink(T, 16)) P(fx-1, fy-1, WHITE); },
+  // v0.12: the town hall screen — the hall, the square, the clerk's window with the blind half down
+  hall(T){ sky(DAY, 0, 40); cloud(30, 6, 20, T); cloud(110, 12, 14, T, 0.7); townhall(30, 48, T); paving(48);
+    R(70, 58, 20, 12, '#5a3c22'); R(72, 60, 16, 8, '#f4e6c2'); R(72, 60, 16, Math.round(3 + Math.sin(T)*1), '#9a8a6a');   // the counter window
+    person(60, 74, {shirt:'#2a4f8c', bob:true}, T); person(104, 74, {shirt:'#7a5a3a', hair:'#c8c8c8'}, T*0.7); },
   election(T){ sky(DAY, 0, 40); cloud(30, 6, 20, T); townhall(30, 48, T); paving(48);
     // campaign posters on the arcade: your mayor and the rival with a scribbled moustache
     [[34, 24, '#2a63c9'], [118, 24, '#c62f28']].forEach(([x, y, c], k) => { R(x, y, 12, 16, WHITE); R(x, y, 12, 3, c); R(x+3, y+5, 6, 6, SK[k ? 0 : 1]); R(x+2, y+11, 8, 4, c); P(x+4, y+7, INK); P(x+7, y+7, INK); if(k) R(x+4, y+9, 4, 1, INK); });

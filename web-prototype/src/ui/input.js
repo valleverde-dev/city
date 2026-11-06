@@ -3,6 +3,7 @@ import { endMonth } from '../core/month.js';
 import { S } from '../core/state.js';
 import { LABEL_HITS, draw, present, startNight } from '../render/anim.js';
 import { meetOwner } from '../core/actions.js';
+import { openHall } from './hall.js';
 import { FRX, FRY, centreOn, cvs, keepVisible, panBy, resize, selBlock, selected, setSelBlock, setSelected, setViewRot, tileAt, tileAtW, viewRot, worldEl, zoom, zoomAt } from '../render/camera.js';
 import { money } from '../core/format.js';
 import { t } from '../i18n/index.js';
@@ -53,7 +54,8 @@ export function up(e){
     const hit = LABEL_HITS.find(h=>lx>=h.x0 && lx<=h.x0+h.w && ly>=h.y0 && ly<=h.y0+h.h);   // v0.11: a district's placard
     const i = hit ? -1 : tileAt(lx, ly);
     const k = hit ? hit.k : i < 0 ? blockAtScreen(lx, ly) : -1;
-    if(k >= 0 && k !== selBlock){ clearSelection(); setSelBlock(k); }   // v0.9.2: a consolidated settlement: what it is and what it brings
+    if(i >= 0 && S.grid[i].hall && !armed){ clearSelection(); playSound('click'); openHall(S.grid[i].hall - 1); }   // v0.12: a town hall opens its screen
+    else if(k >= 0 && k !== selBlock){ clearSelection(); setSelBlock(k); }   // v0.9.2: a consolidated settlement: what it is and what it brings
     else if(i<0 || i===selected){ clearSelection(); setDockPin(null); }   // v0.11: tapping the map closes the bar
     else { setSelected(i); setArmed(null); setSelBlock(-1);
       const q = S.grid[i]; if(q && q.st==='land' && q.rumour && meetOwner(i).rumour) floatAt(i, t('fx.rumour'), '', 'info');   // v0.11: the bar was wrong

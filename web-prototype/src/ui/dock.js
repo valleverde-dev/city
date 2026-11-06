@@ -4,6 +4,8 @@ import { COMBOS, COMBO_BY_ID, activeCombos, comboPreviewAt, discovered } from '.
 import { B, BUILD_TYPES, CFG, KIND, NEW_TYPES, stageCfg, on } from '../core/config.js';
 import { unlocked } from '../core/career.js';
 import { DIRECTIVE_ICON } from '../core/directives.js';
+import { openHall } from './hall.js';
+import { clerkAway, ordPermitFee } from '../core/halls.js';
 import { CONTRACTS, EVENTS, choicesFor, contractCount, isBadResult, resolveEvent } from '../core/events.js';
 import { money } from '../core/format.js';
 import { attach } from '../core/newgame.js';
@@ -125,7 +127,6 @@ function renderAgenda(head, strip){
   if(!can){ if(!S.directive) strip.appendChild(tile({icon:'groups', name:t('d.goal', {n:CFG.target}), sub:t('d.goalSub', {m:CFG.months}), cls:'info wide'})); return; }
   const act = (icon, name, sub, fn, dis, cls, k) => strip.appendChild(tile({icon, name, sub, disabled:dis, cls:'act '+(cls||''), k, click:()=>{ doAction(fn(), -1); }}));
   if(on('rustic')) act('map', t('act.plan'), S.plan ? t('act.planBusy',{n:S.plan.t}) : t('d.planSub',{x:money(CFG.planCost)}), submitPlan, off||!!S.plan||S.slots<2, '', 'plan');
-  if(on('local')) act('restaurant', t('act.lobby'), t('d.lobbySub',{x:money(CFG.lobbyCost), n:has('lobbyist')?20:(S.lobbied?6:12)}), lobby, off||S.slots<1, '', 'lobby');
   if(on('neigh')) act('forum', t('act.consult'), t('d.consultSub'), consult, off||S.slots<2, '', 'consult');
   if(S.grid.some(p=>p.k==='village')) act('restaurant', t('act.gossip'), S.gossiped ? t('d.gossiped') : t('d.gossipSub', {x:money(GOSSIP.cost)}), gossip, off||!!S.gossiped||S.slots<1, '', 'gossip');   // v0.11
   if(on('comp')) act('description', t('act.report'), t('d.reportSub'), fileReport, off||S.slots<1, '', 'report');
@@ -160,6 +161,7 @@ function renderBlock(head, strip){
     add({icon: kn ? (cb.good ? 'workspace_premium' : 'warning') : 'info', name: kn ? t('rcombo.'+c.id) : '???', sub: t('d.withTown', {town: other ? other.town : ''}),
       badge:[kn ? (cb.good ? '+' : '−') : '?', kn ? (cb.good ? 'good' : 'bad') : 'mystery'], cls:'combo '+(kn ? (cb.good ? 'good' : 'bad') : 'unknown')}); });
   if(!rc.length && S.region.blocks.length > 1) add({icon:'info', name:t('d.noTies'), sub:t('d.noTiesX'), cls:'info wide'});
+  add({icon:'account_balance', name:t('d.hall'), sub:t('d.hallSub', {c:b.hall ? b.hall.clerk : ''}), cls:'act wide', k:'hall', click:()=>openHall(k)});   // v0.12
 }
 // ---------- a parcel ----------
 export function parcelTitle(i){
@@ -204,7 +206,7 @@ function renderParcel(head, strip){
       const why = !acc ? t('dw.noAccess') : (bt.urban && !p.urban) ? t('dw.urban') : taken ? t('dw.unique') : !slotsOk ? t('dw.slots') : '';
       const cb = comboPreviewAt(i, ty), good = cb.filter(x=>known.includes(x.id) && x.good).length, bad = cb.filter(x=>known.includes(x.id) && !x.good).length, unk = cb.filter(x=>!known.includes(x.id)).length;
       const badge = good||bad||unk ? [[good?'+'+good:'', bad?'−'+bad:'', unk?'?':''].filter(Boolean).join(' '), bad && !good ? 'bad' : good ? 'good' : 'mystery'] : null;
-      const months = on('permits') ? permitMonths(ty)+buildMonths(ty) : buildMonths(ty)+1;
+      const months = on('permits') ? permitMonths(ty, i)+buildMonths(ty, i) : buildMonths(ty, i)+1;
       add({art:buildingArt(ty, i), icon:bt.icon, name:t('b.'+ty), sub:`${money(buildCost(p,ty))} · ${t('d.mo',{n:months})}`, why, badge, k:ty, cls:'build', on: armed===ty,
         disabled: !!why, click:()=>{ playSound('click'); setArmed(armed===ty ? null : ty); refresh(); if(armed) keepVisible(i); } });
     });
@@ -214,8 +216,8 @@ function renderParcel(head, strip){
     return; }
   // something is going on here
   const status = (icon, name, sub, badge, cls) => add({icon, name, sub, badge, cls:'status wide '+(cls||'')});
-  if(p.st==='review'){ const ok = !on('permits') || approves();
-    status('gavel', t('d.review', {b:t('b.'+p.ty)}), on('permits') ? t('d.reviewSub', {n:p.t, o:support(), need:CFG.approveAt}) : t('d.monthsN', {n:p.t}), ok ? ['✓','good'] : ['✕','bad'], ok ? '' : 'alert'); }
+  if(p.st==='review'){ const ok = !on('permits') || approves(0, i);
+    status('gavel', t('d.review', {b:t('b.'+p.ty)}), on('permits') ? t('d.reviewSub', {n:p.t, o:support(i), need:CFG.approveAt}) : t('d.monthsN', {n:p.t}), ok ? ['✓','good'] : ['✕','bad'], ok ? '' : 'alert'); }
   else if(p.st==='approved') status('engineering', t('d.queue', {b:t('b.'+p.ty)}), t('d.queueSub'));
   else if(p.st==='building') status('engineering', t('d.building', {b:t('b.'+p.ty)}), p.halt ? t('d.halted', {n:p.halt}) : t('d.buildSub', {n:p.t, x:money(p.mcost)}), p.halt ? ['II','bad'] : null, p.halt ? 'alert' : '');
   else if(p.st==='private') status('apartment', t('d.private'), t(p.dev.phase==='permit' ? 'd.privPermit' : 'd.privBuild', {n:p.dev.t}) + (S.market<CFG.devMinMarket ? ' · '+t('d.paused') : ''));
@@ -245,7 +247,7 @@ function placeOverlays(){
   if(!(armed && selected>=0 && dockMode()==='parcel')){ cf.hidden = true; cf.dataset.k = ''; chips.innerHTML = ''; return; }
   const p = S.grid[selected];
   if(cf.dataset.k !== selected+':'+armed){ cf.dataset.k = selected+':'+armed;
-    cf.innerHTML = `<button class="ok" type="button">${ic('check')}<span>${t('d.license')}<small>${money(CFG.permitFee + buildCost(p, armed))} · ${t('d.slot1')}</small></span></button><button class="no" type="button" aria-label="${t('ui.close')}">${ic('close')}</button>`;
+    cf.innerHTML = `<button class="ok" type="button">${ic('check')}<span>${t('d.license')}<small>${money(CFG.permitFee*ordPermitFee(selected) + buildCost(p, armed))} · ${t('d.slot1')}</small></span></button><button class="no" type="button" aria-label="${t('ui.close')}">${ic('close')}</button>`;
     cf.querySelector('.ok').onclick = e=>{ e.stopPropagation(); confirmArmed(); };
     cf.querySelector('.no').onclick = e=>{ e.stopPropagation(); playSound('click'); setArmed(null); refresh(); }; }
   cf.hidden = false;

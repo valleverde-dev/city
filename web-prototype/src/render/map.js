@@ -112,6 +112,8 @@ export function planThing(i){
   const p = S.grid[i], [r,c] = rc(i), [x,y] = isoOf(r,c), [r2,c2] = rotateCoord(r+OY,c+OX,viewRot);
   const E = {i, x, y, s:null, fx:[], walk:null, kids:false, cars:null, lamp:null, sheep:0, toad:false, crane:null};
   if(p.k==='habitat'){ const v=variant(i,4); E.s = spr('habitat'+v, ()=>BUILDINGS.habitat(v)); E.toad = hsh(i, S.seed&0xffff, 5) < 0.6; return E; }
+  if(p.k==='village' && p.hall){ const A = archOf(i, 'townhall'), v = colourOf(i);   // v0.12: the district's town hall
+    E.s = spr('townhall:'+A.id+':'+v, ()=>A.make(v)); E.fx = typeof A.fx==='function' ? A.fx(v) : (A.fx || []); E.walk = [[-0.4,0.44,0.1,0.44]]; return E; }
   if(p.k==='village'){ const v = variant(i,4);
     E.s = spr('village'+v, ()=>BUILDINGS.village(v)); E.walk = [[-0.4,0.44,0.1,0.44]]; return E; }
   if(p.ty==='road' && (p.st==='built' || p.k==='regional')){
@@ -133,7 +135,7 @@ export function planThing(i){
   if(p.st==='approved') E.s = spr('fence', fenceSprite);
   if(p.st==='building'){
     if(p.ty==='road'){ E.s = spr('cones', cones); return E; }
-    const prog = 1 - p.t/buildMonths(p.ty), hh = 6 + Math.round(prog*5)*5, cc = variant(i+7,3);
+    const prog = 1 - p.t/(p.bt || buildMonths(p.ty)), hh = 6 + Math.round(prog*5)*5, cc = variant(i+7,3);
     E.s = spr('site'+hh+'_'+cc, ()=>siteSprite(hh,cc)); E.crane = hh; }
   return E;
 }

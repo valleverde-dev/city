@@ -14,7 +14,8 @@ export const $ = id => document.getElementById(id);
 export function P(p){ const o = {...(p||{})};
   if(p && p.b) o.b = t('b.'+p.b);
   if(p && typeof p.r==='number') o.r = t('rej.'+p.r);
-  if(p && typeof p.r==='string') o.r = t('rw.'+p.r+'.t');   // a milestone reward (v0.10)
+  if(p && typeof p.r==='string') o.r = t('rw.'+p.r+'.t');
+  if(p && typeof p.o==='string') o.o = t('ord.'+p.o);   // a town hall's ordinance (v0.12)   // a milestone reward (v0.10)
   if(p && p.d) o.d = t('dir.'+p.d+'.t');
   if(p && p.k) o.k = t('perk.'+p.k);
   if(p && p.e){ o.e = t('ev.'+p.e+'.t'); if(p.c) o.c = t('ev.'+p.e+'.c.'+p.c); }

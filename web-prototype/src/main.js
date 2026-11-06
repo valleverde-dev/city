@@ -8,6 +8,9 @@ import { resolveCard } from './core/index.js';
 import { meetOwner } from './core/actions.js';
 import { LABEL_HITS } from './render/anim.js';
 import { setDockPin } from './ui/dock.js';
+import { hallCell } from './core/halls.js';
+import { districtOf } from './core/region.js';
+import { openHall } from './ui/hall.js';
 import { offerRewards, chooseReward } from './core/rewards.js';
 import { endMonth } from './core/month.js';
 import { records } from './core/persist.js';
@@ -47,7 +50,7 @@ window.__eurocrat = {
   resolveCard,
   tileAt:(x,y)=>tileAt(x,y), tileAtW:(x,y)=>tileAtW(x,y), screenOf:(i)=>{ const [ix,iy]=isoOf(...rc(i)); return toScreen(ix,iy); },
   screenOfW:(R,C)=>{ const [ix,iy]=isoW(R-FRY,C-FRX); return toScreen(ix,iy); },   // a MAP cell (y, x) on screen
-  get labelHits(){ return LABEL_HITS; }, meetOwner, setDockPin,
+  get labelHits(){ return LABEL_HITS; }, meetOwner, setDockPin, hallCell, districtOf, openHall,
   get attachSel(){ return attachSel; }, get viewRot(){ return viewRot; }, get selBlock(){ return selBlock; },
   refresh, showNext, hideModal, get selected(){ return selected; }, spriteSheet, portrait,
   get music(){ return music.want; }, get flashes(){ return FLASH.size; },

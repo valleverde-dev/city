@@ -1,3 +1,4 @@
+import { hallCell } from '../core/halls.js';
 import { playSound } from '../audio/sfx.js';
 import { activeCombos } from '../core/combos.js';
 import { CFG } from '../core/config.js';
@@ -27,7 +28,7 @@ export const GUIDES = [
     {k:'g1.grow',    done:()=>false, end:true} ],
   [ {k:'g2.jobs',    done:()=>S.grid.some(p=>p.ty==='factory'), at:()=>S.grid.findIndex(p=>p.st==='owned')},
     {k:'g2.combo',   done:()=>activeCombos().length>0},
-    {k:'g2.mayor',   done:()=>S.stats.lobby>0, tab:'agenda'} ],
+    {k:'g2.mayor',   done:()=>S.stats.lobby>0, at:()=>hallCell(0)} ],   // v0.12: lunch is at the town hall
   [ {k:'g3.rustic',  done:()=>S.stats.plan>0, tab:'agenda'},
     {k:'g3.report',  done:()=>S.reports>0, tab:'agenda'},
     {k:'g3.services',done:()=>S.grid.some(p=>p.ty==='school' || p.ty==='clinic')},

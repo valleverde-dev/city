@@ -16,7 +16,7 @@ import { S } from './state.js';
 //    lose: audits and failed directives end the run · debt (v0.10.2, from phase I): loans, and bankruptcy past the cap
 //    milestones: use-it-or-lose-it · market: developers, property market
 // =====================================================================
-export const VERSION = '0.11.1';   // keep in step with package.json (the build checks it)
+export const VERSION = '0.12.0';   // keep in step with package.json (the build checks it)
 export const BASE_F = {access:1, permits:1, local:1, jobs:1, combos:1, holdout:1, debt:1};
 export const FULL_F = {...BASE_F, rustic:1, events:1, directives:1, neigh:1, comp:1, services:1, lose:1};
 export const PLOT = 8;                     // every plot of the region is PLOT × PLOT parcels

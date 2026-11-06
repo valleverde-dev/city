@@ -186,3 +186,32 @@
 .notice .dchoice:disabled{opacity:.55; cursor:not-allowed;}
 @media (max-width:820px){ .notice .dchoices, .notice .dchoices.n2, .notice .dchoices.n4{grid-template-columns:1fr;} .notice .dchoice{min-height:0;} }
 .notice .quote.local{margin-top:4px; background:var(--cream);}
+/* v0.12: the town hall screen */
+.hall-screen .lore{margin:6px 0 0; font-size:13px; color:#5b6b8c;}
+.hall-screen .lore i{font-style:italic;}
+.hall-screen h4{margin:14px 0 6px; font:400 15px/1.1 var(--f-display); color:var(--navy); text-transform:uppercase; letter-spacing:.04em; display:flex; align-items:baseline; gap:8px;}
+.hall-screen h4 small{font:600 12px/1 var(--f-body, system-ui); text-transform:none; letter-spacing:0; color:#5b6b8c;}
+.hrel{display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:10px; padding:8px 10px; border:2px solid var(--navy); background:#fff;}
+.hrel span{font-size:13px; font-weight:700; color:var(--navy);}
+.hrel i{display:block; height:10px; border:1px solid var(--navy); background:#e8ecf4;}
+.hrel i b{display:block; height:100%;}
+.hrel.good i b{background:#21a05a;} .hrel.mid i b{background:#e3b33a;} .hrel.bad i b{background:#d64545;}
+.hrel em{font:400 20px/1 var(--f-display); font-style:normal; color:var(--navy);}
+.ords{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px;}
+.ord{display:grid; grid-template-columns:22px 1fr auto; align-items:center; gap:8px; padding:7px 9px; border:2px solid rgba(29,60,120,.35); background:rgba(255,255,255,.7);}
+.ord .ico{width:18px; height:18px;}
+.ord span b{display:block; font-size:14px;} .ord span small{display:block; font-size:12px; color:#3d4a66;}
+.ord.bad{border-color:#d64545;} .ord.bad .ico{color:#b3261e;} .ord.good{border-color:#21a05a;} .ord.good .ico{color:#1b7a44;}
+.ord.unknown{border-style:dashed;} .ord.unknown b{letter-spacing:.2em;}
+.ord .vote{display:inline-block; margin-top:3px; font:700 11px/1 var(--f-body, system-ui); font-style:normal; background:#ffd200; padding:3px 5px;}
+.ord .repeal{display:flex; flex-direction:column; align-items:flex-start; gap:2px; max-width:210px; padding:6px 8px; border:2px solid var(--navy); background:#fff; color:var(--navy); font-weight:700; font-size:12px; cursor:pointer; text-align:left;}
+.ord .repeal .ico{width:14px; height:14px; display:inline-block; vertical-align:-2px; margin-right:4px;}
+.ord .repeal small{font-weight:500; font-size:10.5px; color:#3d4a66;}
+.hall-screen .stuck{display:flex; align-items:center; gap:6px; margin:8px 0 0; font-size:13px; font-weight:600; color:#8a5a00;}
+.hall-screen .hall-msg{margin:8px 0 0; padding:6px 10px; font-weight:700; border-left:4px solid #21a05a; background:#eaf6ee;}
+.hall-screen .hall-msg.bad{border-left-color:#d64545; background:#fbeaea;}
+.hall-screen .hacts{display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:8px;}
+.hall-screen .hact b{display:flex; align-items:center; gap:6px; font-size:14px;} .hall-screen .hact b .ico{width:16px; height:16px;}
+.hall-screen .hact small{display:block; font-size:12px; color:#3d4a66; margin:4px 0 6px; text-align:left;}
+@media (max-width:560px){ .ord{grid-template-columns:22px 1fr;} .ord .repeal{grid-column:1 / -1; max-width:none;} .hall-screen .hacts{grid-template-columns:1fr;} }
+@media (max-width:560px){ .hrel{grid-template-columns:1fr auto;} .hrel span{grid-column:1 / -1;} }

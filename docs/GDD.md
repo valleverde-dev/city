@@ -1,6 +1,6 @@
 # EUROCRAT — Game Design Document
 
-*Living document. v0.11.0 · Nov 2, 2026. Working title. Available in English and Spanish.*
+*Living document. v0.12.0 · Nov 6, 2026. Working title. Available in English and Spanish.*
 
 > Every city builder is a dictatorship: you click, a house appears, people move in.
 > **Eurocrat** asks what building a new town would *really* take in contemporary Europe —
@@ -68,6 +68,14 @@ v0.5 had four separate levels, which played like a campaign rather than a roguel
 Playtest: the second settlement felt impossible and depended on luck (the bot averaged 3.6 rejected permits and 2 farmers raising prices per game). Now:
 - **Permits are decided by political support, not dice.** Support (0–100) comes from the Mayor, the neighbours and compliance. A permit is approved if support is at least **50** when it is decided. The parcel sheet, the map badge (red) and the bell warn you in advance, and you can lobby or consult in time.
 - **Stubborn owners** (from phase II): about a quarter of the new farmland belongs to owners who ask more — **+50…150%, rolled once per parcel** (v0.10.2). Nothing gives them away: they show up in person when you go for their land (v0.10.1), with their price, and from then on the parcel is marked. No surprise raises after that, no lost actions.
+- **Town halls (v0.12).** Every district (each 8×8 plot) has its own **town hall** in its village, with its own lore (a founding year, a motto, a clerk at the counter), **one or two ordinances** and **its own relation with you (0–100)**, which **decides the permits of that district** (the founding district's relation is the Mayor meter). The district's placard shows a small face for that relation. Tap the town hall for its screen: the clerk, the ordinances (**??? until you ask at the counter or run into one**), your permits waiting there and what you can do about it:
+  - *Ask about the rules* (1 slot, once a phase): every ordinance in force, explained.
+  - *Pastries for the clerk* (1 slot, €0.3M, once a month): the relation +6, and a permit stuck waiting for the clerk goes ahead anyway.
+  - *Lunch with the mayor* (moved here from the agenda): this town's mayor, +12 (+6 for a second lunch in the month).
+  - *Call the mayor over the clerk's head* (1 slot): the clerk back today and your permits here decided next month; the relation −10.
+  - *Formal complaint* (1 slot, when the clerk is away): back within a month; compliance +5, the relation −5.
+  - *Propose repealing* a known bad ordinance (2 slots): the plenary votes in 3 months and repeals it if both the neighbours and this town hall are at 50+ then (no dice).
+  - The **ordinances** (about 40% help): the permits clerk on holiday (permits wait a few months each phase — "until he's back from holiday, nobody can touch them"), a protected old town (works next to the village +25%), everything in triplicate (the permit fee ×3), the patron saint's fiesta (one month a phase without works), no industry, the long lunch (works +1 month), bilingual signs (every building +€0.2M); and the good ones: a one-stop shop (permits a month faster), an industrial tradition (factory permits approved on the spot). Expropriating in a district costs its town hall −8. The buildable town hall is gone (every village has one).
 - **Negotiating with them (v0.11).** Once you have met an owner, besides paying their price you can **lean on them through the mayor** (1 slot, Mayor −10, needs the Mayor at 50+; halves their markup, once), **expropriate** (2 slots, the base price without markup paid now, neighbours −12; the parcel is yours after 4 months of courts, not for sale meanwhile) or **leave them in peace** (free, neighbours +3; they stop negotiating, you can still pay).
 - **Gossip at the village bar (v0.11).** An agenda action, once a month: a slot and a round (€0.3M). The regulars name parcels with a stubborn owner before you meet them — up to 3 when the neighbours are happy (65+), 2 (40+), 1 (20+), nobody talks below 20. About a quarter of what they say is **false**: a "rumour" mark on a parcel whose owner turns out to be perfectly reasonable when you go for it.
 - Randomness stays where it is fun and visible: event cards (each a choice), directives, the market.
@@ -113,7 +121,6 @@ Land ──acquire──▶ Owned (rustic) ──urban plan──▶ Owned (urba
 | Library | 3 | School places, neighbours like it |
 | Police station | 5 | Neighbours and local support up |
 | Social housing | 7 | Many cheap homes; neighbours grumble; needs access |
-| Town hall | 9 | Local support; one per settlement |
 | Solar farm | 11 | Taxes from rustic land |
 | Station | 14 | Some homes, residents move in faster |
 | Data centre | 18 | Taxes, few jobs, neighbours dislike it |
