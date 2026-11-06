@@ -645,3 +645,39 @@ test('v0.12: at the counter — ask, lunch with this town\'s mayor, complain, re
   // good ordinances cannot be repealed
   H.ords.push('oneStop'); H.known.push('oneStop'); S.slots = 3; assert.equal(core.hallRepeal(k, 'oneStop').msg.k, 'err.noRepeal');
 });
+
+test('v0.12: housing levels — renovate a block up when its surroundings allow, through its town hall', () => {
+  const S = g.newGame(23, 1), N = core.N;
+  S.region.blocks.forEach(B => { B.hall.ords = []; if (B.hall.rel !== null) B.hall.rel = 80; }); S.local = 80;
+  // a clean 5×5 patch of plain land in the first district
+  const at = (r, c) => r * N + c;
+  const B0 = S.region.blocks[0], A = S.region.active, r0 = B0.y - A.y + 1, c0 = B0.x - A.x + 1;
+  for (let a = 0; a < 5; a++) for (let b = 0; b < 5; b++) Object.assign(S.grid[at(r0 + a, c0 + b)], { k: 'farm', st: 'land', ty: null, hold: false, urban: true, hall: undefined });
+  const h = at(r0 + 2, c0 + 2); Object.assign(S.grid[h], { st: 'built', ty: 'housing' });
+  const homes0 = core.caps().homes;
+  assert.equal(core.lvOf(S.grid[h]), 1); assert.equal(core.homesOf(S.grid[h]), 150);
+  S.slots = 3; S.funds = 50;
+  assert.equal(core.upgradeHousing(h).msg.k, 'err.upNeeds', 'level 2 needs a park, school or market beside it');
+  assert.deepEqual(core.upMissing(h), ['near1']);
+  Object.assign(S.grid[at(r0 + 2, c0 + 3)], { st: 'built', ty: 'park' });
+  assert.ok(core.upgradeHousing(h).ok); assert.equal(S.grid[h].up.st, 'review');
+  assert.equal(core.upgradeHousing(h).msg.k, 'err.upgrading');
+  // the permit, then the works (fewer homes meanwhile), then level 2
+  let guard = 0; while (S.grid[h].up && S.grid[h].up.st === 'review' && guard++ < 6) { S.cards = []; core.endMonth(); }
+  assert.equal(S.grid[h].up.st, 'works');
+  assert.equal(core.homesOf(S.grid[h]), 150 - core.WORKS_LOSS);
+  guard = 0; while (S.grid[h].up && guard++ < 6) { S.cards = []; S.funds = 50; core.endMonth(); }
+  assert.equal(core.lvOf(S.grid[h]), 2); assert.equal(core.homesOf(S.grid[h]), 250);
+  assert.ok(core.caps().homes >= homes0 + 100 - 1);
+  // level 3 asks for a school and a health centre within two cells
+  assert.deepEqual(core.upMissing(h).sort(), ['clinic2', 'school2']);
+  Object.assign(S.grid[at(r0, c0)], { st: 'built', ty: 'school' }); Object.assign(S.grid[at(r0 + 4, c0 + 4)], { st: 'built', ty: 'clinic' });
+  assert.deepEqual(core.upMissing(h), []);
+  // a cold town hall rejects the renovation
+  S.local = 5; S.slots = 3; S.funds = 50; assert.ok(core.upgradeHousing(h).ok);
+  guard = 0; while (S.grid[h].up && guard++ < 6) { S.cards = []; core.endMonth(); S.local = 5; }
+  assert.equal(core.lvOf(S.grid[h]), 2, 'rejected: still level 2');
+  // not in phase I
+  const T = g.newGame(23, 0); const q = T.grid.findIndex(p => p.k === 'farm'); Object.assign(T.grid[q], { st: 'built', ty: 'housing' }); T.slots = 2;
+  assert.equal(core.upgradeHousing(q).msg.k, 'err.notYet');
+});

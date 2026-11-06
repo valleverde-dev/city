@@ -50,6 +50,9 @@ window.__playOneRun = function(seed, opts){
           const bad = H.known.find(o=>g.ORDS[o].bad); if(bad && s.neigh >= 55 && g.hallRel(k) >= 55 && s.slots >= 2) acted = g.hallRepeal(k, bad).ok; }
         if(acted) continue; }
       if(g.on('neigh') && (s.neigh < 28 || (d && d.kind==='consult')) && s.slots >= 2){ if(g.consult().ok) continue; }
+      // v0.12: renovate housing up a level when its surroundings allow and money is comfortable
+      if(g.on('permits') && s.funds > 15){ const h = s.grid.findIndex((p,i)=>p.ty==='housing' && p.st==='built' && !p.priv && !p.up && (p.lv||1) < g.MAX_LV && !g.upMissing(i).length);
+        if(h >= 0 && g.upgradeHousing(h).ok) continue; }
       const rustic = s.grid.filter(p=>p.st==='owned' && !p.urban).length;
       if(g.on('rustic') && rustic >= 3 && !s.plan && s.slots >= 2){ if(g.submitPlan().ok) continue; }
       const owned = s.grid.map((p,i)=>[p,i]).filter(([p,i])=>p.st==='owned' && g.hasAccess(...rc(i)));

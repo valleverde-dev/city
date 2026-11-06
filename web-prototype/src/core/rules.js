@@ -2,6 +2,7 @@ import { comboFx } from './combos.js';
 import { B, CFG, METER_FLAG, on } from './config.js';
 import { NB8, S, clamp, has, idx, inside, r1 } from './state.js';
 import { districtOf, frontAccess, frontEntry, regionFx } from './region.js';
+import { homesOf } from './housing.js';
 import { hallRel, ordBuildCost, ordBuildExtra, ordBuildMonths, ordPermitMonths } from './halls.js';
 
 // =====================================================================
@@ -59,7 +60,7 @@ export function approves(bonus = 0, i = -1){ return !on('permits') || support(i)
 export function count(ty, st='built'){ return S.grid.filter(p=>p.ty===ty && p.st===st && p.k!=='regional').length; }
 // What the finished buildings bring together (capacities, taxes, meters a month, move-in speed)
 export function builtFx(){ const f = {homes:0, jobs:0, school:0, health:0, tax:0, neigh:0, local:0, rate:0};
-  S.grid.forEach(p=>{ if(p.st!=='built' || !p.ty || p.k==='regional') return; const d = B[p.ty]; if(!d) return; for(const k in f) if(d[k]) f[k] += d[k]; });
+  S.grid.forEach(p=>{ if(p.st!=='built' || !p.ty || p.k==='regional') return; const d = B[p.ty]; if(!d) return; for(const k in f) if(d[k]) f[k] += k==='homes' ? homesOf(p) : d[k]; });   // v0.12: housing by level
   return f; }
 export function activeSites(){ return S.grid.filter(p=>p.st==='building').length; }
 export function caps(){

@@ -358,7 +358,12 @@ export const BUILDINGS = {
 // Style and colourway of a building come from its WORLD cell and the run seed: stable for the whole run
 export const archW = (wi, ty) => { const L = ARCH[ty]; return L[Math.floor(hsh(wi, S.runSeed & 0xffff, 913) * L.length)]; };
 export const colourW = wi => Math.floor(hsh(wi, S.runSeed & 0xffff, 414) * 6);
-export const archOf = (i, ty) => archW(worldIndex(i), ty);
+// v0.12: housing looks its level — low terraces and perimeter blocks (I), slabs and mid-rise (II), the tower (III)
+const HOUSING_LV = [null, ['terrace','perimeter'], ['slab','eco','brutalist'], ['tower']];
+export const archOf = (i, ty) => { const p = S.grid && S.grid[i];
+  if(ty === 'housing' && p && p.st === 'built' && !p.priv){ const ids = HOUSING_LV[Math.min(3, p.lv || 1)], L = ARCH.housing.filter(a=>ids.includes(a.id));
+    if(L.length) return L[Math.floor(hsh(worldIndex(i), S.runSeed & 0xffff, 913) * L.length)]; }
+  return archW(worldIndex(i), ty); };
 export const colourOf = i => colourW(worldIndex(i));
 
 // Construction site: concrete core + scaffolding, a tower crane behind (cc = crane colour). The hook and load are animated.

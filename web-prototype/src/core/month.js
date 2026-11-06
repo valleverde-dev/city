@@ -4,6 +4,7 @@ import { directiveProgress, issueDirective, offerPerks } from './directives.js';
 import { residents, taxIncome } from './economy.js';
 import { checkContract, dueChains, rollEvent } from './events.js';
 import { tickExpro } from './actions.js';
+import { tickHousing, upkeepOf } from './housing.js';
 import { clerkAway, fiestaNow, revealAt, tickHalls } from './halls.js';
 import { money } from './format.js';
 import { consolidate, snapshot } from './newgame.js';
@@ -53,6 +54,8 @@ export function endMonth(){
       gainXp(p.ty==='road' ? 'road' : 'built');
       log('log.completed', {b:p.ty, at:pname(i)}, 'good'); fx(i,'fx.completed',{b:p.ty},'good'); }
   });
+  // 4b. Housing renovations (v0.12: levels)
+  tickHousing();
   // 5. Private developers build at their own pace (and stop when the market is cold)
   S.grid.forEach((p,i)=>{
     if(p.st!=='private') return;
@@ -73,7 +76,7 @@ export function endMonth(){
     else fx(x.good || x.j < 0 ? x.i : x.j, x.good ? 'fx.combo' : 'fx.comboBad', {c:x.id}, x.good ? 'good' : 'bad');   // j < 0: across the border
     log(x.good ? 'log.combo' : 'log.comboBad', {c:x.id}, x.good ? 'good' : 'bad'); });
   // 6. Upkeep, interest and the municipality's share of new taxes
-  S.grid.forEach(p=>{ if(p.st==='built' && p.ty && p.k!=='regional' && !p.priv) spend(B[p.ty].upkeep); });
+  S.grid.forEach(p=>{ if(p.st==='built' && p.ty && p.k!=='regional' && !p.priv) spend(upkeepOf(p)); });
   if(S.debt>0) S.funds -= S.debt*S.rate;
   S.lastTax = taxIncome(); S.funds += S.lastTax;
   if(count('factory')>0) bump('local', 1, 'why.taxes');

@@ -29,7 +29,7 @@ import { hideModal, makePixelPortrait, showNext } from './ui/cards.js';
 import { portrait } from './ui/dom.js';
 import { guideStep, refresh, styleName } from './ui/guide.js';
 import { runTab } from './ui/hud.js';
-import { pendingToasts } from './ui/drama.js';
+import { clearToasts, pendingToasts } from './ui/drama.js';
 import { armed, confirmArmed, dockMode, setArmed } from './ui/dock.js';
 import { openRun, closeRun } from './ui/run.js';
 import { toggleInbox } from './ui/inbox.js';
@@ -43,7 +43,7 @@ import './ui/input.js';   // pointer, wheel and keyboard listeners
 window.__eurocrat = {
   get S(){ return S; }, CFG, B, EVENTS, LEVELS, newGame:(seed, stage=3, opts={})=>{ startNew(seed, stage, opts); S.cards=[]; hideModal(); return S; },
   startRun, records, regionPop, offerRewards, chooseReward, get ACH_BY_ID(){ return ACH_BY_ID; }, career, resetCareer, levelOf, attachPreview, DIR_KEYS, RCOMBO_BY_ID, cellPos, attach:(d)=>{ const r = attach(d); if(r.ok) enterSettlement(); return r; },
-  openRun, closeRun, get runTab(){ return runTab; }, get dock(){ return dockMode(); }, get armed(){ return armed; }, get toasts(){ return pendingToasts(); }, setArmed, confirmArmed, toggleInbox, guideStep, get zoom(){ return zoom; }, get cam(){ return [MAPCX, MAPCY]; },
+  openRun, closeRun, get runTab(){ return runTab; }, get dock(){ return dockMode(); }, get armed(){ return armed; }, get toasts(){ return pendingToasts(); }, clearToasts, setArmed, confirmArmed, toggleInbox, guideStep, get zoom(){ return zoom; }, get cam(){ return [MAPCX, MAPCY]; },
   panBy, zoomAt, centreOn, on,
   acquire, requestPermit, sellPlot, submitPlan, lobby, consult, fileReport, repay, endMonth, choosePerk, caps, residents, hasAccess,
   choicesFor, resolveEvent, problems, activeCombos, comboPreview, comboFx, discovered, COMBOS, t, setLang, get lang(){ return LANG; },

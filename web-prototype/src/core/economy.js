@@ -1,3 +1,4 @@
+import { upkeepOf } from './housing.js';
 import { comboFx } from './combos.js';
 import { B, CFG, on } from './config.js';
 import { buildCost, builtFx, count } from './rules.js';
@@ -9,7 +10,7 @@ export function taxIncome(){ return Math.round(((CFG.taxShare*(count('factory')*
 export function monthlyCosts(){
   let c = S.debt*S.rate;
   S.grid.forEach(p=>{ if(p.st==='building' && !p.halt) c += p.mcost;
-    if(p.st==='built' && p.ty && p.k!=='regional' && !p.priv) c += B[p.ty].upkeep; });
+    if(p.st==='built' && p.ty && p.k!=='regional' && !p.priv) c += upkeepOf(p); });
   return c;
 }
 // Money already promised to works in progress (permits under review, queued and running sites)

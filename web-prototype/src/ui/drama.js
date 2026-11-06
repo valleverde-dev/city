@@ -133,6 +133,7 @@ let queue = [], showing = false, streak = 0;
 // Any banner (combos, levels…): queued after the ones already showing
 export function toast(q){ queue.push(q); if(!showing) nextToast(); }
 export const pendingToasts = () => queue.map(q=>q.k);   // for the tests
+export const clearToasts = () => { queue.length = 0; };   // for the tests
 export function flushToasts(){
   if(!S) return;
   if(S.over){ (S.newAch||[]).splice(0); (S.rankUps||[]).splice(0); (S.levelUps||[]).splice(0); (S.unlocks||[]).splice(0); return; }   // the end-of-run summary lists them

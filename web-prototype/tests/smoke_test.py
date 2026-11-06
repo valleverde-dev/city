@@ -366,6 +366,11 @@ with sync_playwright() as p:
     S(f"(S.grid[{at(2,3)}].st='building', 0)")
     check(not S(f"g.hasAccess({r0+3},{c0+4})"), "a building under construction does not give access yet")
 
+    # --- v0.12: housing levels — a finished housing block shows its level and the next one
+    hb = S("(()=>{ const i=S.grid.findIndex((p,k)=>p.k==='farm' && g.districtOf(k)===3 && !p.hall); Object.assign(S.grid[i], {st:'built', ty:'housing', lv:1, up:null, priv:false}); S.slots=3; S.funds=50; g.centreOn(i); g.refresh(); return i; })()")
+    tap(hb)
+    check(page.locator("#strip .tile[data-k=upgrade]").count() == 1 and "level" in page.locator("#strip").inner_text().lower(), "v0.12: a housing block shows its level and the renovation to the next one (with what it asks)")
+    page.keyboard.press("Escape")
     # --- v0.11: stubborn owners can be negotiated with; the village bar; districts on the map
     ho = S("(()=>{ const i=S.grid.findIndex(p=>p.st==='land' && p.hold); if(i>=0){ g.meetOwner(i); S.slots=3; S.local=70; g.centreOn(i); } return i; })()")
     if ho >= 0:
@@ -450,7 +455,7 @@ with sync_playwright() as p:
     r1v = S("g.viewRot"); page.keyboard.press("q"); page.wait_for_timeout(300)
     check(r1v == (r0v + 1) % 4 and S("g.viewRot") == r0v, "E turns the map a quarter, Q turns it back")
     # banners go away on their own
-    S("(S.levelUps=[3], 0)"); ev("window.__eurocrat.refresh()"); page.wait_for_timeout(300)
+    ev("window.__eurocrat.clearToasts()"); S("(S.levelUps=[3], 0)"); ev("window.__eurocrat.refresh()"); page.wait_for_timeout(300)
     shown = page.locator("#toast.in").count() == 1
     try:   # every queued banner (earlier ones too) leaves on its own, one after another
         page.wait_for_function("!document.querySelector('#toast.in') && window.__eurocrat.toasts.length === 0", timeout=90000); gone = True

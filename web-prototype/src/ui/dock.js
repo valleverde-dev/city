@@ -5,6 +5,7 @@ import { B, BUILD_TYPES, CFG, KIND, NEW_TYPES, stageCfg, on } from '../core/conf
 import { unlocked } from '../core/career.js';
 import { DIRECTIVE_ICON } from '../core/directives.js';
 import { openHall } from './hall.js';
+import { HLV, MAX_LV, WORKS_LOSS, homesOf, lvOf, upCost, upMissing, upgradeHousing, upkeepOf } from '../core/housing.js';
 import { clerkAway, ordPermitFee } from '../core/halls.js';
 import { CONTRACTS, EVENTS, choicesFor, contractCount, isBadResult, resolveEvent } from '../core/events.js';
 import { money } from '../core/format.js';
@@ -150,7 +151,7 @@ function renderBlock(head, strip){
   // v0.11: a district (tap its placard on the map): its type, what is built there, its region combos (??? until discovered)
   const k = selBlock, b = S.region.blocks[k], add = o => strip.appendChild(tile(o)), known = discovered();
   const mine = S.grid.map((p,i)=>i).filter(i=>districtOf(i)===k), built = mine.filter(i=>S.grid[i].st==='built' && S.grid[i].ty && S.grid[i].k!=='regional' && S.grid[i].ty!=='road');
-  const homes = built.reduce((a,i)=>a + (B[S.grid[i].ty].homes||0), 0), yours = mine.filter(i=>['owned','review','approved','building','built'].includes(S.grid[i].st) && S.grid[i].k!=='regional' && S.grid[i].k!=='village').length;
+  const homes = built.reduce((a,i)=>a + homesOf(S.grid[i]), 0), yours = mine.filter(i=>['owned','review','approved','building','built'].includes(S.grid[i].st) && S.grid[i].k!=='regional' && S.grid[i].k!=='village').length;
   head.innerHTML = `<h3>${ic(STYPE_ICON[b.ty] || 'cottage')}${b.town}</h3>${tag(t('st.'+b.ty),'blue')}<span class="ref">${t('d.settlementN', {n:roman(k+1)})}</span>`;
   add({icon:STYPE_ICON[b.ty] || 'cottage', name:t('st.'+b.ty), sub:t('std.'+b.ty), cls:'info wide'});
   add({icon:'apartment', name:String(built.length), sub:t('d.blockBuilt'), cls:'stat'});
@@ -223,7 +224,16 @@ function renderParcel(head, strip){
   else if(p.st==='private') status('apartment', t('d.private'), t(p.dev.phase==='permit' ? 'd.privPermit' : 'd.privBuild', {n:p.dev.t}) + (S.market<CFG.devMinMarket ? ' · '+t('d.paused') : ''));
   else if(p.st==='ruin') add({icon:'payments', name:t('d.buyBack'), sub:`${money(r1(p.price*1.5))} · ${t('d.slot1')}`, cls:'act primary', disabled:!slotsOk, click:()=>doAction(acquire(i), i)});
   else if(p.st==='built' && isB && p.ty!=='road'){
-    add({art:buildingArt(p.ty, i), name:t('b.'+p.ty), sub:styleName(i), cls:'built wide', badge: p.priv ? [t('d.privTag'),''] : [`−${money(B[p.ty].upkeep)}/${t('ui.mo')}`, '']});
+    const lvl = p.ty==='housing' && !p.priv ? ` · ${t('d.level', {n:roman(lvOf(p))})} · ${t('d.homesN', {n:homesOf(p)})}` : '';
+    add({art:buildingArt(p.ty, i), name:t('b.'+p.ty), sub:styleName(i) + lvl, cls:'built wide', badge: p.priv ? [t('d.privTag'),''] : [`−${money(upkeepOf(p))}/${t('ui.mo')}`, '']});
+    // v0.12: housing levels — the next level, what it asks, and the renovation under way
+    if(p.ty==='housing' && !p.priv && on('permits')){ const u = p.up, to = lvOf(p) + 1;
+      if(u) status('engineering', t('d.upTo', {n:roman(u.to)}), u.st==='review' ? t('d.reviewSub', {n:u.t, o:support(i), need:CFG.approveAt}) : t('d.upWorks', {n:u.t, x:money(u.mcost), h:WORKS_LOSS}), u.st==='review' ? (approves(0, i) ? ['✓','good'] : ['✕','bad']) : null);
+      else if(to <= MAX_LV){ const miss = upMissing(i), L = HLV[to];
+        const why = miss.length ? miss.map(k=>t('upNeed.'+k)).join(' · ') : !slotsOk ? t('dw.slots') : '';
+        add({icon:'apartment', name:t('d.upgrade', {n:roman(to)}), sub:`+${L.homes - HLV[to-1].homes} ${t('d.homesW')} · ${money(upCost(i))} · ${t('d.mo', {n:permitMonths('housing', i) + L.build})}`, cls:'act wide', k:'upgrade',
+          disabled: !!why, why, click:()=>doAction(upgradeHousing(i), i)}); }
+      else add({icon:'workspace_premium', name:t('d.maxLevel'), sub:t('d.maxLevelSub'), cls:'info wide'}); }
     if(on('combos')) activeCombos().filter(x=>x.i===i || x.j===i).forEach(x=>{ const cb = COMBO_BY_ID[x.id];
       add({icon: cb.good ? 'workspace_premium' : 'warning', name:t('combo.'+x.id), sub:t('combod.'+x.id).split('. ')[0], cls:'combo '+(cb.good?'good':'bad')}); });
   }

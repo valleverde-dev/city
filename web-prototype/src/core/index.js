@@ -56,3 +56,4 @@ export function resolveCard(k){
   S.cards.shift(); return true;
 }
 export { ORDS, HALL, CLERKS, N_MOTTOS, makeHall, ensureHalls, hallOf, hallAt, hallCell, hallRel, bumpHall, reveal, stuckPermits, hallAsk, hallCake, hallLunch, hallCall, hallComplain, hallRepeal, hallMood, clerkAway, fiestaNow, tickHalls, hallsNewPhase, ordAt } from './halls.js';
+export { HLV, MAX_LV, WORKS_LOSS, lvOf, homesOf, upkeepOf, upMissing, upCost, upgradeHousing, tickHousing } from './housing.js';

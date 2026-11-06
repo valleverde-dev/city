@@ -12,7 +12,8 @@ Living project document · update it as the prototype evolves. The game design l
 - **The town hall screen** (tap it on the map, or *The town hall* in the district card): the scene, the clerk, the ordinances (??? until you ask or run into one), your permits waiting there, and the counter — ask about the rules, pastries for the clerk, lunch with the mayor (moved here from the agenda), call the mayor over the clerk's head, a formal complaint, propose repealing an ordinance in plenary.
 - **Nine ordinances**: the permits clerk on holiday, protected old town, everything in triplicate, the patron saint's fiesta, no industry, the long lunch, bilingual signs; and two that help, a one-stop shop and an industrial tradition. They come from a hash of the plot's position, not the run's dice.
 - The **buildable town hall is gone** (7 buildings to unlock).
-- Balance (bot, 60 runs): about 3.7 milestones a run, as before; the bot uses the counter (calls back a clerk, pastries, lunches, repeals). Tests: 33 rules tests, all browser checks green.
+- **Housing levels.** Housing blocks are renovated up from level I (150 homes) to II (250: a park, school or market beside it) and III (400, a tower: a school and a health centre within two cells), each with a renovation permit through the district's town hall and months of works with fewer homes; the block looks its level on the map.
+- Balance (bot, 60 runs): about 3.7 milestones a run, as before; the bot uses the counter (calls back a clerk, pastries, lunches, repeals). Tests: 34 rules tests, all browser checks green.
 
 ## Previous — v0.11.1 (Nov 5, 2026) · fixes from the first players
 
