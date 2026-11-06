@@ -13,7 +13,8 @@ import { STYPE_ICON } from '../core/region.js';
 import { closeDrama } from './drama.js';
 import { N, S, clamp, setState } from '../core/state.js';
 import { LANG, setLanguage, t } from '../i18n/index.js';
-import { FX, GX, MOTION, OX0, OY0, RISE_MS, bl, disc, drawBirds, drawCrane, drawEntry, drawRise, drawWalkers, unionFlag, kick, setPainter } from '../render/anim.js';
+import { paintCrowd } from '../render/crowd.js';
+import { FX, GX, MOTION, OX0, OY0, RISE_MS, bl, disc, drawBirds, drawCrane, drawEntry, drawRise, drawWalkers, kick, setPainter } from '../render/anim.js';
 import { TH, TW, centreOn, clampCam, defaultZoom, frameBox, FRX, FRY, isoOf, resize, scale, setAttachSel, worldEl, setCam, setSelected, setViewRot, setZoom } from '../render/camera.js';
 import { GROUNDS, riverTile, roadTile, skirt } from '../render/ground.js';
 import { gx, setMapSize, startSite } from '../render/map.js';
@@ -211,18 +212,23 @@ export function raysFrame(now){
   g.putImageData(img, 0, 0);
 }
 // Fit the scene to the screen: sky, rays behind the logo, the diorama at a whole-pixel scale
-// An avenue of flagpoles along the hills behind the town, every flag of the Union waving out of step with the next
+// The crowd on the hills and in the band below the town, a few flags of Europe among them, and six bureaucrats dancing beside
+// the town (render/crowd.js). It replaced the avenue of flagpoles; it is painted on the same layer, behind the town.
 export function avenueFrame(now){
-  const cv = $('coverFlags'); if(!cv || !SKY) return;
+  const cv = $('coverFlags'); if(!cv || !SKY || !SKY.dio) return;
   if(cv.width !== SKY.w || cv.height !== SKY.h){ cv.width = SKY.w; cv.height = SKY.h; cv.style.width = SKY.w*SKY.PS+'px'; cv.style.height = SKY.h*SKY.PS+'px'; }
   const g = cv.getContext('2d'), T = MOTION ? now/1000 : 0; g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,cv.width,cv.height);
-  const keep = [GX, OX0, OY0]; setPainter(g, 0, 0);
-  for(let x = 5, q = 0; x < SKY.w - 4; x += 23, q++){ const base = Math.floor(SKY.near(x)) + 2, poleH = 27 + (q%3)*2;
-    unionFlag(x, base - poleH, 15, 10, T, q*1.3, 0, poleH); }
-  // a nearer row of bigger flags in the free band under the town (only when there is room for it)
-  if(SKY.fg){ const {top, base} = SKY.fg, poleH = base - top;
-    if(poleH >= 30) for(let x = 9, q = 0; x < SKY.w - 8; x += 44, q++){ const ph = poleH - (q%2)*4; unionFlag(x, base - ph, 27, 18, T, q*2.1 + 0.6, 0, ph); } }
-  setPainter(...keep);
+  paintCrowd(g, SKY.w, SKY.h, T, {near: SKY.near, far: SKY.far, dio: SKY.dio, foot: SKY.foot});
+  sparkFrame(now);
+}
+// Sparkles that light up on the letters of the logo now and then (art pixels of the logo, on their own small canvas)
+export function sparkFrame(now){
+  const cv = cover && cover.querySelector('.cv-spark'); if(!cv) return;
+  const g = cv.getContext('2d'), T = MOTION ? now/1000 : 0; g.clearRect(0, 0, cv.width, cv.height); if(!MOTION) return;
+  for(let i=0;i<4;i++){ const n = Math.floor(T*1.6 + i*0.37), ph = (T*1.6 + i*0.37) % 1; if(ph >= 0.4) continue;
+    const sz = Math.round(3*(1 - Math.abs(ph - 0.2)/0.2)); if(sz < 1) continue;
+    const x = 10 + Math.round(hsh(n, i, 1)*70), y = 6 + Math.round(hsh(n, i, 2)*13);
+    g.fillStyle = '#fffbe0'; g.fillRect(x - sz, y, 2*sz + 1, 1); g.fillRect(x, y - sz, 1, 2*sz + 1); g.fillStyle = '#ffffff'; g.fillRect(x, y, 1, 1); }
 }
 export function layoutCover(){
   if(!coverOpen()) return;
@@ -241,6 +247,7 @@ export function layoutCover(){
   raysFrame(performance.now());
   const fr = cover.querySelector('.cv-foot').getBoundingClientRect();   // the front row stands above the version and copyright
   SKY.fg = {top: Math.ceil((dr.bottom - cr.top)/SKY.PS) + 3, base: Math.floor((fr.top - cr.top)/SKY.PS) + 1};
+  SKY.dio = {x0: Math.floor((dr.left - cr.left)/SKY.PS), x1: Math.ceil((dr.right - cr.left)/SKY.PS)}; SKY.foot = Math.floor((fr.top - cr.top)/SKY.PS) + 2;
   avenueFrame(performance.now());
 }
 // --- The title screen: logo, a vertical menu (new game · continue · settings · credits), version and copyright in the corners.
@@ -325,10 +332,12 @@ export function coverKey(e, k){
   if((k==='escape' || k==='backspace') && view !== 'main'){ e.preventDefault(); playSound('click'); go('main'); return; }
   if((k==='enter' || k===' ') && i < 0){ e.preventDefault(); items[0].click(); }
 }
+// The logo in eight slices, one per letter (columns of the 74×17 art), so each letter can bob on its own wave
+const LETTERS = [[0,9],[9,9],[18,9],[27,9],[36,9],[45,9],[54,9],[63,11]].map(([a,w],i)=>`<i class="cv-l" aria-hidden="true" style="--a:${a};--w:${w};--i:${i}"></i>`).join('');
 function buildScene(){
   cover.innerHTML = `<canvas id="coverSky" aria-hidden="true"></canvas><canvas id="coverRays" aria-hidden="true"></canvas><div class="cv-clouds" aria-hidden="true"></div><canvas id="coverFlags" aria-hidden="true"></canvas>
     <div class="cv-body">
-      <h1 class="cv-logo logo-art"><span class="sr">Eurocrat</span><i class="cv-shine" aria-hidden="true"></i></h1>
+      <h1 class="cv-logo"><span class="sr">Eurocrat</span>${LETTERS}<canvas class="cv-spark" width="94" height="27" aria-hidden="true"></canvas></h1>
       <nav class="cv-menu" aria-label="Menu"></nav>
       <div class="cv-dio"></div>
     </div>

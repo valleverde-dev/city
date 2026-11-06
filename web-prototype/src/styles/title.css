@@ -20,6 +20,34 @@
   background-size:300% 100%; background-position:100% 0; animation:cv-shine 5.5s steps(30) infinite;}
 @keyframes cv-shine{0%, 55%{background-position:100% 0;} 85%, 100%{background-position:0 0;}}
 @media (max-width:1279px){ .cv-logo{width:444px;} }
+/* the logo in eight letters: each one a slice of the logo art, bobbing on its own wave in whole art pixels (--px),
+   a glint sweeping across all of them in step, and sparkles lighting up on top (.cv-spark, painted by sparkFrame) */
+.cv-logo{position:relative; aspect-ratio:74/17; --px:7px;}
+.cv-logo > .sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap;}
+.cv-l{position:absolute; top:0; bottom:0; left:calc(var(--a) / 74 * 100%); width:calc(var(--w) / 74 * 100%);
+      background:url('../assets/logo.svg') no-repeat; background-size:calc(74 / var(--w) * 100%) 100%; background-position:calc(var(--a) / (74 - var(--w)) * 100%) 0;
+      image-rendering:pixelated; animation:cv-wave 1.26s steps(1, end) infinite; animation-delay:calc(var(--i) * -0.16s); will-change:transform;}
+.cv-l:after{content:""; position:absolute; inset:0; pointer-events:none;
+  -webkit-mask:url('../assets/logo-faces.svg') no-repeat; mask:url('../assets/logo-faces.svg') no-repeat;
+  -webkit-mask-size:calc(74 / var(--w) * 100%) 100%; mask-size:calc(74 / var(--w) * 100%) 100%;
+  -webkit-mask-position:calc(var(--a) / (74 - var(--w)) * 100%) 0; mask-position:calc(var(--a) / (74 - var(--w)) * 100%) 0;
+  background:linear-gradient(105deg, transparent 0 40%, rgba(255,240,170,.85) 40% 44%, transparent 44% 47%, rgba(255,240,170,.55) 47% 49%, transparent 49% 100%) no-repeat;
+  background-size:calc(74 / var(--w) * 300%) 100%; animation:cv-shine-l 5.5s steps(30) infinite;}
+@keyframes cv-shine-l{
+  0%, 55%{background-position:calc((var(--a) / 74 + 2) / (3 - var(--w) / 74) * 100%) 0;}
+  85%, 100%{background-position:calc(var(--a) / 74 / (3 - var(--w) / 74) * 100%) 0;}}
+@keyframes cv-wave{
+  0%{transform:translateY(0);} 8.33%{transform:translateY(calc(var(--px) * -2));} 16.67%{transform:translateY(calc(var(--px) * -3));}
+  25%{transform:translateY(calc(var(--px) * -3));} 33.33%{transform:translateY(calc(var(--px) * -3));} 41.67%{transform:translateY(calc(var(--px) * -2));}
+  50%{transform:translateY(0);} 58.33%{transform:translateY(calc(var(--px) * 2));} 66.67%{transform:translateY(calc(var(--px) * 3));}
+  75%{transform:translateY(calc(var(--px) * 3));} 83.33%{transform:translateY(calc(var(--px) * 3));} 91.67%{transform:translateY(calc(var(--px) * 2));} 100%{transform:translateY(0);}}
+.cv-spark{position:absolute; left:calc(-10 / 74 * 100%); top:calc(-5 / 17 * 100%); width:calc(94 / 74 * 100%); height:calc(27 / 17 * 100%); image-rendering:pixelated; pointer-events:none;}
+@media (max-width:1279px){ .cv-logo{--px:6px;} }
+@media (max-width:900px){ .cv-logo{--px:5px;} }
+@media (max-width:600px){ .cv-logo{--px:4px;} }
+@media (max-width:360px){ .cv-logo{--px:3px;} }
+@media (prefers-reduced-motion: reduce){ .cv-l, .cv-l:after{animation:none !important;} .cv-l:after{display:none;} }
+
 @media (max-width:900px){ .cv-logo{width:370px;} }
 .cv-dio{position:relative; flex:1 1 0; min-height:80px; width:100%; display:flex; align-items:center; justify-content:center; margin-top:6px;}
 .cv-dio canvas{display:block; image-rendering:pixelated; animation:cv-bob 3.2s steps(2) infinite alternate;}
@@ -76,3 +104,13 @@
 #cover .cv-item.lvl:focus b, #cover .cv-item.lvl:hover:not(:disabled) b{color:var(--yellow);}
 #cover .cv-item.lvl:disabled b, #cover .cv-item.lvl:disabled .num{color:#9fb3da;} #cover .cv-item.lvl:disabled small{color:#c9d5ee;}
 @media (max-width: 360px){ .cv-logo{width:222px;} }
+
+/* the studio card before the title screen (ui/splash.js): on black, fades in and out; taps go through it */
+.splash{position:fixed; inset:0; z-index:200; display:grid; place-items:center; background:#04070f; pointer-events:none;}
+.splash span{font:400 clamp(44px, 9vw, 112px)/1 var(--f-display); letter-spacing:.04em; color:#f4f1e6; text-shadow:4px 4px 0 var(--navy);
+             opacity:0; animation:splash-in .9s ease-out .25s forwards;}
+@keyframes splash-in{to{opacity:1;}}
+.splash.out{animation:splash-out .9s ease-in forwards;}
+.splash.out-fast{animation:splash-out .25s ease-in forwards;}
+@keyframes splash-out{to{opacity:0;}}
+@media (prefers-reduced-motion: reduce){ .splash span{animation:none; opacity:1;} .splash.out, .splash.out-fast{animation:none; opacity:0;} }

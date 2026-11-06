@@ -139,12 +139,13 @@ function steam(x, y, T, n = 4, col = '#8a8f99', rise = 30){ for(let k = 0; k < n
 const SK = ['#f1c9a5','#d9a27a','#a8714a','#f6d7bd'];
 export function person(x, y, o = {}, T = 0){
   const skin = o.skin || SK[0], shirt = o.shirt || '#2a63c9', pants = o.pants || '#2f3542', hair = o.hair || '#2b2017';
-  const step = o.walk ? Math.floor(T*6 + x) % 2 : 0, bob = o.bob ? Math.round(Math.abs(Math.sin(T*5 + x))*1.5) : 0;
-  y -= bob;
+  const step = o.walk ? Math.floor(T*6 + x) % 2 : 0, bob = o.bob ? Math.round(Math.abs(Math.sin(T*(o.bob === true ? 5 : o.bob) + x))*1.5) : 0;
+  y -= bob + (o.hop || 0);
   if(o.skirt){ R(x-1, y-5, 7, 4, o.skirt); R(x-2, y-2, 9, 1, o.skirt); R(x+1, y-1, 1, 1, '#1b1b1b'); R(x+3, y-1, 1, 1, '#1b1b1b'); }
+  else if(o.kick){ const k = o.kick; R(x, y-4, 2, 4 - (k<0?1:0), pants); R(x+3, y-4, 2, 4 - (k>0?1:0), pants); R(x + (k<0?-1:0), y-1 - (k<0?1:0), 2, 1, '#1b1b1b'); R(x+3 + (k>0?1:0), y-1 - (k>0?1:0), 2, 1, '#1b1b1b'); }
   else { R(x, y-4, 2, 4 - step, pants); R(x+3, y-4, 2, 4 - (o.walk && !step ? 1 : 0), pants); R(x, y-1 + (step?-1:0), 2, 1, '#1b1b1b'); R(x+3, y-1 - (o.walk && !step ? 1 : 0), 2, 1, '#1b1b1b'); }
   R(x-1, y-10, 7, 6, shirt); if(!o.skirt) R(x-1, y-5, 7, 1, o.belt || pants);
-  if(o.tie) R(x+2, y-10, 1, 4, o.tie);
+  if(o.tie){ R(x+2, y-10, 1, 4, o.tie); if(o.flap) R(x+3, y-9, 2, 1, o.tie); }
   if(o.vest){ R(x-1, y-10, 2, 6, o.vest); R(x+4, y-10, 2, 6, o.vest); R(x-1, y-8, 7, 1, '#e8e8e8'); }
   if(o.sash) for(let k = 0; k < 6; k++) P(x-1 + k, y-10 + k, k % 2 ? YEL : RED);
   if(o.chain){ P(x+1, y-9, YEL); P(x+2, y-8, YEL); P(x+3, y-9, YEL); }
@@ -155,8 +156,12 @@ export function person(x, y, o = {}, T = 0){
   else if(arm === 'pointL'){ R(x-5, y-9, 4, 1, shirt); P(x-6, y-9, skin); R(x+6, y-9, 1, 4, shirt); P(x+6, y-5, skin); }
   else if(arm === 'sign' || arm === 'both'){ R(x-2, y-13, 1, 4, shirt); R(x+6, y-13, 1, 4, shirt); P(x-2, y-14, skin); P(x+6, y-14, skin); }
   else if(arm === 'hold'){ R(x+6, y-9, 3, 1, shirt); P(x+9, y-9, skin); R(x-2, y-9, 1, 4, shirt); P(x-2, y-5, skin); }
+  else if(arm === 'disco'){ R(x+6, y-13, 1, 1, shirt); R(x+7, y-14, 1, 1, shirt); R(x+8, y-15, 1, 1, shirt); P(x+9, y-16, skin); R(x-2, y-9, 1, 4, shirt); P(x-2, y-5, skin); }
+  else if(arm === 'discoL'){ R(x-2, y-13, 1, 1, shirt); R(x-3, y-14, 1, 1, shirt); R(x-4, y-15, 1, 1, shirt); P(x-5, y-16, skin); R(x+6, y-9, 1, 4, shirt); P(x+6, y-5, skin); }
+  else if(arm === 'side'){ R(x-5, y-9, 4, 1, shirt); P(x-6, y-9, skin); R(x+6, y-9, 4, 1, shirt); P(x+10, y-9, skin); }
   else if(arm === 'shrug'){ R(x-3, y-11, 2, 1, shirt); P(x-4, y-12, skin); R(x+6, y-11, 2, 1, shirt); P(x+8, y-12, skin); }
   else { R(x-2, y-9, 1, 4, shirt); P(x-2, y-5, skin); R(x+6, y-9, 1, 4, shirt); P(x+6, y-5, skin); }
+  if(o.case){ const cx = arm === 'hold' ? x+8 : x+5, cy = arm === 'hold' ? y-10 : y-5; R(cx, cy, 5, 4, '#5a3420'); R(cx, cy, 5, 1, '#7a4e2c'); P(cx+2, cy-1, '#3a2414'); }
   R(x, y-15, 5, 5, skin); P(x+1, y-13, '#1b1b1b'); P(x+3, y-13, '#1b1b1b');
   if(o.shades) R(x, y-13, 5, 1, INK);
   if(o.glasses){ R(x, y-13, 5, 1, o.glasses); P(x+1, y-13, WHITE); P(x+3, y-13, WHITE); }
@@ -169,9 +174,10 @@ export function person(x, y, o = {}, T = 0){
   else if(o.bald){ R(x, y-15, 1, 2, hair); R(x+4, y-15, 1, 2, hair); }
   else if(o.bun){ R(x, y-16, 5, 2, hair); R(x+1, y-18, 3, 2, hair); R(x-1, y-15, 1, 2, hair); R(x+5, y-15, 1, 2, hair); }
   else { R(x, y-16, 5, 2, hair); R(x, y-14, 1, 2, hair); if(o.long){ R(x-1, y-15, 1, 5, hair); R(x+5, y-15, 1, 5, hair); } }
+  return {hx: x-2, hy: y-15 + (wav>0?1:0)};
 }
 // the cast, as on their portraits
-const CAST = {
+export const CAST = {
   mayor:     {shirt:'#2a63c9', pants:'#2f3542', bald:true, hair:'#5a3b22', skin:SK[1], sash:true, mouth:'#7a3b2e'},
   heritage:  {hair:'#c0582e', long:true, glasses:'#3a3d44', shirt:'#4f7a3a', pants:'#5a4632'},
   brussels:  {shirt:'#2f3542', pants:'#2f3542', tie:RED, hair:'#e3c36b', skin:SK[3]},
@@ -187,6 +193,8 @@ const CAST = {
   local3:    {shirt:'#e8762b', pants:'#2f3542', hair:'#5a3b22', skin:SK[2]},
 };
 const who = (k, x, y, extra = {}, T = 0) => person(x, y, {...CAST[k], ...extra}, T);
+// The same little people, painted on another canvas (the crowd of the title screen)
+export function paintPerson(ctx, x, y, o, T){ const keep = g; g = ctx; try{ return person(x, y, o, T); } finally { g = keep; } }
 
 // =====================================================================
 //  The scenes

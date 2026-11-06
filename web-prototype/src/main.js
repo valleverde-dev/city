@@ -35,6 +35,7 @@ import { openRun, closeRun } from './ui/run.js';
 import { toggleInbox } from './ui/inbox.js';
 import { problems } from './ui/problems.js';
 import { enterSettlement, setLang, startMenu, startNew, startRun } from './ui/title.js';
+import { showSplash } from './ui/splash.js';
 import './ui/input.js';   // pointer, wheel and keyboard listeners
 
 // =====================================================================
@@ -57,6 +58,6 @@ window.__eurocrat = {
   startNight, ARCH, archOf, styleName, get born(){ return born.size; }, get artSize(){ return [art.width, art.height]; },
   frameMs:(n=30)=>{ const t0=performance.now(); for(let k=0;k<n;k++){ compose(t0+k*66); presentNow(); } return (performance.now()-t0)/n; },
 };
-startSite(1, 0); resize(); refresh(); startMenu();
+startSite(1, 0); resize(); refresh(); startMenu(); showSplash();
 Object.keys(CHARS).forEach(makePixelPortrait);
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>draw());
