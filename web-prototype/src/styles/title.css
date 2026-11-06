@@ -114,3 +114,14 @@
 .splash.out-fast{animation:splash-out .25s ease-in forwards;}
 @keyframes splash-out{to{opacity:0;}}
 @media (prefers-reduced-motion: reduce){ .splash span{animation:none; opacity:1;} .splash.out, .splash.out-fast{animation:none; opacity:0;} }
+
+/* the intro after New Game (ui/intro/): a full-screen film over the title screen, a line of text fading in over the lower third */
+#intro{position:fixed; inset:0; z-index:150; background:#000; overflow:hidden; -webkit-user-select:none; user-select:none; touch-action:manipulation;}
+#intro.out{animation:splash-out .4s ease-in forwards;}
+#intro .in-film{position:absolute; inset:0; width:100%; height:100%; display:block; image-rendering:pixelated;}
+#intro .in-line{position:absolute; left:0; right:0; bottom:calc(14% + env(safe-area-inset-bottom, 0px)); padding:0 max(16px, env(safe-area-inset-left, 0px));
+  text-align:center; font:400 clamp(26px, 4.6vw, 60px)/1.05 var(--f-display); letter-spacing:.03em; color:#f4f1e6; text-wrap:balance;
+  text-shadow:0 0 18px #000, 3px 3px 0 #000; opacity:0; pointer-events:none;}
+#intro .in-skip{position:absolute; right:calc(14px + env(safe-area-inset-right, 0px)); bottom:calc(14px + env(safe-area-inset-bottom, 0px));
+  font:400 22px/1 var(--f-display); letter-spacing:.06em; color:#fff; background:rgba(11,31,77,.6); border:2px solid rgba(255,255,255,.55); padding:8px 14px 9px; cursor:pointer;}
+#intro .in-skip:focus-visible{outline:2px solid var(--yellow); outline-offset:2px;}

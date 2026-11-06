@@ -16,7 +16,7 @@ function local(s){ return {shirt:pick(SHIRTS, s), skin:pick(SKINS, s+1), hair:pi
   long: r01(s,2) < 0.3, skirt: r01(s,3) < 0.12 ? pick(SHIRTS, s+4) : null, cap: r01(s,4) < 0.08 ? pick(SHIRTS, s+5) : null, glasses: r01(s,5) < 0.12 ? '#3a3d44' : null}; }
 
 // A little flag of Europe on a stick: the cloth waves and the ring of twelve gold stars rides on it
-function handFlag(g, hx, hy, T, ph, w, h){
+export function handFlag(g, hx, hy, T, ph, w, h){
   const R = (a, b, ww, hh, col) => { g.fillStyle = col; g.fillRect(Math.round(a), Math.round(b), ww, hh); }, L = h + 3, top = hy - L;
   R(hx, top, 1, L+1, '#d9dce2'); R(hx, top-1, 1, 1, '#f2c230');
   const wave = i => { const p = i*0.6 - T*7 + ph; return [Math.round(Math.sin(p)*(i/Math.max(1, w-1))*1.2), Math.cos(p)]; };

@@ -13,6 +13,7 @@ Living project document · update it as the prototype evolves. The game design l
 - **Nine ordinances**: the permits clerk on holiday, protected old town, everything in triplicate, the patron saint's fiesta, no industry, the long lunch, bilingual signs; and two that help, a one-stop shop and an industrial tradition. They come from a hash of the plot's position, not the run's dice.
 - The **buildable town hall is gone** (7 buildings to unlock).
 - **Housing levels.** Housing blocks are renovated up from level I (150 homes) to II (250: a park, school or market beside it) and III (400, a tower: a school and a health centre within two cells), each with a renovation permit through the district's town hall and months of works with fewer homes; the block looks its level on the map.
+- **The intro, after New Game.** Eight full-screen pixel-art shots with slow fades and zooms and the line of text fading in over each (EN/ES): the graduation, the desk where the days go by, the phone nobody answers, a rainy station in a town nobody can pronounce, the silent corridor, an austere office, the nameplate — and then the title screen itself, the logo dropping in over the crowd and the dancing bureaucrats. The protagonist is always seen from behind; the figures are drawn in the *Papers, Please* manner. Sound: the Ode on a music box, rain, footsteps, a door and one held note, a drum roll, then a cymbal and the menu theme. A tap shows *Skip* (to the logo); Esc or Enter skip too; Continue never shows it.
 - **The Groenendaal card.** Every time the game opens, "Groenendaal" fades in on black and out again, revealing the title screen; a tap or a key sends it away at once, and it never blocks a tap.
 - **A livelier title screen.** The logo dances: each letter bobs on its own wave in whole art pixels, the glint sweeps across all of them in step, and sparkles light up on the letters. The avenue of flagpoles is gone: **a crowd** of the little people from the event illustrations (the cast among them) cheers on the hills and in the band below the town, a few waving **flags of Europe**, and **six bureaucrats dance** beside the town under spotlights, at the menu theme's 130 BPM, throwing papers (not on phones, where there is no room beside the town). With reduced motion everything stands still.
 - Balance (bot, 60 runs): about 3.7 milestones a run, as before; the bot uses the counter (calls back a clerk, pastries, lunches, repeals). Tests: 34 rules tests, all browser checks green.
@@ -269,7 +270,6 @@ Playtest feedback: "I don't know what to do", "too much information", "too hard"
 
 ### Not scheduled
 
-- **An intro cinematic after New Game**, in pixel art inside the game (scenes, camera moves, the characters, typewriter text, music; skippable, both languages), from a script the author will write.
 
 ### Ideas for later (no decision yet)
 

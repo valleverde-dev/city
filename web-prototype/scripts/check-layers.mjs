@@ -5,6 +5,7 @@
 //   i18n/   strings + t() — may import core/
 //   render/ audio/   may import core/ and i18n/ (and each other / ui helpers — presentation)
 //   ui/  main.js     may import anything
+//   assets/          static files (the logo…) — presentation (render/, ui/) may import them; the build inlines them
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, dirname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,8 +20,8 @@ const ALLOWED = {
   core:  ['core'],
   i18n:  ['core', 'i18n'],
   audio: ['core', 'i18n', 'audio', 'render', 'ui'],
-  render:['core', 'i18n', 'audio', 'render', 'ui'],
-  ui:    ['core', 'i18n', 'audio', 'render', 'ui'],
+  render:['core', 'i18n', 'audio', 'render', 'ui', 'assets'],
+  ui:    ['core', 'i18n', 'audio', 'render', 'ui', 'assets'],
   main:  ['core', 'i18n', 'audio', 'render', 'ui'],
 };
 const BROWSER = /\b(document|window|navigator|localStorage|sessionStorage|performance|requestAnimationFrame|AudioContext|HTMLCanvasElement|getContext|matchMedia|devicePixelRatio)\b/;

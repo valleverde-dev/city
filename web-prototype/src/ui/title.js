@@ -14,6 +14,7 @@ import { closeDrama } from './drama.js';
 import { N, S, clamp, setState } from '../core/state.js';
 import { LANG, setLanguage, t } from '../i18n/index.js';
 import { paintCrowd } from '../render/crowd.js';
+import { playIntro } from './intro/player.js';
 import { FX, GX, MOTION, OX0, OY0, RISE_MS, bl, disc, drawBirds, drawCrane, drawEntry, drawRise, drawWalkers, kick, setPainter } from '../render/anim.js';
 import { TH, TW, centreOn, clampCam, defaultZoom, frameBox, FRX, FRY, isoOf, resize, scale, setAttachSel, worldEl, setCam, setSelected, setViewRot, setZoom } from '../render/camera.js';
 import { GROUNDS, riverTile, roadTile, skirt } from '../render/ground.js';
@@ -289,7 +290,7 @@ function renderMenu(fresh){
   let first = null;
   if(view === 'main'){
     // v0.9.3: five plain options, no subtitles
-    add(item(t('title.new'), startNewEuroregion, {cls:'new'}));
+    add(item(t('title.new'), ()=>playIntro(startNewEuroregion, {diorama: dioCanvas}), {cls:'new'}));   // the intro first (ui/intro/), then the run
     const c = add(item(t('title.continue'), ()=>{ setState(saved); afterLoad(); }, {disabled:!cont, cls:'cont'}));
     add(item(t('title.career'), ()=>go('career'), {cls:'career'}));
     add(item(t('title.settings'), ()=>go('settings')));
