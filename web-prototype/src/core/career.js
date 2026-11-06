@@ -56,7 +56,7 @@ export const XP_FOR = {acquire:2, permit:3, approved:3, built:6, road:1, combo:8
 export const PERK_RANK = {notary:0, fasttrack:0, prefab:0, contractor:0, cousin:0, translation:0, comms:1, lobbyist:1, fixer:2, shovel:2, cohesion:3, taxadvisor:4, ombudsman:5, revolving:6};
 export const ACH_BY_ID = Object.fromEntries(ACH.map(a=>[a.id, a]));
 // v0.9.2: the new buildings are unlocked by career level, spread along the curve so they arrive over many runs
-export const UNLOCK_LEVEL = {market:2, library:3, police:5, social:7, townhall:9, solar:11, station:14, data:18};
+export const UNLOCK_LEVEL = {market:2, library:3, police:5, social:7, solar:11, station:14, data:18};   // v0.12: no buildable town hall (every village has one)
 // The buildings a level unlocks (for the level-up banner)
 export const unlocksAt = lv => Object.keys(UNLOCK_LEVEL).filter(ty=>UNLOCK_LEVEL[ty]===lv);
 

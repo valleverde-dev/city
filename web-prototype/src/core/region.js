@@ -159,7 +159,7 @@ export function regionBounds(extra = []){
 
 // ---------- cells of consolidated settlements ----------
 // A frozen parcel is one short code: a finished building type, 'road', or the land underneath
-const BUILDINGS = ['housing','factory','school','clinic','park','market','social','library','police','solar','station','data','townhall'];
+const BUILDINGS = ['housing','factory','school','clinic','park','market','social','library','police','solar','station','data'];
 export function cellCode(p){
   if(p.k==='regional') return 'regional';
   if(p.st==='built' && p.ty) return p.ty;

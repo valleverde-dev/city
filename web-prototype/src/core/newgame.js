@@ -7,6 +7,7 @@ import { discover } from './combos.js';
 import { career, checkAch, rankOf, gainXp, seePerk, seeType, tutorialDone } from './career.js';
 import { hasAccess, log } from './rules.js';
 import { offerRewards } from './rewards.js';
+import { hallsNewPhase } from './halls.js';
 import { N, NB, S, clamp, idx, inside, pick, r1, rc, ri, rnd, setSide, setState } from './state.js';
 
 // =====================================================================
@@ -67,7 +68,7 @@ export function townName(){ const a=pick(TOWN_A), b=pick(TOWN_B); return a.endsW
 //  THE GRID — the region's bounding square, rebuilt when a plot is added. Parcels already in play keep
 //  everything (state, building, works); new land comes from the map; the rest is void.
 // =====================================================================
-const BUILT = ['housing','factory','school','clinic','park','market','social','library','police','solar','station','data','townhall'];
+const BUILT = ['housing','factory','school','clinic','park','market','social','library','police','solar','station','data'];
 function parcelOf(code, urban0){
   const p = {k:'farm', st:'land', ty:null, t:0, halt:0, price:r1(1.0+rnd()*1.4), hold:false, mcost:0, urban:urban0, flag:null};
   if(code===null) return {k:'void', st:'void', ty:null, t:0, halt:0, price:0, hold:false, mcost:0, urban:false, flag:null};
@@ -146,6 +147,7 @@ export function beginPhase(stage, fresh){
     free.slice(0, S.gifts.land).forEach(i=>{ const p = S.grid[i]; if(p.hold){ p.price = r1(p.price / (1 + (p.holdPct||80)/100)); delete p.holdPct; } Object.assign(p, {st:'owned', urban:true, hold:false, holdKnown:false}); });
     S.gifts.land = 0; }
   regionEffects();
+  hallsNewPhase();   // v0.12: every district's town hall (the clerk's holidays, the fiesta)
   S.prev = snapshot();
   seeType(last.ty);
   log('log.opened', {town:last.town}, 'good');

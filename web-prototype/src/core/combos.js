@@ -33,7 +33,6 @@ export const COMBOS = [
   {id:'safeStreets',    a:'police',  b:'housing',  good:true,  fx:{homes:15, neigh:1}},
   {id:'selfConsumption',a:'solar',   b:'factory',  good:true,  fx:{tax:0.04, jobs:20}},
   {id:'greenCloud',     a:'data',    b:'solar',    good:true,  fx:{tax:0.05}},
-  {id:'plazaMayor',     a:'townhall',b:'village',  good:true,  fx:{local:1, neigh:1}},
   {id:'communityGarden',a:'social',  b:'park',     good:true,  fx:{homes:25, neigh:1}},
   {id:'glare',          a:'solar',   b:'housing',  good:false, fx:{homes:-20, neigh:-1}},
   {id:'serverHum',      a:'data',    b:'housing',  good:false, fx:{homes:-25, neigh:-1}},

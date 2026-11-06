@@ -1,3 +1,5 @@
+import { ordBuildCost, ordBuildExtra, ordBuildMonths, ordFastTrack, ordForbids, ordPermitFee, ordPermitMonths, revealAt, bumpHall } from './halls.js';
+import { districtOf } from './region.js';
 import { B, CFG, TOWN_A, TOWN_B, on } from './config.js';
 import { gainXp, unlocked } from './career.js';
 import { avail } from './economy.js';
@@ -32,11 +34,19 @@ export function requestPermit(i, ty){
   if(B[ty].flag && !on(B[ty].flag)) return fail('err.notYet');
   if(B[ty].unique && S.grid.some(q=>q.ty===ty && q.st!=='land' && q.st!=='owned')) return fail('err.unique');
   if(B[ty].urban && !p.urban) return fail('err.rustic');
-  if(S.funds < CFG.permitFee) return fail('err.funds');
+  if(ordForbids(i, ty)){ revealAt(i, 'noIndustry'); return fail('err.ordinance'); }   // v0.12: the district's ordinance
+  const fee = r1(CFG.permitFee * ordPermitFee(i));
+  if(S.funds < fee) return fail('err.funds');
   // In the learning levels (no bank drama yet) you cannot order works you cannot pay for
-  if(!on('debt') && avail() < CFG.permitFee + buildCost(p, ty)) return fail('err.fundsBuild');
-  S.slots--; spend(CFG.permitFee);
-  p.st = 'review'; p.ty = ty; p.t = permitMonths(ty); p.flag = null;
+  if(!on('debt') && avail() < fee + buildCost(p, ty)) return fail('err.fundsBuild');
+  S.slots--; spend(fee);
+  if(fee > CFG.permitFee) revealAt(i, 'triplicate');
+  if(ordBuildCost(i) > 0) revealAt(i, 'oldtown');
+  if(ordBuildExtra(i) > 0) revealAt(i, 'bilingual');
+  if(ordPermitMonths(i) < 0) revealAt(i, 'oneStop');
+  if(ordBuildMonths(i) > 0) revealAt(i, 'siesta');
+  p.st = 'review'; p.ty = ty; p.t = permitMonths(ty, i); p.flag = null;
+  if(ordFastTrack(i, ty)){ revealAt(i, 'proIndustry'); p.st = 'approved'; p.q = ++S.qseq; p.t = 0; }
   if(S.fast > 0){ S.fast--; p.st = 'approved'; p.q = ++S.qseq; p.t = 0; log('log.fast', {b:ty, at:pname(i)}, 'good'); }   // a milestone reward: already approved
   if(ty==='factory') bump('neigh', -3, 'why.factory');
   if(nextToVillage(r,c) && ty!=='park'){ bump('neigh', -3, 'why.village'); log('log.village', {}, 'bad'); }
@@ -78,6 +88,7 @@ export function submitPlan(){
   log('log.planSubmitted', {n:list.length, m:S.plan.t}); gainXp('plan');
   return {ok:true, msg:{k:'fx.filed'}, sfx:'stamp'};
 }
+// v0.12: the lunch is at each town hall now (halls.js: hallLunch); this is the founding town's, kept for old callers
 export function lobby(){
   if(!canAct()) return fail('err.slots');
   if(S.funds < CFG.lobbyCost) return fail('err.funds');
@@ -151,7 +162,7 @@ export function expropriate(i){
   const x = r1(basePrice(p) * (has('notary') ? 0.7 : 1));
   if(avail() < x) return fail(on('debt') ? 'err.funds' : 'err.committed');
   S.slots -= NEG.exproSlots; spend(x); p.expro = NEG.exproMonths;
-  bump('neigh', NEG.exproNeigh, 'why.expro'); log('log.expro', {at:pname(i), x:money(x), n:NEG.exproMonths}, 'bad');
+  bump('neigh', NEG.exproNeigh, 'why.expro'); { const k = districtOf(i); if(k > 0) bumpHall(k, -8, 'why.expro'); } log('log.expro', {at:pname(i), x:money(x), n:NEG.exproMonths}, 'bad');
   return {ok:true, msg:{k:'fx.expro', p:{n:NEG.exproMonths}}, sfx:'stamp'};
 }
 export function leaveInPeace(i){

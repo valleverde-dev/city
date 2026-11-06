@@ -40,7 +40,15 @@ window.__playOneRun = function(seed, opts){
     while(S().slots > 0 && loops++ < 12){
       const s = S(), d = s.directive;
       if(g.on('comp') && (s.comp < 30 || (d && d.kind==='reports'))){ if(g.fileReport().ok) continue; }
-      if(g.on('local') && s.local < 42 && s.funds > 5){ if(g.lobby().ok) continue; }
+      if(g.on('local') && s.local < 42 && s.funds > 5){ if(g.hallLunch(0).ok) continue; }
+      // v0.12: the town halls — a clerk on holiday gets called back (or pastries), a cold hall gets lunch
+      if(g.on('local')){ let acted = false;
+        for(let k = 0; k < s.region.blocks.length && !acted; k++){ const H = s.region.blocks[k].hall; if(!H) continue; const stuck = g.stuckPermits(k).length;
+          if(stuck && H.away > 0) acted = (g.hallRel(k) >= 50 ? g.hallCall(k) : g.hallCake(k)).ok;
+          else if(k > 0 && stuck && g.hallRel(k) < 45 && s.funds > 5) acted = g.hallLunch(k).ok; }
+        for(let k = 0; k < s.region.blocks.length && !acted; k++){ const H = s.region.blocks[k].hall; if(!H || H.repeal) continue;
+          const bad = H.known.find(o=>g.ORDS[o].bad); if(bad && s.neigh >= 55 && g.hallRel(k) >= 55 && s.slots >= 2) acted = g.hallRepeal(k, bad).ok; }
+        if(acted) continue; }
       if(g.on('neigh') && (s.neigh < 28 || (d && d.kind==='consult')) && s.slots >= 2){ if(g.consult().ok) continue; }
       const rustic = s.grid.filter(p=>p.st==='owned' && !p.urban).length;
       if(g.on('rustic') && rustic >= 3 && !s.plan && s.slots >= 2){ if(g.submitPlan().ok) continue; }
@@ -55,7 +63,8 @@ window.__playOneRun = function(seed, opts){
       if(['road','park'].includes(want) && owned.length && (want!=='road' || g.on('access'))){ if(g.requestPermit((rusticOwned[0]||owned[0])[1], want).ok) continue; }
       // pick the parcel with the best adjacency combos for this building (good +1, bad -2), like a player reading the preview
       const score = i => g.comboPreview(i, want).reduce((t,c)=>t + (c.good ? 1 : -2), 0);
-      if(urbanOwned.length && !['road','park'].includes(want)){ const best = urbanOwned.slice().sort((x,y)=>score(y[1])-score(x[1]))[0];
+      const allowed = urbanOwned.filter(([p,i])=>!(want==='factory' && g.ordAt(i,'noIndustry') && s.region.blocks.some(B=>B.hall && B.hall.known.includes('noIndustry'))));   // v0.12: a known ordinance
+      if(allowed.length && !['road','park'].includes(want)){ const best = allowed.slice().sort((x,y)=>score(y[1])-score(x[1]))[0];
         if(g.requestPermit(best[1], want).ok) continue; }
       if(lots.length){ lots.sort((a,b)=>(b[0].k==='muni')-(a[0].k==='muni') || (a[0].k==='flood')-(b[0].k==='flood') || a[0].price-b[0].price);
         g.acquire(lots[0][1]); continue; }

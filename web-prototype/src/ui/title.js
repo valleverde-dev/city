@@ -1,3 +1,4 @@
+import { ensureHalls } from '../core/halls.js';
 import { cascade } from './cascade.js';
 import { audioRunning, gameTrack, music, setMusic, toggleMusic, updateMusicBtn } from '../audio/music.js';
 document.addEventListener('audiounlocked', ()=>{ if(typeof pauseView !== 'undefined' && pauseView === 'settings' && pauseOpen()) pauseMenu('settings'); });
@@ -425,4 +426,4 @@ export function startNewEuroregion(){ career().tutorial ? startRandom() : startR
 
 // Show the settlement in play: fit the map to it and open its cards
 export function enterSettlement(){ setAttachSel(-1); clearSelection(); setRunTab(null); setViewRot(0); setMapSize(); frameView(); save(); setMusic(gameTrack()); refresh(); showNext(); }
-export function afterLoad(){ hideCover(); enterSettlement(); }
+export function afterLoad(){ ensureHalls(); hideCover(); enterSettlement(); }   // v0.12: older saves get their town halls

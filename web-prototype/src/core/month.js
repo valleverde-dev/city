@@ -4,6 +4,7 @@ import { directiveProgress, issueDirective, offerPerks } from './directives.js';
 import { residents, taxIncome } from './economy.js';
 import { checkContract, dueChains, rollEvent } from './events.js';
 import { tickExpro } from './actions.js';
+import { clerkAway, fiestaNow, revealAt, tickHalls } from './halls.js';
 import { money } from './format.js';
 import { consolidate, snapshot } from './newgame.js';
 import { recordRun, save } from './persist.js';
@@ -17,8 +18,10 @@ export function endMonth(){
   // 1. Permit reviews
   S.grid.forEach((p,i)=>{
     if(p.st!=='review') return;
+    if(clerkAway(i) && !p.push){ revealAt(i, 'holiday'); p.flag = {k:'away', until:S.month+1}; return; }   // v0.12: waiting for the clerk
     if(--p.t > 0) return;
-    if(approves()){ p.st='approved'; p.q = ++S.qseq; S.stats.approved = (S.stats.approved||0) + 1; gainXp('approved'); log('log.approved', {b:p.ty, at:pname(i)}, 'good'); fx(i,'fx.approved',{},'good'); }
+    p.push = false;
+    if(approves(0, i)){ p.st='approved'; p.q = ++S.qseq; S.stats.approved = (S.stats.approved||0) + 1; gainXp('approved'); log('log.approved', {b:p.ty, at:pname(i)}, 'good'); fx(i,'fx.approved',{},'good'); }
     else { const r = Math.floor(rnd()*N_REJECTIONS); log('log.rejected', {b:p.ty, r}, 'bad'); fx(i,'fx.rejected',{},'bad');
       p.st='owned'; p.ty=null; p.flag={k:'rejected', until:S.month+1}; }
   });
@@ -34,7 +37,7 @@ export function endMonth(){
   let free = contractors() - activeSites();
   S.grid.filter(p=>p.st==='approved').sort((a,b)=>a.q-b.q).forEach(p=>{
     if(free<=0) return; free--;
-    p.st='building'; p.t=buildMonths(p.ty);
+    const i = S.grid.indexOf(p); p.st='building'; p.t=buildMonths(p.ty, i); p.bt = p.t;
     const total = S.shovel ? 0 : buildCost(p, p.ty); if(S.shovel){ S.shovel=false; log('log.sponsor',{},'good'); }
     p.mcost = total / p.t;
   });
@@ -43,6 +46,7 @@ export function endMonth(){
   else S.grid.forEach((p,i)=>{
     if(p.st!=='building') return;
     if(p.halt){ p.halt--; if(!p.halt && p.flag && p.flag.k==='halt') p.flag=null; return; }
+    if(fiestaNow(i)){ revealAt(i, 'fiesta'); p.flag = {k:'fiesta', until:S.month+1}; return; }   // v0.12: the patron saint's fiesta
     spend(p.mcost);
     if(--p.t <= 0){ p.st='built';
       if(p.ty==='park') bump('neigh', 6, 'why.park');
@@ -118,8 +122,8 @@ export function endMonth(){
     }
   }
   if(on('directives') && !S.directive && !S.over && (S.month===2 || (S.month>2 && (S.month-2)%5===0))) issueDirective();
-  // 11a. Expropriations run their course (v0.11)
-  tickExpro();
+  // 11a. Expropriations run their course (v0.11); the town halls' clerks and plenaries (v0.12)
+  tickExpro(); tickHalls();
   // 11b. Contracts from the characters, and the second card of chained events (v0.10)
   if(!S.over){ checkContract(); dueChains(); }
   // 12. Random event (a card with choices)

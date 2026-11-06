@@ -79,7 +79,7 @@ Object.assign(B, {
   townhall: {icon:'account_balance',cost:6,   build:3, permit:2, upkeep:0.05, local:2, urban:true, unique:true, flag:'access'},
 });
 export const BASE_TYPES = ['road','housing','factory','school','clinic','park'];
-export const NEW_TYPES = ['market','social','library','police','solar','station','data','townhall'];
+export const NEW_TYPES = ['market','social','library','police','solar','station','data'];   // v0.12: the town hall is no longer built (B.townhall stays for old saves)
 export const BUILD_TYPES = [...BASE_TYPES, ...NEW_TYPES];
 // The capacity effects of the original six, in the same generic fields
 Object.assign(B.housing, {homes:150}); Object.assign(B.factory, {jobs:150}); Object.assign(B.school, {school:300}); Object.assign(B.clinic, {health:600});

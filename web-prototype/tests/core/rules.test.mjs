@@ -564,3 +564,84 @@ test('v0.11.1: events are dealt like a deck — one-offs once a run, repeatable 
     for (let k = 1; k < t.length; k++) assert.ok(t[k] - t[k-1] >= core.COOLDOWN, `${id} waits`);
   }
 });
+
+test('v0.12: every district has a town hall — its village, its lore, its ordinances (??? at first), its own relation', () => {
+  const S = g.newGame(17, 2);
+  assert.equal(S.region.blocks.length, 3);
+  S.region.blocks.forEach((B, k) => {
+    const H = B.hall;
+    assert.ok(H && H.k === k && H.ords.length >= 1 && H.ords.length <= 2 && H.known.length === 0, 'ordinances unknown at first');
+    assert.ok(H.year >= 1150 && H.year < 1970 && core.CLERKS.includes(H.clerk));
+    const c = core.hallCell(k); assert.ok(c >= 0 && S.grid[c].k === 'village', 'the hall stands in the district\'s village');
+    if (k === 0) assert.equal(core.hallRel(0), S.local, 'the founding town hall is the Mayor meter');
+    else assert.ok(H.rel >= 30 && H.rel <= 70);
+  });
+  // the same plot gets the same hall (not the run's dice)
+  const ords = S.region.blocks.map(B => B.hall.ords.join());
+  g.newGame(17, 2); assert.deepEqual(core.S.region.blocks.map(B => B.hall.ords.join()), ords);
+  // a new plot brings its own hall
+  const T = g.newGame(17, 0); consolidateNow(); T.cards = []; T.perkChoice = null; core.attach(0);
+  assert.ok(T.region.blocks[1].hall && core.hallCell(1) >= 0);
+  // the buildable town hall is gone
+  assert.ok(!core.NEW_TYPES.includes('townhall'));
+});
+
+test('v0.12: permits are decided by their district\'s town hall', () => {
+  const S = g.newGame(17, 2); const k = 1, H = S.region.blocks[k].hall;
+  H.ords = []; S.region.blocks[0].hall.ords = [];
+  const lot = S.grid.findIndex((p, i) => core.districtOf(i) === k && p.k === 'farm' && p.st === 'land' && core.hasAccess(...core.rc(i)));
+  Object.assign(S.grid[lot], { st: 'owned', urban: true, hold: false });
+  S.slots = 3; S.funds = 50; S.local = 90; S.neigh = 50; S.comp = 50; H.rel = 5;
+  assert.ok(core.requestPermit(lot, 'housing').ok);
+  assert.equal(core.approves(0, lot), false, 'a cold town hall rejects, whatever the founding mayor thinks');
+  H.rel = 90; assert.equal(core.approves(0, lot), true);
+  S.local = 5; assert.equal(core.approves(0, lot), true, 'and the founding mayor does not matter here');
+});
+
+test('v0.12: ordinances do what they say, and you find out when you run into them', () => {
+  const S = g.newGame(17, 2), k = 1, H = S.region.blocks[k].hall;
+  const lots = S.grid.map((p, i) => i).filter(i => core.districtOf(i) === k && S.grid[i].k === 'farm' && S.grid[i].st === 'land' && core.hasAccess(...core.rc(i)));
+  const own = i => Object.assign(S.grid[i], { st: 'owned', urban: true, hold: false });
+  S.funds = 100; S.local = 90; H.rel = 90;
+  // no factories
+  H.ords = ['noIndustry']; H.known = []; own(lots[0]); S.slots = 3;
+  assert.equal(core.requestPermit(lots[0], 'factory').msg.k, 'err.ordinance'); assert.deepEqual(H.known, ['noIndustry']);
+  // triple fee
+  H.ords = ['triplicate']; H.known = []; const f0 = S.funds; S.slots = 3;
+  assert.ok(core.requestPermit(lots[0], 'housing').ok); assert.ok(Math.abs((f0 - S.funds) - core.CFG.permitFee * 3) < 0.01); assert.ok(H.known.includes('triplicate'));
+  // the clerk on holiday: the permit waits until they are back — pastries push one ahead
+  own(lots[1]); H.ords = ['holiday']; H.known = []; H.away = 3; S.slots = 3;
+  assert.ok(core.requestPermit(lots[1], 'housing').ok);
+  S.grid[lots[0]].st = 'built';
+  const t0 = S.grid[lots[1]].t; S.cards = []; core.endMonth();
+  assert.equal(S.grid[lots[1]].st, 'review'); assert.equal(S.grid[lots[1]].t, t0, 'nothing moves while the clerk is away'); assert.ok(H.known.includes('holiday'));
+  S.slots = 3; S.funds = 50; const r0 = H.rel; assert.ok(core.hallCake(k).ok); assert.equal(H.rel, Math.min(100, r0 + core.HALL.cakeRel)); assert.ok(S.grid[lots[1]].push);
+  assert.equal(core.hallCake(k).msg.k, 'err.cake', 'once a month');
+  // calling the mayor brings the clerk back today, at a price
+  H.away = 3; S.slots = 3; const r1 = H.rel; assert.ok(core.hallCall(k).ok); assert.equal(H.away, 0); assert.equal(H.rel, r1 + core.HALL.callRel);
+  // one-stop shop: a month faster; industry: factories approved on the spot
+  H.ords = ['oneStop']; own(lots[2]); S.slots = 3; assert.equal(core.permitMonths('housing', lots[2]), core.permitMonths('housing') - 1 || 1);
+  H.ords = ['proIndustry']; S.slots = 3; assert.ok(core.requestPermit(lots[2], 'factory').ok); assert.equal(S.grid[lots[2]].st, 'approved');
+});
+
+test('v0.12: at the counter — ask, lunch with this town\'s mayor, complain, repeal an ordinance in plenary', () => {
+  const S = g.newGame(17, 2), k = 1, H = S.region.blocks[k].hall;
+  H.ords = ['siesta', 'oldtown']; H.known = []; S.slots = 3; S.funds = 50;
+  assert.ok(core.hallAsk(k).ok); assert.deepEqual(H.known.sort(), ['oldtown', 'siesta']); assert.equal(S.slots, 2);
+  assert.equal(core.hallAsk(k).msg.k, 'err.asked', 'once a phase');
+  const r0 = H.rel, l0 = S.local; assert.ok(core.hallLunch(k).ok); assert.equal(H.rel, r0 + core.HALL.lunchRel); assert.equal(S.local, l0, 'lunch here does not move the founding mayor');
+  // repeal: passes when the neighbours and this hall are at 50+ when the plenary votes
+  S.slots = 3; assert.ok(core.hallRepeal(k, 'siesta').ok); assert.equal(S.slots, 1);
+  assert.equal(core.hallRepeal(k, 'oldtown').msg.k, 'err.repealing', 'one at a time');
+  S.neigh = 90; H.rel = 70;
+  for (let m = 0; m < core.HALL.repealMonths; m++) { S.cards = []; core.endMonth(); }
+  assert.ok(!H.ords.includes('siesta')); assert.ok(S.cards.some(c => c.key === 'hall.repealOk'));
+  S.slots = 3; S.neigh = 30; assert.ok(core.hallRepeal(k, 'oldtown').ok);
+  for (let m = 0; m < core.HALL.repealMonths; m++) { S.cards = []; core.endMonth(); }
+  assert.ok(H.ords.includes('oldtown'), 'angry neighbours: the plenary says no');
+  // a complaint: the clerk back within a month, compliance up, this hall a bit colder
+  H.ords.push('holiday'); H.away = 4; S.slots = 3; const c0 = S.comp, r1 = H.rel;
+  assert.ok(core.hallComplain(k).ok); assert.equal(H.away, 1); assert.equal(S.comp, Math.min(100, c0 + core.HALL.complainComp)); assert.equal(H.rel, r1 + core.HALL.complainRel);
+  // good ordinances cannot be repealed
+  H.ords.push('oneStop'); H.known.push('oneStop'); S.slots = 3; assert.equal(core.hallRepeal(k, 'oneStop').msg.k, 'err.noRepeal');
+});

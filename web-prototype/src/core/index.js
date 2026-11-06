@@ -55,3 +55,4 @@ export function resolveCard(k){
   if(c.type==='event'){ const ch = k || choicesFor(c)[0].k; S.cards.shift(); const r = resolveEvent(c, ch); if(r) S.cards.unshift({type:'result', id:c.id, res:r, v:c.v}); return r; }
   S.cards.shift(); return true;
 }
+export { ORDS, HALL, CLERKS, N_MOTTOS, makeHall, ensureHalls, hallOf, hallAt, hallCell, hallRel, bumpHall, reveal, stuckPermits, hallAsk, hallCake, hallLunch, hallCall, hallComplain, hallRepeal, hallMood, clerkAway, fiestaNow, tickHalls, hallsNewPhase, ordAt } from './halls.js';
